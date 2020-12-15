@@ -1,4 +1,7 @@
 # Reliably CLI
+
+![Reliably](logo.png "Reliably CLI")
+
 Reliability toolbox for developers from the command line.
 
 ### Usage
