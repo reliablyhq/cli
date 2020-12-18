@@ -14,10 +14,18 @@ $ reliably discover
 
 It will scan for manifests recursively in your current working directory.
 
-To indicate a specific folder, you can use the `--dir` flag, as follow:
+To indicate a specific file or folder, give it as a command argument:
 
 ```
-$ reliably discover --dir ./manifests
+$ reliably discover manifest.yaml
+$ reliably discover ./manifests
+```
+
+You can also pipe into `discover` command, as it can read from stdin using
+'-' as argument:
+
+```
+$ cat manifest.yaml | reliably discover -
 ```
 
 The CLI supports multiple output formats, such as `simple` *(default)*,
@@ -53,6 +61,6 @@ You can run the CLI with our [docker image](https://github.com/orgs/reliablyhq/p
 $ docker run --rm \
   --volume=</path/to/manifests/folder>:/manifests \
   ghcr.io/reliablyhq/cli/cli \
-  discover --dir /manifests
+  discover /manifests
 ```
 
