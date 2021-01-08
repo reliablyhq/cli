@@ -1,0 +1,177 @@
+name: Create release to public repo
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+
+  create-gh-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
+      - name: Checkout CLI repo
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Extract changes for version from changelog
+        run: |
+          export VERSION=$(echo ${RELEASE_VERSION} | sed 's/v//')
+          awk -f ./extract-version-changes.awk -v v=$VERSION CHANGELOG.md > version-changes.txt
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          release_name: Release ${{ env.RELEASE_VERSION }}
+          body_path: version-changes.txt
+          draft: false
+          prerelease: false
+
+      - name: Output Release URL File
+        run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
+      - name: Save Release URL File for publish
+        uses: actions/upload-artifact@v2
+        with:
+          name: release_url
+          path: release_url.txt
+          retention-days: 1
+
+  build-and-upload-cli:
+    name: Build Reliably CLI
+    needs:
+      - create-gh-release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [darwin, linux, windows]
+        goarch: [amd64]
+    steps:
+      - name: Checkout tagged source code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+      - name: Download Go dependencies
+        run: go mod download
+      - name: Build CLI binary
+        run: GOOS=${{matrix.goos}} GOARCH=${{matrix.goarch}} go build -o bin/reliably-${{matrix.goos}}-${{matrix.goarch}} main.go
+      - name: Load Release URL File from create release job
+        uses: actions/download-artifact@v2
+        with:
+          name: release_url
+          path: release_url
+      - name: Get Release File Name & Upload URL
+        id: get_release_info
+        run: |
+          value=`cat release_url/release_url.txt`
+          echo ::set-output name=upload_url::$value
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: bin/reliably-${{matrix.goos}}-${{matrix.goarch}}
+          asset_name: reliably-${{matrix.goos}}-${{matrix.goarch}}
+          asset_content_type: application/octet-stream
+      - name: Generate md5 for binary asset
+        run: |
+          # cd to bin folder, not to have bin/ prefix in md5 ouput
+          cd bin
+          md5sum reliably-${{matrix.goos}}-${{matrix.goarch}} > reliably-${{matrix.goos}}-${{matrix.goarch}}.md5
+      - name: Upload Release md5 file
+        id: upload-release-asset-md5
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: bin/reliably-${{matrix.goos}}-${{matrix.goarch}}.md5
+          asset_name: reliably-${{matrix.goos}}-${{matrix.goarch}}.md5
+          asset_content_type: text/plain
+
+  # @TODO - make it work with windows at some point or maybe a specific job ?!
+  check-cli-available:
+    name: Check CLI is available
+    needs:
+      - build-and-upload-cli
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      GOARCH: amd64
+    steps:
+      - run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
+      - run: |
+          [ "${{ matrix.os }}" == "macos-latest" ] && echo "GOOS=darwin" >> $GITHUB_ENV || echo ""
+          [ "${{ matrix.os }}" == "ubuntu-latest" ] && echo "GOOS=linux" >> $GITHUB_ENV || echo ""
+      - name: Download CLI binary from Release
+        run: curl -L https://github.com/reliablyhq/cli/releases/download/${{ env.RELEASE_VERSION }}/reliably-${{ env.GOOS }}-${{ env.GOARCH }} -o reliably-${{ env.GOOS }}-${{ env.GOARCH }}
+      - name: Download CLI md5 from Release
+        run: curl -L https://github.com/reliablyhq/cli/releases/download/${{ env.RELEASE_VERSION }}/reliably-${{ env.GOOS }}-${{ env.GOARCH }}.md5 -o reliably-${{ env.GOOS }}-${{ env.GOARCH }}.md5
+      - name: Check CLI binary integrity
+        run: |
+          cat reliably-${{ env.GOOS }}-${{ env.GOARCH }}.md5
+          md5sum -c reliably-${{ env.GOOS }}-${{ env.GOARCH }}.md5 || echo "Unable to verify checksum"
+      - name: Prints out CLI version
+        run: |
+          chmod +x reliably-${{ env.GOOS }}-${{ env.GOARCH }}
+          ./reliably-${{ env.GOOS }}-${{ env.GOARCH }} --version
+
+  build-and-publish-docker:
+    name: Build and publish CLI docker image
+    needs:
+      - create-gh-release
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_REPO: reliablyhq/cli
+      IMAGE_NAME: cli
+    steps:
+      - name: Checkout tagged source code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Build docker image
+        run: docker build --file Dockerfile.alpine --tag $IMAGE_NAME .
+
+      - name: Log into GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push docker image to GitHub Container Registry
+        run: |
+          IMAGE_ID=ghcr.io/$IMAGE_REPO/$IMAGE_NAME
+
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "main" ] && VERSION=latest
+
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
+
+          docker tag $IMAGE_NAME $IMAGE_ID:latest
+          docker push $IMAGE_ID:latest
+
+  cleanup:
+    name: Clean up
+    needs:
+      - create-gh-release
+      - build-and-upload-cli
+    runs-on: ubuntu-latest
+    steps:
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: release_url
+          failOnError: false

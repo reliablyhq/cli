@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: chaostoolkit
+  labels:
+    app: chaostoolkit
+spec:
+  restartPolicy: Never
+  containers:
+  - name: chaostoolkit
+    image: chaostoolkit:latest
