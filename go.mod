@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.7
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
+	github.com/fatih/color v1.7.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gookit/color v1.3.2
 	github.com/icza/dyno v0.0.0-20200205103839-49cb13720835

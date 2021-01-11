@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/fatih/color"
+
 	//homedir "github.com/mitchellh/go-homedir"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
@@ -65,6 +69,8 @@ func init() {
 
 	rootCmd.PersistentFlags().BoolVarP(
 		&verbose, "verbose", "v", false, "verbose output")
+	rootCmd.PersistentFlags().BoolVarP(
+		&color.NoColor, "no-color", "", false, "Disable color output")
 	rootCmd.SetVersionTemplate(FormatVersion(version))
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		if err := setUpVerboseLogLevel(verbose); err != nil {
@@ -193,6 +199,20 @@ func customUsageTemplate(c *cobra.Command) string {
 		feedback := c.Annotations["help:feedback"]
 		tpl = fmt.Sprintf("%s%s", tpl, feedback)
 	}
+
+	cobra.AddTemplateFunc("StyleHeading", color.New(color.FgYellow).SprintFunc())
+	replacer := strings.NewReplacer(
+		`Usage:`, `{{StyleHeading "Usage:"}}`,
+		`Aliases:`, `{{StyleHeading "Aliases:"}}`,
+		`Examples:`, `{{StyleHeading "Examples:"}}`,
+		`Available Commands:`, `{{StyleHeading "Available Commands:"}}`,
+		`Global Flags:`, `{{StyleHeading "Global Flags:"}}`,
+		// The following one steps on "Global Flags:"
+		`Flags:`, `{{StyleHeading "Flags:"}}`,
+		`Environment variables:`, `{{StyleHeading "Environment variables:"}}`,
+		`Feedback:`, `{{StyleHeading "Feedback:"}}`,
+	)
+	tpl = replacer.Replace(tpl)
 
 	return tpl
 }

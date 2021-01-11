@@ -3,9 +3,12 @@ package cmd
 import (
 	"fmt"
 	"os"
+
+	"github.com/fatih/color"
 )
 
 func er(msg interface{}) {
-	fmt.Println("Error:", msg)
+	red := color.New(color.FgRed).SprintFunc()
+	fmt.Println(red("Error:"), msg)
 	os.Exit(1)
 }
