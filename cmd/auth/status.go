@@ -9,6 +9,7 @@ import (
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/config"
 	"github.com/reliablyhq/cli/core/iostreams"
 )
@@ -75,7 +76,7 @@ func statusRun(opts *StatusOptions) error {
 	}
 
 	var err error
-	var username string // TODO retrieve username from API call
+	var username string
 	var token string
 	var loginCmd string = "reliably auth login"
 	var logoutCmd string = "reliably auth logout"
@@ -107,7 +108,7 @@ func statusRun(opts *StatusOptions) error {
 	username, err = api.CurrentUsername(apiClient, hostname)
 	if err != nil {
 		if err, ok := err.(api.HTTPError); ok && err.StatusCode == 401 {
-			addMsg("authentication failed")
+			addMsg(fmt.Sprintf("%s %s", iostreams.FailureIcon(), "authentication failed"))
 			addMsg("- The access token in %s is no longer valid.", hostname)
 			if tokenIsWriteable {
 				addMsg("- To re-authenticate, run: %s", loginHostCmd)
@@ -115,7 +116,7 @@ func statusRun(opts *StatusOptions) error {
 			}
 			failed = true
 		} else {
-			return fmt.Errorf("Unable to check token validaty against %s", hostname)
+			return fmt.Errorf("Unable to check token validity against %s", hostname)
 		}
 
 	} else {
@@ -124,16 +125,16 @@ func statusRun(opts *StatusOptions) error {
 		if username != "" {
 			usernameStr = fmt.Sprintf(" as %s", string(username))
 		}
-		addMsg("Logged in to %s%s (%s)", hostname, usernameStr, env)
+		addMsg("%s Logged in to %s%s (%s)", iostreams.SuccessIcon(), hostname, usernameStr, env)
 
 		tokenDisplay := "*******************"
 		if opts.ShowToken {
 			tokenDisplay = token
 		}
-		addMsg("Token: %s", tokenDisplay)
+		addMsg("%s Token: %s", iostreams.SuccessIcon(), tokenDisplay)
 	}
 
-	fmt.Fprintf(stderr, "%s\n", hostname)
+	fmt.Fprintf(stderr, "%s\n", color.Bold(hostname))
 	for _, line := range statusInfo {
 		fmt.Fprintf(stderr, "  %s\n", line)
 	}

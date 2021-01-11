@@ -174,6 +174,18 @@ func (c Client) REST(hostname string, method string, p string, body io.Reader, d
 
 var jsonTypeRE = regexp.MustCompile(`[/+]json($|;)`)
 
+// UnsecureHTTPClient returns a non-authenticated HTTP client
+func UnsecureHTTPClient(hostname string) *http.Client {
+	var opts []ClientOption
+
+	opts = append(opts,
+		AddHeader("User-Agent", fmt.Sprintf("Reliably CLI v%s", v.Version)),
+		AddHeader("Accept", "application/json"),
+	)
+
+	return NewHTTPClient(opts...)
+}
+
 // AuthHTTPClient returns an authenticated HTTP client
 func AuthHTTPClient(hostname string) *http.Client {
 	var opts []ClientOption

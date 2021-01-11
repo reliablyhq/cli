@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fatih/color"
+	"github.com/reliablyhq/cli/core/color"
 )
 
 func er(msg interface{}) {
-	red := color.New(color.FgRed).SprintFunc()
-	fmt.Println(red("Error:"), msg)
+	fmt.Println(color.Red("Error:"), msg)
 	os.Exit(1)
 }

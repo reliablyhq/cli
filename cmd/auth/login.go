@@ -15,6 +15,7 @@ import (
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/config"
 	"github.com/reliablyhq/cli/core/iostreams"
 )
@@ -86,6 +87,7 @@ Alternatively, pass in a token on standard input by using %[1]s--with-token%[1]s
 }
 
 func loginRun(opts *LoginOptions) error {
+
 	hostname := opts.Hostname
 	if hostname == "" {
 		return errors.New("Empty hostname")
@@ -143,10 +145,45 @@ func loginRun(opts *LoginOptions) error {
 
 	}
 
-	if true {
+	var authMode int
+	err := survey.AskOne(&survey.Select{
+		Message: "How would you like to authenticate?",
+		Options: []string{
+			"Login with GitHub",
+			//"Login with GitLab",
+			"Paste an authentication token",
+		},
+	}, &authMode)
+	if err != nil {
+		return fmt.Errorf("could not prompt for authentication mode: %w", err)
+	}
+
+	if authMode == 0 {
+
+		token, username, err := authFlow(hostname)
+		if err != nil {
+			return fmt.Errorf("failed to authenticate via web browser: %w", err)
+		}
+
+		authForHost := map[string]interface{}{
+			"token": token,
+			"username": username,
+		}
+
+		authKey := fmt.Sprintf("auths::%s", hostname)
+		config.Viper.Set(authKey, authForHost)
+
+		err = config.Viper.WriteConfig()
+		if err != nil {
+			return err
+		}
+
+		fmt.Fprintf(opts.IO.ErrOut, "%s Logged in as %s\n", iostreams.SuccessIcon(), color.Bold(username))
+
+	} else {
 
 		fmt.Fprintln(opts.IO.ErrOut)
-		fmt.Fprintln(opts.IO.ErrOut, heredoc.Doc(getAccessTokenTip(hostname)))
+		//fmt.Fprintln(opts.IO.ErrOut, heredoc.Doc(getAccessTokenTip(hostname)))
 
 		var token string
 		err := survey.AskOne(&survey.Password{
@@ -179,7 +216,7 @@ func loginRun(opts *LoginOptions) error {
 			return err
 		}
 
-		fmt.Fprintf(opts.IO.ErrOut, "Logged in as %s\n", username)
+		fmt.Fprintf(opts.IO.ErrOut, "%s Logged in as %s\n", iostreams.SuccessIcon(), color.Bold(username))
 
 	}
 
