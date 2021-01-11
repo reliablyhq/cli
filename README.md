@@ -4,6 +4,22 @@
 
 Reliability toolbox for developers from the command line.
 
+### Installation
+
+Reliably CLI is available for macOS, Linux and Windows as
+downloadable binaries from the [releases page][].
+
+### Authentication
+
+Run `reliably auth login` to authenticate with your Reliably account.
+This will run the interactive authentication flow by default.
+
+You can also choose to login with an access token in a non-interactive mode:
+`reliably auth login --with-token < my-access-token.txt`
+
+Finally, `reliably` will respect tokens set as environment variable
+using `RELIABLY_TOKEN`.
+
 ## Usage
 
 To check your Kubernetes manifests for Reliably Advice and Suggestions, simply run:
