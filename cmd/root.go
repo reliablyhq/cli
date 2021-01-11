@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"github.com/fatih/color"
+	fColor "github.com/fatih/color"
 
 	//homedir "github.com/mitchellh/go-homedir"
 
@@ -17,6 +17,7 @@ import (
 
 	core "github.com/reliablyhq/cli/core"
 	config "github.com/reliablyhq/cli/core/config"
+	color "github.com/reliablyhq/cli/core/color"
 	v "github.com/reliablyhq/cli/version"
 )
 
@@ -69,8 +70,9 @@ func init() {
 
 	rootCmd.PersistentFlags().BoolVarP(
 		&verbose, "verbose", "v", false, "verbose output")
+	// disable coloring directly in the dependency fatih/color package
 	rootCmd.PersistentFlags().BoolVarP(
-		&color.NoColor, "no-color", "", false, "Disable color output")
+		&fColor.NoColor, "no-color", "", false, "Disable color output")
 	rootCmd.SetVersionTemplate(FormatVersion(version))
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		if err := setUpVerboseLogLevel(verbose); err != nil {
@@ -200,7 +202,7 @@ func customUsageTemplate(c *cobra.Command) string {
 		tpl = fmt.Sprintf("%s%s", tpl, feedback)
 	}
 
-	cobra.AddTemplateFunc("StyleHeading", color.New(color.FgYellow).SprintFunc())
+	cobra.AddTemplateFunc("StyleHeading", color.Yellow)
 	replacer := strings.NewReplacer(
 		`Usage:`, `{{StyleHeading "Usage:"}}`,
 		`Aliases:`, `{{StyleHeading "Aliases:"}}`,

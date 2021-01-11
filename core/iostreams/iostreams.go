@@ -4,8 +4,20 @@ import (
 	"io"
 	"os"
 
+	"github.com/reliablyhq/cli/core/color"
+
 	"github.com/mattn/go-isatty"
 )
+
+// SuccessIcon returns the success icon as colored string
+func SuccessIcon() string {
+	return color.Green("✓")
+}
+
+// FailureIcon returns the failure icon as colored string
+func FailureIcon() string {
+	return color.Red("✕")
+}
 
 type IOStreams struct {
 	In     io.ReadCloser
