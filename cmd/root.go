@@ -6,11 +6,13 @@ import (
 	"path/filepath"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	homedir "github.com/mitchellh/go-homedir"
+	//homedir "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 
+	core "github.com/reliablyhq/cli/core"
+	config "github.com/reliablyhq/cli/core/config"
 	v "github.com/reliablyhq/cli/version"
 )
 
@@ -20,7 +22,6 @@ const (
 )
 
 var (
-	cfgFile string
 	verbose bool
 
 	rootCmd = &cobra.Command{
@@ -38,26 +39,30 @@ var (
 Feedback:
   You can provide with feedback or report an issue at https://github.com/reliablyhq/cli/issues/new
 `),
+			"help:environment": heredoc.Doc(`
+
+Environment variables:
+  See 'reliably environment --help' for the list of supported environment variables.
+`),
 		},
 	}
 )
 
 // Execute the root command and exit with nonzero code in case of errors
 func Execute() {
+	if hostFromEnv := os.Getenv("RELIABLY_HOST"); hostFromEnv != "" {
+		core.SetHostname(hostFromEnv)
+	}
+
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		er(err)
 	}
 }
 
 func init() {
-	createReliablyWorkspace()
+	cobra.OnInitialize(initLogging)
 	cobra.OnInitialize(initConfig)
-	/*
-		rootCmd.PersistentFlags().StringVar(
-			&cfgFile, "config", "",
-			"config file (default is $HOME/.reliably/config.yaml)")
-	*/
+
 	rootCmd.PersistentFlags().BoolVarP(
 		&verbose, "verbose", "v", false, "verbose output")
 	rootCmd.SetVersionTemplate(FormatVersion(version))
@@ -73,35 +78,64 @@ func init() {
 		Hidden: true,
 	})
 
+	//Help topics
+	rootCmd.AddCommand(NewHelpTopic("environment"))
+
 	// Uses a custom usage template - for adding feedback section to help -
 	template := customUsageTemplate(rootCmd)
 	rootCmd.SetUsageTemplate(template)
 }
 
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+func init() {
+	createReliablyWorkspace()
+}
 
-		// Search config in home directory with name ".scanner" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".scanner")
+// initLogging ensure the log level is set depending on the verbose flag
+func initLogging() {
+	if err := setUpVerboseLogLevel(verbose); err != nil {
+		er(err)
 	}
+}
 
-	viper.AutomaticEnv() // read in environment variables that match
+// initConfig reads in config file.
+func initConfig() {
+	configHome := core.ConfigDir()
+	configName := "config"
+	configType := "yaml"
+	configPath := filepath.Join(configHome, configName+"."+configType)
+
+	// Create a new Viper global objec with custom options
+	// - change the key delimiter to support dots in keys ie 'reliably.com'
+	//   meaning the nested key lookup will be eg auths::reliably.com::token
+	//viper.NewWithOptions(viper.KeyDelimiter("::"))
+
+	config.Viper.AddConfigPath(configHome)
+	config.Viper.SetConfigType(configType)
+	config.Viper.SetConfigName(configName)
 
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	if err := config.Viper.ReadInConfig(); err != nil {
+
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			// Config file not found;
+			// Ensure to create the config folder & file
+			// Or Viper will not be able to write the file, if does not exist !
+			err := os.MkdirAll(configHome, 0771)
+			if err != nil {
+				er(err)
+			}
+			if _, err := os.Create(configPath); err != nil {
+				er(err)
+			}
+		} else {
+			// Config file was found but another error was produced
+			er(err)
+		}
+	} else {
+		log.Debug(fmt.Sprintf("Using config file: %s", config.Viper.ConfigFileUsed()))
 	}
+
+	log.Debug(fmt.Sprintf("Loaded settings: %s", config.Viper.AllSettings()))
 }
 
 //set the log level to debug if verbose mode is on
@@ -150,9 +184,14 @@ func customUsageTemplate(c *cobra.Command) string {
 
 	tpl := c.UsageTemplate()
 
+	if _, ok := c.Annotations["help:environment"]; ok {
+		environment := c.Annotations["help:environment"]
+		tpl = fmt.Sprintf("%s%s", tpl, environment)
+	}
+
 	if _, ok := c.Annotations["help:feedback"]; ok {
 		feedback := c.Annotations["help:feedback"]
-		return fmt.Sprintf("%s%s", tpl, feedback)
+		tpl = fmt.Sprintf("%s%s", tpl, feedback)
 	}
 
 	return tpl

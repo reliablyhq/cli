@@ -1,7 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+### Added
 
+- Authentication management commands; see `reliably auth --help`
+- Help topic for environment variables descriptions; see `reliably environment --help`
 
 ## [0.2.0] - 2020-12-18
 ### Changed
