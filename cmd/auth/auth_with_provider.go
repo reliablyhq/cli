@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,17 +9,17 @@ import (
 	"net/http"
 	"net/url"
 
-	//"time"
-
 	log "github.com/sirupsen/logrus"
 
 	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/utils"
 )
 
 const (
 	// The "GitHub CLI" OAuth app
 	githubClientID = "9d58eb289eaf9ac854b2"
+
 	// This value is safe to be embedded in version control
 	githubClientSecret = "******"
 )
@@ -32,53 +31,13 @@ const (
 	authWithGitlab
 )
 
-type OAuthProfile struct {
-	Sub      string `json:"sub"`
-	Email    string `json:"email"`
-	Fullname string `json:"fullname"`
-	Username string `json:"username"`
-	//URL string `json:"url"`
-	//Picture string `json:"picture"`
-}
 
-type OAuthToken struct {
-	Token string `json:"access_token"`
-	Type  string `json:"token_type"`
-	Scope string `json:"scope"`
-}
+// localServerFlow opens the authentication page for a provider
+// in a browser tab, then returns the authorization state & code
+func localServerFlow() (state string, code string, err error) {
+	state, _ = utils.RandomString(20)
+	code = ""
 
-type AuthorizedOAuth struct {
-	Provider string       `json:"provider"`
-	Token    OAuthToken   `json:"token"`
-	Profile  OAuthProfile `json:"profile"`
-}
-
-// UserInfo represents the OpenID UserInfo response
-type UserInfo struct {
-	Sub               string `json:"sub"`
-	Name              string `json:"name"`
-	Email             string `json:"email"`
-	PreferredUsername string `json:"preferred_username"`
-	Profile           string `json:"profile"`
-	Picture           string `json:"picture"`
-	Website           string `json:"website"`
-}
-
-type GithubOAuthProfile struct {
-	Sub               int    `json:"id"`
-	Name              string `json:"name"`
-	Email             string `json:"email"`
-	PreferredUsername string `json:"login"`
-	//Profile string `json:"html_url"`
-	//Picture string `json:"avatar_url"`
-	//Website string `json:"blog"`
-
-}
-
-func localServerFlow() (accessToken *OAuthToken, err error) {
-	state, _ := utils.RandomString(20)
-
-	code := ""
 	listener, err := net.Listen("tcp4", "127.0.0.1:0")
 	if err != nil {
 		return
@@ -115,10 +74,12 @@ func localServerFlow() (accessToken *OAuthToken, err error) {
 			return
 		}
 		code = rq.Get("code")
+
 		log.Debugf("server received code %q\n", code)
 		w.Header().Add("content-type", "text/html")
 		//fmt.Fprintf(w, "<p>You have successfully authenticated. You may now close this page.</p>")
 		fmt.Fprintf(w, oauthSuccessPage)
+
 		/*
 			if oa.WriteSuccessHTML != nil {
 				oa.WriteSuccessHTML(w)
@@ -128,139 +89,75 @@ func localServerFlow() (accessToken *OAuthToken, err error) {
 		*/
 	}))
 
-	/*
-		httpClient := &http.Client{
-			Timeout: time.Second * 2,
-		}
-	*/
-	httpClient := http.DefaultClient
+	return
+}
 
-	tokenURL := fmt.Sprintf("https://github.com/login/oauth/access_token")
-	log.Debugf("POST %s\n", tokenURL)
-	resp, err := httpClient.PostForm(tokenURL,
-		url.Values{
-			"client_id":     {githubClientID},
-			"client_secret": {githubClientSecret},
-			"code":          {code},
-			"state":         {state},
-		})
+// authorizeToAPI proxies the OAuth provider callback to the API
+// which is responsible for checking the OAuth access token,
+// settings up a new user account, if needed, and returns a valid
+// reliably access token for further authenticated API calls
+func authorizeToAPI(
+	hostname string, provider string, state string, code string) (
+		accessToken string, username string, err error) {
+
+	q := url.Values{}
+	// NB : we cannot send the state to API for authorization verification
+	// or we end up with the following error:
+	// mismatching_state: CSRF Warning! State not equal in request and response
+	//q.Set("state", state)
+	q.Set("code", code)
+
+	authorizedURL := core.BaseHttpUrl(core.Hostname()) + "login/with/cli/github/authorized"
+	httpClient := api.UnsecureHTTPClient(core.Hostname())
+
+	req, err := http.NewRequest("GET", authorizedURL, nil)
+	req.URL.RawQuery = q.Encode()
+
+	resp, err := httpClient.Do(req)
 	if err != nil {
+		err = errors.New("error while obtaining access token")
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("HTTP %d error while obtaining OAuth access token", resp.StatusCode)
+		err = fmt.Errorf("HTTP %d error while obtaining access token", resp.StatusCode)
 		return
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		err = errors.New("unable to read authorized response")
+		return
+	}
+
+	var response map[string]interface{}
+
+	err = json.Unmarshal(b, &response)
 	if err != nil {
 		return
 	}
-	tokenValues, err := url.ParseQuery(string(body))
-	if err != nil {
-		return
-	}
 
-	if tokenValues.Get("access_token") == "" {
-		err = errors.New("the access token could not be read from HTTP response")
-	}
-
-	accessToken = &OAuthToken{
-		Token: tokenValues.Get("access_token"),
-		Type:  tokenValues.Get("token_type"),
-		Scope: tokenValues.Get("scope"),
-	}
+	accessToken = response["access_token"].(string)
+	username = response["username"].(string)
 
 	return
 }
 
-func authFlow(hostname string) (string, interface{}, error) {
+func authFlow(hostname string) (access_token string, username string, err error) {
 
 	// Authentication flow with provider
-	oauthToken, err := localServerFlow()
-	if err != nil {
-		return "", "", err
-	}
-
-	// Fetch User Profile from provider once authenticated
-	profile, err := getUserProfile(oauthToken.Token)
-	if err != nil {
-		return "", "", err
-	}
-
-	provider := "github"
-	token, username, err := registerAuthorizedUser(hostname, provider, oauthToken, profile)
-	if err != nil {
-		return "", "", err
-	}
-
-	return token, username, nil
-}
-
-func registerAuthorizedUser(hostname string, provider string, token *OAuthToken, profile *OAuthProfile) (string, string, error) {
-
-	// register authorized user to Reliably & fetches its access token
-	var body AuthorizedOAuth = AuthorizedOAuth{
-		Provider: provider,
-		Token:    *token,
-		Profile:  *profile,
-	}
-
-	requestByte, err := json.Marshal(body)
-	if err != nil {
-		return "", "", err
-	}
-	requestBody := bytes.NewReader(requestByte)
-
-	apiClient := api.NewClientFromHTTP(api.UnsecureHTTPClient(hostname))
-	data, err := api.LoginWithCliAuthorized(apiClient, hostname, requestBody)
-	if err != nil {
-		return "", "", err
-	}
-
-	return data["access_token"].(string), data["username"].(string), nil
-}
-
-func getUserProfile(token string) (profile *OAuthProfile, err error) {
-
-	log.Debug("Fetch user profile with GH API")
-
-	// authenticated client for GitHub
-	httpClient := api.NewHTTPClient(api.AddHeader("Authorization", fmt.Sprintf("token %s", token)))
-
-	resp, err := httpClient.Get("https://api.github.com/user")
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("HTTP %d error while obtaining GitHub user profile", resp.StatusCode)
-		return
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
+	state, code, err := localServerFlow()
 	if err != nil {
 		return
 	}
 
-	profileStr := string(body)
-
-	var p GithubOAuthProfile
-
-	err = json.Unmarshal([]byte(profileStr), &p)
-	if err != nil {
-		return
-	}
-
-	profile = &OAuthProfile{
-		Sub:      fmt.Sprint(p.Sub),
-		Email:    p.Email,
-		Fullname: p.Name,
-		Username: p.PreferredUsername,
-	}
+	// Proxying authorization code to API
+	// - for oauth access token validation,
+	// - retrieval of user info from OAuth provider
+	// - new user account creation, whith default org & api access token
+	// -> returns API access token & current reliably username
+	access_token, username, err = authorizeToAPI(hostname, "github", state, code)
 
 	return
 }
