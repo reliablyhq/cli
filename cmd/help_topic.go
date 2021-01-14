@@ -44,7 +44,6 @@ func helpTopicHelpFunc(command *cobra.Command, args []string) {
 }
 
 func helpTopicUsageFunc(command *cobra.Command) error {
-	fmt.Println("test")
 	command.Printf("Usage: reliably %s --help", command.Use)
 	return nil
 }
