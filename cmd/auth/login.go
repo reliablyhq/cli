@@ -20,6 +20,9 @@ import (
 	"github.com/reliablyhq/cli/core/iostreams"
 )
 
+// ResetLine returns the cursor to start of line and clean it
+const ResetLine = "\r\033[K"
+
 type LoginOptions struct {
 	IO *iostreams.IOStreams
 
@@ -189,6 +192,8 @@ func loginRun(opts *LoginOptions) error {
 		err := survey.AskOne(&survey.Password{
 			Message: "Paste your authentication token:",
 		}, &token, survey.WithValidator(survey.Required))
+		// forces start beginning on new line after prompt
+		fmt.Fprint(opts.IO.ErrOut, ResetLine)
 		if err != nil {
 			return fmt.Errorf("could not prompt: %w", err)
 		}
