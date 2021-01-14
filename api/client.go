@@ -27,7 +27,7 @@ func NewHTTPClient(opts ...ClientOption) *http.Client {
 		tr = opt(tr)
 	}
 	return &http.Client{
-		Timeout:   time.Second * 2,
+		Timeout:   time.Second * 5,
 		Transport: tr,
 	}
 }
