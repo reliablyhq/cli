@@ -20,21 +20,61 @@ const (
 	// The "GitHub CLI" OAuth app
 	githubClientID = "9d58eb289eaf9ac854b2"
 
-	// This value is safe to be embedded in version control
-	githubClientSecret = "******"
+	// The "GitLab CLI" OAuth app
+	gitlabClientID = "6056bf85b632c19d3a56617970c680ef9f6d0aca28283266d21d71abdabbcb7f"
 )
 
-type AuthMode int
+type AuthProvider int
 
 const (
-	authWithGithub AuthMode = iota
-	authWithGitlab
+	AuthWithGithub AuthProvider = iota
+	AuthWithGitlab
 )
 
+func (p AuthProvider) String() (string) {
+	switch p {
+		case AuthWithGithub:
+			return "github"
+		case AuthWithGitlab:
+			return "gitlab"
+	}
+	return ""
+}
+
+// AuthorizeURL returns the URL of the OAuth authorization endpoint
+func (p AuthProvider) AuthorizeURL() (string) {
+	switch p {
+		case AuthWithGithub:
+			return "https://github.com/login/oauth/authorize"
+		case AuthWithGitlab:
+			return "https://gitlab.com/oauth/authorize"
+	}
+	return ""
+}
+
+func (p AuthProvider) Scopes() (string) {
+	switch p {
+		case AuthWithGithub:
+			return "user:email"
+		case AuthWithGitlab:
+			return "read_user"
+	}
+	return ""
+}
+
+func (p AuthProvider) ClientID() (string) {
+	switch p {
+		case AuthWithGithub:
+			return githubClientID
+		case AuthWithGitlab:
+			return gitlabClientID
+	}
+	return ""
+}
 
 // localServerFlow opens the authentication page for a provider
 // in a browser tab, then returns the authorization state & code
-func localServerFlow() (state string, code string, err error) {
+func localServerFlow(provider AuthProvider) (state string, code string, err error) {
 	state, _ = utils.RandomString(20)
 	code = ""
 
@@ -45,16 +85,21 @@ func localServerFlow() (state string, code string, err error) {
 	port := listener.Addr().(*net.TCPAddr).Port
 
 	localhost := "127.0.0.1"
-	callbackPath := "/login/with/github/authorized"
-	scopes := "user:email"
+	callbackPath := fmt.Sprintf("/login/with/%s/authorized", provider)
+	callbackURL := fmt.Sprintf("http://%s:%d%s", localhost, port, callbackPath)
+	scopes := provider.Scopes()
+	clientID := provider.ClientID()
+
+	log.Debugf("Authorized callback url %s", callbackURL)
 
 	q := url.Values{}
-	q.Set("client_id", githubClientID)
-	q.Set("redirect_uri", fmt.Sprintf("http://%s:%d%s", localhost, port, callbackPath))
+	q.Set("client_id", clientID)
+	q.Set("redirect_uri", callbackURL)
 	q.Set("scope", scopes)
 	q.Set("state", state)
+	q.Set("response_type", "code")
 
-	startURL := fmt.Sprintf("https://github.com/login/oauth/authorize?%s", q.Encode())
+	startURL := fmt.Sprintf("%s?%s", provider.AuthorizeURL(), q.Encode())
 	log.Debugf("open %s\n", startURL)
 	err = utils.OpenInBrowser(startURL)
 	if err != nil {
@@ -73,9 +118,10 @@ func localServerFlow() (state string, code string, err error) {
 			fmt.Fprintf(w, "Error: state mismatch")
 			return
 		}
+		log.Debugf("server received query params %s", rq)
 		code = rq.Get("code")
-
 		log.Debugf("server received code %q\n", code)
+
 		w.Header().Add("content-type", "text/html")
 		//fmt.Fprintf(w, "<p>You have successfully authenticated. You may now close this page.</p>")
 		fmt.Fprintf(w, oauthSuccessPage)
@@ -97,7 +143,7 @@ func localServerFlow() (state string, code string, err error) {
 // settings up a new user account, if needed, and returns a valid
 // reliably access token for further authenticated API calls
 func authorizeToAPI(
-	hostname string, provider string, state string, code string) (
+	hostname string, provider AuthProvider, state string, code string) (
 		accessToken string, username string, err error) {
 
 	q := url.Values{}
@@ -107,7 +153,7 @@ func authorizeToAPI(
 	//q.Set("state", state)
 	q.Set("code", code)
 
-	authorizedURL := core.BaseHttpUrl(core.Hostname()) + "login/with/cli/github/authorized"
+	authorizedURL := core.BaseHttpUrl(core.Hostname()) + fmt.Sprintf("login/with/cli/%s/authorized", provider)
 	httpClient := api.UnsecureHTTPClient(core.Hostname())
 
 	req, err := http.NewRequest("GET", authorizedURL, nil)
@@ -144,10 +190,10 @@ func authorizeToAPI(
 	return
 }
 
-func authFlow(hostname string) (access_token string, username string, err error) {
+func authFlow(hostname string, provider AuthProvider) (accessToken string, username string, err error) {
 
 	// Authentication flow with provider
-	state, code, err := localServerFlow()
+	state, code, err := localServerFlow(provider)
 	if err != nil {
 		return
 	}
@@ -157,7 +203,7 @@ func authFlow(hostname string) (access_token string, username string, err error)
 	// - retrieval of user info from OAuth provider
 	// - new user account creation, whith default org & api access token
 	// -> returns API access token & current reliably username
-	access_token, username, err = authorizeToAPI(hostname, "github", state, code)
+	accessToken, username, err = authorizeToAPI(hostname, provider, state, code)
 
 	return
 }
