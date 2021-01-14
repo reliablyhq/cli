@@ -7,7 +7,9 @@ Reliability toolbox for developers from the command line.
 ### Installation
 
 Reliably CLI is available for macOS, Linux and Windows as
-downloadable binaries from the [releases page][].
+downloadable binaries from the [releases page][releases].
+
+[releases]: https://github.com/reliablyhq/cli/releases
 
 ### Authentication
 
