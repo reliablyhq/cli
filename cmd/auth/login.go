@@ -153,7 +153,7 @@ func loginRun(opts *LoginOptions) error {
 		Message: "How would you like to authenticate?",
 		Options: []string{
 			"Login with GitHub",
-			//"Login with GitLab",
+			"Login with GitLab",
 			"Paste an authentication token",
 		},
 	}, &authMode)
@@ -161,9 +161,17 @@ func loginRun(opts *LoginOptions) error {
 		return fmt.Errorf("could not prompt for authentication mode: %w", err)
 	}
 
-	if authMode == 0 {
+	if ( authMode == 0 || authMode == 1) {
 
-		token, username, err := authFlow(hostname)
+		var provider AuthProvider
+		switch authMode {
+			case 0:
+				provider = AuthWithGithub
+			case 1:
+				provider = AuthWithGitlab
+		}
+
+		token, username, err := authFlow(hostname, provider)
 		if err != nil {
 			return fmt.Errorf("failed to authenticate via web browser: %w", err)
 		}
