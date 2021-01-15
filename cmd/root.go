@@ -86,6 +86,8 @@ func init() {
 		Hidden: true,
 	})
 
+	rootCmd.AddCommand(NewCmdCompletion())
+
 	//Help topics
 	rootCmd.AddCommand(NewHelpTopic("environment"))
 
@@ -213,6 +215,7 @@ func customUsageTemplate(c *cobra.Command) string {
 		`Flags:`, `{{StyleHeading "Flags:"}}`,
 		`Environment variables:`, `{{StyleHeading "Environment variables:"}}`,
 		`Feedback:`, `{{StyleHeading "Feedback:"}}`,
+		`Additional help topics:`, `{{StyleHeading "Additional help topics:"}}`,
 	)
 	tpl = replacer.Replace(tpl)
 
