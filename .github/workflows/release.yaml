@@ -25,7 +25,7 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ env.RELEASE_VERSION }}
@@ -72,6 +72,8 @@ jobs:
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         with:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
           asset_path: bin/reliably-${{matrix.goos}}-${{matrix.goarch}}
@@ -85,6 +87,8 @@ jobs:
       - name: Upload Release md5 file
         id: upload-release-asset-md5
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         with:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
           asset_path: bin/reliably-${{matrix.goos}}-${{matrix.goarch}}.md5
@@ -138,7 +142,8 @@ jobs:
         run: docker build --file Dockerfile.alpine --tag $IMAGE_NAME .
 
       - name: Log into GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin
+        # TODO: Create a PAT with `read:packages` and `write:packages` scopes and save it as an Actions secret `CR_PAT`
+        run: echo "${{ secrets.CR_PAT }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Push docker image to GitHub Container Registry
         run: |
