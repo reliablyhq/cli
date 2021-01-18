@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-
+## [0.2.1] - 2021-01-18
 ### Fixed
 - Fixes locations path generation in sarif format; [#18](https://github.com/reliablyhq/cli/issues/18)
 
@@ -18,6 +18,7 @@
 
 - Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/reliablyhq/cli/releases/tag/v0.2.1
 [0.2.0]: https://github.com/reliablyhq/cli/releases/tag/v0.2.0
 [0.1.0]: https://github.com/reliablyhq/cli/releases/tag/v0.1.0
