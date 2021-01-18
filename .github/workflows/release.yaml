@@ -45,7 +45,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
-
       - name: Extract changes for version from changelog
         run: |
           export VERSION=$(echo ${RELEASE_VERSION} | sed 's/v//')
@@ -53,12 +52,14 @@ jobs:
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         with:
+          tag_name: ${{ github.ref }}
           release_name: Release ${{ env.RELEASE_VERSION }}
           body_path: version-changes.txt
           draft: false
           prerelease: false
-
       - name: Output Release URL File
         run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
       - name: Save Release URL File for publish
@@ -99,6 +100,8 @@ jobs:
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         with:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
           asset_path: bin/reliably-${{matrix.goos}}-${{matrix.goarch}}
@@ -112,6 +115,8 @@ jobs:
       - name: Upload Release md5 file
         id: upload-release-asset-md5
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         with:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
           asset_path: bin/reliably-${{matrix.goos}}-${{matrix.goarch}}.md5
