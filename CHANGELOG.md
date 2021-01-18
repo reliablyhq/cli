@@ -6,6 +6,7 @@
 - Authentication management commands; see `reliably auth --help`
 - Help topic for environment variables descriptions; see `reliably environment --help`
 - Completion command for generating shell completion scripts; see `reliably completion --help`
+- Coloring support for output & help; can be disabled with `--no-color` flag
 
 ## [0.2.0] - 2020-12-18
 ### Changed
