@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 
+### Fixed
+- Fixes locations path generation in sarif format; [#18](https://github.com/reliablyhq/cli/issues/18)
+
 ## [0.2.0] - 2020-12-18
 ### Changed
 
