@@ -22,7 +22,7 @@ func NewMarkdownCommand(rootCmd *cobra.Command) *cobra.Command {
 
 	const fmTemplate = `---
 title: %s
-excerpt: ""
+excerpt: Documentation for the %s command inn the Reliably CLI
 categories: ["reference", "cli"]
 status: published
 type: doc
