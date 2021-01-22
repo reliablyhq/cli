@@ -22,7 +22,7 @@ func NewMarkdownCommand(rootCmd *cobra.Command) *cobra.Command {
 
 	const fmTemplate = `---
 title: %s
-excerpt: Documentation for the %s command inn the Reliably CLI
+excerpt: Documentation for the %s command in the Reliably CLI
 categories: ["reference", "cli"]
 status: published
 type: doc
@@ -41,7 +41,6 @@ type: doc
 		Short: "Generates Markdown pages for the reliably CLI.",
 		Long:  "Generate one Markdown document per command.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// return doc.GenMarkdownTree(rootCmd, outputDirectory)
 			return doc.GenMarkdownTreeCustom(rootCmd, outputDirectory, filePrepender, linkHandler)
 		},
 	}
