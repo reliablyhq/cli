@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.3.0] - 2021-01-22
 ### Added
 
 - Authentication management commands; see `reliably auth --help`
@@ -24,7 +26,8 @@
 
 - Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/reliablyhq/cli/releases/tag/v0.3.0
 [0.2.1]: https://github.com/reliablyhq/cli/releases/tag/v0.2.1
 [0.2.0]: https://github.com/reliablyhq/cli/releases/tag/v0.2.0
 [0.1.0]: https://github.com/reliablyhq/cli/releases/tag/v0.1.0
