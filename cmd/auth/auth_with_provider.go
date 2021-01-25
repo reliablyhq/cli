@@ -31,43 +31,43 @@ const (
 	AuthWithGitlab
 )
 
-func (p AuthProvider) String() (string) {
+func (p AuthProvider) String() string {
 	switch p {
-		case AuthWithGithub:
-			return "github"
-		case AuthWithGitlab:
-			return "gitlab"
+	case AuthWithGithub:
+		return "github"
+	case AuthWithGitlab:
+		return "gitlab"
 	}
 	return ""
 }
 
 // AuthorizeURL returns the URL of the OAuth authorization endpoint
-func (p AuthProvider) AuthorizeURL() (string) {
+func (p AuthProvider) AuthorizeURL() string {
 	switch p {
-		case AuthWithGithub:
-			return "https://github.com/login/oauth/authorize"
-		case AuthWithGitlab:
-			return "https://gitlab.com/oauth/authorize"
+	case AuthWithGithub:
+		return "https://github.com/login/oauth/authorize"
+	case AuthWithGitlab:
+		return "https://gitlab.com/oauth/authorize"
 	}
 	return ""
 }
 
-func (p AuthProvider) Scopes() (string) {
+func (p AuthProvider) Scopes() string {
 	switch p {
-		case AuthWithGithub:
-			return "user:email"
-		case AuthWithGitlab:
-			return "read_user"
+	case AuthWithGithub:
+		return "user:email"
+	case AuthWithGitlab:
+		return "read_user"
 	}
 	return ""
 }
 
-func (p AuthProvider) ClientID() (string) {
+func (p AuthProvider) ClientID() string {
 	switch p {
-		case AuthWithGithub:
-			return githubClientID
-		case AuthWithGitlab:
-			return gitlabClientID
+	case AuthWithGithub:
+		return githubClientID
+	case AuthWithGitlab:
+		return gitlabClientID
 	}
 	return ""
 }
@@ -144,7 +144,7 @@ func localServerFlow(provider AuthProvider) (state string, code string, err erro
 // reliably access token for further authenticated API calls
 func authorizeToAPI(
 	hostname string, provider AuthProvider, state string, code string) (
-		accessToken string, username string, err error) {
+	accessToken string, username string, err error) {
 
 	q := url.Values{}
 	// NB : we cannot send the state to API for authorization verification

@@ -4,7 +4,6 @@ import (
 	"github.com/fatih/color"
 )
 
-
 var (
 	// Bold returns a bold string
 	Bold = color.New(color.Bold).SprintFunc()

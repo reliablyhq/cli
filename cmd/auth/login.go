@@ -161,14 +161,14 @@ func loginRun(opts *LoginOptions) error {
 		return fmt.Errorf("could not prompt for authentication mode: %w", err)
 	}
 
-	if ( authMode == 0 || authMode == 1) {
+	if authMode == 0 || authMode == 1 {
 
 		var provider AuthProvider
 		switch authMode {
-			case 0:
-				provider = AuthWithGithub
-			case 1:
-				provider = AuthWithGitlab
+		case 0:
+			provider = AuthWithGithub
+		case 1:
+			provider = AuthWithGitlab
 		}
 
 		token, username, err := authFlow(hostname, provider)
@@ -177,7 +177,7 @@ func loginRun(opts *LoginOptions) error {
 		}
 
 		authForHost := map[string]interface{}{
-			"token": token,
+			"token":    token,
 			"username": username,
 		}
 

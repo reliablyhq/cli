@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 )
 
-
 // RandomString generates a random string of a given length
 func RandomString(length int) (string, error) {
 	b := make([]byte, length/2)

@@ -51,11 +51,15 @@ func helpTopicHelpFunc(command *cobra.Command, args []string) {
 	}
 
 	tmpl, err := template.New("").Funcs(funcMap).Parse(command.Long)
-	if err != nil { er(err) }
+	if err != nil {
+		er(err)
+	}
 
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, nil)
-	if err != nil { er(err) }
+	if err != nil {
+		er(err)
+	}
 
 	command.Print(buf.String())
 }

@@ -9,23 +9,22 @@ import (
 	"github.com/reliablyhq/cli/core/iostreams"
 )
 
-
 func NewCmdCompletion() *cobra.Command {
 
 	var shellType string
 	var io *iostreams.IOStreams = iostreams.System()
 
 	cmd := &cobra.Command{
-		Use:    "completion -s <shell>",
-		Short:  "Generate shell completion scripts",
-		Long:   `Generate shell completion scripts for Reliably CLI commands.
+		Use:   "completion -s <shell>",
+		Short: "Generate shell completion scripts",
+		Long: `Generate shell completion scripts for Reliably CLI commands.
 
 The output of this command will be computer code and is meant to be saved to a
 file or immediately evaluated by an interactive shell.
 
 For example, for bash you could add this to your '~/.bash_profile':
   eval "$(reliably completion -s bash)"`,
-		Hidden: false,
+		Hidden:                false,
 		DisableFlagsInUseLine: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if shellType == "" {
@@ -55,14 +54,12 @@ For example, for bash you could add this to your '~/.bash_profile':
 				return fmt.Errorf("unsupported shell type %q", shellType)
 			}
 		},
-
 	}
 
 	cmd.Flags().StringVarP(&shellType, "shell", "s", "", "Shell type: {bash|zsh|fish|powershell}")
 
 	return cmd
 }
-
 
 /*
 func NewHelpTopic(topic string) *cobra.Command {

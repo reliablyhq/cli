@@ -133,7 +133,7 @@ func buildSarifLocation(suggestion *core.Suggestion, rootPath string) (*sarifLoc
 	line := uint64(suggestion.Line)
 	col := uint64(suggestion.Col)
 
-	if (rootPath != "" && strings.HasPrefix(suggestion.File, rootPath)) {
+	if rootPath != "" && strings.HasPrefix(suggestion.File, rootPath) {
 		filePath = strings.Replace(suggestion.File, rootPath+"/", "", 1)
 	}
 
