@@ -13,6 +13,9 @@ import (
 // rval: the target node (if found)
 // err:  an error created by fmt.Errorf
 //
+// https://gist.github.com/ChristopherThorpe/fd3720efe2ba83c929bf4105719ee967
+// Licensed under the CC by 4.0 https://creativecommons.org/licenses/by/4.0/
+//
 func NestedMapLookup(m map[string]interface{}, ks ...string) (rval interface{}, err error) {
 	var ok bool
 
