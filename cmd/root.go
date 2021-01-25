@@ -22,12 +22,13 @@ import (
 )
 
 const (
-	version   = v.Version
 	workspace = ".reliably"
 )
 
 var (
 	verbose bool
+	version   = v.Version
+	buildDate = v.Date
 
 	rootCmd = &cobra.Command{
 		Use:               "reliably <command> [flags]",
@@ -74,7 +75,7 @@ func init() {
 	// disable coloring directly in the dependency fatih/color package
 	rootCmd.PersistentFlags().BoolVarP(
 		&fColor.NoColor, "no-color", "", false, "Disable color output")
-	rootCmd.SetVersionTemplate(FormatVersion(version))
+	rootCmd.SetVersionTemplate(FormatVersion(version, buildDate))
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		if err := setUpVerboseLogLevel(verbose); err != nil {
 			return err
