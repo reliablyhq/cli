@@ -52,6 +52,8 @@ $ make show/coverage
 
 # Go coding style
 
+All code must be formatted with `gofmt` and `goimports`.
+
 ## Format your source code
 
 Gofmt is a tool that automatically formats Go source code.
@@ -64,6 +66,9 @@ $ make format
 
 ## Organize your imports
 
+Imports should be added and sorted by
+[`goimports`](https://godoc.org/golang.org/x/tools/cmd/goimports).
+
 First, install the `goimports` tool
 
 ```
@@ -74,6 +79,24 @@ Then, run:
 
 ```
 make imports
+```
+
+Imports shall be organized in three groups, separated by a newline:
+* Standard library
+* Third parties / External packages
+* Internal CLI packages
+
+```go
+import (
+  "fmt"
+  "strings"
+
+  "github.com/spf13/cobra"
+  "github.com/spf13/viper"
+
+  "github.com/reliablyhq/cli/core"
+  "github.com/reliablyhq/cli/version"
+)
 ```
 
 ## Check for code style mistakes
