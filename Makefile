@@ -12,7 +12,7 @@ compile:
 	#GOOS=windows GOARCH=amd64 go build -o bin/main-windows-amd64 main.go
 
 release:
-	go build -ldflags="-X 'github.com/reliablyhq/cli/version.Version=vx.y.z' -X 'github.com/reliablyhq/cli/version.Date=$$(date +%Y-%m-%d)'" -o bin/reliably main.go
+	go build -ldflags="-X 'github.com/reliablyhq/cli/version.Version=$$(git describe --tags)' -X 'github.com/reliablyhq/cli/version.Date=$$(date +%Y-%m-%d)'" -o bin/reliably main.go
 
 .PHONY: test
 test:
