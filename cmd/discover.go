@@ -3,7 +3,9 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/icza/dyno"
@@ -11,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
+	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core"
 	finder "github.com/reliablyhq/cli/core/find"
 	output "github.com/reliablyhq/cli/core/output"
@@ -130,6 +133,23 @@ manifests file from the current working directory.`,
 				"format":    outputFormat,
 				"output":    outputFile,
 			}).Debug("Run 'discover' command with")
+
+			// begin downloading patterns to local workspace
+			httpClient := api.AuthHTTPClient(core.Hostname())
+			httpClient.Timeout = time.Second * 60 // updates default timeout, download patterns bundles can be long...
+			apiClient := api.NewClientFromHTTP(httpClient)
+
+			bundlePath := filepath.Join(workspace, "bundle.tar.gz")
+			err := api.DownloadPatternsBundle(apiClient, core.Hostname(), bundlePath)
+			if err != nil {
+				return err
+			}
+			bundle, err := os.Open(bundlePath)
+			if err != nil {
+				return err
+			}
+			utils.Untar(policiesFolder(), bundle)
+			// end downloading patterns
 
 			// Run the command
 			violationCount := 0 // initializes the global number of violations

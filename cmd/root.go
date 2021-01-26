@@ -171,7 +171,7 @@ func createReliablyWorkspace() {
 	// ensure policies cache is starting clean
 	// so we remove before creating it
 	// as removeAll removes path and any children it contains
-	policiesFolder := filepath.Join(workspace, "policies")
+	policiesFolder := policiesFolder()
 	os.RemoveAll(policiesFolder)
 	if _, err := os.Stat(policiesFolder); os.IsNotExist(err) {
 		log.Debug(fmt.Sprintf("Create folder '%v'", policiesFolder))
@@ -186,6 +186,11 @@ func createReliablyWorkspace() {
 		}
 	*/
 
+}
+
+// policiesFolder returns the path to the policies folder
+func policiesFolder() string {
+	return filepath.Join(workspace, "policies")
 }
 
 // CustomUsageTemplate returns usage template for the command.

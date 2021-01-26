@@ -172,6 +172,44 @@ func (c Client) REST(hostname string, method string, p string, body io.Reader, d
 	return nil
 }
 
+// DownloadFile performs a GET request and returns the response body ie file content.
+func (c Client) DownloadFile(hostname string, method string, p string, body io.Reader, w io.Writer) error {
+	url := core.RESTPrefix(hostname) + p
+	req, err := http.NewRequest(method, url, body)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	success := resp.StatusCode >= 200 && resp.StatusCode < 300
+	if !success {
+		return HandleHTTPError(resp)
+	}
+
+	if resp.StatusCode == http.StatusNoContent {
+		return nil
+	}
+
+	/*
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+	*/
+
+	_, err = io.Copy(w, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 var jsonTypeRE = regexp.MustCompile(`[/+]json($|;)`)
 
 // UnsecureHTTPClient returns a non-authenticated HTTP client

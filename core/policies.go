@@ -50,6 +50,8 @@ func FetchPolicy(workspace string, platform string, name string) (string, error)
 // DownloadPolicyToCache downloads a given policy (by name for a targeted platform)
 // into the .reliably local policies cache
 func DownloadPolicyToCache(workspace string, platform string, name string) (string, error) {
+	log.Warning("This function 'DownloadPolicyToCache' is deprecated. You shall fetch Patterns from API instead.")
+
 	pdir := policyDir(workspace, platform)
 	ppath := policyPath(workspace, platform, name)
 
