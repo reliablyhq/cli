@@ -11,7 +11,9 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
+	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core"
+	ctx "github.com/reliablyhq/cli/core/context"
 	finder "github.com/reliablyhq/cli/core/find"
 	output "github.com/reliablyhq/cli/core/output"
 	"github.com/reliablyhq/cli/utils"
@@ -33,6 +35,9 @@ var (
 	baseDirectory string
 	outputFormat  string
 	outputFile    string
+
+	context   *ctx.Context
+	contextID string
 
 	violations core.ResultSet
 
@@ -118,7 +123,12 @@ manifests file from the current working directory.`,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			var argStr string
+			hardCodedOrgID := "a1c78085-c425-477f-bdaa-812cd6100ee7"
+
+			var (
+				argStr string
+				err    error
+			)
 
 			if len(args) > 0 {
 				argStr = args[0]
@@ -130,6 +140,34 @@ manifests file from the current working directory.`,
 				"format":    outputFormat,
 				"output":    outputFile,
 			}).Debug("Run 'discover' command with")
+
+			hostname := core.Hostname()
+			apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
+
+			////////////
+			runCtx := ctx.NewRuntimeContext()
+			fmt.Println(runCtx)
+			////////////
+			ghEnv := ctx.GetGithubEnv()
+			fmt.Println(ghEnv)
+			glEnv := ctx.GetGitlabEnv()
+			fmt.Println(glEnv)
+			////////////
+			fmt.Println("Is CI ? ", ctx.IsCI())
+			fmt.Println("Is Github CI ? ", ctx.IsGithubCI())
+			fmt.Println("Is Gitlab CI ? ", ctx.IsGitlabCI())
+
+			context = ctx.NewContext()
+			contextID, err = api.SendExecutionContext(apiClient, hostname, hardCodedOrgID, context)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(">>>> context", context)
+
+			fmt.Println("Context has been submited to API ", contextID)
+			return nil
+			////////////
 
 			// Run the command
 			violationCount := 0 // initializes the global number of violations
