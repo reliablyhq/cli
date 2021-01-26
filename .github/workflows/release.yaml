@@ -22,16 +22,16 @@ jobs:
         run: |
           python -c "from semver.version import Version; Version.parse('${{ env.VERSION }}')"
 
-  check-reliably-version:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "TAG_VERSION=${GITHUB_REF:11}" >> $GITHUB_ENV
-      - uses: actions/checkout@v2
-      - name: Extract binary version from source code
-        run: |
-          echo "BIN_VERSION=$(grep 'const Version' version/version.go | sed "s/const Version = //" | sed 's/"//g')" >> $GITHUB_ENV
-      - name: Ensure the tag and the binary versions match
-        run: if [[ $TAG_VERSION != $BIN_VERSION ]]; then echo "version mismatch" && exit 1; fi
+  # check-reliably-version:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - run: echo "TAG_VERSION=${GITHUB_REF:11}" >> $GITHUB_ENV
+  #     - uses: actions/checkout@v2
+  #     - name: Extract binary version from source code
+  #       run: |
+  #         echo "BIN_VERSION=$(grep 'const Version' version/version.go | sed "s/const Version = //" | sed 's/"//g')" >> $GITHUB_ENV
+  #     - name: Ensure the tag and the binary versions match
+  #       run: if [[ $TAG_VERSION != $BIN_VERSION ]]; then echo "version mismatch" && exit 1; fi
 
   create-gh-release:
     name: Create Release
@@ -86,7 +86,12 @@ jobs:
       - name: Download Go dependencies
         run: go mod download
       - name: Build CLI binary
-        run: GOOS=${{matrix.goos}} GOARCH=${{matrix.goarch}} go build -o bin/reliably-${{matrix.goos}}-${{matrix.goarch}} main.go
+        run: |
+          GOOS=${{matrix.goos}} GOARCH=${{matrix.goarch}} \
+          go build \
+          -ldflags="-X 'github.com/reliablyhq/cli/version.Version=$(git describe --tags)' -X 'github.com/reliablyhq/cli/version.Date=$(date +%Y-%m-%d)'" \
+          -o bin/reliably-${{matrix.goos}}-${{matrix.goarch}} \
+          main.go
       - name: Load Release URL File from create release job
         uses: actions/download-artifact@v2
         with:
