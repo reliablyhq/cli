@@ -1,4 +1,20 @@
-# How to checkout the code
+# Contribute
+
+Contributors to this project are welcome as this is an open-source effort that seeks discussions and continuous improvement.
+
+[join]: https://join.chaostoolkit.org/
+
+From a code perspective, if you wish to contribute, you will need to use Golang 1.15 version. Then, fork this repository and submit a PR. The project cares for code readability and checks the code style to match best practices. Please also make sure you provide tests
+whenever you submit a PR so we keep the code reliable.
+
+
+The Reliably CLI project require all contributors must sign a
+[Developer Certificate of Origin][dco] on each commit they would like to merge into the master branch of the repository. Please, make sure you can abide by the rules of the DCO before submitting a PR.
+
+[dco]: https://github.com/probot/dco#how-it-works
+
+
+## How to checkout the code
 
 ```
 $ go get github.com/reliablyhq/cli
@@ -6,7 +22,7 @@ $ go get github.com/reliablyhq/cli
 
 The source code will be downloaded in the `$GOPATH/src` folder
 
-# How to build
+## How to build
 
 Run:
 
@@ -14,7 +30,7 @@ Run:
 $ make
 ```
 
-# How to run unit tests
+## How to run unit tests
 
 Run:
 
@@ -28,7 +44,7 @@ Or with verbose mode enabled:
 $ make test/debug
 ```
 
-## Code coverage
+### Code coverage
 
 You can also run tests and compute the code coverage
 
@@ -50,11 +66,11 @@ Finally, you can visualize the code covarage in a browser:
 $ make show/coverage
 ```
 
-# Go coding style
+## Go coding style
 
 All code must be formatted with `gofmt` and `goimports`.
 
-## Format your source code
+### Format your source code
 
 Gofmt is a tool that automatically formats Go source code.
 
@@ -64,7 +80,7 @@ You can re-format your code, in place, using the command:
 $ make format
 ```
 
-## Organize your imports
+### Organize your imports
 
 Imports should be added and sorted by
 [`goimports`](https://godoc.org/golang.org/x/tools/cmd/goimports).
@@ -99,7 +115,7 @@ import (
 )
 ```
 
-## Check for code style mistakes
+### Check for code style mistakes
 
 First, install the `golint` tool
 
@@ -113,7 +129,7 @@ Then, run it:
 $ make lint
 ```
 
-## Check coding style on git prehook
+### Check coding style on git prehook
 
 It's best practice to enable the safeguard on git commit, that ensure
 your code is properly following the coding guidelines.
@@ -171,7 +187,7 @@ or Copy/Paste the `pre-commit.sh` file content into your hook.
 It contains a colored-version of the above script.
 
 
-## SARIF report validation
+### SARIF report validation
 
 To check the generated SARIF report, please use the online validator
 available at: [https://sarifweb.azurewebsites.net/Validation](https://sarifweb.azurewebsites.net/Validation)
