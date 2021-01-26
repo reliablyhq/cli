@@ -66,7 +66,7 @@ Please read the [documentation][docs] for more information.
 
 [docs]: https://docs.reliably.com/
 
-# Credits
+## Credits
 
 This repository contains code from the Reliably CLI project as well as
 some open-source works:
