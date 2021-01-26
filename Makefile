@@ -5,6 +5,7 @@ build:
 build/docker:
 	#docker build --no-cache -t reliably/cli:latest -f Dockerfile --progress plain .
 	docker build -t reliably/cli:latest -f Dockerfile .
+	# docker build  --build-arg VERSION=$(git describe --tags) --build-arg BUILD_DATE=$(date +%Y-%m-%d) -t reliably/cli:test -f Dockerfile .
 
 compile:
 	GOOS=darwin GOARCH=amd64 go build -o bin/main-darwin-amd64 main.go
