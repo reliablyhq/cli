@@ -65,3 +65,11 @@ $ reliably discover --output ./report.txt
 Please read the [documentation][docs] for more information.
 
 [docs]: https://docs.reliably.com/
+
+# Credits
+
+This repository contains code from the Reliably CLI project as well as
+some open-source works:
+* [GitHub CLI](https://github.com/cli/cli)
+* Secure Go [gosec](https://github.com/securego/gosec)
+* Christopher Thorpe [nestedmaplookup.go](https://gist.github.com/ChristopherThorpe/fd3720efe2ba83c929bf4105719ee967)
