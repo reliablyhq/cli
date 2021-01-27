@@ -5,11 +5,15 @@ build:
 build/docker:
 	#docker build --no-cache -t reliably/cli:latest -f Dockerfile --progress plain .
 	docker build -t reliably/cli:latest -f Dockerfile .
+	# docker build  --build-arg VERSION=$(git describe --tags) --build-arg BUILD_DATE=$(date +%Y-%m-%d) -t reliably/cli:test -f Dockerfile .
 
 compile:
 	GOOS=darwin GOARCH=amd64 go build -o bin/main-darwin-amd64 main.go
 	GOOS=linux GOARCH=amd64 go build -o bin/main-linux-amd64 main.go
 	#GOOS=windows GOARCH=amd64 go build -o bin/main-windows-amd64 main.go
+
+release:
+	go build -ldflags="-X 'github.com/reliablyhq/cli/version.Version=$$(git describe --tags)' -X 'github.com/reliablyhq/cli/version.Date=$$(date +%Y-%m-%d)'" -o bin/reliably main.go
 
 .PHONY: test
 test:
