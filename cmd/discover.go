@@ -142,19 +142,7 @@ manifests file from the current working directory.`,
 			hostname := core.Hostname()
 			apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
 
-			////////////
-			runCtx := ctx.NewRuntimeContext()
-			fmt.Println(runCtx)
-			////////////
-			ghEnv := ctx.GetGithubEnv()
-			fmt.Println(ghEnv)
-			glEnv := ctx.GetGitlabEnv()
-			fmt.Println(glEnv)
-			////////////
-			fmt.Println("Is CI ? ", ctx.IsCI())
-			fmt.Println("Is Github CI ? ", ctx.IsGithubCI())
-			fmt.Println("Is Gitlab CI ? ", ctx.IsGitlabCI())
-
+			// Sends the context to Reliably prior executing the command
 			orgID, err := api.CurrentUserOrganizationID(apiClient, hostname)
 			if err != nil {
 				return err
@@ -165,12 +153,6 @@ manifests file from the current working directory.`,
 			if err != nil {
 				return err
 			}
-
-			fmt.Println(">>>> context", context)
-
-			fmt.Println("Context has been submited to API ", contextID)
-			return nil
-			////////////
 
 			// Run the command
 			violationCount := 0 // initializes the global number of violations

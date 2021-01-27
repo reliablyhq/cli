@@ -26,9 +26,6 @@ func SendExecutionContext(
 		ID string `json:"id"`
 	}
 
-	// DEBUG
-	fmt.Println(string(bodyBytes))
-
 	path := fmt.Sprintf("orgs/%s/executions", orgID)
 	err = client.REST(hostname, "POST", path, body, &response)
 	return response.ID, err
