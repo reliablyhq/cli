@@ -123,8 +123,6 @@ manifests file from the current working directory.`,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			hardCodedOrgID := "a1c78085-c425-477f-bdaa-812cd6100ee7"
-
 			var (
 				argStr string
 				err    error
@@ -157,8 +155,13 @@ manifests file from the current working directory.`,
 			fmt.Println("Is Github CI ? ", ctx.IsGithubCI())
 			fmt.Println("Is Gitlab CI ? ", ctx.IsGitlabCI())
 
+			orgID, err := api.CurrentUserOrganizationID(apiClient, hostname)
+			if err != nil {
+				return err
+			}
+
 			context = ctx.NewContext()
-			contextID, err = api.SendExecutionContext(apiClient, hostname, hardCodedOrgID, context)
+			contextID, err = api.SendExecutionContext(apiClient, hostname, orgID, context)
 			if err != nil {
 				return err
 			}
