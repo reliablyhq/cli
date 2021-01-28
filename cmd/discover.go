@@ -11,7 +11,10 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
+	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/cmd/cmdutil"
 	"github.com/reliablyhq/cli/core"
+	ctx "github.com/reliablyhq/cli/core/context"
 	finder "github.com/reliablyhq/cli/core/find"
 	output "github.com/reliablyhq/cli/core/output"
 	"github.com/reliablyhq/cli/utils"
@@ -34,11 +37,16 @@ var (
 	outputFormat  string
 	outputFile    string
 
+	context   *ctx.Context
+	contextID string
+
 	violations core.ResultSet
 
 	supportedFormats = Choice{"simple", "json", "yaml", "sarif", "codeclimate"}
+)
 
-	reviewCmd = &cobra.Command{
+func NewCmdDiscover() *cobra.Command {
+	cmd := &cobra.Command{
 		Use:   "discover [path]",
 		Short: "Check for Reliably Suggestions",
 		Long: `Check your manifests for Reliably Suggestions.
@@ -90,7 +98,12 @@ manifests file from the current working directory.`,
 
 			return nil
 		},
-
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			if !cmdutil.CheckAuth() {
+				cmdutil.PrintRequireAuthMsg()
+				os.Exit(1)
+			}
+		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			// Validate command options
 			if outputFormat != "" && !supportedFormats.Has(outputFormat) {
@@ -118,7 +131,10 @@ manifests file from the current working directory.`,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			var argStr string
+			var (
+				argStr string
+				err    error
+			)
 
 			if len(args) > 0 {
 				argStr = args[0]
@@ -130,6 +146,21 @@ manifests file from the current working directory.`,
 				"format":    outputFormat,
 				"output":    outputFile,
 			}).Debug("Run 'discover' command with")
+
+			hostname := core.Hostname()
+			apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
+
+			// Sends the context to Reliably prior executing the command
+			orgID, err := api.CurrentUserOrganizationID(apiClient, hostname)
+			if err != nil {
+				return err
+			}
+
+			context = ctx.NewContext()
+			contextID, err = api.SendExecutionContext(apiClient, hostname, orgID, context)
+			if err != nil {
+				return err
+			}
 
 			// Run the command
 			violationCount := 0 // initializes the global number of violations
@@ -230,27 +261,28 @@ manifests file from the current working directory.`,
 			return nil
 		},
 	}
-)
-
-func init() {
-	rootCmd.AddCommand(reviewCmd)
 
 	// This flag is deprecated and soon to be removed;
 	// But it's kept as hidden flag for backward compatibility
-	reviewCmd.Flags().StringVar(
+	cmd.Flags().StringVar(
 		&baseDirectory, "dir", "", "Base directory to look for candidates",
 	)
 	// Does not make it visible to users in help anymore as deprecated
-	reviewCmd.Flags().MarkHidden("dir")
+	cmd.Flags().MarkHidden("dir")
 
-	reviewCmd.Flags().StringVarP(
+	cmd.Flags().StringVarP(
 		&outputFormat, "format", "f", "",
 		fmt.Sprintf("Specify the output format: %v", supportedFormats))
 	//reviewCmd.Flags().Lookup("format").NoOptDefVal = "default"
 
-	reviewCmd.Flags().StringVarP(
+	cmd.Flags().StringVarP(
 		&outputFile, "output", "o", "", "Write results to a file instead of standard output")
 
+	return cmd
+}
+
+func init() {
+	rootCmd.AddCommand(NewCmdDiscover())
 }
 
 func saveOutput(filename string, format string, baseDir string, suggestions []*core.Suggestion) error {

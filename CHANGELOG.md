@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- `discover` command now requires to be authenticated to Reliably.
+
 ## [0.3.0] - 2021-01-22
 ### Added
 
