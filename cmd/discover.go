@@ -12,6 +12,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/cmd/cmdutil"
 	"github.com/reliablyhq/cli/core"
 	ctx "github.com/reliablyhq/cli/core/context"
 	finder "github.com/reliablyhq/cli/core/find"
@@ -97,7 +98,12 @@ manifests file from the current working directory.`,
 
 			return nil
 		},
-
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			if !cmdutil.CheckAuth() {
+				cmdutil.PrintRequireAuthMsg()
+				os.Exit(1)
+			}
+		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			// Validate command options
 			if outputFormat != "" && !supportedFormats.Has(outputFormat) {
