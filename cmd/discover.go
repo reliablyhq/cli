@@ -42,8 +42,10 @@ var (
 	violations core.ResultSet
 
 	supportedFormats = Choice{"simple", "json", "yaml", "sarif", "codeclimate"}
+)
 
-	reviewCmd = &cobra.Command{
+func NewCmdDiscover() *cobra.Command {
+	cmd := &cobra.Command{
 		Use:   "discover [path]",
 		Short: "Check for Reliably Suggestions",
 		Long: `Check your manifests for Reliably Suggestions.
@@ -253,27 +255,28 @@ manifests file from the current working directory.`,
 			return nil
 		},
 	}
-)
-
-func init() {
-	rootCmd.AddCommand(reviewCmd)
 
 	// This flag is deprecated and soon to be removed;
 	// But it's kept as hidden flag for backward compatibility
-	reviewCmd.Flags().StringVar(
+	cmd.Flags().StringVar(
 		&baseDirectory, "dir", "", "Base directory to look for candidates",
 	)
 	// Does not make it visible to users in help anymore as deprecated
-	reviewCmd.Flags().MarkHidden("dir")
+	cmd.Flags().MarkHidden("dir")
 
-	reviewCmd.Flags().StringVarP(
+	cmd.Flags().StringVarP(
 		&outputFormat, "format", "f", "",
 		fmt.Sprintf("Specify the output format: %v", supportedFormats))
 	//reviewCmd.Flags().Lookup("format").NoOptDefVal = "default"
 
-	reviewCmd.Flags().StringVarP(
+	cmd.Flags().StringVarP(
 		&outputFile, "output", "o", "", "Write results to a file instead of standard output")
 
+	return cmd
+}
+
+func init() {
+	rootCmd.AddCommand(NewCmdDiscover())
 }
 
 func saveOutput(filename string, format string, baseDir string, suggestions []*core.Suggestion) error {
