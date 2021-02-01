@@ -207,14 +207,20 @@ jobs:
           docker tag $IMAGE_NAME $IMAGE_ID:latest
           docker push $IMAGE_ID:latest
 
-  cleanup:
-    name: Clean up
+  finalize:
     needs:
       - create-gh-release
       - build-and-upload-cli
     runs-on: ubuntu-latest
     steps:
-      - uses: geekyeggo/delete-artifact@v1
+      - name: Clean up
+        uses: geekyeggo/delete-artifact@v1
         with:
           name: release_url
           failOnError: false
+      - name: Trigger CLI doc generation
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.DOC_PAT }}
+          repository: reliablyhq/documentation
+          event-type: gen-cli-doc
