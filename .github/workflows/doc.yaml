@@ -10,7 +10,7 @@ jobs:
     - name: Trigger CLI doc generation
       run: |
         curl -X POST https://api.github.com/repos/reliablyhq/documentation/dispatches \
-        -H 'Accept: application/vnd.github.everest-preview+json' \
+        -H 'Accept: application/vnd.github.v3+json' \
         -u reliably-ci:${{secrets.DOC_PAT}} \
         --data '{"event_type": "gen-cli-doc", "client_payload": {}}'
 
