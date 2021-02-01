@@ -7,6 +7,12 @@ jobs:
   trigger-doc:
     runs-on: ubuntu-latest
     steps:
+    - name: Repository Dispatch
+      uses: peter-evans/repository-dispatch@v1
+      with:
+        token: ${{ secrets.DOC_PAT }}
+        repository: reliablyhq/documentation
+        event-type: gen-cli-doc
     - name: Trigger CLI doc generation
       run: |
         curl -X POST https://api.github.com/repos/reliablyhq/documentation/dispatches \
