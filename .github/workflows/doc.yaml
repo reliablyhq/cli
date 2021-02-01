@@ -1,0 +1,16 @@
+name: Reliably CLI Doc Generation
+
+on: push
+
+
+jobs:
+  trigger-doc:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Trigger CLI doc generation
+      run: |
+        curl -X POST https://api.github.com/repos/reliablyhq/documentation/dispatches \
+        -H 'Accept: application/vnd.github.everest-preview+json' \
+        -u reliably-ci:${{secrets.DOC_PAT}} \
+        --data '{"event_type": "gen-cli-doc", "client_payload": {}}'
+
