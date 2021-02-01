@@ -1,7 +1,7 @@
 name: Reliably CLI Doc Generation
 
-on: push
-
+on:
+  workflow_dispatch:
 
 jobs:
   trigger-doc:
