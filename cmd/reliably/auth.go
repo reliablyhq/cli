@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	authCmd "github.com/reliablyhq/cli/cmd/auth"
+	authCmd "github.com/reliablyhq/cli/cmd/reliably/auth"
 )
 
 func NewCmdAuth() *cobra.Command {
