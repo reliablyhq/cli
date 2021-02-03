@@ -37,7 +37,7 @@ jobs:
     name: Create Release
     needs:
       - is-valid-semver
-      - check-reliably-version
+      #- check-reliably-version
     runs-on: ubuntu-latest
     if: github.event.base_ref == 'refs/heads/main'  # Ensure the tag is only on main branch
     steps:
