@@ -15,7 +15,7 @@ compile:
 release:
 	go build -ldflags="-X 'github.com/reliablyhq/cli/version.Version=$$(git describe --tags)' -X 'github.com/reliablyhq/cli/version.Date=$$(date +%Y-%m-%d)'" -o bin/reliably main.go
 
-.PHONY: test
+.PHONY: test docs
 test:
 	go test ./...
 
@@ -40,3 +40,10 @@ format:
 
 imports:
 	${GOPATH}/bin/goimports -w -l .
+
+docs:
+	rm -rf ./docs
+	mkdir -p docs/markdown
+	go run ./cmd/doc markdown --output-dir ./docs/markdown
+	mkdir -p docs/man
+	go run ./cmd/doc man --output-dir ./docs/man
