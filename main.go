@@ -15,9 +15,7 @@ limitations under the License.
 */
 package main
 
-import (
-	"github.com/reliablyhq/cli/cmd"
-)
+import cmd "github.com/reliablyhq/cli/cmd/reliably"
 
 func main() {
 	cmd.Execute()

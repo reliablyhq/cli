@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	docCmd "github.com/reliablyhq/cli/cmd/doc"
+	docCmd "github.com/reliablyhq/cli/cmd/reliably/doc"
 )
 
 func NewCmdDoc() *cobra.Command {
