@@ -26,7 +26,7 @@ const (
 )
 
 var (
-	verbose bool
+	verbose   bool
 	version   = v.Version
 	buildDate = v.Date
 
@@ -222,4 +222,8 @@ func customUsageTemplate(c *cobra.Command) string {
 	tpl = replacer.Replace(tpl)
 
 	return tpl
+}
+
+func GetRootCommand() *cobra.Command {
+	return rootCmd
 }
