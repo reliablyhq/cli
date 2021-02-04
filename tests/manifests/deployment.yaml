@@ -1,0 +1,14 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: myapp
+spec:
+  template:
+    spec:
+      containers:
+      - image: nginx
+        name: myapp
+        ports:
+        - containerPort: 8001
+          protocol: TCP
+        imagePullPolicy: Always
