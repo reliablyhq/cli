@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- Logout command has a `--yes` flag for logging out without being prompted
+
 ### Changed
 - `discover` command now requires to be authenticated to Reliably.
 
