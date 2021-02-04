@@ -17,7 +17,8 @@ type LogoutOptions struct {
 
 	Interactive bool
 
-	Hostname string
+	Hostname  string
+	NoConfirm bool
 }
 
 // NewCmdLogout creates the `auth logout` command
@@ -49,12 +50,14 @@ This command removes the authentication configuration.`,
 	}
 
 	cmd.Flags().StringVarP(&opts.Hostname, "hostname", "", "", "The hostname of Reliably to log out of")
+	cmd.Flags().BoolVarP(&opts.NoConfirm, "yes", "y", false, "Don't ask for logout confirmation")
 
 	return cmd
 }
 
 func logoutRun(opts *LogoutOptions) error {
 	hostname := opts.Hostname
+	askConfirm := !opts.NoConfirm
 
 	auths := config.Viper.GetStringMap("auths")
 
@@ -70,7 +73,7 @@ func logoutRun(opts *LogoutOptions) error {
 		usernameStr = fmt.Sprintf(" account '%s'", username)
 	}
 
-	if opts.IO.CanPrompt() {
+	if opts.IO.CanPrompt() && askConfirm {
 		var keepGoing bool
 		err := survey.AskOne(&survey.Confirm{
 			Message: fmt.Sprintf("Are you sure you want to log out of %s%s?", hostname, usernameStr),
