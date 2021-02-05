@@ -7,10 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.AddCommand(NewCmdVersion())
-}
-
 func NewCmdVersion() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",

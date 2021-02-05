@@ -111,7 +111,11 @@ func init() {
 		Hidden: true,
 	})
 
+	// Add commands
+	rootCmd.AddCommand(NewCmdAuth())
+	rootCmd.AddCommand(NewCmdDiscover())
 	rootCmd.AddCommand(NewCmdCompletion())
+	rootCmd.AddCommand(NewCmdVersion())
 
 	//Help topics
 	rootCmd.AddCommand(NewHelpTopic("environment"))

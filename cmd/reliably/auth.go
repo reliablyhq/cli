@@ -19,7 +19,3 @@ func NewCmdAuth() *cobra.Command {
 
 	return cmd
 }
-
-func init() {
-	rootCmd.AddCommand(NewCmdAuth())
-}

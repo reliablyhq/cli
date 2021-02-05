@@ -281,10 +281,6 @@ manifests file from the current working directory.`,
 	return cmd
 }
 
-func init() {
-	rootCmd.AddCommand(NewCmdDiscover())
-}
-
 func saveOutput(filename string, format string, baseDir string, suggestions []*core.Suggestion) error {
 
 	log.WithFields(log.Fields{
