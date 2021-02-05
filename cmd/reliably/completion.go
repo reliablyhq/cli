@@ -60,24 +60,3 @@ For example, for bash you could add this to your '~/.bash_profile':
 
 	return cmd
 }
-
-/*
-func NewHelpTopic(topic string) *cobra.Command {
-
-	cmd := &cobra.Command{
-		Use:    topic,
-		Short:  HelpTopics[topic]["short"],
-		Long:   HelpTopics[topic]["long"],
-		Hidden: true,
-		Annotations: map[string]string{
-			"markdown:generate": "true",
-			"markdown:basename": "help_" + topic,
-		},
-	}
-
-	cmd.SetHelpFunc(helpTopicHelpFunc)
-	cmd.SetUsageFunc(helpTopicUsageFunc)
-
-	return cmd
-}
-*/
