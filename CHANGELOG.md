@@ -4,6 +4,7 @@
 
 ### Added
 - Logout command has a `--yes` flag for logging out without being prompted
+- Check for newest release when running the CLI; [38](https://github.com/reliablyhq/cli/issues/38)
 
 ### Changed
 - `discover` command now requires to be authenticated to Reliably.
