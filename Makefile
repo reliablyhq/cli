@@ -1,6 +1,13 @@
+VERSION=$(shell git describe --tags)
+BUILD=$(shell date +%Y-%m-%d)
+
+LDFLAGS := -X github.com/reliablyhq/cli/version.Version=${VERSION}
+LDFLAGS := $(LDFLAGS) -X github.com/reliablyhq/cli/version.Date=${BUILD}
+LDFLAGS := -ldflags "$(LDFLAGS)"
+
 build:
 	go build -o bin/reliably main.go
-	#go build -gcflags="-m" -o bin/reliably main.go
+	#go build -gcflags="-m=2" -o bin/reliably main.go
 
 build/docker:
 	#docker build --no-cache -t reliably/cli:latest -f Dockerfile --progress plain .
@@ -13,7 +20,7 @@ compile:
 	#GOOS=windows GOARCH=amd64 go build -o bin/main-windows-amd64 main.go
 
 release:
-	go build -ldflags="-X 'github.com/reliablyhq/cli/version.Version=$$(git describe --tags)' -X 'github.com/reliablyhq/cli/version.Date=$$(date +%Y-%m-%d)'" -o bin/reliably main.go
+	go build ${LDFLAGS} -o bin/reliably main.go
 
 .PHONY: test docs
 test:
