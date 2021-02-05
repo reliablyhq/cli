@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	reliablyCmd := reliably.GetRootCommand()
+	reliablyCmd := reliably.NewCmdRoot()
 
 	docCmd := doc.NewCmdDoc(reliablyCmd)
 	if err := docCmd.Execute(); err != nil {

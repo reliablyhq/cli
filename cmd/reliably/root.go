@@ -34,8 +34,10 @@ var (
 	version     = v.Version
 	buildDate   = v.Date
 	updaterRepo = "reliablyhq/cli"
+)
 
-	rootCmd = &cobra.Command{
+func NewCmdRoot() *cobra.Command {
+	cmd := &cobra.Command{
 		Use:               "reliably <command> [flags]",
 		Short:             "Reliably CLI",
 		Long:              `The Reliably Command Line Interface (CLI).`,
@@ -58,7 +60,40 @@ Environment variables:
 `),
 		},
 	}
-)
+
+	cmd.PersistentFlags().BoolVarP(
+		&verbose, "verbose", "v", false, "verbose output")
+	// disable coloring directly in the dependency fatih/color package
+	cmd.PersistentFlags().BoolVarP(
+		&fColor.NoColor, "no-color", "", false, "Disable color output")
+	cmd.SetVersionTemplate(FormatVersion(version, buildDate))
+	cmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		if err := setUpVerboseLogLevel(verbose); err != nil {
+			return err
+		}
+		return nil
+	}
+	// help will not be indicated as command but only flag
+	cmd.SetHelpCommand(&cobra.Command{
+		Use:    "no-help",
+		Hidden: true,
+	})
+
+	// Add commands
+	cmd.AddCommand(NewCmdAuth())
+	cmd.AddCommand(NewCmdDiscover())
+	cmd.AddCommand(NewCmdCompletion())
+	cmd.AddCommand(NewCmdVersion())
+
+	//Help topics
+	cmd.AddCommand(NewHelpTopic("environment"))
+
+	// Uses a custom usage template - for adding feedback section to help -
+	template := customUsageTemplate(cmd)
+	cmd.SetUsageTemplate(template)
+
+	return cmd
+}
 
 // Execute the root command and exit with nonzero code in case of errors
 func Execute() {
@@ -72,6 +107,7 @@ func Execute() {
 		core.SetHostname(hostFromEnv)
 	}
 
+	rootCmd := NewCmdRoot()
 	if err := rootCmd.Execute(); err != nil {
 		er(err)
 	}
@@ -93,36 +129,6 @@ func init() {
 	cobra.OnInitialize(initLogging)
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().BoolVarP(
-		&verbose, "verbose", "v", false, "verbose output")
-	// disable coloring directly in the dependency fatih/color package
-	rootCmd.PersistentFlags().BoolVarP(
-		&fColor.NoColor, "no-color", "", false, "Disable color output")
-	rootCmd.SetVersionTemplate(FormatVersion(version, buildDate))
-	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
-		if err := setUpVerboseLogLevel(verbose); err != nil {
-			return err
-		}
-		return nil
-	}
-	// help will not be indicated as command but only flag
-	rootCmd.SetHelpCommand(&cobra.Command{
-		Use:    "no-help",
-		Hidden: true,
-	})
-
-	// Add commands
-	rootCmd.AddCommand(NewCmdAuth())
-	rootCmd.AddCommand(NewCmdDiscover())
-	rootCmd.AddCommand(NewCmdCompletion())
-	rootCmd.AddCommand(NewCmdVersion())
-
-	//Help topics
-	rootCmd.AddCommand(NewHelpTopic("environment"))
-
-	// Uses a custom usage template - for adding feedback section to help -
-	template := customUsageTemplate(rootCmd)
-	rootCmd.SetUsageTemplate(template)
 }
 
 func init() {
@@ -249,10 +255,6 @@ func customUsageTemplate(c *cobra.Command) string {
 	tpl = replacer.Replace(tpl)
 
 	return tpl
-}
-
-func GetRootCommand() *cobra.Command {
-	return rootCmd
 }
 
 func shouldCheckForUpdate() bool {
