@@ -7,7 +7,9 @@ require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/fatih/color v1.7.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/google/go-github/v33 v33.0.0
 	github.com/gookit/color v1.3.2
+	github.com/hashicorp/go-version v1.2.1
 	github.com/icza/dyno v0.0.0-20200205103839-49cb13720835
 	github.com/karrick/godirwalk v1.16.1
 	github.com/mattn/go-colorable v0.1.8 // indirect
@@ -21,7 +23,7 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
-	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
+	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
 	golang.org/x/sys v0.0.0-20200519105757-fe76b779f299 // indirect
 	golang.org/x/text v0.3.4 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect

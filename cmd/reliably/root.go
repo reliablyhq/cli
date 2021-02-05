@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -18,6 +19,9 @@ import (
 	core "github.com/reliablyhq/cli/core"
 	color "github.com/reliablyhq/cli/core/color"
 	config "github.com/reliablyhq/cli/core/config"
+	ctx "github.com/reliablyhq/cli/core/context"
+	"github.com/reliablyhq/cli/core/update"
+	"github.com/reliablyhq/cli/utils"
 	v "github.com/reliablyhq/cli/version"
 )
 
@@ -26,9 +30,10 @@ const (
 )
 
 var (
-	verbose   bool
-	version   = v.Version
-	buildDate = v.Date
+	verbose     bool
+	version     = v.Version
+	buildDate   = v.Date
+	updaterRepo = "reliablyhq/cli"
 
 	rootCmd = &cobra.Command{
 		Use:               "reliably <command> [flags]",
@@ -57,12 +62,30 @@ Environment variables:
 
 // Execute the root command and exit with nonzero code in case of errors
 func Execute() {
+	updateMessageChan := make(chan *update.ReleaseInfo)
+	go func() {
+		rel, _ := checkForUpdate(version)
+		updateMessageChan <- rel
+	}()
+
 	if hostFromEnv := os.Getenv("RELIABLY_HOST"); hostFromEnv != "" {
 		core.SetHostname(hostFromEnv)
 	}
 
 	if err := rootCmd.Execute(); err != nil {
 		er(err)
+	}
+
+	newRelease := <-updateMessageChan
+	if newRelease != nil {
+		color.Cyan()
+		msg := fmt.Sprintf("%s %s → %s\n%s",
+			color.Yellow("A new release of reliably is available:"),
+			color.Cyan(version),
+			color.Cyan(newRelease.Version),
+			newRelease.URL)
+
+		fmt.Fprintf(os.Stderr, "\n\n%s\n\n", msg)
 	}
 }
 
@@ -226,4 +249,23 @@ func customUsageTemplate(c *cobra.Command) string {
 
 func GetRootCommand() *cobra.Command {
 	return rootCmd
+}
+
+func shouldCheckForUpdate() bool {
+	return updaterRepo != "" && version != "DEV" &&
+		!ctx.IsCI() && !isCompletionCommand() && utils.IsTerminal(os.Stderr)
+}
+
+func checkForUpdate(currentVersion string) (*update.ReleaseInfo, error) {
+	if !shouldCheckForUpdate() {
+		return nil, nil
+	}
+
+	repo := updaterRepo
+	stateFilePath := path.Join(core.ConfigDir(), "release.yml")
+	return update.CheckForUpdate(nil, stateFilePath, repo, currentVersion)
+}
+
+func isCompletionCommand() bool {
+	return len(os.Args) > 1 && os.Args[1] == "completion"
 }
