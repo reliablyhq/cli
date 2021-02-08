@@ -13,13 +13,13 @@ import (
 var HelpTopics = map[string]map[string]string{
 	"environment": {
 		"short": "Environment variables that can be used with gh",
+		// Keeps generated lines at 80 characters max length
 		"long": heredoc.Doc(`
-			{{bold "RELIABLY_HOST:"}} specify the Reliably hostname for commands making
-			API requests that would otherwise assume the "reliably.com" host.
+			{{bold "RELIABLY_HOST:"}} specify the Reliably hostname for commands making API requests
+			that would otherwise assume the "reliably.com" host.
 
-			{{bold "RELIABLY_TOKEN:"}} an authentication token for reliably.com API
-			requests. Setting this avoids to login and takes precedence over
-			previously stored credentials.
+			{{bold "RELIABLY_TOKEN:"}} an authentication token for reliably.com API requests. Setting
+			this avoids to login and takes precedence over previously stored credentials.
 
 			{{bold "RELIABLY_NO_UPDATE_NOTIFIER:"}} set to any value to disable update notifications.
 			By default, reliably checks for new releases once every 24 hours and displays
