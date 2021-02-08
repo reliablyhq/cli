@@ -258,6 +258,10 @@ func customUsageTemplate(c *cobra.Command) string {
 }
 
 func shouldCheckForUpdate() bool {
+	if os.Getenv("RELIABLY_NO_UPDATE_NOTIFIER") != "" {
+		return false
+	}
+
 	return updaterRepo != "" && version != "DEV" &&
 		!ctx.IsCI() && !isCompletionCommand() && utils.IsTerminal(os.Stderr)
 }
