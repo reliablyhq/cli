@@ -20,6 +20,10 @@ var HelpTopics = map[string]map[string]string{
 			{{bold "RELIABLY_TOKEN:"}} an authentication token for reliably.com API
 			requests. Setting this avoids to login and takes precedence over
 			previously stored credentials.
+
+			{{bold "RELIABLY_NO_UPDATE_NOTIFIER:"}} set to any value to disable update notifications.
+			By default, reliably checks for new releases once every 24 hours and displays
+			an upgrade notice on standard error if a newer version was found.
 		`),
 	},
 }
