@@ -26,9 +26,11 @@ release:
 test:
 	go test ./...
 
+.PHONY: test/debug
 test/debug:
 	go test -v ./...
 
+.PHONY: test/coverage
 test/coverage:
 	go test --coverprofile cover.out ./...
 
