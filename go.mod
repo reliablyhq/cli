@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.7
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
+	github.com/cli/safeexec v1.0.0
 	github.com/fatih/color v1.7.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/google/go-github/v33 v33.0.0

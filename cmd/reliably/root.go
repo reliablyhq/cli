@@ -25,6 +25,14 @@ import (
 	v "github.com/reliablyhq/cli/version"
 )
 
+// Choice is a list of string
+type Choice []string
+
+// Has indicates whether the string slice contains the value
+func (list Choice) Has(a string) bool {
+	return utils.StringInArray(a, list)
+}
+
 const (
 	workspace = ".reliably"
 )
@@ -84,6 +92,7 @@ Environment variables:
 	cmd.AddCommand(NewCmdDiscover())
 	cmd.AddCommand(NewCmdCompletion())
 	cmd.AddCommand(NewCmdVersion())
+	cmd.AddCommand(NewCmdWorkflow())
 
 	//Help topics
 	cmd.AddCommand(NewHelpTopic("environment"))
