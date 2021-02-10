@@ -22,7 +22,7 @@ compile:
 release:
 	go build ${LDFLAGS} -o bin/reliably main.go
 
-.PHONY: test docs
+.PHONY: test
 test:
 	go test ./...
 
@@ -48,9 +48,38 @@ format:
 imports:
 	${GOPATH}/bin/goimports -w -l .
 
-docs:
+## Docs tasks
+.PHONY: docs
+docs: clean-docs markdown manpages
+
+clean-docs:
 	rm -rf ./docs
+
+markdown:
+	rm -rf ./docs/markdown
 	mkdir -p docs/markdown
 	go run ./cmd/doc markdown --output-dir ./docs/markdown
+
+manpages:
+	rm -rf ./docs/man
 	mkdir -p docs/man
 	go run ./cmd/doc man --output-dir ./docs/man
+
+## Install/uninstall tasks are here for use on *nix platform. On Windows, there is no equivalent.
+
+DESTDIR :=
+prefix  := /usr/local
+bindir  := ${prefix}/bin
+mandir  := ${prefix}/share/man
+
+.PHONY: install
+install: release manpages
+	install -d ${DESTDIR}${bindir}
+	install -m755 bin/reliably ${DESTDIR}${bindir}/
+	install -d ${DESTDIR}${mandir}/man1
+	install -m644 ./docs/man/* ${DESTDIR}${mandir}/man1/
+
+.PHONY: uninstall
+uninstall:
+	rm -f ${DESTDIR}${bindir}/reliably ${DESTDIR}${mandir}/man1/reliably.1 ${DESTDIR}${mandir}/man1/reliably-*.1
+
