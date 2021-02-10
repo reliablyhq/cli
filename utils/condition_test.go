@@ -8,7 +8,7 @@ import (
 )
 
 func TestIfThenElse(t *testing.T) {
-	assert.Equal(t, IfThenElse(1 == 1, "Yes", false), "Yes")
-	assert.Equal(t, IfThenElse(1 != 1, nil, 1), 1)
-	assert.Equal(t, IfThenElse(1 < 2, nil, "No"), nil)
+	assert.Equal(t, "Yes", IfThenElse(1 == 1, "Yes", false))
+	assert.Equal(t, 1, IfThenElse(1 != 1, nil, 1))
+	assert.Equal(t, nil, IfThenElse(1 < 2, nil, "No"))
 }
