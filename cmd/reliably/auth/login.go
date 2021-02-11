@@ -96,10 +96,8 @@ func loginRun(opts *LoginOptions) error {
 		return errors.New("Empty hostname")
 	}
 
-	auth := config.Viper.GetStringMap("auths")
-	if auth == nil {
+	if config.Viper.GetStringMap("auths") == nil {
 		config.Viper.Set("auths", map[string]interface{}{})
-		auth = config.Viper.GetStringMap("auths")
 	}
 
 	if opts.Token != "" {
@@ -236,6 +234,7 @@ func loginRun(opts *LoginOptions) error {
 	return nil
 }
 
+/*
 func getAccessTokenTip(hostname string) string {
 	if hostname == "" {
 		hostname = core.Hostname()
@@ -243,3 +242,4 @@ func getAccessTokenTip(hostname string) string {
 	return fmt.Sprintf(`
 	Tip: you can generate an Access Token here https://%s/tokens.`, hostname)
 }
+*/
