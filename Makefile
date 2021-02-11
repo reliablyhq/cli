@@ -62,8 +62,8 @@ markdown:
 
 manpages:
 	rm -rf ./docs/man
-	mkdir -p docs/man
-	go run ${LDFLAGS} ./cmd/doc man --output-dir ./docs/man
+	mkdir -p docs/man/man1
+	go run ${LDFLAGS} ./cmd/doc man --output-dir ./docs/man/man1
 
 ## Install/uninstall tasks are here for use on *nix platform. On Windows, there is no equivalent.
 
@@ -77,7 +77,7 @@ install: release manpages
 	install -d ${DESTDIR}${bindir}
 	install -m755 bin/reliably ${DESTDIR}${bindir}/
 	install -d ${DESTDIR}${mandir}/man1
-	install -m644 ./docs/man/* ${DESTDIR}${mandir}/man1/
+	install -m644 ./docs/man/man1/* ${DESTDIR}${mandir}/man1/
 
 .PHONY: uninstall
 uninstall:
