@@ -94,7 +94,7 @@ func statusRun(opts *StatusOptions) error {
 	}
 
 	// need to ensure authentication exists in config for hostname
-	tokenIsWriteable := core.AuthTokenProvidedFromEnv() == false
+	tokenIsWriteable := !core.AuthTokenProvidedFromEnv()
 	token, env, err := config.GetAuthTokenWithSource(hostname)
 	if err != nil {
 		return fmt.Errorf(

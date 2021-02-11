@@ -124,7 +124,7 @@ func localServerFlow(provider AuthProvider) (state string, code string, err erro
 
 		w.Header().Add("content-type", "text/html")
 		//fmt.Fprintf(w, "<p>You have successfully authenticated. You may now close this page.</p>")
-		fmt.Fprintf(w, oauthSuccessPage)
+		fmt.Fprint(w, oauthSuccessPage)
 
 		/*
 			if oa.WriteSuccessHTML != nil {
