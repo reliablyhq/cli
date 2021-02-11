@@ -63,7 +63,7 @@ markdown:
 manpages:
 	rm -rf ./docs/man
 	mkdir -p docs/man
-	go run ./cmd/doc man --output-dir ./docs/man
+	go run ${LDFLAGS} ./cmd/doc man --output-dir ./docs/man
 
 ## Install/uninstall tasks are here for use on *nix platform. On Windows, there is no equivalent.
 
