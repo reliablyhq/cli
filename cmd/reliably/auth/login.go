@@ -48,7 +48,7 @@ func NewCmdLogin() *cobra.Command {
 
 The default authentication mode is interactive and asking for a token.
 
-Alternatively, pass in a token on standard input by using %[1]s--with-token%[1]s.`,
+Alternatively, pass in a token on standard input by using '--with-token'.`,
 		Example: heredoc.Doc(`
 			# start interactive authentication setup
 			$ reliably auth login
