@@ -20,7 +20,7 @@ func TestEval(t *testing.T) {
 	var input interface{}
 
 	fileContent, _ := ioutil.ReadFile(manifest)
-	yaml.Unmarshal([]byte(fileContent), &input)
+	_ = yaml.Unmarshal([]byte(fileContent), &input)
 	input = dyno.ConvertMapI2MapS(input)
 
 	rs := Eval(policy, input)

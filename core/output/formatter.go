@@ -150,7 +150,7 @@ func convertToSarifReport(rootPath string, data *reportInfo) (*sarifReport, erro
 		rule := buildSarifRule(suggestion)
 
 		ruleID := rule.ID
-		var index int = -1 // invalid index by default, shall be initialized
+		var index int
 		var seen bool
 
 		if ruleID != "" {

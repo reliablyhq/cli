@@ -141,7 +141,7 @@ func init() {
 }
 
 func init() {
-	createReliablyWorkspace()
+	_ = createReliablyWorkspace()
 }
 
 // initLogging ensure the log level is set depending on the verbose flag
@@ -204,11 +204,14 @@ func setUpVerboseLogLevel(verbose bool) error {
 	return nil
 }
 
-func createReliablyWorkspace() {
+func createReliablyWorkspace() error {
 	//Create dir output using above code
 	if _, err := os.Stat(workspace); os.IsNotExist(err) {
 		log.Debug("Create workspace '.reliably'")
-		os.Mkdir(workspace, 0755)
+		err := os.Mkdir(workspace, 0755)
+		if err != nil {
+			return err
+		}
 	}
 
 	// ensure policies cache is starting clean
@@ -218,7 +221,10 @@ func createReliablyWorkspace() {
 	os.RemoveAll(policiesFolder)
 	if _, err := os.Stat(policiesFolder); os.IsNotExist(err) {
 		log.Debug(fmt.Sprintf("Create folder '%v'", policiesFolder))
-		os.Mkdir(policiesFolder, 0755)
+		err := os.Mkdir(policiesFolder, 0755)
+		if err != nil {
+			return err
+		}
 	}
 
 	/*
@@ -228,6 +234,8 @@ func createReliablyWorkspace() {
 			os.Mkdir(manifestsFolder, 0755)
 		}
 	*/
+
+	return nil
 
 }
 

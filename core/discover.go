@@ -129,14 +129,13 @@ func ReportViolations(rs rego.ResultSet, filename string, platform string, kind 
 						ruleDef string = ""
 					)
 
-					switch violation.(type) {
+					switch violation := violation.(type) {
 					case string:
 						ruleID = ""
 						ruleDef = ""
-						msg = violation.(string)
-						break
+						msg = violation
 					case map[string]interface{}:
-						v := violation.(map[string]interface{})
+						v := violation
 						if v["ruleID"] != nil {
 							ruleID = v["ruleID"].(string)
 						}
@@ -144,7 +143,6 @@ func ReportViolations(rs rego.ResultSet, filename string, platform string, kind 
 							ruleDef = v["ruleDef"].(string)
 						}
 						msg = v["message"].(string)
-						break
 					default:
 						msg = "N/A"
 					}

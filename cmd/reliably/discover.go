@@ -259,7 +259,7 @@ manifests file from the current working directory.`,
 		&baseDirectory, "dir", "", "Base directory to look for candidates",
 	)
 	// Does not make it visible to users in help anymore as deprecated
-	cmd.Flags().MarkHidden("dir")
+	_ = cmd.Flags().MarkHidden("dir")
 
 	cmd.Flags().StringVarP(
 		&outputFormat, "format", "f", "",
