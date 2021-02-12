@@ -10,6 +10,9 @@
 ### Changed
 - `discover` command now requires to be authenticated to Reliably.
 
+### Fixed
+- `discover` command was not supporting folders starting with ../; [#51](https://github.com/reliablyhq/cli/issues/51)
+
 ## [0.3.0] - 2021-01-22
 ### Added
 

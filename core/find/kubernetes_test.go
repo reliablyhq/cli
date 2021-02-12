@@ -57,3 +57,8 @@ func TestK8sURI(t *testing.T) {
 	uri = m.URI()
 	assert.Equal(t, "/api/v1/pod/chaostoolkit/chaostoolkit", uri)
 }
+
+func TestGetKubernetesFilesWithParentFolder(t *testing.T) {
+	files := GetKubernetesFiles("../../tests/manifests/")
+	assert.NotEqual(t, []string{}, files, "Finder did not detect K8s manifests in a parent folder")
+}

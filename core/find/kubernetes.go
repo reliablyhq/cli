@@ -52,8 +52,7 @@ func GetKubernetesFiles(baseDirectory string) []string {
 	var files = make([]string, 0)
 	godirwalk.Walk(baseDirectory, &godirwalk.Options{
 		Callback: func(osPathname string, de *godirwalk.Dirent) error {
-
-			if (osPathname != "." && strings.HasPrefix(osPathname, ".")) || // ignore hidden files/folders
+			if (osPathname != "." && strings.HasPrefix(osPathname, ".") && !strings.HasPrefix(osPathname, "..")) || // ignore hidden files/folders but not parent folder ..
 				strings.Contains(osPathname, ".git") ||
 				strings.Contains(osPathname, ".github") ||
 				strings.Contains(osPathname, ".circleci") ||
