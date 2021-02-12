@@ -79,7 +79,7 @@ func workflowRun(opts *WorkflowOptions) error {
 	if opts.Interactive {
 		var selectedPlatform string
 		err := survey.AskOne(&survey.Select{
-			Message: "Select your CI/CD platform to create the Reliably workflow ?",
+			Message: "Select your CI/CD platform to create the Reliably workflow",
 			Options: []string{
 				"GitHub",
 				"GitLab",
