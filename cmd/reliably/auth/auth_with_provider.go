@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -155,12 +156,20 @@ func authorizeToAPI(
 
 	authorizedURL := core.BaseHttpUrl(core.Hostname()) + fmt.Sprintf("login/with/cli/%s/authorized", provider)
 	httpClient := api.UnsecureHTTPClient(core.Hostname())
+	// increase timeout for login call to API that can take a bit of extra time
+	// Rather than removing the timeout, we make it very long, user will
+	// problably be interrupting with ctrl-c before the end of it
+	httpClient.Timeout = time.Duration(60 * time.Second)
 
 	req, err := http.NewRequest("GET", authorizedURL, nil)
 	req.URL.RawQuery = q.Encode()
 
+	start := time.Now()
 	resp, err := httpClient.Do(req)
+	duration := time.Since(start).Seconds()
+	log.Debugf("API call to %s took %v seconds", req.URL.Path, duration)
 	if err != nil {
+		log.Debug(err)
 		err = errors.New("error while obtaining access token")
 		return
 	}
