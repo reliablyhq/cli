@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -420,11 +421,14 @@ func listpods(cs kubernetes.Clientset) ([]string, error) {
 		return po, err
 	}
 	for _, p := range pods.Items {
-		fmt.Printf("The type of pod %T\n", p)
-		// po = append(po, p.GetName()+"\n")
 		name := p.GetName()
 		pod, _ := cs.CoreV1().Pods(namespace).Get(name, metav1.GetOptions{})
-		fmt.Println(pod)
+		//MarshalIndent
+		podJSON, err := json.MarshalIndent(pod, "", "  ")
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+		fmt.Printf(string(podJSON))
 	}
 	return po, nil
 }
