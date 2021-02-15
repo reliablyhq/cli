@@ -26,6 +26,8 @@ const (
 )
 
 var (
+	targetCluster string
+
 	context   *ctx.Context
 	contextID string
 
@@ -154,29 +156,36 @@ manifests file from the current working directory.`,
 				"directory": opts.BaseDirectory,
 				"format":    opts.OutputFormat,
 				"output":    opts.OutputFile,
+				"cluster":   targetCluster,
 			}).Debug("Run 'discover' command with")
 
-			if len(args) > 0 {
-				fpath := args[0]
-				if fpath == "-" {
-					opts.Files = append(opts.Files, fpath)
-				} else {
-					info, _ := os.Stat(fpath)
-					if info.IsDir() {
-						opts.Files = finder.GetKubernetesFiles(fpath)
-					} else {
-						// single file
-						opts.Files = append(opts.Files, fpath)
-					}
-				}
+			if targetCluster != "" {
+				// if flag --cluster is set
+				// we will want to get the cluster configuration
+				// and search for weaknesses from there
 			} else {
-				// when no arg is provided, set the current working dir as default
-				if opts.BaseDirectory == "" {
-					opts.BaseDirectory = "."
+				if len(args) > 0 {
+					fpath := args[0]
+					if fpath == "-" {
+						opts.Files = append(opts.Files, fpath)
+					} else {
+						info, _ := os.Stat(fpath)
+						if info.IsDir() {
+							opts.Files = finder.GetKubernetesFiles(fpath)
+						} else {
+							// single file
+							opts.Files = append(opts.Files, fpath)
+						}
+					}
+				} else {
+					// when no arg is provided, set the current working dir as default
+					if opts.BaseDirectory == "" {
+						opts.BaseDirectory = "."
+					}
+					opts.Files = finder.GetKubernetesFiles(opts.BaseDirectory)
 				}
-				opts.Files = finder.GetKubernetesFiles(opts.BaseDirectory)
+				log.Debug(fmt.Sprintf("Kubernetes files found: %v", opts.Files))
 			}
-			log.Debug(fmt.Sprintf("Kubernetes files found: %v", opts.Files))
 
 			violationCount, err := discoverRun(opts)
 			if err != nil {
@@ -198,6 +207,10 @@ manifests file from the current working directory.`,
 	)
 	// Does not make it visible to users in help anymore as deprecated
 	_ = cmd.Flags().MarkHidden("dir")
+
+	cmd.Flags().StringVarP(
+		&targetCluster, "cluster", "c", "",
+		fmt.Sprintf("Look for weaknesses in specified cluster"))
 
 	cmd.Flags().StringVarP(
 		&opts.OutputFormat, "format", "f", "",
