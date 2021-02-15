@@ -11,6 +11,11 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/core"
@@ -163,6 +168,22 @@ manifests file from the current working directory.`,
 				// if flag --cluster is set
 				// we will want to get the cluster configuration
 				// and search for weaknesses from there
+
+				// 1. Connect to the Cluster
+				fmt.Println("Home is" + os.Getenv("HOME"))
+				cs, err := connectToKubernetes()
+				if err != nil {
+					return err
+				}
+				pl, _ := listpods(*cs)
+				fmt.Println(pl)
+				// pl, _ := listpods(*cs)
+				// fmt.Println(pl)
+
+				// 2. Scan the API for "configuration"
+
+				// 3. Compare them against our policies
+
 			} else {
 				if len(args) > 0 {
 					fpath := args[0]
@@ -381,5 +402,29 @@ func filterViolations(violations core.ResultSet, l string) (core.ResultSet, erro
 	})
 
 	return filtered.(core.ResultSet), nil
+}
 
+func connectToKubernetes() (*kubernetes.Clientset, error) {
+	// Pull the config
+	config, err := clientcmd.BuildConfigFromFlags("", os.Getenv("HOME")+"/.kube/config")
+	// Connect
+	cs, err := kubernetes.NewForConfig(config)
+	return cs, err
+}
+
+func listpods(cs kubernetes.Clientset) ([]string, error) {
+	var po []string
+	namespace := "kube-system"
+	pods, err := cs.CoreV1().Pods(namespace).List(metav1.ListOptions{})
+	if err != nil {
+		return po, err
+	}
+	for _, p := range pods.Items {
+		fmt.Printf("The type of pod %T\n", p)
+		// po = append(po, p.GetName()+"\n")
+		name := p.GetName()
+		pod, err := cs.CoreV1().Pods(namespace).Get(name, "k8s.io/apimachinery/pkg/apis/meta/v1".GetOptions)
+		fmt.Println(pod)
+	}
+	return po, nil
 }
