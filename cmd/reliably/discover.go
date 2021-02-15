@@ -423,7 +423,7 @@ func listpods(cs kubernetes.Clientset) ([]string, error) {
 		fmt.Printf("The type of pod %T\n", p)
 		// po = append(po, p.GetName()+"\n")
 		name := p.GetName()
-		pod, err := cs.CoreV1().Pods(namespace).Get(name, "k8s.io/apimachinery/pkg/apis/meta/v1".GetOptions)
+		pod, _ := cs.CoreV1().Pods(namespace).Get(name, metav1.GetOptions{})
 		fmt.Println(pod)
 	}
 	return po, nil
