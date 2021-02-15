@@ -171,17 +171,14 @@ manifests file from the current working directory.`,
 				// and search for weaknesses from there
 
 				// 1. Connect to the Cluster
-				fmt.Println("Home is" + os.Getenv("HOME"))
 				cs, err := connectToKubernetes()
 				if err != nil {
 					return err
 				}
-				pl, _ := listpods(*cs)
-				fmt.Println(pl)
-				// pl, _ := listpods(*cs)
-				// fmt.Println(pl)
 
 				// 2. Scan the API for "configuration"
+				pl, _ := getPods(*cs)
+				fmt.Println(pl)
 
 				// 3. Compare them against our policies
 
@@ -413,7 +410,7 @@ func connectToKubernetes() (*kubernetes.Clientset, error) {
 	return cs, err
 }
 
-func listpods(cs kubernetes.Clientset) ([]string, error) {
+func getPods(cs kubernetes.Clientset) ([]string, error) {
 	var po []string
 	namespace := "kube-system"
 	pods, err := cs.CoreV1().Pods(namespace).List(metav1.ListOptions{})
