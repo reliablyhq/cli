@@ -12,6 +12,7 @@
 
 ### Fixed
 - `discover` command was not supporting folders starting with ../; [#51](https://github.com/reliablyhq/cli/issues/51)
+- increased timeout for HTTP call to Reliably API for loggin in; [#43](https://github.com/reliablyhq/cli/issues/43)
 
 ## [0.3.0] - 2021-01-22
 ### Added
