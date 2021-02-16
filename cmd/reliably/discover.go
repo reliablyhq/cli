@@ -11,11 +11,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
-
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/reliablyhq/cli/core/kubernetes"
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
@@ -172,13 +170,13 @@ manifests file from the current working directory.`,
 				// and search for weaknesses from there
 
 				// 1. Connect to the Cluster
-				cs, err := connectToKubernetes()
+				cs, err := kubernetes.ConnectToKubernetes()
 				if err != nil {
 					return err
 				}
 
 				// 2. Scan the API for "configuration"
-				pl, _ := getPods(*cs)
+				pl, _ := kubernetes.GetPods(*cs)
 				fmt.Println(pl)
 
 				// 3. Compare them against our policies
