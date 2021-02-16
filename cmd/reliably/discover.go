@@ -193,60 +193,10 @@ manifests file from the current working directory.`,
 			}
 			log.Debug(fmt.Sprintf("Kubernetes files found: %v", files))
 
-			for _, fpath := range files {
-				log.Debug(fmt.Sprintf("Processing file %v", fpath))
-
-				startLine := 0
-				linesCount := 0
-
-				resources := finder.ReadAndSplitKubernetesFile(fpath)
-				for i, resource := range resources {
-
-					// for a new resource, append the previous resource length to
-					// global file lines counter (beginning of the current resource);
-					// then calculate the current resource length for next iteration
-					startLine += linesCount
-					linesCount = strings.Count(resource, "\n") + 1 // Read & split function removes 1 line return
-
-					header, err := finder.GetYamlInfo(resource)
-					if err != nil {
-						// Unable to identify Yaml as K8s resource
-						continue
-					}
-					kind := header.Kind
-					name := header.Metadata.Name
-					uri := header.URI()
-
-					// unmarshall the yaml content into standard map for OPA
-					var input interface{}
-					if err := yaml.Unmarshal([]byte(resource), &input); err != nil {
-						// Unable to load YAML - shall not happen as already parsed once
-						// by the GetYamlInfo method
-						continue
-					}
-
-					log.Debug(fmt.Sprintf("Processing resource #%v: %v", i, kind))
-
-					// !! m cannot be marshaled using encoding/json !!
-					// -> unmarshalled YAML struct is not compliant with JSON
-					// due to interface{} as map keys, while JSON supports
-					// only strings as keys
-					// --> underneath, it converts map[interface{}]interface{}
-					// to map[string]interface{} (recursively)
-					input = dyno.ConvertMapI2MapS(input)
-
-					ppath, err := core.FetchPolicy(workspace, platform, kind)
-					if err != nil {
-						log.Error(fmt.Sprintf(
-							"Unable to review resource #%v (%v) in file '%v'", i, kind, fpath))
-						continue
-					}
-
-					rs := core.Eval(ppath, input)
-					newIssues := core.ReportViolations(rs, fpath, platform, kind, startLine, name, uri)
-					violations = append(violations, newIssues...)
-				}
-
+			violations, err := discoverRun(opts, files)
+			if err != nil {
+				fmt.Fprintln(opts.IO.ErrOut, err)
+				os.Exit(1)
 			}
 
 			// Create output report
@@ -318,4 +268,67 @@ func saveOutput(filename string, format string, baseDir string, suggestions []*c
 	}
 
 	return nil
+}
+
+func discoverRun(opts *DiscoveryOptions, files []string) (core.ResultSet, error) {
+
+	var violations core.ResultSet = core.ResultSet{} // empty slice
+
+	for _, fpath := range files {
+		log.Debug(fmt.Sprintf("Processing file %v", fpath))
+
+		startLine := 0
+		linesCount := 0
+
+		resources := finder.ReadAndSplitKubernetesFile(fpath)
+		for i, resource := range resources {
+
+			// for a new resource, append the previous resource length to
+			// global file lines counter (beginning of the current resource);
+			// then calculate the current resource length for next iteration
+			startLine += linesCount
+			linesCount = strings.Count(resource, "\n") + 1 // Read & split function removes 1 line return
+
+			header, err := finder.GetYamlInfo(resource)
+			if err != nil {
+				// Unable to identify Yaml as K8s resource
+				continue
+			}
+			kind := header.Kind
+			name := header.Metadata.Name
+			uri := header.URI()
+
+			// unmarshall the yaml content into standard map for OPA
+			var input interface{}
+			if err := yaml.Unmarshal([]byte(resource), &input); err != nil {
+				// Unable to load YAML - shall not happen as already parsed once
+				// by the GetYamlInfo method
+				continue
+			}
+
+			log.Debug(fmt.Sprintf("Processing resource #%v: %v", i, kind))
+
+			// !! m cannot be marshaled using encoding/json !!
+			// -> unmarshalled YAML struct is not compliant with JSON
+			// due to interface{} as map keys, while JSON supports
+			// only strings as keys
+			// --> underneath, it converts map[interface{}]interface{}
+			// to map[string]interface{} (recursively)
+			input = dyno.ConvertMapI2MapS(input)
+
+			ppath, err := core.FetchPolicy(workspace, platform, kind)
+			if err != nil {
+				log.Error(fmt.Sprintf(
+					"Unable to review resource #%v (%v) in file '%v'", i, kind, fpath))
+				continue
+			}
+
+			rs := core.Eval(ppath, input)
+			newIssues := core.ReportViolations(rs, fpath, platform, kind, startLine, name, uri)
+			violations = append(violations, newIssues...)
+		}
+
+	}
+
+	return violations, nil
 }
