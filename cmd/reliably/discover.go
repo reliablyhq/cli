@@ -32,7 +32,7 @@ const (
 )
 
 var (
-	targetCluster string
+	enableLiveDiscovery bool
 
 	context   *ctx.Context
 	contextID string
@@ -162,10 +162,11 @@ manifests file from the current working directory.`,
 				"directory": opts.BaseDirectory,
 				"format":    opts.OutputFormat,
 				"output":    opts.OutputFile,
-				"cluster":   targetCluster,
+				"live":      enableLiveDiscovery,
 			}).Debug("Run 'discover' command with")
 
-			if targetCluster != "" {
+			if enableLiveDiscovery {
+
 				// if flag --cluster is set
 				// we will want to get the cluster configuration
 				// and search for weaknesses from there
@@ -181,6 +182,18 @@ manifests file from the current working directory.`,
 				fmt.Println(pl)
 
 				// 3. Compare them against our policies
+				// ppath, err := core.FetchPolicy(workspace, platform, kind)
+				// if err != nil {
+				// 	log.Error(fmt.Sprintf(
+				// 		"Unable to review resource #%v (%v) in file '%v'", i, kind, fpath))
+				// 	continue
+				// }
+
+				// rs := core.Eval(ppath, input)
+				// newIssues := core.ReportViolations(rs, fpath, platform, kind, startLine, name, uri)
+				// violations = append(violations, newIssues...)
+
+				// violationCount += core.CountViolations(rs, platform, kind)
 
 			} else {
 				if len(args) > 0 {
@@ -227,9 +240,9 @@ manifests file from the current working directory.`,
 	// Does not make it visible to users in help anymore as deprecated
 	_ = cmd.Flags().MarkHidden("dir")
 
-	cmd.Flags().StringVarP(
-		&targetCluster, "cluster", "c", "",
-		fmt.Sprintf("Look for weaknesses in specified cluster"))
+	cmd.Flags().BoolVar(
+		&enableLiveDiscovery, "live", false,
+		fmt.Sprintf("Look for weaknesses in a live Kubernetes cluster"))
 
 	cmd.Flags().StringVarP(
 		&opts.OutputFormat, "format", "f", "",
@@ -241,6 +254,8 @@ manifests file from the current working directory.`,
 
 	cmd.Flags().StringVarP(
 		&opts.LevelFilter, "level", "l", "", "Display suggestions only for level and higher")
+
+	// Declare and hide herited options from kubectl
 
 	return cmd
 }
@@ -420,6 +435,7 @@ func getPods(cs kubernetes.Clientset) ([]string, error) {
 	for _, p := range pods.Items {
 		name := p.GetName()
 		pod, _ := cs.CoreV1().Pods(namespace).Get(name, metav1.GetOptions{})
+
 		//MarshalIndent
 		podJSON, err := json.MarshalIndent(pod, "", "  ")
 		if err != nil {
