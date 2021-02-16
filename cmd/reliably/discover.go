@@ -256,7 +256,7 @@ manifests file from the current working directory.`,
 			// Create output report
 			suggestions := core.ConvertViolationsToSuggestions(violations)
 			if err := saveOutput(opts.OutputFile, opts.OutputFormat, opts.BaseDirectory, suggestions); err != nil {
-				fmt.Println(err)
+				fmt.Fprintln(opts.IO.ErrOut, err)
 				os.Exit(1)
 			}
 
