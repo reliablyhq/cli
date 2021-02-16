@@ -25,12 +25,6 @@ const (
 )
 
 var (
-	/*
-		baseDirectory string
-		outputFormat  string
-		outputFile    string
-	*/
-
 	context   *ctx.Context
 	contextID string
 
