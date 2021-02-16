@@ -3,6 +3,8 @@ package core
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
+	"strings"
 	//"fmt"
 	//"io"
 	//log "github.com/sirupsen/logrus"
@@ -116,15 +118,21 @@ const (
 	Error
 )
 
+const (
+	levelInfo    = "info"
+	levelWarning = "warning"
+	levelError   = "error"
+)
+
 func (l Level) String() string {
 	var str string
 	switch l {
 	case Info:
-		str = "info"
+		str = levelInfo
 	case Warning:
-		str = "warning"
+		str = levelWarning
 	case Error:
-		str = "error"
+		str = levelError
 	default:
 		str = ""
 	}
@@ -140,3 +148,24 @@ func (l Level) MarshalJSON() ([]byte, error) {
 func (l Level) MarshalYAML() (interface{}, error) {
 	return l.String(), nil
 }
+
+// NewLevel returns a Level value from the matching string representation
+func NewLevel(level string) (l Level, err error) {
+	ll := strings.ToLower(level)
+	switch ll {
+	case levelInfo, levelWarning, levelError:
+		l = LevelStringMap[level]
+	default:
+		err = fmt.Errorf("Invalid Level '%s'", level)
+	}
+
+	return
+}
+
+var LevelStringMap map[string]Level = map[string]Level{
+	levelInfo:    Info,
+	levelWarning: Warning,
+	levelError:   Error,
+}
+
+var Levels []string = []string{levelInfo, levelWarning, levelError}

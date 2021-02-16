@@ -7,6 +7,7 @@
 - Check for newest release when running the CLI; [38](https://github.com/reliablyhq/cli/issues/38)
 - Setup Reliably workflow for CI/CD platform; [44](https://github.com/reliablyhq/cli/issues/44)
 - Show suggestions level (info, warning, error) on discovery result; [52](https://github.com/reliablyhq/cli/issues/52)
+- Discover `--level` flag allows to display only suggestions at specified level or higher
 
 ### Changed
 - `discover` command now requires to be authenticated to Reliably.

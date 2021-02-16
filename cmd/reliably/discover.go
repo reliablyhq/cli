@@ -18,6 +18,7 @@ import (
 	finder "github.com/reliablyhq/cli/core/find"
 	"github.com/reliablyhq/cli/core/iostreams"
 	output "github.com/reliablyhq/cli/core/output"
+	"github.com/reliablyhq/cli/utils"
 )
 
 const (
@@ -31,6 +32,7 @@ var (
 	violations core.ResultSet
 
 	supportedFormats = Choice{"simple", "json", "yaml", "sarif", "codeclimate"}
+	supportedLevels  = Choice(core.Levels)
 )
 
 type DiscoveryOptions struct {
@@ -39,6 +41,7 @@ type DiscoveryOptions struct {
 	BaseDirectory string
 	OutputFormat  string
 	OutputFile    string
+	LevelFilter   string
 }
 
 func NewCmdDiscover() *cobra.Command {
@@ -126,6 +129,10 @@ manifests file from the current working directory.`,
 					fmt.Sprintf("Please run `reliably discover %s` instead.", opts.BaseDirectory),
 				)
 			}
+			// Check the suggestion level is valid
+			if opts.LevelFilter != "" && !supportedLevels.Has(opts.LevelFilter) {
+				return fmt.Errorf("Level '%v' is not valid. Use one of the supported levels: %s", opts.LevelFilter, supportedLevels)
+			}
 			return nil
 		},
 
@@ -193,6 +200,11 @@ manifests file from the current working directory.`,
 				os.Exit(1)
 			}
 
+			// filter out violations based on the optional level filter
+			if opts.LevelFilter != "" {
+				violations, _ = filterViolations(violations, opts.LevelFilter)
+			}
+
 			// Create output report
 			suggestions := core.ConvertViolationsToSuggestions(violations)
 			if err := saveOutput(opts, suggestions); err != nil {
@@ -223,6 +235,9 @@ manifests file from the current working directory.`,
 
 	cmd.Flags().StringVarP(
 		&opts.OutputFile, "output", "o", "", "Write results to a file instead of standard output")
+
+	cmd.Flags().StringVarP(
+		&opts.LevelFilter, "level", "l", "", "Display suggestions only for level and higher")
 
 	return cmd
 }
@@ -325,4 +340,21 @@ func discoverRun(opts *DiscoveryOptions, files []string) (core.ResultSet, error)
 	}
 
 	return violations, nil
+}
+
+// filterViolations allows to filter out violations with a level lower than
+// the requested level
+func filterViolations(violations core.ResultSet, l string) (core.ResultSet, error) {
+
+	level, err := core.NewLevel(l)
+	if err != nil {
+		return violations, err // unknown level
+	}
+
+	filtered := utils.Filter(violations, func(val interface{}) bool {
+		return val.(core.Result).Rule.Level >= level
+	})
+
+	return filtered.(core.ResultSet), nil
+
 }
