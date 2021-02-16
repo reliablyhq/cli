@@ -12,6 +12,7 @@ type Suggestion struct {
 	RuleID  string `json:"rule_id"`         // Rule identifier
 	RuleDef string `json:"rule_definition"` // Rule definition
 	Message string `json:"details"`         // Human readable explanation
+	Level   Level  `json:"level"`           // level
 	File    string `json:"file"`            // File name we found it in
 	//Code       string `json:"code"`       // Impacted code line
 	Line int `json:"line"`   // Line number in file
@@ -79,6 +80,7 @@ func NewSuggestion(result Result) *Suggestion {
 		Col:      result.Location.Col,
 		RuleID:   result.Rule.ID,
 		RuleDef:  result.Rule.Definition,
+		Level:    result.Rule.Level,
 		Message:  result.Message,
 		Platform: result.Resource.Platform,
 		Kind:     result.Resource.Kind,

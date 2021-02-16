@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -124,9 +125,10 @@ func ReportViolations(rs rego.ResultSet, filename string, platform string, kind 
 				for _, violation := range violations.([]interface{}) {
 
 					var (
-						msg     string
-						ruleID  string = ""
-						ruleDef string = ""
+						msg       string
+						ruleID    string = ""
+						ruleDef   string = ""
+						ruleLevel Level
 					)
 
 					switch violation := violation.(type) {
@@ -142,6 +144,12 @@ func ReportViolations(rs rego.ResultSet, filename string, platform string, kind 
 						if v["ruleDef"] != nil {
 							ruleDef = v["ruleDef"].(string)
 						}
+						if v["level"] != nil {
+							l, err := v["level"].(json.Number).Int64()
+							if err == nil {
+								ruleLevel = Level(uint(l))
+							}
+						}
 						msg = v["message"].(string)
 					default:
 						msg = "N/A"
@@ -149,7 +157,7 @@ func ReportViolations(rs rego.ResultSet, filename string, platform string, kind 
 
 					res := Result{
 						Resource: &resource,
-						Rule:     Rule{ID: ruleID, Definition: ruleDef},
+						Rule:     Rule{ID: ruleID, Definition: ruleDef, Level: ruleLevel},
 						Location: Location{e.Location.Row + startLine, e.Location.Col},
 						Message:  msg}
 

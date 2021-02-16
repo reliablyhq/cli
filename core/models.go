@@ -2,6 +2,7 @@ package core
 
 import (
 	"bufio"
+	"encoding/json"
 	//"fmt"
 	//"io"
 	//log "github.com/sirupsen/logrus"
@@ -29,6 +30,7 @@ type Resource struct {
 type Rule struct {
 	ID         string
 	Definition string
+	Level      Level
 }
 
 // Location indicates row and column numbers for a specific char in a file
@@ -101,3 +103,40 @@ const (
 	// High severity or confidence
 	High
 )
+
+// Level type indicate the level of a suggestion
+type Level int
+
+const (
+	// Information level (starts at 1)
+	Info Level = iota + 1
+	// Warning level
+	Warning
+	// Error level
+	Error
+)
+
+func (l Level) String() string {
+	var str string
+	switch l {
+	case Info:
+		str = "info"
+	case Warning:
+		str = "warning"
+	case Error:
+		str = "error"
+	default:
+		str = ""
+	}
+	return str
+}
+
+// MarshalJSON is used convert a Level object into a JSON representation
+func (l Level) MarshalJSON() ([]byte, error) {
+	return json.Marshal(l.String())
+}
+
+// MarshalYAML is used convert a Level object into a YAML representation
+func (l Level) MarshalYAML() (interface{}, error) {
+	return l.String(), nil
+}
