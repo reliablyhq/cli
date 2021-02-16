@@ -201,7 +201,7 @@ manifests file from the current working directory.`,
 
 			// Create output report
 			suggestions := core.ConvertViolationsToSuggestions(violations)
-			if err := saveOutput(opts.OutputFile, opts.OutputFormat, opts.BaseDirectory, suggestions); err != nil {
+			if err := saveOutput(opts, suggestions); err != nil {
 				fmt.Fprintln(opts.IO.ErrOut, err)
 				os.Exit(1)
 			}
@@ -233,25 +233,25 @@ manifests file from the current working directory.`,
 	return cmd
 }
 
-func saveOutput(filename string, format string, baseDir string, suggestions []*core.Suggestion) error {
+func saveOutput(opts *DiscoveryOptions, suggestions []*core.Suggestion) error {
 
 	log.WithFields(log.Fields{
-		"filename":    filename,
-		"format":      format,
-		"baseDir":     baseDir,
+		"filename":    opts.OutputFile,
+		"format":      opts.OutputFormat,
+		"baseDir":     opts.BaseDirectory,
 		"suggestions": fmt.Sprintf("%v", len(suggestions)),
 	}).Debug("saveOutput")
 
-	if filename != "" {
-		outfile, err := os.Create(filename) // creates or truncates with O_RDWR mode
+	if opts.OutputFile != "" {
+		outfile, err := os.Create(opts.OutputFile) // creates or truncates with O_RDWR mode
 		if err != nil {
 			log.Error("error creating output file")
-			log.Error(filename)
+			log.Error(opts.OutputFile)
 			log.Error(err)
 			return err
 		}
 		defer outfile.Close()
-		err = output.CreateReport(outfile, format, baseDir, suggestions)
+		err = output.CreateReport(outfile, opts.OutputFormat, opts.BaseDirectory, suggestions)
 		if err != nil {
 			log.Error("Error creating the report")
 			log.Error(err)
@@ -259,7 +259,7 @@ func saveOutput(filename string, format string, baseDir string, suggestions []*c
 		}
 	} else {
 		// os.Stdout is an opened file to stdout
-		err := output.CreateReport(os.Stdout, format, baseDir, suggestions)
+		err := output.CreateReport(os.Stdout, opts.OutputFormat, opts.BaseDirectory, suggestions)
 		if err != nil {
 			log.Error("Error creating the report")
 			log.Error(err)
