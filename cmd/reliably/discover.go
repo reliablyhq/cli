@@ -16,6 +16,7 @@ import (
 	"github.com/reliablyhq/cli/core"
 	ctx "github.com/reliablyhq/cli/core/context"
 	finder "github.com/reliablyhq/cli/core/find"
+	"github.com/reliablyhq/cli/core/iostreams"
 	output "github.com/reliablyhq/cli/core/output"
 )
 
@@ -24,9 +25,11 @@ const (
 )
 
 var (
-	baseDirectory string
-	outputFormat  string
-	outputFile    string
+	/*
+		baseDirectory string
+		outputFormat  string
+		outputFile    string
+	*/
 
 	context   *ctx.Context
 	contextID string
@@ -36,7 +39,19 @@ var (
 	supportedFormats = Choice{"simple", "json", "yaml", "sarif", "codeclimate"}
 )
 
+type DiscoveryOptions struct {
+	IO *iostreams.IOStreams
+
+	BaseDirectory string
+	OutputFormat  string
+	OutputFile    string
+}
+
 func NewCmdDiscover() *cobra.Command {
+	opts := &DiscoveryOptions{
+		IO: iostreams.System(),
+	}
+
 	cmd := &cobra.Command{
 		Use:   "discover [path]",
 		Short: "Check for Reliably Suggestions",
@@ -97,24 +112,24 @@ manifests file from the current working directory.`,
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			// Validate command options
-			if outputFormat != "" && !supportedFormats.Has(outputFormat) {
-				return fmt.Errorf("Format '%v' is not valid. Use one of the supported formats: %v", outputFormat, supportedFormats)
+			if opts.OutputFormat != "" && !supportedFormats.Has(opts.OutputFormat) {
+				return fmt.Errorf("Format '%v' is not valid. Use one of the supported formats: %v", opts.OutputFormat, supportedFormats)
 			}
-			if outputFormat == "sarif" && outputFile != "" {
+			if opts.OutputFormat == "sarif" && opts.OutputFile != "" {
 				// The file name of a SARIF log file SHOULD end with the extension ".sarif".
 				// Example 1: output.sarif
 				// The file name MAY end with the additional extension ".json".
 				// Example 2: output.sarif.json
 				//see: https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317421
-				if !strings.HasSuffix(outputFile, ".sarif") && !strings.HasSuffix(outputFile, ".sarif.json") {
+				if !strings.HasSuffix(opts.OutputFile, ".sarif") && !strings.HasSuffix(opts.OutputFile, ".sarif.json") {
 					return fmt.Errorf("The output file name for a SARIF report should end with the extension '.sarif' or '.sarif.json'")
 				}
 			}
 			// Add a warning to user for deprecated --dir flag
-			if baseDirectory != "" {
+			if opts.BaseDirectory != "" {
 				log.Warning(
 					"--dir flag is deprecated and shall not be used anymore. ",
-					fmt.Sprintf("Please run `reliably discover %s` instead.", baseDirectory),
+					fmt.Sprintf("Please run `reliably discover %s` instead.", opts.BaseDirectory),
 				)
 			}
 			return nil
@@ -133,9 +148,9 @@ manifests file from the current working directory.`,
 
 			log.WithFields(log.Fields{
 				"arg":       argStr,
-				"directory": baseDirectory,
-				"format":    outputFormat,
-				"output":    outputFile,
+				"directory": opts.BaseDirectory,
+				"format":    opts.OutputFormat,
+				"output":    opts.OutputFile,
 			}).Debug("Run 'discover' command with")
 
 			hostname := core.Hostname()
@@ -173,10 +188,10 @@ manifests file from the current working directory.`,
 				}
 			} else {
 				// when no arg is provided, set the current working dir as default
-				if baseDirectory == "" {
-					baseDirectory = "."
+				if opts.BaseDirectory == "" {
+					opts.BaseDirectory = "."
 				}
-				files = finder.GetKubernetesFiles(baseDirectory)
+				files = finder.GetKubernetesFiles(opts.BaseDirectory)
 			}
 			log.Debug(fmt.Sprintf("Kubernetes files found: %v", files))
 
@@ -240,7 +255,7 @@ manifests file from the current working directory.`,
 
 			// Create output report
 			suggestions := core.ConvertViolationsToSuggestions(violations)
-			if err := saveOutput(outputFile, outputFormat, baseDirectory, suggestions); err != nil {
+			if err := saveOutput(opts.OutputFile, opts.OutputFormat, opts.BaseDirectory, suggestions); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
@@ -256,18 +271,18 @@ manifests file from the current working directory.`,
 	// This flag is deprecated and soon to be removed;
 	// But it's kept as hidden flag for backward compatibility
 	cmd.Flags().StringVar(
-		&baseDirectory, "dir", "", "Base directory to look for candidates",
+		&opts.BaseDirectory, "dir", "", "Base directory to look for candidates",
 	)
 	// Does not make it visible to users in help anymore as deprecated
 	_ = cmd.Flags().MarkHidden("dir")
 
 	cmd.Flags().StringVarP(
-		&outputFormat, "format", "f", "",
+		&opts.OutputFormat, "format", "f", "",
 		fmt.Sprintf("Specify the output format: %v", supportedFormats))
 	//reviewCmd.Flags().Lookup("format").NoOptDefVal = "default"
 
 	cmd.Flags().StringVarP(
-		&outputFile, "output", "o", "", "Write results to a file instead of standard output")
+		&opts.OutputFile, "output", "o", "", "Write results to a file instead of standard output")
 
 	return cmd
 }
