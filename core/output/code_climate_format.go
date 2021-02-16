@@ -94,13 +94,29 @@ func buildCcIssue(suggestion *core.Suggestion) (*ccIssue, error) {
 		Description: suggestion.Message,
 		Categories:  []ccCategory{ccCategory("Reliability")},
 		Location:    location,
-		Severity:    ccInfo,
+		Severity:    levelToCCSecurity(suggestion.Level),
 		// CAUTIOUS !! the fingerprint is based on the issue location
 		// so it's not safe to be used !!
 		Fingerprint: suggestion.Fingerprint(),
 	}
 
 	return issue, nil
+}
+
+// levelToCCSecurity maps the suggestion level to CC Severity
+func levelToCCSecurity(l core.Level) ccSeverity {
+	var s ccSeverity
+	switch l {
+	case core.Info:
+		s = ccInfo
+	case core.Warning:
+		s = ccMinor
+	case core.Error:
+		s = ccMajor
+	default:
+		s = ccInfo
+	}
+	return s
 }
 
 // buildCcLocation return Code Climate location struct

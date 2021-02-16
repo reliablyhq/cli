@@ -99,8 +99,9 @@ func reportLinter(w io.Writer, data *reportInfo) error {
 				s.Name,
 			)
 		*/
-		_, err := fmt.Fprintf(w, "%s %s\n",
+		_, err := fmt.Fprintf(w, "%s [%s] %s\n",
 			s.FileLocation(),
+			s.Level,
 			s.Message,
 		)
 		if err != nil {
@@ -188,7 +189,7 @@ func convertToSarifReport(rootPath string, data *reportInfo) (*sarifReport, erro
 		result := &sarifResult{
 			RuleID:    suggestion.RuleID,
 			RuleIndex: index,
-			Level:     sarifNote,
+			Level:     levelToSarifLevel(suggestion.Level),
 			Message: &sarifMessage{
 				Text: suggestion.Message,
 			},
@@ -224,6 +225,23 @@ func convertToSarifReport(rootPath string, data *reportInfo) (*sarifReport, erro
 	sr.Runs = append(sr.Runs, run)
 
 	return sr, nil
+}
+
+// levelToSarifLevel returns the sarif level string related to current level
+// ! we cannot return a sarifLevel type as it's not exported
+func levelToSarifLevel(l core.Level) sarifLevel {
+	var sl sarifLevel
+	switch l {
+	case core.Info:
+		sl = sarifNone
+	case core.Warning:
+		sl = sarifWarning
+	case core.Error:
+		sl = sarifError
+	default:
+		sl = sarifNone
+	}
+	return sl
 }
 
 func reportFromPlaintextTemplate(w io.Writer, reportTemplate string, data *reportInfo) error {
