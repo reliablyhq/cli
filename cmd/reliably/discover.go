@@ -31,6 +31,7 @@ const (
 
 var (
 	enableLiveDiscovery bool
+	kubernetesNamespace string
 
 	context   *ctx.Context
 	contextID string
@@ -161,6 +162,7 @@ manifests file from the current working directory.`,
 				"format":    opts.OutputFormat,
 				"output":    opts.OutputFile,
 				"live":      enableLiveDiscovery,
+				"namespace": kubernetesNamespace,
 			}).Debug("Run 'discover' command with")
 
 			if enableLiveDiscovery {
@@ -176,7 +178,15 @@ manifests file from the current working directory.`,
 				}
 
 				// 2. Scan the API for "configuration"
-				pl, _ := kubernetes.GetPods(*cs)
+
+				namespace := "default"
+				// if the namespace flag is provided use that
+
+				if kubernetesNamespace != "" {
+					namespace = kubernetesNamespace
+				}
+				log.Debug("Get pods for namespace %v", namespace)
+				pl, _ := kubernetes.GetPods(*cs, namespace)
 				fmt.Println(pl)
 
 				// 3. Compare them against our policies
@@ -241,6 +251,10 @@ manifests file from the current working directory.`,
 	cmd.Flags().BoolVar(
 		&enableLiveDiscovery, "live", false,
 		fmt.Sprintf("Look for weaknesses in a live Kubernetes cluster"))
+
+	cmd.Flags().StringVarP(
+		&kubernetesNamespace, "namespace", "n", "", "The namespace to use when using a live cluster",
+	)
 
 	cmd.Flags().StringVarP(
 		&opts.OutputFormat, "format", "f", "",

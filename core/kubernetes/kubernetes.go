@@ -26,9 +26,8 @@ func ConnectToKubernetes() (*kubernetes.Clientset, error) {
 }
 
 // GetPods provide a list an of JSON Pod specs from the clientset
-func GetPods(cs kubernetes.Clientset) ([]string, error) {
+func GetPods(cs kubernetes.Clientset, namespace string) ([]string, error) {
 	var po []string
-	namespace := "kube-system"
 	pods, err := cs.CoreV1().Pods(namespace).List(metav1.ListOptions{})
 	if err != nil {
 		return po, err
