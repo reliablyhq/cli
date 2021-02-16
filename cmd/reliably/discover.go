@@ -169,8 +169,6 @@ manifests file from the current working directory.`,
 			}
 
 			// Run the command
-			violationCount := 0 // initializes the global number of violations
-
 			var files []string
 
 			if len(args) > 0 {
@@ -247,8 +245,6 @@ manifests file from the current working directory.`,
 					rs := core.Eval(ppath, input)
 					newIssues := core.ReportViolations(rs, fpath, platform, kind, startLine, name, uri)
 					violations = append(violations, newIssues...)
-
-					violationCount += core.CountViolations(rs, platform, kind)
 				}
 
 			}
@@ -260,7 +256,7 @@ manifests file from the current working directory.`,
 				os.Exit(1)
 			}
 
-			if violationCount > 0 {
+			if len(violations) > 0 {
 				os.Exit(1)
 			}
 
