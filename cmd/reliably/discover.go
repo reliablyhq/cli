@@ -187,7 +187,7 @@ manifests file from the current working directory.`,
 			}
 			log.Debug(fmt.Sprintf("Kubernetes files found: %v", files))
 
-			violations, err := discoverRun(opts, files)
+			violations, err = discoverRun(opts, files)
 			if err != nil {
 				fmt.Fprintln(opts.IO.ErrOut, err)
 				os.Exit(1)
