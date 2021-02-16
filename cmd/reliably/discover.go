@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -11,9 +10,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
-	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/reliablyhq/cli/core/kubernetes"
+	// "k8s.io/client-go/kubernetes"
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
@@ -21,6 +19,7 @@ import (
 	ctx "github.com/reliablyhq/cli/core/context"
 	finder "github.com/reliablyhq/cli/core/find"
 	"github.com/reliablyhq/cli/core/iostreams"
+	k8s "github.com/reliablyhq/cli/core/kubernetes"
 	output "github.com/reliablyhq/cli/core/output"
 	"github.com/reliablyhq/cli/utils"
 )
@@ -30,9 +29,6 @@ const (
 )
 
 var (
-	enableLiveDiscovery bool
-	kubernetesNamespace string
-
 	context   *ctx.Context
 	contextID string
 
@@ -47,10 +43,12 @@ type DiscoveryOptions struct {
 
 	Files []string
 
-	BaseDirectory string
-	OutputFormat  string
-	OutputFile    string
-	LevelFilter   string
+	BaseDirectory       string
+	OutputFormat        string
+	OutputFile          string
+	LevelFilter         string
+	EnableLiveDiscovery bool
+	KubernetesNamespace string
 }
 
 func NewCmdDiscover() *cobra.Command {
@@ -161,18 +159,17 @@ manifests file from the current working directory.`,
 				"directory": opts.BaseDirectory,
 				"format":    opts.OutputFormat,
 				"output":    opts.OutputFile,
-				"live":      enableLiveDiscovery,
-				"namespace": kubernetesNamespace,
+				"live":      opts.EnableLiveDiscovery,
+				"namespace": opts.KubernetesNamespace,
 			}).Debug("Run 'discover' command with")
 
-			if enableLiveDiscovery {
-
+			if opts.EnableLiveDiscovery {
 				// if flag --cluster is set
 				// we will want to get the cluster configuration
 				// and search for weaknesses from there
 
 				// 1. Connect to the Cluster
-				cs, err := kubernetes.ConnectToKubernetes()
+				cs, err := k8s.ConnectToKubernetes()
 				if err != nil {
 					return err
 				}
@@ -182,11 +179,11 @@ manifests file from the current working directory.`,
 				namespace := "default"
 				// if the namespace flag is provided use that
 
-				if kubernetesNamespace != "" {
-					namespace = kubernetesNamespace
+				if opts.KubernetesNamespace != "" {
+					namespace = opts.KubernetesNamespace
 				}
-				log.Debug("Get pods for namespace %v", namespace)
-				pl, _ := kubernetes.GetPods(*cs, namespace)
+				log.Debugf("Get pods for namespace %v", namespace)
+				pl, _ := k8s.GetPods(*cs, namespace)
 				fmt.Println(pl)
 
 				// 3. Compare them against our policies
@@ -249,11 +246,11 @@ manifests file from the current working directory.`,
 	_ = cmd.Flags().MarkHidden("dir")
 
 	cmd.Flags().BoolVar(
-		&enableLiveDiscovery, "live", false,
+		&opts.EnableLiveDiscovery, "live", false,
 		fmt.Sprintf("Look for weaknesses in a live Kubernetes cluster"))
 
 	cmd.Flags().StringVarP(
-		&kubernetesNamespace, "namespace", "n", "", "The namespace to use when using a live cluster",
+		&opts.KubernetesNamespace, "namespace", "n", "", "The namespace to use when using a live cluster",
 	)
 
 	cmd.Flags().StringVarP(
@@ -427,33 +424,4 @@ func filterViolations(violations core.ResultSet, l string) (core.ResultSet, erro
 	})
 
 	return filtered.(core.ResultSet), nil
-}
-
-func connectToKubernetes() (*kubernetes.Clientset, error) {
-	// Pull the config
-	config, err := clientcmd.BuildConfigFromFlags("", os.Getenv("HOME")+"/.kube/config")
-	// Connect
-	cs, err := kubernetes.NewForConfig(config)
-	return cs, err
-}
-
-func getPods(cs kubernetes.Clientset) ([]string, error) {
-	var po []string
-	namespace := "kube-system"
-	pods, err := cs.CoreV1().Pods(namespace).List(metav1.ListOptions{})
-	if err != nil {
-		return po, err
-	}
-	for _, p := range pods.Items {
-		name := p.GetName()
-		pod, _ := cs.CoreV1().Pods(namespace).Get(name, metav1.GetOptions{})
-
-		//MarshalIndent
-		podJSON, err := json.MarshalIndent(pod, "", "  ")
-		if err != nil {
-			log.Fatalf(err.Error())
-		}
-		fmt.Printf(string(podJSON))
-	}
-	return po, nil
 }
