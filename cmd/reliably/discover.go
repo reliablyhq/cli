@@ -38,6 +38,8 @@ var (
 type DiscoveryOptions struct {
 	IO *iostreams.IOStreams
 
+	Files []string
+
 	BaseDirectory string
 	OutputFormat  string
 	OutputFile    string
@@ -154,35 +156,17 @@ manifests file from the current working directory.`,
 				"output":    opts.OutputFile,
 			}).Debug("Run 'discover' command with")
 
-			hostname := core.Hostname()
-			apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
-
-			// Sends the context to Reliably prior executing the command
-			orgID, err := api.CurrentUserOrganizationID(apiClient, hostname)
-			if err != nil {
-				return err
-			}
-
-			context = ctx.NewContext()
-			contextID, err = api.SendExecutionContext(apiClient, hostname, orgID, context)
-			if err != nil {
-				return err
-			}
-
-			// Run the command
-			var files []string
-
 			if len(args) > 0 {
 				fpath := args[0]
 				if fpath == "-" {
-					files = append(files, fpath)
+					opts.Files = append(opts.Files, fpath)
 				} else {
 					info, _ := os.Stat(fpath)
 					if info.IsDir() {
-						files = finder.GetKubernetesFiles(fpath)
+						opts.Files = finder.GetKubernetesFiles(fpath)
 					} else {
 						// single file
-						files = append(files, fpath)
+						opts.Files = append(opts.Files, fpath)
 					}
 				}
 			} else {
@@ -190,29 +174,16 @@ manifests file from the current working directory.`,
 				if opts.BaseDirectory == "" {
 					opts.BaseDirectory = "."
 				}
-				files = finder.GetKubernetesFiles(opts.BaseDirectory)
+				opts.Files = finder.GetKubernetesFiles(opts.BaseDirectory)
 			}
-			log.Debug(fmt.Sprintf("Kubernetes files found: %v", files))
+			log.Debug(fmt.Sprintf("Kubernetes files found: %v", opts.Files))
 
-			violations, err = discoverRun(opts, files)
+			violationCount, err := discoverRun(opts)
 			if err != nil {
-				fmt.Fprintln(opts.IO.ErrOut, err)
-				os.Exit(1)
+				return err
 			}
 
-			// filter out violations based on the optional level filter
-			if opts.LevelFilter != "" {
-				violations, _ = filterViolations(violations, opts.LevelFilter)
-			}
-
-			// Create output report
-			suggestions := core.ConvertViolationsToSuggestions(violations)
-			if err := saveOutput(opts, suggestions); err != nil {
-				fmt.Fprintln(opts.IO.ErrOut, err)
-				os.Exit(1)
-			}
-
-			if len(violations) > 0 {
+			if violationCount > 0 {
 				os.Exit(1)
 			}
 
@@ -279,11 +250,52 @@ func saveOutput(opts *DiscoveryOptions, suggestions []*core.Suggestion) error {
 	return nil
 }
 
-func discoverRun(opts *DiscoveryOptions, files []string) (core.ResultSet, error) {
+// discoverRun execute the discover workflow for the command
+func discoverRun(opts *DiscoveryOptions) (count int, err error) {
+
+	hostname := core.Hostname()
+	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
+
+	// Sends the context to Reliably prior executing the command
+	orgID, err := api.CurrentUserOrganizationID(apiClient, hostname)
+	if err != nil {
+		return
+	}
+
+	context = ctx.NewContext()
+	contextID, err = api.SendExecutionContext(apiClient, hostname, orgID, context)
+	if err != nil {
+		return
+	}
+
+	violations, err = staticDiscover(opts)
+	if err != nil {
+		fmt.Fprintln(opts.IO.ErrOut, err)
+		return
+	}
+
+	// filter out violations based on the optional level filter
+	if opts.LevelFilter != "" {
+		violations, _ = filterViolations(violations, opts.LevelFilter)
+	}
+
+	// Create output report
+	suggestions := core.ConvertViolationsToSuggestions(violations)
+	if err = saveOutput(opts, suggestions); err != nil {
+		fmt.Fprintln(opts.IO.ErrOut, err)
+		return
+	}
+
+	return len(violations), nil
+
+}
+
+// staticDiscover runs the discovery on static files
+func staticDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 
 	var violations core.ResultSet = core.ResultSet{} // empty slice
 
-	for _, fpath := range files {
+	for _, fpath := range opts.Files {
 		log.Debug(fmt.Sprintf("Processing file %v", fpath))
 
 		startLine := 0
