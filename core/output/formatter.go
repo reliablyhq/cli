@@ -11,6 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/utils"
 	"github.com/reliablyhq/cli/version"
 )
 
@@ -112,7 +113,8 @@ func reportLinter(w io.Writer, data *reportInfo) error {
 
 	count := len(data.Suggestions)
 	if count > 0 {
-		fmt.Fprintf(w, "%v suggestion(s) found\n", count)
+		plural := utils.IfThenElse(count > 1, "s", "")
+		fmt.Fprintf(w, "%v suggestion%s found\n", count, plural)
 	}
 
 	return nil
