@@ -163,44 +163,7 @@ manifests file from the current working directory.`,
 				"namespace": opts.KubernetesNamespace,
 			}).Debug("Run 'discover' command with")
 
-			if opts.EnableLiveDiscovery {
-				// if flag --cluster is set
-				// we will want to get the cluster configuration
-				// and search for weaknesses from there
-
-				// 1. Connect to the Cluster
-				cs, err := k8s.ConnectToKubernetes()
-				if err != nil {
-					return err
-				}
-
-				// 2. Scan the API for "configuration"
-
-				namespace := "default"
-				// if the namespace flag is provided use that
-
-				if opts.KubernetesNamespace != "" {
-					namespace = opts.KubernetesNamespace
-				}
-				log.Debugf("Get pods for namespace %v", namespace)
-				pl, _ := k8s.GetPods(*cs, namespace)
-				fmt.Println(pl)
-
-				// 3. Compare them against our policies
-				// ppath, err := core.FetchPolicy(workspace, platform, kind)
-				// if err != nil {
-				// 	log.Error(fmt.Sprintf(
-				// 		"Unable to review resource #%v (%v) in file '%v'", i, kind, fpath))
-				// 	continue
-				// }
-
-				// rs := core.Eval(ppath, input)
-				// newIssues := core.ReportViolations(rs, fpath, platform, kind, startLine, name, uri)
-				// violations = append(violations, newIssues...)
-
-				// violationCount += core.CountViolations(rs, platform, kind)
-
-			} else {
+			if !opts.EnableLiveDiscovery {
 				if len(args) > 0 {
 					fpath := args[0]
 					if fpath == "-" {
@@ -245,14 +208,6 @@ manifests file from the current working directory.`,
 	// Does not make it visible to users in help anymore as deprecated
 	_ = cmd.Flags().MarkHidden("dir")
 
-	cmd.Flags().BoolVar(
-		&opts.EnableLiveDiscovery, "live", false,
-		fmt.Sprintf("Look for weaknesses in a live Kubernetes cluster"))
-
-	cmd.Flags().StringVarP(
-		&opts.KubernetesNamespace, "namespace", "n", "", "The namespace to use when using a live cluster",
-	)
-
 	cmd.Flags().StringVarP(
 		&opts.OutputFormat, "format", "f", "",
 		fmt.Sprintf("Specify the output format: %v", supportedFormats))
@@ -265,6 +220,13 @@ manifests file from the current working directory.`,
 		&opts.LevelFilter, "level", "l", "", "Display suggestions only for level and higher")
 
 	// Declare and hide herited options from kubectl
+	cmd.Flags().BoolVar(
+		&opts.EnableLiveDiscovery, "live", false,
+		"Look for weaknesses in a live Kubernetes cluster")
+
+	cmd.Flags().StringVarP(
+		&opts.KubernetesNamespace, "namespace", "n", "", "The namespace to use when using a live cluster",
+	)
 
 	return cmd
 }
@@ -324,7 +286,12 @@ func discoverRun(opts *DiscoveryOptions) (count int, err error) {
 		return
 	}
 
-	violations, err = staticDiscover(opts)
+	// Choose to run either live cluster or static manifests discovery
+	if opts.EnableLiveDiscovery {
+		violations, err = liveDiscover(opts)
+	} else {
+		violations, err = staticDiscover(opts)
+	}
 	if err != nil {
 		fmt.Fprintln(opts.IO.ErrOut, err)
 		return
@@ -406,6 +373,48 @@ func staticDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 		}
 
 	}
+
+	return violations, nil
+}
+
+// liveDiscover runs the discovery on a live Kubernetes cluster
+func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
+
+	var violations core.ResultSet = core.ResultSet{} // empty slice
+
+	// if flag --cluster is set
+	// we will want to get the cluster configuration
+	// and search for weaknesses from there
+
+	// 1. Connect to the Cluster
+	cs, err := k8s.ConnectToKubernetes()
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. Scan the API for "configuration"
+
+	namespace := "default"
+	// if the namespace flag is provided use that
+
+	if opts.KubernetesNamespace != "" {
+		namespace = opts.KubernetesNamespace
+	}
+	log.Debugf("Get pods for namespace %v", namespace)
+	pl, _ := k8s.GetPods(*cs, namespace)
+	fmt.Println(pl)
+
+	// 3. Compare them against our policies
+	// ppath, err := core.FetchPolicy(workspace, platform, kind)
+	// if err != nil {
+	// 	log.Error(fmt.Sprintf(
+	// 		"Unable to review resource #%v (%v) in file '%v'", i, kind, fpath))
+	// 	continue
+	// }
+
+	// rs := core.Eval(ppath, input)
+	// newIssues := core.ReportViolations(rs, fpath, platform, kind, startLine, name, uri)
+	// violations = append(violations, newIssues...)
 
 	return violations, nil
 }
