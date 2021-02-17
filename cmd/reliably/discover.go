@@ -366,7 +366,8 @@ func staticDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 					"Unable to review resource #%v (%v) in file '%v'", i, kind, fpath))
 				continue
 			}
-
+			// todo remove the next line
+			fmt.Printf("input  %v", input)
 			rs := core.Eval(ppath, input)
 			newIssues := core.ReportViolations(rs, fpath, platform, kind, startLine, name, uri)
 			violations = append(violations, newIssues...)
@@ -402,19 +403,44 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 	}
 	log.Debugf("Get pods for namespace %v", namespace)
 	pl, _ := k8s.GetPods(*cs, namespace)
-	fmt.Println(pl)
+	log.Debugf("pods output yaml %v", pl)
+	header, err := k8s.GetYamlInfo(pl[0])
+	if err != nil {
+		log.Debugf("Error from GetYamlInfo: %v", err)
+		os.Exit(1)
+	}
+
+	// kind := header.Kind
+	name := header.Metadata.Name
+	uri := header.URI()
+
+	var input interface{}
+	if err := yaml.Unmarshal([]byte(pl[0]), &input); err != nil {
+		// Unable to load YAML - shall not happen as already parsed once
+		// by the GetYamlInfo method
+		// continue
+		fmt.Printf("Some error %v", err)
+	}
+
+	input = dyno.ConvertMapI2MapS(input)
+
+	kind := "Pod"
 
 	// 3. Compare them against our policies
-	// ppath, err := core.FetchPolicy(workspace, platform, kind)
-	// if err != nil {
-	// 	log.Error(fmt.Sprintf(
-	// 		"Unable to review resource #%v (%v) in file '%v'", i, kind, fpath))
-	// 	continue
-	// }
+	ppath, err := core.FetchPolicy(workspace, platform, kind)
+	if err != nil {
+		log.Error(fmt.Sprintf(
+			"Unable to review resource #%v (%v) in file '%v'", 0, kind, "live"))
+		// continue
+	}
+	log.Debugf("policy path %v", ppath)
+	fmt.Printf("********  input *****  %v", input)
 
-	// rs := core.Eval(ppath, input)
-	// newIssues := core.ReportViolations(rs, fpath, platform, kind, startLine, name, uri)
-	// violations = append(violations, newIssues...)
+	rs := core.Eval(ppath, input)
+	fmt.Printf("********  rs *****  %v", rs)
+	startLine := 0
+	newIssues := core.ReportViolations(rs, "fpath", platform, kind, startLine, name, uri)
+	violations = append(violations, newIssues...)
 
 	return violations, nil
 }

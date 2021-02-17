@@ -164,15 +164,20 @@ func ReadAndSplitKubernetesFile(file string) []string {
 // definition. The stucture will then contain basic K8S object meta
 func GetYamlInfo(yamlContent string) (*KubernetesAPI, error) {
 
+	fmt.Println("GetYamlInfo")
 	var m KubernetesAPI
 	err := yaml.Unmarshal([]byte(yamlContent), &m)
 	if err != nil {
 		return nil, fmt.Errorf("Could not unmarshal: %v \n---\n%v", err, yamlContent)
 	}
+	fmt.Println("unMarshalled content")
 
 	if m.Kind == "" {
+		fmt.Println("yaml file with kind missing")
+
 		return nil, fmt.Errorf("yaml file with kind missing")
 	} else if m.Metadata.Name == "" {
+		fmt.Println("yaml file with name missing")
 		return nil, fmt.Errorf("yaml file with name missing")
 	}
 
