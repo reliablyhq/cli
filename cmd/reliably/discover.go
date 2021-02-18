@@ -434,10 +434,10 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 		// continue
 	}
 	log.Debugf("policy path %v", ppath)
-	fmt.Printf("********  input *****  %v", input)
+	// fmt.Printf("********  input *****  %v", input)
 
 	rs := core.Eval(ppath, input)
-	fmt.Printf("********  rs *****  %v", rs)
+	// fmt.Printf("********  rs *****  %v", rs)
 	startLine := 0
 	newIssues := core.ReportViolations(rs, "fpath", platform, kind, startLine, name, uri)
 	violations = append(violations, newIssues...)
