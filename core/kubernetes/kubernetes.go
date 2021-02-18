@@ -7,12 +7,12 @@ package kubernetes
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -26,7 +26,7 @@ type KubernetesAPI struct {
 		// Labels    struct {
 		// 	Source string `yaml:"source"`
 		// } `yaml:"labels"`
-	} `yaml:"objectmeta"`
+	} `yaml:"metadata"`
 }
 
 func (m KubernetesAPI) URI() string {
@@ -48,7 +48,7 @@ func GetYamlInfo(yamlContent string) (*KubernetesAPI, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Could not unmarshal: %v \n---\n%v", err, yamlContent)
 	}
-	fmt.Printf("unMarshalled content %v", m)
+	// fmt.Printf("unMarshalled content %v", m)
 
 	// if m.Kind == "" {
 	// 	fmt.Println("yaml file with kind missing")
@@ -73,26 +73,22 @@ func ConnectToKubernetes() (*kubernetes.Clientset, error) {
 }
 
 // GetPods provide a list an of JSON Pod specs from the clientset
-func GetPods(cs kubernetes.Clientset, namespace string) ([]string, error) {
-	var po []string
+func GetPods(cs kubernetes.Clientset, namespace string) (po []string, err error) {
 	pods, err := cs.CoreV1().Pods(namespace).List(metav1.ListOptions{})
 	if err != nil {
-		return po, err
+		return
 	}
 	for _, p := range pods.Items {
-		name := p.GetName()
-		pod, _ := cs.CoreV1().Pods(namespace).Get(name, metav1.GetOptions{})
+		var podYAML strings.Builder
 
-		//MarshalIndent
-		// podJSON, err := json.MarshalIndent(pod, "", "  ")
+		// writing the "Kind" property as this is not included
+		// in the serialized yaml output but may be required
+		// for discovery
+		fmt.Fprintln(&podYAML, "kind: Pod")
 
-		podYAML, err := yaml.Marshal(pod)
-
-		po = append(po, string(podYAML))
-		if err != nil {
-			log.Fatalf(err.Error())
-		}
-		// fmt.Printf(string(podJSON))
+		e := json.NewYAMLSerializer(json.DefaultMetaFactory, nil, nil)
+		e.Encode(p.DeepCopyObject(), &podYAML)
+		po = append(po, podYAML.String())
 	}
 	return po, err
 }
