@@ -11,6 +11,9 @@ name: Reliably workflow
 
 on: push
 
+env:
+  RELIABLY_TOKEN: ${{ secrets.RELIABLY_TOKEN }}
+
 jobs:
   reliably-discover:
     runs-on: ubuntu-latest
