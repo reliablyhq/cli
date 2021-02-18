@@ -22,7 +22,6 @@ code_quality:
   image:
     name: ghcr.io/reliablyhq/cli/cli:latest
     entrypoint: ["/bin/sh", "-c"]
-
   script:
     - reliably discover . --format codeclimate --output gl-code-quality-report.json
   stage: test
@@ -31,6 +30,8 @@ code_quality:
     when: always
     expose_as: 'Code Quality Report'
     paths: [gl-code-quality-report.json]
+  rules:
+    - if: $RELIABLY_TOKEN
 `)
 
 // insertReliablyToGitlab modifies a Gitlab CI yaml file with the
