@@ -164,7 +164,7 @@ func ReadAndSplitKubernetesFile(file string) []string {
 // definition. The stucture will then contain basic K8S object meta
 func GetYamlInfo(yamlContent string) (*KubernetesAPI, error) {
 
-	fmt.Println("GetYamlInfo")
+	fmt.Printf("GetYamlInfo %s", yamlContent)
 	var m KubernetesAPI
 	err := yaml.Unmarshal([]byte(yamlContent), &m)
 	if err != nil {

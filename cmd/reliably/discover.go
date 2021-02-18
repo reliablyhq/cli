@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -124,7 +125,7 @@ manifests file from the current working directory.`,
 				// Example 1: output.sarif
 				// The file name MAY end with the additional extension ".json".
 				// Example 2: output.sarif.json
-				//see: https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317421
+				//see: https://doclientSet.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317421
 				if !strings.HasSuffix(opts.OutputFile, ".sarif") && !strings.HasSuffix(opts.OutputFile, ".sarif.json") {
 					return fmt.Errorf("The output file name for a SARIF report should end with the extension '.sarif' or '.sarif.json'")
 				}
@@ -383,12 +384,15 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 
 	var violations core.ResultSet = core.ResultSet{} // empty slice
 
+	startLine := 0
+	linesCount := 0
+
 	// if flag --cluster is set
 	// we will want to get the cluster configuration
 	// and search for weaknesses from there
 
 	// 1. Connect to the Cluster
-	cs, err := k8s.ConnectToKubernetes()
+	clientSet, err := k8s.GetKubernetesClientSet()
 	if err != nil {
 		return nil, err
 	}
@@ -397,50 +401,57 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 
 	namespace := "default"
 	// if the namespace flag is provided use that
-
 	if opts.KubernetesNamespace != "" {
 		namespace = opts.KubernetesNamespace
 	}
+
 	log.Debugf("Get pods for namespace %v", namespace)
-	pl, _ := k8s.GetPods(*cs, namespace)
-	log.Debugf("pods output yaml %v", pl)
-	header, err := k8s.GetYamlInfo(pl[0])
-	if err != nil {
-		log.Debugf("Error from GetYamlInfo: %v", err)
-		os.Exit(1)
+	podList, _ := k8s.GetPodSpec(*clientSet, namespace)
+	for _, pod := range podList {
+
+		startLine += linesCount
+		linesCount = strings.Count(pod, "\n")
+
+		header, err := k8s.GetHeaderInfo(pod)
+		if err != nil {
+			log.Debugf("Error from k8s.GetHeaderInfo: %v", err)
+
+			continue
+		}
+		log.Debug(fmt.Sprintf("Processing Pod #%v: in namespace: %v",
+			header.Metadata.Name, namespace))
+
+		kind := header.Kind
+		name := header.Metadata.Name
+		uri := header.URI()
+
+		var input interface{}
+		if err := json.Unmarshal([]byte(pod), &input); err != nil {
+			// Unable to load JSON - shall not happen as already parsed once
+			// by the GetHeaderInfo method
+			// continue
+			log.Debugf("Error Unmarshalling Pod: %v", err)
+			continue
+		}
+		// todo consider removing this, I dont think its required
+		input = dyno.ConvertMapI2MapS(input)
+
+		// fetch the policies
+		ppath, err := core.FetchPolicy(workspace, platform, kind)
+		if err != nil {
+			log.Error(fmt.Sprintf(
+				"Unable to review resource #%v (%v) in file '%v'", 0, kind, "live"))
+			// continue
+		}
+		log.Debugf("policy path %v", ppath)
+
+		// evaluate the input with the policies
+		rs := core.Eval(ppath, input)
+
+		newIssues := core.ReportViolations(rs, "fpath", platform, kind, startLine, name, uri)
+		violations = append(violations, newIssues...)
+
 	}
-
-	// kind := header.Kind
-	name := header.Metadata.Name
-	uri := header.URI()
-
-	var input interface{}
-	if err := yaml.Unmarshal([]byte(pl[0]), &input); err != nil {
-		// Unable to load YAML - shall not happen as already parsed once
-		// by the GetYamlInfo method
-		// continue
-		fmt.Printf("Some error %v", err)
-	}
-
-	input = dyno.ConvertMapI2MapS(input)
-
-	kind := "Pod"
-
-	// 3. Compare them against our policies
-	ppath, err := core.FetchPolicy(workspace, platform, kind)
-	if err != nil {
-		log.Error(fmt.Sprintf(
-			"Unable to review resource #%v (%v) in file '%v'", 0, kind, "live"))
-		// continue
-	}
-	log.Debugf("policy path %v", ppath)
-	// fmt.Printf("********  input *****  %v", input)
-
-	rs := core.Eval(ppath, input)
-	// fmt.Printf("********  rs *****  %v", rs)
-	startLine := 0
-	newIssues := core.ReportViolations(rs, "fpath", platform, kind, startLine, name, uri)
-	violations = append(violations, newIssues...)
 
 	return violations, nil
 }
