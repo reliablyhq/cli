@@ -8,11 +8,11 @@ package kubernetes
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -73,22 +73,17 @@ func ConnectToKubernetes() (*kubernetes.Clientset, error) {
 }
 
 // GetPods provide a list an of JSON Pod specs from the clientset
+// GetPods provide a list an of JSON Pod specs from the clientset
 func GetPods(cs kubernetes.Clientset, namespace string) (po []string, err error) {
 	pods, err := cs.CoreV1().Pods(namespace).List(metav1.ListOptions{})
 	if err != nil {
 		return
 	}
 	for _, p := range pods.Items {
-		var podYAML strings.Builder
 
-		// writing the "Kind" property as this is not included
-		// in the serialized yaml output but may be required
-		// for discovery
-		fmt.Fprintln(&podYAML, "kind: Pod")
-
-		e := json.NewYAMLSerializer(json.DefaultMetaFactory, nil, nil)
-		e.Encode(p.DeepCopyObject(), &podYAML)
-		po = append(po, podYAML.String())
+		podYAML := regexp.MustCompile(`\n|\|`).
+			ReplaceAllString(p.Annotations["kubectl.kubernetes.io/last-applied-configuration"], "")
+		po = append(po, podYAML)
 	}
 	return po, err
 }
