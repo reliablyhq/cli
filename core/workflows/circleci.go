@@ -15,6 +15,8 @@ jobs:
   discover:
     docker:
       - image: ghcr.io/reliablyhq/cli/cli:latest
+        environment:
+          RELIABLY_TOKEN: $RELIABLY_TOKEN
     working_directory: /home
     steps:
       - checkout # check out the code in the project directory
