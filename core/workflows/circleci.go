@@ -15,6 +15,8 @@ jobs:
   discover:
     docker:
       - image: ghcr.io/reliablyhq/cli/cli:latest
+        environment:
+          RELIABLY_TOKEN: $RELIABLY_TOKEN
     working_directory: /home
     steps:
       - checkout # check out the code in the project directory
@@ -25,6 +27,11 @@ workflows:
     jobs:
       - discover
 `)
+
+var circleci_AccessTokenHelp string = `
+You must define %s as an environment variable in your project settings:
+https://circleci.com/docs/2.0/env-vars/#setting-an-environment-variable-in-a-project
+`
 
 // insertReliablyToCircleci modifies the base workflow with the Reliably
 // template parts

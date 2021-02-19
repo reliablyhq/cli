@@ -11,6 +11,9 @@ name: Reliably workflow
 
 on: push
 
+env:
+  RELIABLY_TOKEN: ${{ secrets.RELIABLY_TOKEN }}
+
 jobs:
   reliably-discover:
     runs-on: ubuntu-latest
@@ -28,3 +31,8 @@ jobs:
         with:
           sarif_file: reliably.sarif
 `)
+
+var github_AccessTokenSecretHelp string = `
+You must define %s as a Secret in your repository settings:
+https://github.com/%s/%s/settings/secrets/actions/new
+`

@@ -22,16 +22,22 @@ code_quality:
   image:
     name: ghcr.io/reliablyhq/cli/cli:latest
     entrypoint: ["/bin/sh", "-c"]
-
   script:
-    - reliably discover . --format codeclimate --output gl-code-quality-report.json
+    - reliably discover . --format codeclimate --output gl-code-quality-report.json || true
   stage: test
   allow_failure: true
   artifacts:
     when: always
     expose_as: 'Code Quality Report'
     paths: [gl-code-quality-report.json]
+  rules:
+    - if: $RELIABLY_TOKEN
 `)
+
+var gitlab_AccessTokenHelp string = `
+You must define %s as a masked Variable in your project CI/CD settings:
+https://gitlab.com/%s/%s/-/settings/ci_cd
+`
 
 // insertReliablyToGitlab modifies a Gitlab CI yaml file with the
 // Reliably code quality parts

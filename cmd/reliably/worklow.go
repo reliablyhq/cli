@@ -118,6 +118,8 @@ func workflowRun(opts *WorkflowOptions) error {
 		worfklowGitHelp(opts.IO.ErrOut, wfPath)
 	}
 
+	workflowAccessTokenHelp(opts.IO.ErrOut, platform)
+
 	return nil
 }
 
@@ -132,4 +134,16 @@ $ git commit -m "Add Reliably workflow"
 `,
 		path)
 
+}
+
+// workflowAccessTokenHelp prints out the help message on how to
+// setup securely the Reliably access token as RELIABLY_TOKEN env var
+// for any CI/CD platform.
+func workflowAccessTokenHelp(w io.Writer, platform string) {
+	help := wf.GetAccessTokenHelp(platform, "RELIABLY_TOKEN")
+	if help != "" {
+		fmt.Fprint(w, "\n", help, "\n",
+			"You can retrieve your access token by running:\n",
+			"$ reliably auth status --show-token\n")
+	}
 }

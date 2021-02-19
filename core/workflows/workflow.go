@@ -8,7 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"gopkg.in/yaml.v2"
+
+	"github.com/reliablyhq/cli/utils"
 )
 
 type workflow map[string]interface{}
@@ -214,4 +217,42 @@ func editWorkflow(template string, path string, f editWorkflowFunc) error {
 	}
 
 	return nil
+}
+
+// GetAccessTokenHelp returns the help message on how to securely
+// setup the reliably access token required for CLI to make authenticated
+// calls to the API
+func GetAccessTokenHelp(platform string, envvarname string) (help string) {
+
+	switch platform {
+	case "github":
+		owner, repo := "OWNER", "REPO"
+
+		url, err := utils.GitRemoteOriginURL()
+		if err == nil && strings.Contains(url, "github.com") {
+			if o, r, err := utils.ExtractOwnerRepoFromGitURL(url); err == nil {
+				owner, repo = o, r
+			}
+		}
+
+		help = heredoc.Docf(github_AccessTokenSecretHelp, envvarname, owner, repo)
+	case "gitlab":
+		owner, repo := "OWNER", "PROJECT"
+
+		url, err := utils.GitRemoteOriginURL()
+		if err == nil && strings.Contains(url, "gitlab.com") {
+			if o, r, err := utils.ExtractOwnerRepoFromGitURL(url); err == nil {
+				owner, repo = o, r
+			}
+		}
+
+		help = heredoc.Docf(gitlab_AccessTokenHelp, envvarname, owner, repo)
+
+	case "circleci":
+		help = heredoc.Docf(circleci_AccessTokenHelp, envvarname)
+	default:
+		help = ""
+	}
+
+	return
 }
