@@ -406,13 +406,23 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 	}
 
 	log.Debugf("Get pods for namespace %v", namespace)
+
+	var resourceList []string = make([]string, 0, 0)
+
 	podList, _ := k8s.GetPodSpec(*clientSet, namespace)
-	for _, pod := range podList {
+	resourceList = append(resourceList, podList...)
+	deploymentList, _ := k8s.GetDeploymentSpec(*clientSet, namespace)
+	resourceList = append(resourceList, deploymentList...)
+
+	// resourceList append GetPodSpec
+	// resource append GetDeploySpec
+
+	for _, r := range resourceList {
 
 		startLine += linesCount
-		linesCount = strings.Count(pod, "\n")
+		linesCount = strings.Count(r, "\n")
 
-		header, err := k8s.GetHeaderInfo(pod)
+		header, err := k8s.GetHeaderInfo(r)
 		if err != nil {
 			log.Debugf("Error from k8s.GetHeaderInfo: %v", err)
 
@@ -426,7 +436,7 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 		uri := header.URI()
 
 		var input interface{}
-		if err := json.Unmarshal([]byte(pod), &input); err != nil {
+		if err := json.Unmarshal([]byte(r), &input); err != nil {
 			// Unable to load JSON - shall not happen as already parsed once
 			// by the GetHeaderInfo method
 			// continue
