@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"runtime"
+	"strings"
 
 	"github.com/cli/safeexec"
 )
@@ -56,4 +57,42 @@ func firstLine(output []byte) string {
 		return string(output)[0:i]
 	}
 	return string(output)
+}
+
+func GitRemoteOriginURL() (string, error) {
+	showCmd, err := GitCommand("config", "--get", "remote.origin.url")
+	if err != nil {
+		return "", err
+	}
+	output, err := showCmd.Output()
+	return firstLine(output), err
+}
+
+// ExtractOwnerRepoFromGitURL extracts owner and repo from a Git URL:
+// https or ssh url
+func ExtractOwnerRepoFromGitURL(url string) (owner string, repo string, err error) {
+
+	if strings.HasSuffix(url, ".git") {
+		url = strings.TrimSuffix(url, ".git")
+	}
+
+	if strings.HasPrefix(url, "https://") {
+		p := strings.Split(url, "/")
+		if len(p) >= 4 {
+			owner, repo = p[3], p[4]
+			return
+		}
+	}
+
+	if strings.HasPrefix(url, "git@") {
+		p := strings.Split(url, ":")
+		p = strings.Split(p[1], "/")
+		if len(p) >= 1 {
+			owner, repo = p[0], p[1]
+			return
+		}
+	}
+
+	err = fmt.Errorf("Unable to extract owner/repo from %s", url)
+	return
 }

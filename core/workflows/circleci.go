@@ -28,6 +28,11 @@ workflows:
       - discover
 `)
 
+var circleci_AccessTokenHelp string = `
+You must define %s as an environment variable in your project settings:
+https://circleci.com/docs/2.0/env-vars/#setting-an-environment-variable-in-a-project
+`
+
 // insertReliablyToCircleci modifies the base workflow with the Reliably
 // template parts
 // If it seems reliably is already in the base workflow, or cannot be added,

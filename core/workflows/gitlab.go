@@ -34,6 +34,11 @@ code_quality:
     - if: $RELIABLY_TOKEN
 `)
 
+var gitlab_AccessTokenHelp string = `
+You must define %s as a masked Variable in your project CI/CD settings:
+https://gitlab.com/%s/%s/-/settings/ci_cd
+`
+
 // insertReliablyToGitlab modifies a Gitlab CI yaml file with the
 // Reliably code quality parts
 // If it cannot update some parts of the initial file, it returns an error
