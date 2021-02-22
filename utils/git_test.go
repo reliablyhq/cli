@@ -68,6 +68,17 @@ func TestExtractOwnerRepoFromGitURL(t *testing.T) {
 			url:   "git@gitlab.com:reliably/reliably-discovery-demo.git",
 			wants: []string{"reliably", "reliably-discovery-demo"},
 		},
+
+		{
+			name:  "bitbucket https url",
+			url:   "https://dmartin35@bitbucket.org/dmartin35/misc.git",
+			wants: []string{"dmartin35", "misc"},
+		},
+		{
+			name:  "bitbucket ssh url",
+			url:   "git@bitbucket.org:dmartin35/misc.git",
+			wants: []string{"dmartin35", "misc"},
+		},
 	}
 
 	for _, tt := range tests {
