@@ -410,14 +410,18 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 	var resourceList []string = make([]string, 0, 0)
 
 	podList, _ := k8s.GetPodSpec(*clientSet, namespace)
-	resourceList = append(resourceList, podList...)
 	deploymentList, _ := k8s.GetDeploymentSpec(*clientSet, namespace)
-	resourceList = append(resourceList, deploymentList...)
 	clusterRoleBindingList, _ := k8s.GetClusterRoleBindingSpec(*clientSet, namespace)
-	resourceList = append(resourceList, clusterRoleBindingList...)
 
-	// resourceList append GetPodSpec
-	// resource append GetDeploySpec
+	lists := [][]string{
+		podList,
+		deploymentList,
+		clusterRoleBindingList,
+	}
+
+	for _, l := range lists {
+		resourceList = append(resourceList, l...)
+	}
 
 	for _, r := range resourceList {
 
