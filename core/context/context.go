@@ -7,6 +7,8 @@ import (
 	"os/user"
 	"runtime"
 	"time"
+
+	"github.com/reliablyhq/cli/utils"
 )
 
 // StringMap represents a map of string keys to string values
@@ -223,12 +225,14 @@ const ( // iota is reset to 0 - is like an enum
 	local SourceType = iota
 	github
 	gitlab
+	git
 )
 
 var SourceTypeToString = map[SourceType]string{
 	local:  "local",
 	github: "GitHub",
-	gitlab: "Gitlab",
+	gitlab: "GitLab",
+	git:    "git", // git repository
 }
 
 func (st SourceType) String() string {
@@ -273,27 +277,37 @@ type GitlabSource struct {
 // It inditates the type of the source code and meta to be able to uniquely
 // indentify it, as well as to refer back to it
 func setSource(context *Context) {
-	var source Source
+	var source *Source
+	var err error
 
-	if IsGithubRepo() {
+	if utils.IsGitRepo() {
+
+		url, _ := utils.GitRemoteOriginURL()
+		source, err = NewGitSource(url)
+		if err != nil {
+			return
+		}
+
+	} else if IsGithubRepo() {
+		// in case the git repo has not been checked out in the GitHub workflow job
 		serverURL := context.Environ["GITHUB_SERVER_URL"]
 		repo := context.Environ["GITHUB_REPOSITORY"]
-		source = Source{
-			Type: github,
-			Meta: map[string]string{
-				"url": fmt.Sprintf("%s/%s", serverURL, repo),
-			},
+		url := fmt.Sprintf("%s/%s", serverURL, repo)
+		source, err = NewGitSource(url)
+		if err != nil {
+			return
 		}
+
 	} else if IsGitlabRepo() {
+		// in case the git repo has not been checked out in the GitLab pipeline job
 		projectURL := context.Environ["CI_PROJECT_URL"]
-		source = Source{
-			Type: gitlab,
-			Meta: map[string]string{
-				"url": projectURL,
-			},
+		source, err = NewGitSource(projectURL)
+		if err != nil {
+			return
 		}
+
 	} else {
-		source = Source{
+		source = &Source{
 			Type: local,
 			Meta: map[string]string{
 				"hostname":   context.Runtime.Hostname,
@@ -302,5 +316,24 @@ func setSource(context *Context) {
 		}
 	}
 
-	context.Source = source
+	context.Source = *source
+}
+
+func NewGitSource(url string) (source *Source, err error) {
+
+	gURL, err := utils.ParseGitRemoteOriginURL(url)
+	if err != nil {
+		return
+	}
+
+	source = &Source{
+		Type: git,
+		Hash: gURL.Hash(),
+		Meta: map[string]string{
+			"server": gURL.Host,
+			"repo":   gURL.Path,
+		},
+	}
+
+	return
 }

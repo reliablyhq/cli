@@ -158,6 +158,10 @@ func ParseGitRemoteOriginURL(url string) (*GitRemoteURL, error) {
 			h = split[1]
 		}
 
+		if strings.HasPrefix(h, "/") {
+			p = strings.TrimPrefix(p, "/")
+		}
+
 		return &GitRemoteURL{
 			raw:  raw,
 			Host: h,
@@ -171,12 +175,17 @@ func ParseGitRemoteOriginURL(url string) (*GitRemoteURL, error) {
 			return nil, err
 		}
 
+		path := p.Path
+		if strings.HasPrefix(path, "/") {
+			path = strings.TrimPrefix(path, "/")
+		}
+
 		return &GitRemoteURL{
 			raw:   raw,
 			Proto: p.Scheme,
 			User:  p.User.Username(),
 			Host:  p.Host,
-			Path:  p.Path,
+			Path:  path,
 		}, nil
 
 	}
