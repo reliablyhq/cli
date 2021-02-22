@@ -186,7 +186,7 @@ func GetDeploymentSpec(cs kubernetes.Clientset, namespace string) (deploy []stri
 }
 
 // GetClusterRoleBindingSpec provide a list an of JSON Cluster Role Binding specs from the clientset
-func GetClusterRoleBindingSpec(cs kubernetes.Clientset, namespace string) (clusterRoleBinding []string, err error) {
+func GetClusterRoleBindingSpec(cs kubernetes.Clientset) (clusterRoleBinding []string, err error) {
 	crb, err := cs.RbacV1().ClusterRoleBindings().List(metav1.ListOptions{})
 	if err != nil {
 		return
@@ -255,7 +255,7 @@ func GetIngressSpec(cs kubernetes.Clientset, namespace string) (ingress []string
 }
 
 // GetPodSecurityPolicySpec provide a list an of JSON Pod Security Policy specs from the clientset
-func GetPodSecurityPolicySpec(cs kubernetes.Clientset, namespace string) (podSecPol []string, err error) {
+func GetPodSecurityPolicySpec(cs kubernetes.Clientset) (podSecPol []string, err error) {
 	secpol, err := cs.PolicyV1beta1().PodSecurityPolicies().List(metav1.ListOptions{})
 	if err != nil {
 		return
