@@ -216,3 +216,40 @@ func GetClusterRoleBindingSpec(cs kubernetes.Clientset, namespace string) (clust
 	}
 	return clusterRoleBinding, err
 }
+
+// GetIngressSpec provide a list an of JSON Ingress specs from the clientset
+// /!\ The only rule we currently have doesn't seem to be triggerable
+// /!\ K8S-IN-0001: https://github.com/reliablyhq/opa-policies/blob/main/kubernetes/ingress.rego
+// /!\ It looks for indentical Ingress hosts in different namespaces, and we are currently working
+// /!\ in only one namespace, passed as a parameter.
+// /!\ Probably a TODO here.
+func GetIngressSpec(cs kubernetes.Clientset, namespace string) (ingress []string, err error) {
+	ing, err := cs.NetworkingV1beta1().Ingresses(namespace).List(metav1.ListOptions{})
+	if err != nil {
+		return
+	}
+	// fmt.Printf("crb: %v", crb)
+	for _, i := range ing.Items {
+		ingJSON := regexp.MustCompile(`\n|\|`).
+			ReplaceAllString(i.Annotations["kubectl.kubernetes.io/last-applied-configuration"], "")
+
+		if len(ingJSON) == 0 {
+			var ingRawJSON strings.Builder
+			e := k8sJSON.NewSerializerWithOptions(k8sJSON.DefaultMetaFactory,
+				nil, nil,
+				k8sJSON.SerializerOptions{Yaml: false}, // Yaml: false, returns JSON
+			)
+
+			// Setting kind manually
+			i.Kind = "Ingress"
+
+			// p.APIVersion = "v1"
+			e.Encode(i.DeepCopyObject(), &ingRawJSON)
+			// fmt.Printf("Ingress host: %v\n", ingRawJSON.Spec.rules.Host)
+			ingJSON = ingRawJSON.String()
+		}
+		ingress = append(ingress, GetFormattedJSON(ingJSON))
+
+	}
+	return ingress, err
+}

@@ -405,18 +405,20 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 		namespace = opts.KubernetesNamespace
 	}
 
-	log.Debugf("Get pods for namespace %v", namespace)
+	// log.Debugf("Get pods for namespace %v", namespace)
 
 	var resourceList []string = make([]string, 0, 0)
 
 	podList, _ := k8s.GetPodSpec(*clientSet, namespace)
 	deploymentList, _ := k8s.GetDeploymentSpec(*clientSet, namespace)
 	clusterRoleBindingList, _ := k8s.GetClusterRoleBindingSpec(*clientSet, namespace)
+	ingressList, _ := k8s.GetIngressSpec(*clientSet, namespace)
 
 	lists := [][]string{
 		podList,
 		deploymentList,
 		clusterRoleBindingList,
+		ingressList,
 	}
 
 	for _, l := range lists {
