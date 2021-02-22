@@ -15,10 +15,16 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8sJSON "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes"
+
+	// auth plugin import allows auth mechanisms from kubernetes providers to function
+	// i.e GCP, Azure, etc see: https://pkg.go.dev/k8s.io/client-go/plugin/pkg/client/auth
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+//pkg.go.dev/k8s.io/client-go/plugin/pkg/client/auth
 // type KubernetesAPI struct {
 // 	APIVersion string `yaml:"apiVersion"`
 // 	Kind       string `yaml:"kind"`
@@ -123,11 +129,27 @@ func GetPodSpec(cs kubernetes.Clientset, namespace string) (po []string, err err
 	for _, p := range pods.Items {
 		podJSON := regexp.MustCompile(`\n|\|`).
 			ReplaceAllString(p.Annotations["kubectl.kubernetes.io/last-applied-configuration"], "")
+
+		// if annotation was empty use k8s JSON serializer
 		if len(podJSON) == 0 {
-			log.Debugf("Error processing pod: %v\n", p.Name)
-		} else {
-			po = append(po, GetFormattedJSON(podJSON))
+			var podRawJSON strings.Builder
+			e := k8sJSON.NewSerializerWithOptions(k8sJSON.DefaultMetaFactory,
+				nil, nil,
+				k8sJSON.SerializerOptions{Yaml: false}, // Yaml: false, returns JSON
+			)
+
+			// Setting kind manually
+			p.Kind = "Pod"
+
+			// p.APIVersion = "v1"
+			e.Encode(p.DeepCopyObject(), &podRawJSON)
+			podJSON = podRawJSON.String()
+
+			// log.Debugf("Error processing pod: %v\n", p.Name)
+
 		}
+
+		po = append(po, GetFormattedJSON(podJSON))
 
 	}
 	return po, err
