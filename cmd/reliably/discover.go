@@ -411,16 +411,16 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 
 	podList, _ := k8s.GetPodSpec(*clientSet, namespace)
 	deploymentList, _ := k8s.GetDeploymentSpec(*clientSet, namespace)
-	clusterRoleBindingList, _ := k8s.GetClusterRoleBindingSpec(*clientSet, namespace)
+	clusterRoleBindingList, _ := k8s.GetClusterRoleBindingSpec(*clientSet)
 	ingressList, _ := k8s.GetIngressSpec(*clientSet, namespace)
-	podSecurityPolicyList, _ := k8s.GetPodSecurityPolicySpec(*clientSet, namespace)
+	podSecurityPolicyList, _ := k8s.GetPodSecurityPolicySpec(*clientSet)
 
 	lists := [][]string{
 		podList,
 		deploymentList,
 		clusterRoleBindingList,
 		ingressList,
-		podSecurityPolicyList
+		podSecurityPolicyList,
 	}
 
 	for _, l := range lists {
