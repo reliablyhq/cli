@@ -253,3 +253,35 @@ func GetIngressSpec(cs kubernetes.Clientset, namespace string) (ingress []string
 	}
 	return ingress, err
 }
+
+// GetPodSecurityPolicySpec provide a list an of JSON Pod Security Policy specs from the clientset
+func GetPodSecurityPolicySpec(cs kubernetes.Clientset, namespace string) (podSecPol []string, err error) {
+	secpol, err := cs.PolicyV1beta1().PodSecurityPolicies().List(metav1.ListOptions{})
+	if err != nil {
+		return
+	}
+	// fmt.Printf("crb: %v", crb)
+	for _, p := range secpol.Items {
+		secpolJSON := regexp.MustCompile(`\n|\|`).
+			ReplaceAllString(p.Annotations["kubectl.kubernetes.io/last-applied-configuration"], "")
+
+		if len(secpolJSON) == 0 {
+			var secpolRawJSON strings.Builder
+			e := k8sJSON.NewSerializerWithOptions(k8sJSON.DefaultMetaFactory,
+				nil, nil,
+				k8sJSON.SerializerOptions{Yaml: false}, // Yaml: false, returns JSON
+			)
+
+			// Setting kind manually
+			p.Kind = "PodSecurityPolicy"
+
+			// p.APIVersion = "v1"
+			e.Encode(p.DeepCopyObject(), &secpolRawJSON)
+			secpolJSON = secpolRawJSON.String()
+		}
+
+		podSecPol = append(podSecPol, GetFormattedJSON(secpolJSON))
+
+	}
+	return podSecPol, err
+}
