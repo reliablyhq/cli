@@ -2,7 +2,9 @@ package utils
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"fmt"
+	neturl "net/url"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -76,7 +78,10 @@ func ExtractOwnerRepoFromGitURL(url string) (owner string, repo string, err erro
 		url = strings.TrimSuffix(url, ".git")
 	}
 
-	if strings.HasPrefix(url, "https://") {
+	if strings.HasPrefix(url, "https://") ||
+		strings.HasPrefix(url, "http://") ||
+		strings.HasPrefix(url, "git://") ||
+		strings.HasPrefix(url, "ssh://") {
 		p := strings.Split(url, "/")
 		if len(p) >= 4 {
 			owner, repo = p[3], p[4]
@@ -95,4 +100,85 @@ func ExtractOwnerRepoFromGitURL(url string) (owner string, repo string, err erro
 
 	err = fmt.Errorf("Unable to extract owner/repo from %s", url)
 	return
+}
+
+type GitRemoteURL struct {
+	Proto string // https , ssh , git
+	User  string // optional
+	Host  string // host or host:port
+	Path  string // full path to the repo (without .git ext)
+	raw   string // raw url string
+}
+
+// Hash computes the hash for a git remote URL
+// only on non changing fields: different protocol or user can still refer
+// to the same remote origin
+func (grURL *GitRemoteURL) Hash() string {
+	str := fmt.Sprintf("%s:%s", grURL.Host, grURL.Path)
+	h := sha256.New()
+	_, _ = h.Write([]byte(str))
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+// String returns the original raw URL of the git remote
+func (grURL *GitRemoteURL) String() string {
+	return grURL.raw
+}
+
+// ParseGitRemoteOriginURL parses a git remote origin url into
+// a struct that can be uniquely identified regardless the used protocol
+func ParseGitRemoteOriginURL(url string) (*GitRemoteURL, error) {
+	raw := url
+
+	if strings.HasSuffix(url, "/") {
+		url = strings.TrimSuffix(url, "/")
+	}
+	if strings.HasSuffix(url, ".git") {
+		url = strings.TrimSuffix(url, ".git")
+	}
+
+	if !strings.HasPrefix(url, "http://") &&
+		!strings.HasPrefix(url, "https://") &&
+		!strings.HasPrefix(url, "ssh://") &&
+		!strings.HasPrefix(url, "git://") {
+		// when no prefix is found, we consider scp-like syntax
+		// for the SSH protocol: [user@]server:/path
+
+		var (
+			h string
+			p string
+		)
+
+		split := strings.Split(url, ":")
+		h = split[0]
+		p = split[1]
+
+		if strings.Contains(h, "@") {
+			split = strings.Split(h, "@")
+			h = split[1]
+		}
+
+		return &GitRemoteURL{
+			raw:  raw,
+			Host: h,
+			Path: p,
+		}, nil
+
+	} else {
+
+		p, err := neturl.Parse(url)
+		if err != nil {
+			return nil, err
+		}
+
+		return &GitRemoteURL{
+			raw:   raw,
+			Proto: p.Scheme,
+			User:  p.User.Username(),
+			Host:  p.Host,
+			Path:  p.Path,
+		}, nil
+
+	}
+
 }
