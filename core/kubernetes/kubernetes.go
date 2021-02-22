@@ -154,3 +154,42 @@ func GetPodSpec(cs kubernetes.Clientset, namespace string) (po []string, err err
 	}
 	return po, err
 }
+
+// GetDeploymentSpec provide a list an of JSON Deployment specs from the clientset
+func GetDeploymentSpec(cs kubernetes.Clientset, namespace string) (deploy []string, err error) {
+	deployments, err := cs.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
+	if err != nil {
+		return
+	}
+	for _, d := range deployments.Items {
+		deploymentsJSON := regexp.MustCompile(`\n|\|`).
+			ReplaceAllString(d.Annotations["kubectl.kubernetes.io/last-applied-configuration"], "")
+		if len(deploymentsJSON) == 0 {
+			log.Debugf("Error processing deployment: %v\n", d.Name)
+		} else {
+			deploy = append(deploy, GetFormattedJSON(deploymentsJSON))
+		}
+
+	}
+	return deploy, err
+}
+
+// GetClusterRoleBindingSpec provide a list an of JSON Cluster Role Binding specs from the clientset
+func GetClusterRoleBindingSpec(cs kubernetes.Clientset, namespace string) (crbs []string, err error) {
+	crb, err := cs.RbacV1().ClusterRoleBindings().List(metav1.ListOptions{})
+	if err != nil {
+		return
+	}
+	// fmt.Printf("crb: %v", crb)
+	for _, c := range crb.Items {
+		crbJSON := regexp.MustCompile(`\n|\|`).
+			ReplaceAllString(c.Annotations["kubectl.kubernetes.io/last-applied-configuration"], "")
+		if len(crbJSON) == 0 {
+			log.Debugf("Error processing clusterrolebinding: %v\n", c.Name)
+		} else {
+			crbs = append(crbs, GetFormattedJSON(crbJSON))
+		}
+
+	}
+	return crbs, err
+}
