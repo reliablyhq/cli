@@ -157,25 +157,36 @@ func GetPodSpec(cs kubernetes.Clientset, namespace string) (po []string, err err
 
 // GetDeploymentSpec provide a list an of JSON Deployment specs from the clientset
 func GetDeploymentSpec(cs kubernetes.Clientset, namespace string) (deploy []string, err error) {
-	deployments, err := cs.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
+	deployment, err := cs.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
 	if err != nil {
 		return
 	}
-	for _, d := range deployments.Items {
-		deploymentsJSON := regexp.MustCompile(`\n|\|`).
+	for _, d := range deployment.Items {
+		deployJSON := regexp.MustCompile(`\n|\|`).
 			ReplaceAllString(d.Annotations["kubectl.kubernetes.io/last-applied-configuration"], "")
-		if len(deploymentsJSON) == 0 {
-			log.Debugf("Error processing deployment: %v\n", d.Name)
-		} else {
-			deploy = append(deploy, GetFormattedJSON(deploymentsJSON))
+
+		if len(deployJSON) == 0 {
+			var deployRawJSON strings.Builder
+			e := k8sJSON.NewSerializerWithOptions(k8sJSON.DefaultMetaFactory,
+				nil, nil,
+				k8sJSON.SerializerOptions{Yaml: false}, // Yaml: false, returns JSON
+			)
+
+			// Setting kind manually
+			d.Kind = "Deployment"
+
+			// p.APIVersion = "v1"
+			e.Encode(d.DeepCopyObject(), &deployRawJSON)
+			deployJSON = deployRawJSON.String()
 		}
 
+		deploy = append(deploy, GetFormattedJSON(deployJSON))
 	}
 	return deploy, err
 }
 
 // GetClusterRoleBindingSpec provide a list an of JSON Cluster Role Binding specs from the clientset
-func GetClusterRoleBindingSpec(cs kubernetes.Clientset, namespace string) (crbs []string, err error) {
+func GetClusterRoleBindingSpec(cs kubernetes.Clientset, namespace string) (clusterRoleBinding []string, err error) {
 	crb, err := cs.RbacV1().ClusterRoleBindings().List(metav1.ListOptions{})
 	if err != nil {
 		return
@@ -184,12 +195,24 @@ func GetClusterRoleBindingSpec(cs kubernetes.Clientset, namespace string) (crbs 
 	for _, c := range crb.Items {
 		crbJSON := regexp.MustCompile(`\n|\|`).
 			ReplaceAllString(c.Annotations["kubectl.kubernetes.io/last-applied-configuration"], "")
+
 		if len(crbJSON) == 0 {
-			log.Debugf("Error processing clusterrolebinding: %v\n", c.Name)
-		} else {
-			crbs = append(crbs, GetFormattedJSON(crbJSON))
+			var crbRawJSON strings.Builder
+			e := k8sJSON.NewSerializerWithOptions(k8sJSON.DefaultMetaFactory,
+				nil, nil,
+				k8sJSON.SerializerOptions{Yaml: false}, // Yaml: false, returns JSON
+			)
+
+			// Setting kind manually
+			c.Kind = "ClusterRoleBinding"
+
+			// p.APIVersion = "v1"
+			e.Encode(c.DeepCopyObject(), &crbRawJSON)
+			crbJSON = crbRawJSON.String()
 		}
 
+		clusterRoleBinding = append(clusterRoleBinding, GetFormattedJSON(crbJSON))
+
 	}
-	return crbs, err
+	return clusterRoleBinding, err
 }
