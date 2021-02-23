@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sJSON "k8s.io/apimachinery/pkg/runtime/serializer/json"
@@ -70,6 +71,30 @@ func (m KubernetesAPI) URI() string {
 	return strings.ToLower(uri)
 }
 
+// FileExists checks if a file exists and is not a directory before we
+// try using it to prevent further errors.
+func FileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
+// FindKubeConfigPath checks will return a path for the kubernetes config file
+func FindKubeConfigPath(path string) (string, error) {
+	env := os.Getenv("KUBECONFIG")
+	if env != "" {
+		return env, nil
+	}
+	if path != "" {
+		return path, nil
+	}
+	p, _ := homedir.Dir()
+	p = p + "/.kube/config"
+	return p, nil
+}
+
 func GetHeaderInfo(content string) (*KubernetesAPI, error) {
 
 	var m KubernetesAPI
@@ -98,10 +123,10 @@ func GetHeaderInfo(content string) (*KubernetesAPI, error) {
 
 // GetKubernetesClientSet uses the default kubectl config file to create a
 // Clientset for the default config
-func GetKubernetesClientSet() (*kubernetes.Clientset, error) {
+func GetKubernetesClientSet(kubeconfigPath string) (*kubernetes.Clientset, error) {
 	// Pull the config
-	// todo: deal with the case when you are not getting kube config from HOME location
-	config, err := clientcmd.BuildConfigFromFlags("", os.Getenv("HOME")+"/.kube/config")
+	fmt.Printf("GetKubernetesClientSet for config: %v \n", kubeconfigPath)
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 	// Connect
 	clientSet, err := kubernetes.NewForConfig(config)
 	return clientSet, err

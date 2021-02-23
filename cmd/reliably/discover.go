@@ -50,6 +50,7 @@ type DiscoveryOptions struct {
 	LevelFilter         string
 	EnableLiveDiscovery bool
 	KubernetesNamespace string
+	KubeConfigPath      string
 }
 
 func NewCmdDiscover() *cobra.Command {
@@ -141,6 +142,10 @@ manifests file from the current working directory.`,
 			if opts.LevelFilter != "" && !supportedLevels.Has(opts.LevelFilter) {
 				return fmt.Errorf("Level '%v' is not valid. Use one of the supported levels: %s", opts.LevelFilter, supportedLevels)
 			}
+			// Check the file for the kubeconfig argument exists
+			if opts.KubeConfigPath != "" && !k8s.FileExists(opts.KubeConfigPath) {
+				return fmt.Errorf("The kubeconfig argument %v is not a path to a file", opts.KubeConfigPath)
+			}
 			return nil
 		},
 
@@ -156,12 +161,13 @@ manifests file from the current working directory.`,
 			}
 
 			log.WithFields(log.Fields{
-				"arg":       argStr,
-				"directory": opts.BaseDirectory,
-				"format":    opts.OutputFormat,
-				"output":    opts.OutputFile,
-				"live":      opts.EnableLiveDiscovery,
-				"namespace": opts.KubernetesNamespace,
+				"arg":        argStr,
+				"directory":  opts.BaseDirectory,
+				"format":     opts.OutputFormat,
+				"output":     opts.OutputFile,
+				"live":       opts.EnableLiveDiscovery,
+				"namespace":  opts.KubernetesNamespace,
+				"kubeconfig": opts.KubeConfigPath,
 			}).Debug("Run 'discover' command with")
 
 			if !opts.EnableLiveDiscovery {
@@ -228,6 +234,11 @@ manifests file from the current working directory.`,
 	cmd.Flags().StringVarP(
 		&opts.KubernetesNamespace, "namespace", "n", "", "The namespace to use when using a live cluster",
 	)
+
+	cmd.Flags().StringVarP(
+		&opts.KubeConfigPath, "kubeconfig", "k", "", "Specifiies the path and file to use for kubeconfig for live discovery")
+	configPath, _ := k8s.FindKubeConfigPath("")
+	cmd.Flags().Lookup("kubeconfig").NoOptDefVal = configPath
 
 	return cmd
 }
@@ -391,8 +402,11 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 	// we will want to get the cluster configuration
 	// and search for weaknesses from there
 
+	kubeconfigPath, _ := k8s.FindKubeConfigPath(opts.KubeConfigPath)
+	// if the namespace flag is provided use that
+
 	// 1. Connect to the Cluster
-	clientSet, err := k8s.GetKubernetesClientSet()
+	clientSet, err := k8s.GetKubernetesClientSet(kubeconfigPath)
 	if err != nil {
 		return nil, err
 	}
