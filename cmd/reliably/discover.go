@@ -30,8 +30,7 @@ const (
 )
 
 var (
-	context   *ctx.Context
-	contextID string
+	context *ctx.Context
 
 	violations core.ResultSet
 
@@ -43,6 +42,7 @@ type DiscoveryOptions struct {
 	IO *iostreams.IOStreams
 
 	Files []string
+	Exec  *api.NewExecution
 
 	BaseDirectory       string
 	OutputFormat        string
@@ -292,10 +292,16 @@ func discoverRun(opts *DiscoveryOptions) (count int, err error) {
 	}
 
 	context = ctx.NewContext()
-	contextID, err = api.SendExecutionContext(apiClient, hostname, orgID, context)
+	opts.Exec, err = api.SendExecutionContext(apiClient, hostname, orgID, context)
 	if err != nil {
 		return
 	}
+	log.WithFields(log.Fields{
+		"ID":    opts.Exec.ID,
+		"orgID": opts.Exec.OrgID,
+		//"ctxID": opts.Exec.ContextID,
+		"srcID": opts.Exec.SourceID,
+	}).Debug("New execution recorded")
 
 	// Choose to run either live cluster or static manifests discovery
 	if opts.EnableLiveDiscovery {
@@ -313,8 +319,14 @@ func discoverRun(opts *DiscoveryOptions) (count int, err error) {
 		violations, _ = filterViolations(violations, opts.LevelFilter)
 	}
 
-	// Create output report
+	// Convert internal OPA violations into output-compliant structure
 	suggestions := core.ConvertViolationsToSuggestions(violations, opts.EnableLiveDiscovery)
+
+	// Record raised suggestions into user account, for historical reason
+	// for now, we can simple ignore err with API !
+	_ = api.RecordSuggestions(apiClient, hostname, orgID, opts.Exec.ID, &suggestions)
+
+	// Create output report & show it to the user (or save it to local file)
 	if err = saveOutput(opts, suggestions); err != nil {
 		fmt.Fprintln(opts.IO.ErrOut, err)
 		return
