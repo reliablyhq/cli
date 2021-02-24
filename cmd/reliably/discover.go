@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -11,12 +12,15 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
+	// "k8s.io/client-go/kubernetes"
+
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/core"
 	ctx "github.com/reliablyhq/cli/core/context"
 	finder "github.com/reliablyhq/cli/core/find"
 	"github.com/reliablyhq/cli/core/iostreams"
+	k8s "github.com/reliablyhq/cli/core/kubernetes"
 	output "github.com/reliablyhq/cli/core/output"
 	"github.com/reliablyhq/cli/utils"
 )
@@ -40,10 +44,13 @@ type DiscoveryOptions struct {
 
 	Files []string
 
-	BaseDirectory string
-	OutputFormat  string
-	OutputFile    string
-	LevelFilter   string
+	BaseDirectory       string
+	OutputFormat        string
+	OutputFile          string
+	LevelFilter         string
+	EnableLiveDiscovery bool
+	KubernetesNamespace string
+	KubeConfigPath      string
 }
 
 func NewCmdDiscover() *cobra.Command {
@@ -119,7 +126,7 @@ manifests file from the current working directory.`,
 				// Example 1: output.sarif
 				// The file name MAY end with the additional extension ".json".
 				// Example 2: output.sarif.json
-				//see: https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317421
+				//see: https://doclientSet.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317421
 				if !strings.HasSuffix(opts.OutputFile, ".sarif") && !strings.HasSuffix(opts.OutputFile, ".sarif.json") {
 					return fmt.Errorf("The output file name for a SARIF report should end with the extension '.sarif' or '.sarif.json'")
 				}
@@ -134,6 +141,10 @@ manifests file from the current working directory.`,
 			// Check the suggestion level is valid
 			if opts.LevelFilter != "" && !supportedLevels.Has(opts.LevelFilter) {
 				return fmt.Errorf("Level '%v' is not valid. Use one of the supported levels: %s", opts.LevelFilter, supportedLevels)
+			}
+			// Check the file for the kubeconfig argument exists
+			if opts.KubeConfigPath != "" && !k8s.FileExists(opts.KubeConfigPath) {
+				return fmt.Errorf("The kubeconfig argument %v is not a path to a file", opts.KubeConfigPath)
 			}
 			return nil
 		},
@@ -150,33 +161,38 @@ manifests file from the current working directory.`,
 			}
 
 			log.WithFields(log.Fields{
-				"arg":       argStr,
-				"directory": opts.BaseDirectory,
-				"format":    opts.OutputFormat,
-				"output":    opts.OutputFile,
+				"arg":        argStr,
+				"directory":  opts.BaseDirectory,
+				"format":     opts.OutputFormat,
+				"output":     opts.OutputFile,
+				"live":       opts.EnableLiveDiscovery,
+				"namespace":  opts.KubernetesNamespace,
+				"kubeconfig": opts.KubeConfigPath,
 			}).Debug("Run 'discover' command with")
 
-			if len(args) > 0 {
-				fpath := args[0]
-				if fpath == "-" {
-					opts.Files = append(opts.Files, fpath)
-				} else {
-					info, _ := os.Stat(fpath)
-					if info.IsDir() {
-						opts.Files = finder.GetKubernetesFiles(fpath)
-					} else {
-						// single file
+			if !opts.EnableLiveDiscovery {
+				if len(args) > 0 {
+					fpath := args[0]
+					if fpath == "-" {
 						opts.Files = append(opts.Files, fpath)
+					} else {
+						info, _ := os.Stat(fpath)
+						if info.IsDir() {
+							opts.Files = finder.GetKubernetesFiles(fpath)
+						} else {
+							// single file
+							opts.Files = append(opts.Files, fpath)
+						}
 					}
+				} else {
+					// when no arg is provided, set the current working dir as default
+					if opts.BaseDirectory == "" {
+						opts.BaseDirectory = "."
+					}
+					opts.Files = finder.GetKubernetesFiles(opts.BaseDirectory)
 				}
-			} else {
-				// when no arg is provided, set the current working dir as default
-				if opts.BaseDirectory == "" {
-					opts.BaseDirectory = "."
-				}
-				opts.Files = finder.GetKubernetesFiles(opts.BaseDirectory)
+				log.Debug(fmt.Sprintf("Kubernetes files found: %v", opts.Files))
 			}
-			log.Debug(fmt.Sprintf("Kubernetes files found: %v", opts.Files))
 
 			violationCount, err := discoverRun(opts)
 			if err != nil {
@@ -209,6 +225,20 @@ manifests file from the current working directory.`,
 
 	cmd.Flags().StringVarP(
 		&opts.LevelFilter, "level", "l", "", "Display suggestions only for level and higher")
+
+	// Declare and hide herited options from kubectl
+	cmd.Flags().BoolVar(
+		&opts.EnableLiveDiscovery, "live", false,
+		"Look for weaknesses in a live Kubernetes cluster")
+
+	cmd.Flags().StringVarP(
+		&opts.KubernetesNamespace, "namespace", "n", "", "The namespace to use when using a live cluster",
+	)
+
+	cmd.Flags().StringVarP(
+		&opts.KubeConfigPath, "kubeconfig", "k", "", "Specifiies the path and file to use for kubeconfig for live discovery")
+	configPath, _ := k8s.FindKubeConfigPath("")
+	cmd.Flags().Lookup("kubeconfig").NoOptDefVal = configPath
 
 	return cmd
 }
@@ -268,7 +298,12 @@ func discoverRun(opts *DiscoveryOptions) (count int, err error) {
 		return
 	}
 
-	violations, err = staticDiscover(opts)
+	// Choose to run either live cluster or static manifests discovery
+	if opts.EnableLiveDiscovery {
+		violations, err = liveDiscover(opts)
+	} else {
+		violations, err = staticDiscover(opts)
+	}
 	if err != nil {
 		fmt.Fprintln(opts.IO.ErrOut, err)
 		return
@@ -280,7 +315,7 @@ func discoverRun(opts *DiscoveryOptions) (count int, err error) {
 	}
 
 	// Create output report
-	suggestions := core.ConvertViolationsToSuggestions(violations)
+	suggestions := core.ConvertViolationsToSuggestions(violations, opts.EnableLiveDiscovery)
 	if err = saveOutput(opts, suggestions); err != nil {
 		fmt.Fprintln(opts.IO.ErrOut, err)
 		return
@@ -343,11 +378,94 @@ func staticDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 					"Unable to review resource #%v (%v) in file '%v'", i, kind, fpath))
 				continue
 			}
-
+			// todo remove the next line
+			fmt.Printf("input  %v", input)
 			rs := core.Eval(ppath, input)
 			newIssues := core.ReportViolations(rs, fpath, platform, kind, startLine, name, uri)
 			violations = append(violations, newIssues...)
 		}
+
+	}
+
+	return violations, nil
+}
+
+// liveDiscover runs the discovery on a live Kubernetes cluster
+func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
+
+	var violations core.ResultSet = core.ResultSet{} // empty slice
+
+	startLine := 0
+	linesCount := 0
+
+	// if flag --cluster is set
+	// we will want to get the cluster configuration
+	// and search for weaknesses from there
+
+	kubeconfigPath, _ := k8s.FindKubeConfigPath(opts.KubeConfigPath)
+	// if the namespace flag is provided use that
+
+	// 1. Connect to the Cluster
+	clientSet, err := k8s.GetKubernetesClientSet(kubeconfigPath)
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. Scan the API for "configuration"
+
+	namespace := "default"
+	// if the namespace flag is provided use that
+	if opts.KubernetesNamespace != "" {
+		namespace = opts.KubernetesNamespace
+	}
+
+	// log.Debugf("Get pods for namespace %v", namespace)
+
+	var resourceList = k8s.GetResourceList(*clientSet, namespace)
+
+	for _, r := range resourceList {
+
+		startLine += linesCount
+		linesCount = strings.Count(r, "\n")
+
+		header, err := k8s.GetHeaderInfo(r)
+		if err != nil {
+			log.Debugf("Error from k8s.GetHeaderInfo: %v", err)
+
+			continue
+		}
+		log.Debug(fmt.Sprintf("Processing Pod #%v: in namespace: %v",
+			header.Metadata.Name, namespace))
+
+		kind := header.Kind
+		name := header.Metadata.Name
+		uri := header.URI()
+
+		var input interface{}
+		if err := json.Unmarshal([]byte(r), &input); err != nil {
+			// Unable to load JSON - shall not happen as already parsed once
+			// by the GetHeaderInfo method
+			// continue
+			log.Debugf("Error Unmarshalling Pod: %v", err)
+			continue
+		}
+		// todo consider removing this, I dont think its required
+		input = dyno.ConvertMapI2MapS(input)
+
+		// fetch the policies
+		ppath, err := core.FetchPolicy(workspace, platform, kind)
+		if err != nil {
+			log.Error(fmt.Sprintf(
+				"Unable to review resource #%v (%v) in file '%v'", 0, kind, "live"))
+			// continue
+		}
+		log.Debugf("policy path %v", ppath)
+
+		// evaluate the input with the policies
+		rs := core.Eval(ppath, input)
+
+		newIssues := core.ReportViolations(rs, "fpath", platform, kind, startLine, name, uri)
+		violations = append(violations, newIssues...)
 
 	}
 
@@ -368,5 +486,4 @@ func filterViolations(violations core.ResultSet, l string) (core.ResultSet, erro
 	})
 
 	return filtered.(core.ResultSet), nil
-
 }

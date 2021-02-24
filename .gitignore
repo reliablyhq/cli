@@ -19,3 +19,5 @@ bin/
 
 *.sarif
 *.sarif.json
+output.txt
+output2.txt

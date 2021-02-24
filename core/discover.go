@@ -175,12 +175,12 @@ func ReportViolations(rs rego.ResultSet, filename string, platform string, kind 
 
 // ConvertViolationsToSuggestions iterates over internal complex ResultSet
 // to return a slice of Suggestion better suited for output reporting
-func ConvertViolationsToSuggestions(rs ResultSet) []*Suggestion {
+func ConvertViolationsToSuggestions(rs ResultSet, live bool) []*Suggestion {
 
 	var suggestions []*Suggestion
 
 	for _, r := range rs {
-		suggestions = append(suggestions, NewSuggestion(r))
+		suggestions = append(suggestions, NewSuggestion(r, live))
 	}
 
 	return suggestions
