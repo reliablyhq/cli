@@ -125,7 +125,6 @@ func GetHeaderInfo(content string) (*KubernetesAPI, error) {
 // Clientset for the default config
 func GetKubernetesClientSet(kubeconfigPath string) (*kubernetes.Clientset, error) {
 	// Pull the config
-	fmt.Printf("GetKubernetesClientSet for config: %v \n", kubeconfigPath)
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 	// Connect
 	clientSet, err := kubernetes.NewForConfig(config)

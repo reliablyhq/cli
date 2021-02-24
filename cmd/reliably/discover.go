@@ -315,7 +315,7 @@ func discoverRun(opts *DiscoveryOptions) (count int, err error) {
 	}
 
 	// Create output report
-	suggestions := core.ConvertViolationsToSuggestions(violations)
+	suggestions := core.ConvertViolationsToSuggestions(violations, opts.EnableLiveDiscovery)
 	if err = saveOutput(opts, suggestions); err != nil {
 		fmt.Fprintln(opts.IO.ErrOut, err)
 		return

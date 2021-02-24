@@ -73,11 +73,25 @@ func (c Score) String() string {
 // NewSuggestion creates a new Suggestion
 // It basically converts the inner nested structure into a simple one
 // that holds all information needed for report formatting
-func NewSuggestion(result Result) *Suggestion {
+func NewSuggestion(result Result, live bool) *Suggestion {
+
+	var filePath string
+	var row int
+	var col int
+
+	if live {
+		filePath = result.Resource.Kind + ":" + result.Resource.Name
+		row = 0
+		col = 0
+	} else {
+		filePath = result.Resource.File.Filepath
+		row = result.Location.Row
+		col = result.Location.Col
+	}
 	return &Suggestion{
-		File:     result.Resource.File.Filepath,
-		Line:     result.Location.Row,
-		Col:      result.Location.Col,
+		File:     filePath,
+		Line:     row,
+		Col:      col,
 		RuleID:   result.Rule.ID,
 		RuleDef:  result.Rule.Definition,
 		Level:    result.Rule.Level,
