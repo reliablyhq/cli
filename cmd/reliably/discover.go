@@ -332,7 +332,14 @@ func discoverRun(opts *DiscoveryOptions) (count int, err error) {
 		return
 	}
 
-	return len(violations), nil
+	count = len(violations)
+
+	if (opts.OutputFormat == "simple" || opts.OutputFormat == "") && count > 0 && opts.OutputFile == "" {
+		plural := utils.IfThenElse(count > 1, "s", "")
+		fmt.Fprintf(opts.IO.ErrOut, "%v suggestion%s found\n", count, plural)
+	}
+
+	return
 
 }
 

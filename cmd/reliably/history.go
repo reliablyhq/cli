@@ -1,24 +1,32 @@
 package cmd
 
 import (
+	//"errors"
 	"fmt"
+	"net/http"
 	"os"
+	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/core/color"
 	ctx "github.com/reliablyhq/cli/core/context"
 	"github.com/reliablyhq/cli/core/iostreams"
+	"github.com/reliablyhq/cli/core/output"
+	"github.com/reliablyhq/cli/utils"
 )
 
 type HistoryOptions struct {
-	IO        *iostreams.IOStreams
-	Hostname  string
-	ApiClient *api.Client
+	IO         *iostreams.IOStreams
+	Hostname   string
+	HttpClient func() *http.Client
 
 	History  *interface{}
+	OrgID    string
 	SourceID string
 }
 
@@ -26,6 +34,9 @@ func NewCmdHistory() *cobra.Command {
 	opts := &HistoryOptions{
 		IO:       iostreams.System(),
 		Hostname: core.Hostname(),
+		HttpClient: func() *http.Client {
+			return api.AuthHTTPClient(core.Hostname())
+		},
 	}
 
 	cmd := &cobra.Command{
@@ -39,20 +50,17 @@ func NewCmdHistory() *cobra.Command {
 			}
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			// cannot be done when creating the opts map, as
-			// the init config has not been called yet !
-			// instead we need to ensure the command is initialized  properly
-			// so that we can read from the config
-			opts.ApiClient = api.NewClientFromHTTP(api.AuthHTTPClient(opts.Hostname))
+			var err error
+			apiClient := api.NewClientFromHTTP(opts.HttpClient())
 
 			// Ensure the CLI history is executed in a valid org/source
-			orgID, err := api.CurrentUserOrganizationID(opts.ApiClient, opts.Hostname)
+			opts.OrgID, err = api.CurrentUserOrganizationID(apiClient, opts.Hostname)
 			if err != nil {
 				return fmt.Errorf("unable to retrieve current organization: %w", err)
 			}
 
 			context := ctx.NewContext() // can we improve/refactor to create a source without full context
-			opts.SourceID, err = api.CurrentSourceID(opts.ApiClient, opts.Hostname, orgID, context.Source.(ctx.Source).Hash)
+			opts.SourceID, err = api.CurrentSourceID(apiClient, opts.Hostname, opts.OrgID, context.Source.(ctx.Source).Hash)
 			if err != nil {
 				return fmt.Errorf("unable to retrieve current Source: %w", err)
 			}
@@ -69,8 +77,103 @@ func NewCmdHistory() *cobra.Command {
 
 func historyRun(opts *HistoryOptions) (err error) {
 
-	fmt.Printf("Showing history for Source %s\n", opts.SourceID)
+	log.WithFields(log.Fields{
+		"org":    opts.OrgID,
+		"source": opts.SourceID,
+	}).Debug("Run 'history' command with")
+
+	apiClient := api.NewClientFromHTTP(opts.HttpClient())
+
+	var (
+		cursor       string
+		hasNext      bool = true
+		noHistory    bool = true
+		currentExec  string
+		currentCount int // suggestions of an execution might be split on two+ pages
+	)
+
+	for hasNext {
+		history, err := api.GetSuggestionHistory(apiClient, opts.Hostname, opts.OrgID, opts.SourceID, cursor)
+		if err != nil {
+			return fmt.Errorf("Unable to retrieve your execution & suggestion history: %w", err)
+		}
+
+		if len(history.Executions) > 0 {
+			noHistory = false
+		}
+
+		for _, exec := range history.Executions {
+
+			// we start a new execution - print out the header
+			if exec.ID != currentExec {
+				if currentExec != "" {
+					// prints the footer for previous exec - except for first one
+					printExecFooter(opts, nil, currentCount)
+				}
+
+				printExecHeader(opts, &exec)
+				currentExec = exec.ID
+				currentCount = len(exec.Suggestions)
+			} else {
+				// we're continuing the exection on a different cursor/page
+				currentCount = currentCount + len(exec.Suggestions)
+			}
+
+			printExecSuggestions(opts, &exec)
+
+			// at end of the current execution, we don't know whether the execution
+			// has more suggestions to come in the next cursor-based pagination
+		}
+
+		hasNext = history.PageInfo.HasNextPage
+		cursor = history.PageInfo.Cursor
+
+		//hasNext = false // For DEV only @TODO remove
+
+		if !hasNext {
+			// prints out latest exec footer, before leaving
+			printExecFooter(opts, nil, currentCount)
+		}
+
+	}
+
+	// handle final message when no history was found for current source
+	if noHistory {
+		er("You have no history yet!")
+	}
 
 	return nil
 
+}
+
+func printExecHeader(opts *HistoryOptions, exec *api.Execution) {
+	//header := color.Yellow(fmt.Sprintf("Execution %s", exec.ID))
+	header := color.Yellow(fmt.Sprintf("Execution #%d - %s", 0, exec.ID))
+	sub := fmt.Sprintf("Date: %s", exec.Date.Format(time.RFC1123))
+
+	fmt.Fprintln(opts.IO.Out, header)
+	fmt.Fprintln(opts.IO.Out, sub)
+	fmt.Fprintln(opts.IO.Out)
+}
+
+func printExecSuggestions(opts *HistoryOptions, exec *api.Execution) {
+
+	var suggestions []*core.Suggestion
+	for _, s := range exec.Suggestions {
+		suggestions = append(suggestions, s.Data)
+	}
+
+	output.CreateReport(opts.IO.Out, "simple", "", suggestions)
+}
+
+func printExecFooter(opts *HistoryOptions, exec *api.Execution, nbSuggestions int) {
+	if nbSuggestions > 0 {
+		plural := utils.IfThenElse(nbSuggestions > 1, "s", "")
+		msg := color.Red(fmt.Sprintf("%v suggestion%s found", nbSuggestions, plural))
+		fmt.Fprintf(opts.IO.ErrOut, "%s %s\n", iostreams.FailureIcon(), msg)
+	} else {
+		msg := color.Green("No suggestion found!")
+		fmt.Fprintf(opts.IO.ErrOut, "%s %s\n", iostreams.SuccessIcon(), msg)
+	}
+	fmt.Fprintln(opts.IO.ErrOut)
 }

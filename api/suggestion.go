@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"time"
 
 	"github.com/reliablyhq/cli/core"
 )
@@ -34,4 +36,43 @@ func RecordSuggestions(client *Client, hostname string,
 	}
 
 	return nil
+}
+
+type Execution struct {
+	ID          string       `json:"id"`
+	Date        time.Time    `json:"created_on"`
+	Suggestions []Suggestion `json:"suggestions"`
+}
+
+type Suggestion struct {
+	ID   string           `json:"id"`
+	Date time.Time        `json:"created_on"`
+	Data *core.Suggestion `json:"data"`
+}
+
+type Page struct {
+	Cursor      string `json:"before"`
+	HasNextPage bool   `json:"has_next_page"`
+}
+
+type SuggestionHistory struct {
+	PageInfo   Page        `json:"page_info"`
+	Executions []Execution `json:"executions"`
+}
+
+func GetSuggestionHistory(client *Client, hostname string,
+	orgID string, sourceID string, cursor string) (*SuggestionHistory, error) {
+
+	var history *SuggestionHistory
+
+	path := fmt.Sprintf("orgs/%s/suggestions", orgID)
+	if cursor != "" {
+		params := url.Values{}
+		params.Add("before", cursor)
+		path = fmt.Sprintf("%s?%s", path, params.Encode())
+	}
+
+	err := client.REST(hostname, "GET", path, nil, &history)
+
+	return history, err
 }
