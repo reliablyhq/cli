@@ -409,6 +409,7 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 
 	var resourceList []string = make([]string, 0, 0)
 
+	// Put this in kubernetes.go
 	podList, _ := k8s.GetPodSpec(*clientSet, namespace)
 	deploymentList, _ := k8s.GetDeploymentSpec(*clientSet, namespace)
 	clusterRoleBindingList, _ := k8s.GetClusterRoleBindingSpec(*clientSet)
@@ -426,6 +427,7 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 	for _, l := range lists {
 		resourceList = append(resourceList, l...)
 	}
+	// End of Put this in kubernetes.go
 
 	for _, r := range resourceList {
 

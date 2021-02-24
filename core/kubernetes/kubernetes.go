@@ -14,7 +14,13 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	netv1beta1 "k8s.io/api/networking/v1beta1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	k8sJSON "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes"
 
@@ -126,31 +132,10 @@ func GetPodSpec(cs kubernetes.Clientset, namespace string) (po []string, err err
 	if err != nil {
 		return
 	}
+
 	for _, p := range pods.Items {
-		podJSON := regexp.MustCompile(`\n|\|`).
-			ReplaceAllString(p.Annotations["kubectl.kubernetes.io/last-applied-configuration"], "")
-
-		// if annotation was empty use k8s JSON serializer
-		if len(podJSON) == 0 {
-			var podRawJSON strings.Builder
-			e := k8sJSON.NewSerializerWithOptions(k8sJSON.DefaultMetaFactory,
-				nil, nil,
-				k8sJSON.SerializerOptions{Yaml: false}, // Yaml: false, returns JSON
-			)
-
-			// Setting kind manually
-			p.Kind = "Pod"
-
-			// p.APIVersion = "v1"
-			e.Encode(p.DeepCopyObject(), &podRawJSON)
-			podJSON = podRawJSON.String()
-
-			// log.Debugf("Error processing pod: %v\n", p.Name)
-
-		}
-
-		po = append(po, GetFormattedJSON(podJSON))
-
+		podJSON := itemToJSON(p, "Pod")
+		po = append(po, podJSON)
 	}
 	return po, err
 }
@@ -161,26 +146,10 @@ func GetDeploymentSpec(cs kubernetes.Clientset, namespace string) (deploy []stri
 	if err != nil {
 		return
 	}
+
 	for _, d := range deployment.Items {
-		deployJSON := regexp.MustCompile(`\n|\|`).
-			ReplaceAllString(d.Annotations["kubectl.kubernetes.io/last-applied-configuration"], "")
-
-		if len(deployJSON) == 0 {
-			var deployRawJSON strings.Builder
-			e := k8sJSON.NewSerializerWithOptions(k8sJSON.DefaultMetaFactory,
-				nil, nil,
-				k8sJSON.SerializerOptions{Yaml: false}, // Yaml: false, returns JSON
-			)
-
-			// Setting kind manually
-			d.Kind = "Deployment"
-
-			// p.APIVersion = "v1"
-			e.Encode(d.DeepCopyObject(), &deployRawJSON)
-			deployJSON = deployRawJSON.String()
-		}
-
-		deploy = append(deploy, GetFormattedJSON(deployJSON))
+		deployJSON := itemToJSON(d, "Deployment")
+		deploy = append(deploy, deployJSON)
 	}
 	return deploy, err
 }
@@ -191,28 +160,10 @@ func GetClusterRoleBindingSpec(cs kubernetes.Clientset) (clusterRoleBinding []st
 	if err != nil {
 		return
 	}
-	// fmt.Printf("crb: %v", crb)
+
 	for _, c := range crb.Items {
-		crbJSON := regexp.MustCompile(`\n|\|`).
-			ReplaceAllString(c.Annotations["kubectl.kubernetes.io/last-applied-configuration"], "")
-
-		if len(crbJSON) == 0 {
-			var crbRawJSON strings.Builder
-			e := k8sJSON.NewSerializerWithOptions(k8sJSON.DefaultMetaFactory,
-				nil, nil,
-				k8sJSON.SerializerOptions{Yaml: false}, // Yaml: false, returns JSON
-			)
-
-			// Setting kind manually
-			c.Kind = "ClusterRoleBinding"
-
-			// p.APIVersion = "v1"
-			e.Encode(c.DeepCopyObject(), &crbRawJSON)
-			crbJSON = crbRawJSON.String()
-		}
-
-		clusterRoleBinding = append(clusterRoleBinding, GetFormattedJSON(crbJSON))
-
+		crbJSON := itemToJSON(c, "ClusterRoleBinding")
+		clusterRoleBinding = append(clusterRoleBinding, crbJSON)
 	}
 	return clusterRoleBinding, err
 }
@@ -228,28 +179,10 @@ func GetIngressSpec(cs kubernetes.Clientset, namespace string) (ingress []string
 	if err != nil {
 		return
 	}
-	// fmt.Printf("crb: %v", crb)
+
 	for _, i := range ing.Items {
-		ingJSON := regexp.MustCompile(`\n|\|`).
-			ReplaceAllString(i.Annotations["kubectl.kubernetes.io/last-applied-configuration"], "")
-
-		if len(ingJSON) == 0 {
-			var ingRawJSON strings.Builder
-			e := k8sJSON.NewSerializerWithOptions(k8sJSON.DefaultMetaFactory,
-				nil, nil,
-				k8sJSON.SerializerOptions{Yaml: false}, // Yaml: false, returns JSON
-			)
-
-			// Setting kind manually
-			i.Kind = "Ingress"
-
-			// p.APIVersion = "v1"
-			e.Encode(i.DeepCopyObject(), &ingRawJSON)
-			// fmt.Printf("Ingress host: %v\n", ingRawJSON.Spec.rules.Host)
-			ingJSON = ingRawJSON.String()
-		}
-		ingress = append(ingress, GetFormattedJSON(ingJSON))
-
+		ingJSON := itemToJSON(i, "Ingress")
+		ingress = append(ingress, ingJSON)
 	}
 	return ingress, err
 }
@@ -260,28 +193,61 @@ func GetPodSecurityPolicySpec(cs kubernetes.Clientset) (podSecPol []string, err 
 	if err != nil {
 		return
 	}
-	// fmt.Printf("crb: %v", crb)
 	for _, p := range secpol.Items {
-		secpolJSON := regexp.MustCompile(`\n|\|`).
-			ReplaceAllString(p.Annotations["kubectl.kubernetes.io/last-applied-configuration"], "")
-
-		if len(secpolJSON) == 0 {
-			var secpolRawJSON strings.Builder
-			e := k8sJSON.NewSerializerWithOptions(k8sJSON.DefaultMetaFactory,
-				nil, nil,
-				k8sJSON.SerializerOptions{Yaml: false}, // Yaml: false, returns JSON
-			)
-
-			// Setting kind manually
-			p.Kind = "PodSecurityPolicy"
-
-			// p.APIVersion = "v1"
-			e.Encode(p.DeepCopyObject(), &secpolRawJSON)
-			secpolJSON = secpolRawJSON.String()
-		}
-
-		podSecPol = append(podSecPol, GetFormattedJSON(secpolJSON))
-
+		secpolJSON := itemToJSON(p, "PodSecurityPolicy")
+		podSecPol = append(podSecPol, secpolJSON)
 	}
 	return podSecPol, err
+}
+
+func itemToJSON(item interface{}, kind string) string {
+	var lastConfig string
+	var dc runtime.Object
+	switch kind {
+	case "Pod":
+		i := item.(corev1.Pod)
+		i.Kind = kind
+		lastConfig = i.Annotations["kubectl.kubernetes.io/last-applied-configuration"]
+		dc = i.DeepCopyObject()
+	case "Deployment":
+		i := item.(appsv1.Deployment)
+		i.Kind = kind
+		lastConfig = i.Annotations["kubectl.kubernetes.io/last-applied-configuration"]
+		dc = i.DeepCopyObject()
+	case "ClusterRoleBinding":
+		i := item.(rbacv1.ClusterRoleBinding)
+		i.Kind = kind
+		lastConfig = i.Annotations["kubectl.kubernetes.io/last-applied-configuration"]
+		dc = i.DeepCopyObject()
+	case "Ingress":
+		i := item.(netv1beta1.Ingress)
+		i.Kind = kind
+		lastConfig = i.Annotations["kubectl.kubernetes.io/last-applied-configuration"]
+		dc = i.DeepCopyObject()
+	case "PodSecurityPolicy":
+		i := item.(policyv1beta1.PodSecurityPolicy)
+		i.Kind = kind
+		lastConfig = i.Annotations["kubectl.kubernetes.io/last-applied-configuration"]
+		dc = i.DeepCopyObject()
+	}
+
+	JSON := regexp.MustCompile(`\n|\|`).
+		ReplaceAllString(lastConfig, "")
+
+	// if annotation was empty use k8s JSON serializer
+	if len(JSON) == 0 {
+		var rawJSON strings.Builder
+		e := k8sJSON.NewSerializerWithOptions(k8sJSON.DefaultMetaFactory,
+			nil, nil,
+			k8sJSON.SerializerOptions{Yaml: false}, // Yaml: false, returns JSON
+		)
+
+		// p.APIVersion = "v1"
+		e.Encode(dc, &rawJSON)
+		JSON = rawJSON.String()
+
+		// log.Debugf("Error processing pod: %v\n", p.Name)
+
+	}
+	return GetFormattedJSON(JSON)
 }
