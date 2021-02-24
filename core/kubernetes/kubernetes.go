@@ -275,3 +275,27 @@ func itemToJSON(item interface{}, kind string) string {
 	}
 	return GetFormattedJSON(JSON)
 }
+
+func GetResourceList(cs kubernetes.Clientset, namespace string) []string {
+	var rl []string = make([]string, 0, 0)
+
+	podList, _ := GetPodSpec(cs, namespace)
+	deploymentList, _ := GetDeploymentSpec(cs, namespace)
+	clusterRoleBindingList, _ := GetClusterRoleBindingSpec(cs)
+	ingressList, _ := GetIngressSpec(cs, namespace)
+	podSecurityPolicyList, _ := GetPodSecurityPolicySpec(cs)
+
+	lists := [][]string{
+		podList,
+		deploymentList,
+		clusterRoleBindingList,
+		ingressList,
+		podSecurityPolicyList,
+	}
+
+	for _, l := range lists {
+		rl = append(rl, l...)
+	}
+
+	return rl
+}
