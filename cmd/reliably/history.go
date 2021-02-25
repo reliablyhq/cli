@@ -2,6 +2,7 @@ package cmd
 
 import (
 	//"errors"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -110,6 +111,10 @@ func historyRun(opts *HistoryOptions) (err error) {
 			return fmt.Errorf("Unable to retrieve your execution & suggestion history: %w", err)
 		}
 
+		if history == nil {
+			break
+		}
+
 		if len(history.Executions) > 0 {
 			noHistory = false
 		}
@@ -163,7 +168,7 @@ func historyRun(opts *HistoryOptions) (err error) {
 
 	// handle final message when no history was found for current source
 	if noHistory {
-		er("You have no history yet!")
+		return errors.New("You have no history yet!")
 	}
 
 	return nil
