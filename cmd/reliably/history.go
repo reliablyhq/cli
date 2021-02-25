@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/AlecAivazis/survey/v2/terminal"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
@@ -62,6 +64,13 @@ func NewCmdHistory() *cobra.Command {
 			context := ctx.NewContext() // can we improve/refactor to create a source without full context
 			opts.SourceID, err = api.CurrentSourceID(apiClient, opts.Hostname, opts.OrgID, context.Source.(ctx.Source).Hash)
 			if err != nil {
+				if e, ok := err.(api.HTTPError); ok {
+					if e.StatusCode == 404 {
+						return fmt.Errorf(`Current source is unknown!
+You probably haven't run 'reliably discover .' from this current working directory yet.
+The history will only be available after a first discovery.`)
+					}
+				}
 				return fmt.Errorf("unable to retrieve current Source: %w", err)
 			}
 
@@ -133,6 +142,18 @@ func historyRun(opts *HistoryOptions) (err error) {
 		if !hasNext {
 			// prints out latest exec footer, before leaving
 			printExecFooter(opts, nil, currentCount)
+			fmt.Fprintln(opts.IO.ErrOut, "You reached the end of your history!")
+		}
+
+		if hasNext {
+			// prompt user before loading more
+			err := promptToLoadMore(opts)
+			if err != nil {
+				if err == terminal.InterruptErr {
+					os.Exit(0)
+				}
+				return err
+			}
 		}
 
 	}
@@ -176,4 +197,21 @@ func printExecFooter(opts *HistoryOptions, exec *api.Execution, nbSuggestions in
 		fmt.Fprintf(opts.IO.ErrOut, "%s %s\n", iostreams.SuccessIcon(), msg)
 	}
 	fmt.Fprintln(opts.IO.ErrOut)
+}
+
+func promptToLoadMore(opts *HistoryOptions) error {
+
+	null := ""
+
+	prompt := &survey.Input{
+		Message: "press ENTER to load more entries or Ctrl+C to exit...",
+		//Help:    "You have more entries in your history.",
+	}
+
+	err := survey.AskOne(prompt, &null, survey.WithIcons(func(icons *survey.IconSet) {
+		icons.Question.Text = ">"
+		icons.Question.Format = "green"
+	}))
+
+	return err
 }
