@@ -51,7 +51,7 @@ type Suggestion struct {
 }
 
 type Page struct {
-	Cursor      string `json:"before"`
+	Cursor      string `json:"cursor"`
 	HasNextPage bool   `json:"has_next_page"`
 }
 
@@ -68,7 +68,7 @@ func GetSuggestionHistory(client *Client, hostname string,
 	path := fmt.Sprintf("orgs/%s/suggestions", orgID)
 	if cursor != "" {
 		params := url.Values{}
-		params.Add("before", cursor)
+		params.Add("cursor", cursor)
 		path = fmt.Sprintf("%s?%s", path, params.Encode())
 	}
 
