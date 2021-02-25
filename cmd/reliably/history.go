@@ -22,6 +22,7 @@ import (
 	"github.com/reliablyhq/cli/utils"
 )
 
+const ResetLine = "\r\033[K"
 const ClearPreviousLine = "\033[1A\033[K"
 
 type HistoryOptions struct {
@@ -170,8 +171,7 @@ func historyRun(opts *HistoryOptions) (err error) {
 }
 
 func printExecHeader(opts *HistoryOptions, exec *api.Execution) {
-	//header := color.Yellow(fmt.Sprintf("Execution %s", exec.ID))
-	header := color.Yellow(fmt.Sprintf("Execution #%d - %s", 0, exec.ID))
+	header := color.Yellow(fmt.Sprintf("Execution %s", exec.ID))
 	sub := fmt.Sprintf("Date: %s", exec.Date.Format(time.RFC1123))
 
 	fmt.Fprintln(opts.IO.Out, header)
@@ -217,7 +217,13 @@ func promptToLoadMore(opts *HistoryOptions) error {
 
 	if err == nil {
 		// clear prompted message, to continue printing next to latest history line
+		// (as enter has been pressed ie cursor is on a new line)
 		fmt.Fprint(opts.IO.ErrOut, ClearPreviousLine)
+	} else {
+		if err == terminal.InterruptErr {
+			// when ctrl-c, cursor is still on the prompt line
+			fmt.Fprint(opts.IO.ErrOut, ResetLine)
+		}
 	}
 
 	return err
