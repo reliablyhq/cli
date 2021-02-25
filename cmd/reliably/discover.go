@@ -235,10 +235,9 @@ manifests file from the current working directory.`,
 		&opts.KubernetesNamespace, "namespace", "n", "", "The namespace to use when using a live cluster",
 	)
 
+	configPath, _ := k8s.FindKubeConfigPath()
 	cmd.Flags().StringVarP(
-		&opts.KubeConfigPath, "kubeconfig", "k", "", "Specifiies the path and file to use for kubeconfig for live discovery")
-	configPath, _ := k8s.FindKubeConfigPath("")
-	cmd.Flags().Lookup("kubeconfig").NoOptDefVal = configPath
+		&opts.KubeConfigPath, "kubeconfig", "k", configPath, "Specifiies the path and file to use for kubeconfig for live discovery")
 
 	return cmd
 }
