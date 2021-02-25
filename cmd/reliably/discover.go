@@ -143,7 +143,8 @@ manifests file from the current working directory.`,
 				return fmt.Errorf("Level '%v' is not valid. Use one of the supported levels: %s", opts.LevelFilter, supportedLevels)
 			}
 			// Check the file for the kubeconfig argument exists
-			if opts.KubeConfigPath != "" && !k8s.FileExists(opts.KubeConfigPath) {
+			// Check ONLY if we turn on the live mode - otherwise we don't want to raise an error for people that don't have kubernetes installed -
+			if opts.EnableLiveDiscovery && opts.KubeConfigPath != "" && !k8s.FileExists(opts.KubeConfigPath) {
 				return fmt.Errorf("The kubeconfig argument %v is not a path to a file", opts.KubeConfigPath)
 			}
 			return nil
