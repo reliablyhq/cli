@@ -88,14 +88,16 @@ func FileExists(filename string) bool {
 }
 
 // FindKubeConfigPath checks will return a path for the kubernetes config file
-func FindKubeConfigPath(path string) (string, error) {
+func FindKubeConfigPath(path ...string) (string, error) {
+	if len(path) > 0 {
+		return path[0], nil
+	}
+
 	env := os.Getenv("KUBECONFIG")
 	if env != "" {
 		return env, nil
 	}
-	if path != "" {
-		return path, nil
-	}
+
 	p, _ := homedir.Dir()
 	p = p + "/.kube/config"
 	return p, nil
