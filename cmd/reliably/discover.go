@@ -237,7 +237,7 @@ manifests file from the current working directory.`,
 
 	configPath, _ := k8s.FindKubeConfigPath()
 	cmd.Flags().StringVarP(
-		&opts.KubeConfigPath, "kubeconfig", "k", configPath, "Specifiies the path and file to use for kubeconfig for live discovery")
+		&opts.KubeConfigPath, "kubeconfig", "k", configPath, "Specifies the path and file to use for kubeconfig for live discovery")
 
 	return cmd
 }
