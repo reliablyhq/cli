@@ -22,6 +22,8 @@ import (
 	"github.com/reliablyhq/cli/utils"
 )
 
+const ClearPreviousLine = "\033[1A\033[K"
+
 type HistoryOptions struct {
 	IO         *iostreams.IOStreams
 	Hostname   string
@@ -212,6 +214,11 @@ func promptToLoadMore(opts *HistoryOptions) error {
 		icons.Question.Text = ">"
 		icons.Question.Format = "green"
 	}))
+
+	if err == nil {
+		// clear prompted message, to continue printing next to latest history line
+		fmt.Fprint(opts.IO.ErrOut, ClearPreviousLine)
+	}
 
 	return err
 }
