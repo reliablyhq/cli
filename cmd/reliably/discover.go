@@ -377,8 +377,6 @@ func staticDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 					"Unable to review resource #%v (%v) in file '%v'", i, kind, fpath))
 				continue
 			}
-			// todo remove the next line
-			fmt.Printf("input  %v", input)
 			rs := core.Eval(ppath, input)
 			newIssues := core.ReportViolations(rs, fpath, platform, kind, startLine, name, uri)
 			violations = append(violations, newIssues...)
