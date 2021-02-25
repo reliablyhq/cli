@@ -11,6 +11,7 @@ import (
 	"time"
 
 	//"github.com/spf13/viper"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/config"
@@ -137,6 +138,7 @@ func HandleHTTPError(resp *http.Response) error {
 // REST performs a REST request and parses the response.
 func (c Client) REST(hostname string, method string, p string, body io.Reader, data interface{}) error {
 	url := core.RESTPrefix(hostname) + p
+	log.Debugf("[api.REST] %s %s", method, url)
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return err
