@@ -1,6 +1,7 @@
 package context
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -273,6 +274,21 @@ type GitlabSource struct {
 	Type SourceType `json:"type"`
 }
 
+// ComputeHash computes the hash of the source meta
+func (s *Source) ComputeHash() {
+	if s.Hash != "" {
+		return
+	}
+
+	str := fmt.Sprintf("%s", s.Meta)
+	h := sha256.New()
+	_, _ = h.Write([]byte(str))
+	hash := fmt.Sprintf("%x", h.Sum(nil))
+
+	s.Hash = hash
+
+}
+
 // setSource updates the context with the source, that is scanned by the CLI
 // It inditates the type of the source code and meta to be able to uniquely
 // indentify it, as well as to refer back to it
@@ -314,6 +330,8 @@ func setSource(context *Context) {
 				"workingdir": context.Runtime.WorkingDir,
 			},
 		}
+		source.ComputeHash()
+
 	}
 
 	context.Source = *source
