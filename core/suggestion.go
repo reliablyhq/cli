@@ -2,6 +2,8 @@ package core
 
 import (
 	"crypto/md5"
+	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -23,6 +25,32 @@ type Suggestion struct {
 	Name     string `json:"name"`     // Name of the resource
 
 	Hash string `json:"-" yaml:"-"` // Unique Hash identifying the suggestion - not exported - used as fingerprint if specified
+}
+
+// UnmarshalJSON unmarshal json string into object
+// by handling custom level string-to-int conversion
+func (s *Suggestion) UnmarshalJSON(data []byte) error {
+
+	type Alias Suggestion
+
+	a := &struct {
+		Level string `json:"level"`
+		*Alias
+	}{
+		Alias: (*Alias)(s),
+	}
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+
+	level, err := NewLevel(a.Level)
+	if err != nil {
+		return errors.New("cannot unmarshal string into Go struct field Suggestion.Level of type Level")
+	}
+
+	s.Level = level
+
+	return nil
 }
 
 // FileLocation point out the file path and line/column numbers in file
