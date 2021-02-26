@@ -42,6 +42,10 @@ func (s *Suggestion) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
+	if a.Level == "" {
+		return nil
+	}
+
 	level, err := NewLevel(a.Level)
 	if err != nil {
 		return fmt.Errorf("cannot unmarshal string into Go struct field Suggestion.Level of type Level: %w", err)
