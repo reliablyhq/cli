@@ -3,7 +3,7 @@ kind: Plugin
 metadata:
   name: reliably
 spec:
-  version: v0.3.0
+  version: {{ .TagName }}
   platforms:
   - {{addURIAndSha "https://github.com/reliablyhq/cli/releases/download/{{ .TagName }}/reliably_{{ .TagName }}_darwin_amd64.tar.gz" .TagName }}
     selector:
