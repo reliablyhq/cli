@@ -66,12 +66,14 @@ func GetSuggestionHistory(client *Client, hostname string,
 	var history *SuggestionHistory
 
 	path := fmt.Sprintf("orgs/%s/suggestions", orgID)
-	if cursor != "" {
-		params := url.Values{}
-		params.Add("cursor", cursor)
+	params := url.Values{}
+	if sourceID != "" {
 		params.Add("source_id", sourceID)
-		path = fmt.Sprintf("%s?%s", path, params.Encode())
 	}
+	if cursor != "" {
+		params.Add("cursor", cursor)
+	}
+	path = fmt.Sprintf("%s?%s", path, params.Encode())
 
 	err := client.REST(hostname, "GET", path, nil, &history)
 
