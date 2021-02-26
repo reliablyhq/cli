@@ -93,6 +93,12 @@ jobs:
           -ldflags="-X 'github.com/reliablyhq/cli/version.Version=$(git describe --tags)' -X 'github.com/reliablyhq/cli/version.Date=$(date +%Y-%m-%d)'" \
           -o bin/reliably-${{matrix.goos}}-${{matrix.goarch}} \
           main.go
+      - name: Build Krew Tarballs
+        run: |
+          mkdir krew-${{matrix.goos}}-${{matrix.goarch}}
+          cp bin/reliably-${{matrix.goos}}-${{matrix.goarch}} krew-${{matrix.goos}}-${{matrix.goarch}}/reliably
+          curl -L https://github.com/reliablyhq/cli/raw/main/LICENSE -o krew-${{matrix.goos}}-${{matrix.goarch}}/LICENSE
+          tar -zcf reliably_${{ env.RELEASE_VERSION }}_${{matrix.goos}}_${{matrix.goarch}}.tar.gz krew-${{matrix.goos}}-${{matrix.goarch}}/*
       - name: Load Release URL File from create release job
         uses: actions/download-artifact@v2
         with:
@@ -113,6 +119,16 @@ jobs:
           asset_path: bin/reliably-${{matrix.goos}}-${{matrix.goarch}}
           asset_name: reliably-${{matrix.goos}}-${{matrix.goarch}}
           asset_content_type: application/octet-stream
+      - name: Upload Krew Assets
+        id: upload-krew-assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        with:
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: reliably_${{ env.RELEASE_VERSION }}_${{matrix.goos}}_${{matrix.goarch}}.tar.gz
+          asset_name: reliably_${{ env.RELEASE_VERSION }}_${{matrix.goos}}_${{matrix.goarch}}.tar.gz
+          asset_content_type: application/x-gzip
       - name: Generate md5 for binary asset
         run: |
           # cd to bin folder, not to have bin/ prefix in md5 ouput
@@ -219,6 +235,9 @@ jobs:
         with:
           name: release_url
           failOnError: false
+      - name: Update new version in krew-index
+        uses: rajatjindal/krew-release-bot@v0.0.38
+        continue-on-error: true
 
   gen-cli-doc:
     name: Generate CLI documentation
