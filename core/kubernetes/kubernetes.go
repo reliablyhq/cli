@@ -131,12 +131,19 @@ func GetHeaderInfo(content string) (*KubernetesAPI, error) {
 
 // GetKubernetesClientSet uses the default kubectl config file to create a
 // Clientset for the default config
-func GetKubernetesClientSet(kubeconfigPath string) (*kubernetes.Clientset, error) {
+func GetKubernetesClientSet(kubeconfigPath, context string) (*kubernetes.Clientset, error) {
 	// Pull the config
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
+		&clientcmd.ConfigOverrides{CurrentContext: context}).
+		ClientConfig()
+	// config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+	if err != nil {
+		return nil, err
+	}
+
 	// Connect
-	clientSet, err := kubernetes.NewForConfig(config)
-	return clientSet, err
+	return kubernetes.NewForConfig(config)
 }
 
 // GetFormattedJSON takes a source string and outputs a formatted JSON
