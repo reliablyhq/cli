@@ -299,9 +299,24 @@ func setSource(context *Context) {
 	if utils.IsGitRepo() {
 
 		url, _ := utils.GitRemoteOriginURL()
-		source, err = NewGitSource(url)
-		if err != nil {
-			return
+
+		if url == "" {
+			// we're under a git init repo - we consider it a local source for now
+			source = &Source{
+				Type: local,
+				Meta: map[string]string{
+					"hostname":   context.Runtime.Hostname,
+					"workingdir": context.Runtime.WorkingDir,
+				},
+			}
+			source.ComputeHash()
+
+		} else {
+			// we have a valid GIT repo
+			source, err = NewGitSource(url)
+			if err != nil {
+				return
+			}
 		}
 
 	} else if IsGithubRepo() {
