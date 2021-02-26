@@ -50,6 +50,7 @@ type DiscoveryOptions struct {
 	LevelFilter         string
 	EnableLiveDiscovery bool
 	KubernetesNamespace string
+	KubernetesContext   string
 	KubeConfigPath      string
 }
 
@@ -234,6 +235,10 @@ manifests file from the current working directory.`,
 
 	cmd.Flags().StringVarP(
 		&opts.KubernetesNamespace, "namespace", "n", "", "The namespace to use when using a live cluster",
+	)
+
+	cmd.Flags().StringVarP(
+		&opts.KubernetesContext, "context", "c", os.Getenv("KUBECONTEXT"), "Specifies the Kubernetes context to evaluate when scanning live cluster",
 	)
 
 	configPath, _ := k8s.FindKubeConfigPath()
@@ -423,7 +428,7 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 	// if the namespace flag is provided use that
 
 	// 1. Connect to the Cluster
-	clientSet, err := k8s.GetKubernetesClientSet(kubeconfigPath)
+	clientSet, err := k8s.GetKubernetesClientSet(kubeconfigPath, opts.KubernetesContext)
 	if err != nil {
 		return nil, err
 	}
