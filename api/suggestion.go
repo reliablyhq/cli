@@ -69,6 +69,7 @@ func GetSuggestionHistory(client *Client, hostname string,
 	if cursor != "" {
 		params := url.Values{}
 		params.Add("cursor", cursor)
+		params.Add("source_id", sourceID)
 		path = fmt.Sprintf("%s?%s", path, params.Encode())
 	}
 
