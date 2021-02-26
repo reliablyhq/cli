@@ -3,7 +3,6 @@ package core
 import (
 	"crypto/md5"
 	"encoding/json"
-	"errors"
 	"fmt"
 )
 
@@ -45,7 +44,7 @@ func (s *Suggestion) UnmarshalJSON(data []byte) error {
 
 	level, err := NewLevel(a.Level)
 	if err != nil {
-		return errors.New("cannot unmarshal string into Go struct field Suggestion.Level of type Level")
+		return fmt.Errorf("cannot unmarshal string into Go struct field Suggestion.Level of type Level: %w", err)
 	}
 
 	s.Level = level
