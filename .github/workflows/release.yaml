@@ -235,6 +235,10 @@ jobs:
         with:
           name: release_url
           failOnError: false
+      - name: Checkout tagged source code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
       - name: Update new version in krew-index
         uses: rajatjindal/krew-release-bot@v0.0.38
         continue-on-error: true
