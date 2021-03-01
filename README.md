@@ -59,6 +59,12 @@ $ reliably discover manifest.yaml
 $ reliably discover ./manifests
 ```
 
+To run Reliably for suggestions against a live cluster, run
+
+```
+$ reliably discover --live
+```
+
 You can also pipe into `discover` command, as it can read from stdin using
 '-' as argument:
 
