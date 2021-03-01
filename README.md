@@ -20,7 +20,7 @@ Once you have [Krew installed][krew-installation], install Reliably with the
 following command.
 
 ```bash
-$ krew install reliably
+$ kubectl krew install reliably
 ```
 
 You can then use the CLI as a kubectl plugin:
@@ -59,7 +59,7 @@ $ reliably discover manifest.yaml
 $ reliably discover ./manifests
 ```
 
-To run Reliably for suggestions against a live cluster, run
+To run Reliably for suggestions against a Kubernetes cluster, run
 
 ```
 $ reliably discover --live
