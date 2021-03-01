@@ -98,7 +98,7 @@ jobs:
           mkdir krew-${{matrix.goos}}-${{matrix.goarch}}
           cp bin/reliably-${{matrix.goos}}-${{matrix.goarch}} krew-${{matrix.goos}}-${{matrix.goarch}}/reliably
           curl -L https://github.com/reliablyhq/cli/raw/main/LICENSE -o krew-${{matrix.goos}}-${{matrix.goarch}}/LICENSE
-          tar -zcf reliably_${{ env.RELEASE_VERSION }}_${{matrix.goos}}_${{matrix.goarch}}.tar.gz krew-${{matrix.goos}}-${{matrix.goarch}}/*
+          tar -zcf reliably-${{matrix.goos}}-${{matrix.goarch}}.tar.gz krew-${{matrix.goos}}-${{matrix.goarch}}/*
       - name: Load Release URL File from create release job
         uses: actions/download-artifact@v2
         with:
@@ -126,8 +126,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         with:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: reliably_${{ env.RELEASE_VERSION }}_${{matrix.goos}}_${{matrix.goarch}}.tar.gz
-          asset_name: reliably_${{ env.RELEASE_VERSION }}_${{matrix.goos}}_${{matrix.goarch}}.tar.gz
+          asset_path: reliably-${{matrix.goos}}-${{matrix.goarch}}.tar.gz
+          asset_name: reliably-${{matrix.goos}}-${{matrix.goarch}}.tar.gz
           asset_content_type: application/x-gzip
       - name: Generate md5 for binary asset
         run: |
