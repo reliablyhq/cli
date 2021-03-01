@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 2021-03-01
 ### Added
 - Logout command has a `--yes` flag for logging out without being prompted
 - Check for newest release when running the CLI; [38](https://github.com/reliablyhq/cli/issues/38)
@@ -41,7 +42,8 @@
 
 - Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/reliablyhq/cli/releases/tag/v0.4.0
 [0.3.0]: https://github.com/reliablyhq/cli/releases/tag/v0.3.0
 [0.2.1]: https://github.com/reliablyhq/cli/releases/tag/v0.2.1
 [0.2.0]: https://github.com/reliablyhq/cli/releases/tag/v0.2.0
