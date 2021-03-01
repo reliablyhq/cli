@@ -11,6 +11,26 @@ downloadable binaries from the [releases page][releases].
 
 [releases]: https://github.com/reliablyhq/cli/releases
 
+### Installation as a Krew plugin
+
+Reliably CLI can be used as a kubectl [Krew plugin][krew-home]
+for macOS and Linux.
+
+Once you have [Krew installed][krew-installation], install Reliably with the
+following command.
+
+```bash
+$ kubectl krew install reliably
+```
+
+You can then use the CLI as a kubectl plugin:
+
+```bash
+$ kubectl reliably
+```
+[krew-home]: (https://krew.sigs.k8s.io/)
+[krew-installation]: (https://krew.sigs.k8s.io/docs/user-guide/setup/install/)
+
 ### Authentication
 
 Run `reliably auth login` to authenticate with your Reliably account.
@@ -37,6 +57,12 @@ To indicate a specific file or folder, give it as a command argument:
 ```
 $ reliably discover manifest.yaml
 $ reliably discover ./manifests
+```
+
+To run Reliably for suggestions against a Kubernetes cluster, run
+
+```
+$ reliably discover --live
 ```
 
 You can also pipe into `discover` command, as it can read from stdin using
