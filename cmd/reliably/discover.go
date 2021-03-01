@@ -238,7 +238,7 @@ manifests file from the current working directory.`,
 	)
 
 	cmd.Flags().StringVarP(
-		&opts.KubernetesContext, "context", "c", os.Getenv("KUBECONTEXT"), "Specifies the Kubernetes context to evaluate when scanning live cluster",
+		&opts.KubernetesContext, "kubecontext", "c", os.Getenv("KUBECONTEXT"), "Specifies the Kubernetes context to evaluate when scanning live cluster",
 	)
 
 	configPath, _ := k8s.FindKubeConfigPath()
