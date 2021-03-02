@@ -14,9 +14,15 @@ const (
 	policyURL = "https://static.reliably.com/opa/%s/%s.rego"
 )
 
-func policyDir(workspace string, platform string) string {
+var x = "https://static.reliably.com/opa/kubernetes/deployment.rego"
+var y = "https://static.reliably.com/opa/kubernetes/{apps/v1/deployment}.rego"
+
+func policyDir(workspace string, platform string, extras ...string) string {
 	lplatform := strings.ToLower(platform)
 	folder := filepath.Join(workspace, "policies", lplatform)
+	for x := range extras {
+		folder = fmt.Sprint(folder, "/", x)
+	}
 	return folder
 }
 
@@ -50,7 +56,14 @@ func FetchPolicy(workspace string, platform string, name string) (string, error)
 // DownloadPolicyToCache downloads a given policy (by name for a targeted platform)
 // into the .reliably local policies cache
 func DownloadPolicyToCache(workspace string, platform string, name string) (string, error) {
-	pdir := policyDir(workspace, platform)
+	nameParts := strings.Split(name, "/")
+	var pdir string
+	if len(nameParts) > 1 {
+		pdir = policyDir(workspace, platform, nameParts[:len(nameParts)-1]...)
+	} else {
+		pdir = policyDir(workspace, platform)
+	}
+
 	ppath := policyPath(workspace, platform, name)
 
 	lplatform := strings.ToLower(platform)
