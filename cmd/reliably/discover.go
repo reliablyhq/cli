@@ -476,7 +476,8 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 		input = dyno.ConvertMapI2MapS(input)
 
 		// fetch the policies
-		ppath, err := core.FetchPolicy(workspace, platform, kind)
+		policyPath := fmt.Sprintf("%s/%s", header.APIVersion, header.Kind)
+		ppath, err := core.FetchPolicy(workspace, platform, policyPath)
 		if err != nil {
 			log.Error(fmt.Sprintf(
 				"Unable to review resource #%v (%v) in file '%v'", 0, kind, "live"))
