@@ -374,7 +374,7 @@ func staticDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 				// Unable to identify Yaml as K8s resource
 				continue
 			}
-			kind := header.Kind
+			id := fmt.Sprintf("%s/%s", header.APIVersion, header.Kind)
 			name := header.Metadata.Name
 			uri := header.URI()
 
@@ -386,7 +386,7 @@ func staticDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 				continue
 			}
 
-			log.Debug(fmt.Sprintf("Processing resource #%v: %v", i, kind))
+			log.Debug(fmt.Sprintf("Processing resource #%v: %v", i, id))
 
 			// !! m cannot be marshaled using encoding/json !!
 			// -> unmarshalled YAML struct is not compliant with JSON
@@ -396,14 +396,14 @@ func staticDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 			// to map[string]interface{} (recursively)
 			input = dyno.ConvertMapI2MapS(input)
 
-			ppath, err := core.FetchPolicy(workspace, platform, kind)
+			ppath, err := core.FetchPolicy(workspace, platform, id)
 			if err != nil {
 				log.Error(fmt.Sprintf(
-					"Unable to review resource #%v (%v) in file '%v'", i, kind, fpath))
+					"Unable to review resource #%v (%v) in file '%v'", i, id, fpath))
 				continue
 			}
 			rs := core.Eval(ppath, input)
-			newIssues := core.ReportViolations(rs, fpath, platform, kind, startLine, name, uri)
+			newIssues := core.ReportViolations(rs, fpath, platform, id, startLine, name, uri)
 			violations = append(violations, newIssues...)
 		}
 
