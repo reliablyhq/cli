@@ -14,9 +14,6 @@ const (
 	policyURL = "https://static.reliably.com/opa/%s/%s.rego"
 )
 
-var x = "https://static.reliably.com/opa/kubernetes/deployment.rego"
-var y = "https://static.reliably.com/opa/kubernetes/{apps/v1/deployment}.rego"
-
 func policyDir(workspace string, platform string, extras ...string) string {
 	lplatform := strings.ToLower(platform)
 	folder := filepath.Join(workspace, "policies", lplatform)
