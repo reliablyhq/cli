@@ -479,8 +479,8 @@ func liveDiscover(opts *DiscoveryOptions) (core.ResultSet, error) {
 		policyPath := fmt.Sprintf("%s/%s", header.APIVersion, header.Kind)
 		ppath, err := core.FetchPolicy(workspace, platform, policyPath)
 		if err != nil {
-			log.Error(fmt.Sprintf(
-				"Unable to review resource #%v (%v) in file '%v'", 0, kind, "live"))
+			log.Debug(err)
+			log.Error(fmt.Sprintf("Unable to review resource '%v' in file '%v'", kind, "live"))
 			// continue
 		}
 		log.Debugf("policy path %v", ppath)
