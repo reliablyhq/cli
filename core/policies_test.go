@@ -11,7 +11,7 @@ func TestDownloadPodPolicy(t *testing.T) {
 	dir, _ := ioutil.TempDir(os.TempDir(), ".reliably")
 	defer os.RemoveAll(dir)
 
-	fpath, err := DownloadPolicyToCache(dir, "Kubernetes", "Pod")
+	fpath, err := downloadPolicyToCache(dir, "Kubernetes", "Pod")
 
 	if fpath == "" ||
 		err != nil {
@@ -26,7 +26,7 @@ func TestDownloadInvalidPolicy(t *testing.T) {
 	dir, _ := ioutil.TempDir(os.TempDir(), ".reliably")
 	defer os.RemoveAll(dir)
 
-	fpath, err := DownloadPolicyToCache(dir, "Kubernetes", "azertyuiop")
+	fpath, err := downloadPolicyToCache(dir, "Kubernetes", "azertyuiop")
 	if fpath != "" ||
 		err == nil {
 		t.Error("How come we succeeded to download an invalid policy ?!")
