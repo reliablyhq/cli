@@ -14,7 +14,7 @@ const (
 	policyURL = "https://static.reliably.com/opa/%s/%s.rego"
 )
 
-func policyDir(workspace string, platform string, extras ...string) string {
+func policyDir(workspace, platform string, extras ...string) string {
 	lplatform := strings.ToLower(platform)
 	folder := filepath.Join(workspace, "policies", lplatform)
 	for _, value := range extras {
@@ -32,7 +32,7 @@ func policyPath(workspace string, platform string, name string) string {
 
 // FetchPolicy ensure the policy is available in cache and returns
 // its file path. If policy is not in the cache, it downloads it from GitHub
-func FetchPolicy(workspace string, platform string, id string) (string, error) {
+func FetchPolicy(workspace, platform, id string) (string, error) {
 	// check whether policy is already in cache folder
 	// or download it from GitHub
 	// and returns its content
@@ -52,7 +52,7 @@ func FetchPolicy(workspace string, platform string, id string) (string, error) {
 
 // downloadPolicyToCache downloads a given policy (by name for a targeted platform)
 // into the .reliably local policies cache
-func downloadPolicyToCache(workspace string, platform string, id string) (string, error) {
+func downloadPolicyToCache(workspace, platform, id string) (string, error) {
 	nameParts := strings.Split(id, "/")
 	var pdir string
 	if len(nameParts) > 1 {
