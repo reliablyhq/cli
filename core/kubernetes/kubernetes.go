@@ -234,33 +234,39 @@ func GetPodSecurityPolicySpec(cs kubernetes.Clientset) (podSecPol []string, err 
 }
 
 func itemToJSON(item interface{}, kind string) string {
+	const lastconfigkey = "kubectl.kubernetes.io/last-applied-configuration"
 	var lastConfig string
 	var dc runtime.Object
 	switch kind {
 	case "Pod":
 		i := item.(corev1.Pod)
 		i.Kind = kind
-		lastConfig = i.Annotations["kubectl.kubernetes.io/last-applied-configuration"]
+		i.APIVersion = "v1"
+		lastConfig = i.Annotations[lastconfigkey]
 		dc = i.DeepCopyObject()
 	case "Deployment":
 		i := item.(appsv1.Deployment)
 		i.Kind = kind
-		lastConfig = i.Annotations["kubectl.kubernetes.io/last-applied-configuration"]
+		i.APIVersion = "app/v1"
+		lastConfig = i.Annotations[lastconfigkey]
 		dc = i.DeepCopyObject()
 	case "ClusterRoleBinding":
 		i := item.(rbacv1.ClusterRoleBinding)
 		i.Kind = kind
-		lastConfig = i.Annotations["kubectl.kubernetes.io/last-applied-configuration"]
+		i.APIVersion = "rbac.authorization.k8s.io/v1"
+		lastConfig = i.Annotations[lastconfigkey]
 		dc = i.DeepCopyObject()
 	case "Ingress":
 		i := item.(netv1beta1.Ingress)
 		i.Kind = kind
-		lastConfig = i.Annotations["kubectl.kubernetes.io/last-applied-configuration"]
+		i.APIVersion = "networking.k8s.io/v1"
+		lastConfig = i.Annotations[lastconfigkey]
 		dc = i.DeepCopyObject()
 	case "PodSecurityPolicy":
 		i := item.(policyv1beta1.PodSecurityPolicy)
 		i.Kind = kind
-		lastConfig = i.Annotations["kubectl.kubernetes.io/last-applied-configuration"]
+		i.APIVersion = "policy/v1beta1"
+		lastConfig = i.Annotations[lastconfigkey]
 		dc = i.DeepCopyObject()
 	}
 

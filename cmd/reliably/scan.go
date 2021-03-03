@@ -387,12 +387,12 @@ func staticScan(opts *ScanOptions) (core.ResultSet, error) {
 			// to map[string]interface{} (recursively)
 			input = dyno.ConvertMapI2MapS(input)
 
-			ppath, err := core.FetchPolicy(workspace, platform, kind)
+			ppath, err := getCachedPolicyPath(header.APIVersion, header.Kind)
 			if err != nil {
-				log.Error(fmt.Sprintf(
-					"Unable to review resource #%v (%v) in file '%v'", i, kind, fpath))
+				log.Debug(err)
 				continue
 			}
+
 			rs := core.Eval(ppath, input)
 			newIssues := core.ReportViolations(rs, fpath, platform, kind, startLine, name, uri)
 			violations = append(violations, newIssues...)
@@ -466,13 +466,11 @@ func liveScan(opts *ScanOptions) (core.ResultSet, error) {
 		input = dyno.ConvertMapI2MapS(input)
 
 		// fetch the policies
-		ppath, err := core.FetchPolicy(workspace, platform, kind)
+		ppath, err := getCachedPolicyPath(header.APIVersion, header.Kind)
 		if err != nil {
-			log.Error(fmt.Sprintf(
-				"Unable to review resource #%v (%v) in file '%v'", 0, kind, "live"))
-			// continue
+			log.Debug(err)
+			continue
 		}
-		log.Debugf("policy path %v", ppath)
 
 		// evaluate the input with the policies
 		rs := core.Eval(ppath, input)
@@ -499,4 +497,18 @@ func filterViolations(violations core.ResultSet, l string) (core.ResultSet, erro
 	})
 
 	return filtered.(core.ResultSet), nil
+}
+
+func getCachedPolicyPath(APIVersion, kind string) (string, error) {
+	path := fmt.Sprintf("%s/%s", APIVersion, kind)
+	ppath, err := core.FetchPolicy(workspace, platform, path)
+	if err != nil {
+		if err == core.ErrPolicyNotFound {
+			log.Warn(fmt.Sprint("no policy found for resource ", path))
+			return "", err
+		}
+
+		return "", err
+	}
+	return ppath, nil
 }
