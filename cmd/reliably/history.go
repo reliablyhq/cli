@@ -47,7 +47,7 @@ func NewCmdHistory() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "history",
-		Short: "Show your discovery history",
+		Short: "Show your scan history",
 		Long:  `Show your entire history of executions and found suggestions.`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if !cmdutil.CheckAuth() {
@@ -71,8 +71,8 @@ func NewCmdHistory() *cobra.Command {
 				if e, ok := err.(api.HTTPError); ok {
 					if e.StatusCode == 404 {
 						return fmt.Errorf(`Current source is unknown!
-You probably haven't run 'reliably discover .' from this current working directory yet.
-The history will only be available after a first discovery.`)
+You probably haven't run 'reliably scan .' from this current working directory yet.
+The history will only be available after a first scan.`)
 					}
 				}
 				return fmt.Errorf("unable to retrieve current Source: %w", err)
