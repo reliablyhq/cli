@@ -45,19 +45,19 @@ workflows:
       - test`)
 	err = insertReliablyToCircleci(wf, tpl)
 	assert.Equal(t, nil, err, "Unexpected error")
-	assert.NotEqual(t, nil, wf["jobs"].(map[interface{}]interface{})["discover"], "Missing discover job")
+	assert.NotEqual(t, nil, wf["jobs"].(map[interface{}]interface{})["scan"], "Missing scan job")
 	assert.NotEqual(t, nil, wf["workflows"].(map[interface{}]interface{})["reliably"], "Missing reliably workflow")
 
 	// #################
 	wf, _ = loadWorkflow(`version: 2.1
 jobs:
-  discover:
+  scan:
     steps:
       - checkout
-      - run: echo "this is the reliably discover"
+      - run: echo "this is the reliably scan"
 `)
 	err = insertReliablyToCircleci(wf, tpl)
-	assert.NotEqual(t, nil, err, "We don't edit the workflow if a 'discover' job already exists")
+	assert.NotEqual(t, nil, err, "We don't edit the workflow if a 'scan' job already exists")
 
 	// #################
 	wf, _ = loadWorkflow(`version: 2.1

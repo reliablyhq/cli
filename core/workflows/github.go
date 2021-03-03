@@ -15,7 +15,7 @@ env:
   RELIABLY_TOKEN: ${{ secrets.RELIABLY_TOKEN }}
 
 jobs:
-  reliably-discover:
+  reliably:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout source code'
