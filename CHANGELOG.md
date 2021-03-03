@@ -1,7 +1,7 @@
 # Changelog
 
 ## [Unreleased]
-
+- policy retrieval logic has been changed to incorporate the API Version into the path to the remote policy. Locally cached policy also includes the API Version.
 ## [0.5.0] - 2021-03-03
 
 ### Changed
