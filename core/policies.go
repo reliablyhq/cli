@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,6 +14,9 @@ import (
 const (
 	policyURL = "https://static.reliably.com/opa/%s/%s.rego"
 )
+
+// ErrPolicyNotFound is returned when a policy could not be found
+var ErrPolicyNotFound = errors.New("Policy not found")
 
 func policyDir(workspace, platform string, extras ...string) string {
 	lplatform := strings.ToLower(platform)
@@ -71,8 +75,13 @@ func downloadPolicyToCache(workspace, platform, path string) (string, error) {
 
 	err := http.DownloadFile(ppath, url)
 	if err != nil {
-		log.Debug(fmt.Sprintf("Cannot download policy '%v/%v' from '%v'", platform, path, url))
 		log.Debug(err)
+
+		if strings.HasPrefix(err.Error(), "No file found") {
+			return "", ErrPolicyNotFound
+		}
+
+		log.Debug(fmt.Sprintf("Cannot download policy '%v/%v' from '%v'", platform, path, url))
 		return "", err
 	}
 
