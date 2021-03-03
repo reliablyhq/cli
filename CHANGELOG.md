@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- `discover` command has been replaced by `scan`; [69](https://github.com/reliablyhq/cli/issues/69)
+
 ## [0.4.0] - 2021-03-01
 ### Added
 - Logout command has a `--yes` flag for logging out without being prompted
