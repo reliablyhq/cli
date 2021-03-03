@@ -387,7 +387,8 @@ func staticScan(opts *ScanOptions) (core.ResultSet, error) {
 			// to map[string]interface{} (recursively)
 			input = dyno.ConvertMapI2MapS(input)
 
-			ppath, err := core.FetchPolicy(workspace, platform, kind)
+			path := fmt.Sprintf("%s/%s", header.APIVersion, header.Kind)
+			ppath, err := core.FetchPolicy(workspace, platform, path)
 			if err != nil {
 				log.Error(fmt.Sprintf(
 					"Unable to review resource #%v (%v) in file '%v'", i, kind, fpath))
@@ -466,7 +467,8 @@ func liveScan(opts *ScanOptions) (core.ResultSet, error) {
 		input = dyno.ConvertMapI2MapS(input)
 
 		// fetch the policies
-		ppath, err := core.FetchPolicy(workspace, platform, kind)
+		path := fmt.Sprintf("%s/%s", header.APIVersion, header.Kind)
+		ppath, err := core.FetchPolicy(workspace, platform, path)
 		if err != nil {
 			log.Error(fmt.Sprintf(
 				"Unable to review resource #%v (%v) in file '%v'", 0, kind, "live"))
