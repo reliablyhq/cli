@@ -2,13 +2,13 @@ package terraform
 
 // PlanRepresentation document
 type PlanRepresentation struct {
-	FormatVersion   string                                      `json:"format_version"`
-	PriorState      *StateRepresentation                        `json:"prior_state"`
-	Configuration   *ConfigurationRepresentation                `json:"configuration"`
-	PlannedValues   *ValuesRepresentation                       `json:"planned_values"`
-	Variables       map[string]map[string]string                `json:"variables"`
-	ResourceChanges []*ResourceChangeRepresentation             `json:"resource_changes"`
-	OutputChanges   map[string]map[string]*ChangeRepresentation `json:"output_changes"`
+	FormatVersion   string                           `json:"format_version"`
+	PriorState      *StateRepresentation             `json:"prior_state"`
+	Configuration   *ConfigurationRepresentation     `json:"configuration"`
+	PlannedValues   *ValuesRepresentation            `json:"planned_values"`
+	Variables       map[string]map[string]string     `json:"variables"`
+	ResourceChanges []*ResourceChangeRepresentation  `json:"resource_changes"`
+	OutputChanges   map[string]*ChangeRepresentation `json:"output_changes"`
 }
 
 type StateRepresentation struct {
@@ -86,14 +86,14 @@ type ModuleRepresentation struct {
 }
 
 type ResourceRepresentation struct {
-	Address       string            `json:"address"`
-	Mode          string            `json:"mode"`
-	Type          string            `json:"type"`
-	Name          string            `json:"name"`
-	Index         int               `json:"index"`
-	ProviderName  string            `json:"provider_name"`
-	SchemaVersion string            `json:"schema_version"`
-	Values        map[string]string `json:"values"`
+	Address       string                 `json:"address"`
+	Mode          string                 `json:"mode"`
+	Type          string                 `json:"type"`
+	Name          string                 `json:"name"`
+	Index         int                    `json:"index"`
+	ProviderName  string                 `json:"provider_name"`
+	SchemaVersion int                    `json:"schema_version"`
+	Values        map[string]interface{} `json:"values"`
 }
 
 type ChildModuleRepresentation struct {

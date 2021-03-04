@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/reliablyhq/cli/core/scanning"
 	"github.com/reliablyhq/cli/types/terraform"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -16,6 +15,11 @@ const platform = "terraform"
 var (
 	file string
 )
+
+type resource struct {
+	Actual interface{}
+	ID     string
+}
 
 // New returns a new plan command
 func New() *cobra.Command {
@@ -57,19 +61,7 @@ func run(cmd *cobra.Command, args []string) {
 	resources := extractResources(&tfPlan)
 
 	// 4: analyse
-	var results []*scanning.Result
-	for _, res := range resources {
-		x, err := scanning.Scan(res)
-		if err != nil {
-			log.Warn(err)
-			continue
-		}
-
-		results = append(results, x...)
-	}
-
-	// 4: print the outcome
-	scanning.Print(results...)
+	log.Print(resources)
 }
 
 func getFileContent(path string) ([]byte, error) {
@@ -77,6 +69,6 @@ func getFileContent(path string) ([]byte, error) {
 }
 
 // ExtractResources from the plan
-func extractResources(p *terraform.PlanRepresentation) []*scanning.Resource {
+func extractResources(p *terraform.PlanRepresentation) []*resource {
 	panic("not implemented")
 }
