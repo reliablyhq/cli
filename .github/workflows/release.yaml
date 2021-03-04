@@ -98,7 +98,7 @@ jobs:
           mkdir krew-${{matrix.goos}}-${{matrix.goarch}}
           cp bin/reliably-${{matrix.goos}}-${{matrix.goarch}} krew-${{matrix.goos}}-${{matrix.goarch}}/reliably
           curl -L https://github.com/reliablyhq/cli/raw/main/LICENSE -o krew-${{matrix.goos}}-${{matrix.goarch}}/LICENSE
-          tar -zcf reliably-${{matrix.goos}}-${{matrix.goarch}}.tar.gz krew-${{matrix.goos}}-${{matrix.goarch}}/*
+          tar -zcf reliably-${{matrix.goos}}-${{matrix.goarch}}.tar.gz -C krew-${{matrix.goos}}-${{matrix.goarch}} .
       - name: Load Release URL File from create release job
         uses: actions/download-artifact@v2
         with:

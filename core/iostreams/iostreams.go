@@ -1,7 +1,9 @@
 package iostreams
 
 import (
+	"bytes"
 	"io"
+	"io/ioutil"
 	"os"
 
 	"github.com/reliablyhq/cli/core/color"
@@ -116,4 +118,15 @@ func isCygwinTerminal(w io.Writer) bool {
 		return isatty.IsCygwinTerminal(f.Fd())
 	}
 	return false
+}
+
+func Test() (*IOStreams, *bytes.Buffer, *bytes.Buffer, *bytes.Buffer) {
+	in := &bytes.Buffer{}
+	out := &bytes.Buffer{}
+	errOut := &bytes.Buffer{}
+	return &IOStreams{
+		In:     ioutil.NopCloser(in),
+		Out:    out,
+		ErrOut: errOut,
+	}, in, out, errOut
 }
