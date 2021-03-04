@@ -96,25 +96,8 @@ func TestFormatVersion(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			v := FormatVersion(tt.args[0], tt.args[1])
-			//v = strings.TrimSuffix(v, "\n")
-
-			/*
-				func FormatVersion(version string, buildDate string) string {
-					version = strings.TrimPrefix(version, "v")
-					var buildDateStr string = ""
-
-					if buildDate != "" {
-						buildDateStr = fmt.Sprintf(" (%s)", buildDate)
-					}
-
-					return fmt.Sprintf("Reliably CLI version %s%s\n", version, buildDateStr)
-				}
-			*/
-
 			assert.Equal(t, tt.want, v, "Unexpected version")
-
 		})
 	}
 
