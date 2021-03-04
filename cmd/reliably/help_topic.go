@@ -12,7 +12,7 @@ import (
 
 var HelpTopics = map[string]map[string]string{
 	"environment": {
-		"short": "Environment variables that can be used with gh",
+		"short": "Environment variables that can be used with reliably",
 		// Keeps generated lines at 80 characters max length
 		"long": heredoc.Doc(`
 			{{bold "RELIABLY_HOST:"}} specify the Reliably hostname for commands making API requests
