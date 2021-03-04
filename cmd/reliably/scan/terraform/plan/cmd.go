@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/reliablyhq/cli/cmd/reliably/scan/terraform"
+	"github.com/reliablyhq/cli/core/scanning"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -48,16 +49,30 @@ func run(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	// 3: find policies for each resource
-	log.Print(tfPlan)
+	// 3: extract resources
+	resources := extractResources(&tfPlan)
 
 	// 4: analyse
+	var results []*scanning.Result
+	for _, res := range resources {
+		x, err := scanning.Scan(res)
+		if err != nil {
+			log.Warn(err)
+			continue
+		}
+
+		results = append(results, x...)
+	}
 
 	// 4: print the outcome
-	log.Warn("Not implemented!")
-	os.Exit(1)
+	scanning.Print(results...)
 }
 
 func getFileContent(path string) ([]byte, error) {
 	return ioutil.ReadFile(path)
+}
+
+// ExtractResources from the plan
+func extractResources(p *terraform.PlanRepresentation) []*scanning.Resource {
+	panic("not implemented")
 }
