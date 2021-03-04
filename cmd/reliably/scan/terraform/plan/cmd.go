@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const platform = "terraform"
+
 var (
 	file string
 )
