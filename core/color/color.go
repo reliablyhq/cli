@@ -13,6 +13,8 @@ var (
 	Green = color.New(color.FgGreen).SprintFunc()
 	// Yellow returns a yellow-colored string
 	Yellow = color.New(color.FgYellow).SprintFunc()
+	// Magenta returns a purple-colored string
+	Magenta = color.New(color.FgMagenta).SprintFunc()
 	// Cyan returns a cyan-colored string
 	Cyan = color.New(color.FgCyan).SprintFunc()
 	// Underline returns an underline string

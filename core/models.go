@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	"github.com/reliablyhq/cli/core/color"
 	//"fmt"
 	//"io"
 	//log "github.com/sirupsen/logrus"
@@ -128,11 +130,11 @@ func (l Level) String() string {
 	var str string
 	switch l {
 	case Info:
-		str = levelInfo
+		str = color.Yellow(levelInfo)
 	case Warning:
-		str = levelWarning
+		str = color.Magenta(levelWarning)
 	case Error:
-		str = levelError
+		str = color.Red(levelError)
 	default:
 		str = ""
 	}
