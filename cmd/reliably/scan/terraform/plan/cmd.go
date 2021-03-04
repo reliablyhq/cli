@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/reliablyhq/cli/cmd/reliably/scan/terraform"
 	"github.com/reliablyhq/cli/core/scanning"
+	"github.com/reliablyhq/cli/types/terraform"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -39,6 +39,7 @@ func run(cmd *cobra.Command, args []string) {
 	contentBytes, err := getFileContent(file)
 	if err != nil {
 		log.Debug(err)
+		log.Error("An error occured while opening the file")
 		os.Exit(1)
 	}
 
@@ -46,6 +47,7 @@ func run(cmd *cobra.Command, args []string) {
 	var tfPlan terraform.PlanRepresentation
 	if err := json.Unmarshal(contentBytes, &tfPlan); err != nil {
 		log.Debug(err)
+		log.Error("An error occured while trying to deserailize the content of the file")
 		os.Exit(1)
 	}
 
