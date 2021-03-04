@@ -1,8 +1,11 @@
 package plan
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"os"
 
+	"github.com/reliablyhq/cli/cmd/reliably/scan/terraform"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -32,14 +35,29 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	// 1: check for the file
+	contentBytes, err := getFileContent(file)
+	if err != nil {
+		log.Debug(err)
+		os.Exit(1)
+	}
 
 	// 2: parse the file content
+	var tfPlan terraform.PlanRepresentation
+	if err := json.Unmarshal(contentBytes, &tfPlan); err != nil {
+		log.Debug(err)
+		os.Exit(1)
+	}
 
 	// 3: find policies for each resource
+	log.Print(tfPlan)
 
 	// 4: analyse
 
 	// 4: print the outcome
 	log.Warn("Not implemented!")
 	os.Exit(1)
+}
+
+func getFileContent(path string) ([]byte, error) {
+	return ioutil.ReadFile(path)
 }
