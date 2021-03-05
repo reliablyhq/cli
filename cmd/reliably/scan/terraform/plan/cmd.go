@@ -70,5 +70,14 @@ func getFileContent(path string) ([]byte, error) {
 
 // ExtractResources from the plan
 func extractResources(p *terraform.PlanRepresentation) []*resource {
-	panic("not implemented")
+	res := []*resource{}
+
+	for _, x := range p.ResourceChanges {
+		res = append(res, &resource{
+			Actual: x,
+			ID:     x.Name,
+		})
+	}
+
+	return res
 }
