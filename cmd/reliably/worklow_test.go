@@ -96,7 +96,7 @@ func TestWorkflowRunStdout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt, func(t *testing.T) {
-			io, _, out, _ := iostreams.Test() // creates io streams to buffers
+			io, _, stdout, _ := iostreams.Test() // creates io streams to buffers
 			opts := &WorkflowOptions{
 				IO:          io,
 				Platform:    tt,
@@ -107,7 +107,7 @@ func TestWorkflowRunStdout(t *testing.T) {
 			err := workflowRun(opts)
 
 			assert.NoError(t, err, "Unexpected error")
-			assert.NotEqual(t, "", out, "Workflow has not been generated to stdout")
+			assert.NotEqual(t, "", stdout.String(), "Workflow has not been generated to stdout")
 
 		})
 	}
