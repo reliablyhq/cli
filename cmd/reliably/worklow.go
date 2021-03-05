@@ -29,6 +29,10 @@ var (
 )
 
 func NewCmdWorkflow() *cobra.Command {
+	return newCmdWorkflow(nil)
+}
+
+func newCmdWorkflow(runF func(opts *WorkflowOptions) error) *cobra.Command {
 
 	opts := &WorkflowOptions{
 		IO: iostreams.System(),
@@ -61,7 +65,11 @@ It runs in an interactive mode by default.`,
 				opts.Interactive = true
 			}
 
-			return workflowRun(opts)
+			if runF == nil {
+				return workflowRun(opts)
+			}
+
+			return runF(opts)
 		},
 	}
 
