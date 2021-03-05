@@ -233,6 +233,20 @@ func GetPodSecurityPolicySpec(cs kubernetes.Clientset) (podSecPol []string, err 
 	return podSecPol, err
 }
 
+// GetNodeSpec returns the list of JSON Nodes specs from the clientset
+func GetNodeSpec(cs kubernetes.Clientset) (nodes []string, err error) {
+	np, err := cs.CoreV1().Nodes().List(metav1.ListOptions{})
+	if err != nil {
+		return
+	}
+
+	for _, n := range np.Items {
+		nodeJSON := itemToJSON(n, "Node")
+		nodes = append(nodes, nodeJSON)
+	}
+	return nodes, err
+}
+
 func itemToJSON(item interface{}, kind string) string {
 	const lastconfigkey = "kubectl.kubernetes.io/last-applied-configuration"
 	var lastConfig string
@@ -268,6 +282,12 @@ func itemToJSON(item interface{}, kind string) string {
 		i.APIVersion = "policy/v1beta1"
 		lastConfig = i.Annotations[lastconfigkey]
 		dc = i.DeepCopyObject()
+	case "Node":
+		i := item.(corev1.Node)
+		i.Kind = kind
+		i.APIVersion = "v1"
+		lastConfig = i.Annotations[lastconfigkey]
+		dc = i.DeepCopyObject()
 	}
 
 	JSON := regexp.MustCompile(`\n|\|`).
@@ -299,6 +319,7 @@ func GetResourceList(cs kubernetes.Clientset, namespace string) []string {
 	clusterRoleBindingList, _ := GetClusterRoleBindingSpec(cs)
 	ingressList, _ := GetIngressSpec(cs, namespace)
 	podSecurityPolicyList, _ := GetPodSecurityPolicySpec(cs)
+	nodeList, _ := GetNodeSpec(cs)
 
 	lists := [][]string{
 		podList,
@@ -306,6 +327,7 @@ func GetResourceList(cs kubernetes.Clientset, namespace string) []string {
 		clusterRoleBindingList,
 		ingressList,
 		podSecurityPolicyList,
+		nodeList,
 	}
 
 	for _, l := range lists {
