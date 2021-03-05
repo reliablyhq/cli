@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"sync"
 
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/types/terraform"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -19,6 +21,7 @@ var (
 type resource struct {
 	Actual interface{}
 	ID     string
+	Name   string
 }
 
 // New returns a new plan command
@@ -59,9 +62,33 @@ func run(cmd *cobra.Command, args []string) {
 
 	// 3: extract resources
 	resources := extractResources(&tfPlan)
+	policyResources := make(map[string]*resource)
+	wg := sync.WaitGroup{}
 
-	// 4: analyse
-	log.Print(resources)
+	// 4: download policies
+	wg.Add(len(resources))
+	for _, res := range resources {
+		go func(res *resource) {
+			defer wg.Done()
+			pol, err := core.FetchPolicy(".reliably", platform, res.ID)
+			if err == nil {
+				log.Warn(err)
+				return
+			}
+
+			if pol != "" {
+				policyResources[pol] = res
+			}
+		}(res)
+	}
+	wg.Wait()
+
+	// 5: analyse
+	for pol, res := range policyResources {
+		rs := core.Eval(pol, res.Actual)
+		violations := core.ReportViolations(rs, pol, platform, res.ID, -1, "na", "na")
+		log.Print(violations)
+	}
 }
 
 func getFileContent(path string) ([]byte, error) {
@@ -75,7 +102,8 @@ func extractResources(p *terraform.PlanRepresentation) []*resource {
 	for _, x := range p.ResourceChanges {
 		res = append(res, &resource{
 			Actual: x,
-			ID:     x.Name,
+			ID:     x.Type,
+			Name:   x.Name,
 		})
 	}
 
