@@ -190,7 +190,7 @@ func initConfig() {
 		log.Debug(fmt.Sprintf("Using config file: %s", config.Viper.ConfigFileUsed()))
 	}
 
-	log.Debug(fmt.Sprintf("Loaded settings: %s", config.Viper.AllSettings()))
+	log.Debug(fmt.Sprintf("Loaded settings: %s", config.AllSettingsSecure()))
 }
 
 //set the log level to debug if verbose mode is on

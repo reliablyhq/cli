@@ -66,3 +66,28 @@ func GetAuthTokenWithSource(hostname string) (string, string, error) {
 
 	return "", "", fmt.Errorf("No token found for host %s", hostname)
 }
+
+type ms2i = map[string]interface{} // type alias allowed by type assertion
+
+// AllSettingsSecure returns the loaded config settings,
+// with obfuscated output for secure values
+func AllSettingsSecure() ms2i {
+
+	settings := Viper.AllSettings()
+
+	// obfuscate authentication tokens
+	if auths, found := settings["auths"]; found {
+		if auths, ok := auths.(ms2i); ok {
+			for host, auth := range auths {
+				if auth, ok := auth.(ms2i); ok {
+					if _, found := auth["token"]; found {
+						settings["auths"].(ms2i)[host].(ms2i)["token"] = "*****"
+					}
+				}
+			}
+		}
+	}
+
+	return settings
+
+}
