@@ -37,19 +37,9 @@ func TestCmdVersion(t *testing.T) {
 	var out bytes.Buffer
 
 	cmd := NewCmdVersion()
-
-	// TODO cobra hack-around
-	//cmd.Flags().BoolP("help", "x", false, "")
-
 	cmd.SetOut(&out)
 	cmd.SetErr(&out)
 	cmd.SetArgs(strings.Split("", " "))
-
-	/*
-		argv, err := shlex.Split("--help")
-		assert.NoError(t, err)
-		cmd.SetArgs(argv)
-	*/
 
 	fErr := cmd.Execute()
 	_ = out.String()
