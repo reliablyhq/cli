@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/google/shlex"
+	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -87,4 +88,27 @@ func TestNewCmdWorkflow(t *testing.T) {
 		})
 	}
 
+}
+
+func TestWorkflowRunStdout(t *testing.T) {
+
+	tests := supportedCIPlatforms
+
+	for _, tt := range tests {
+		t.Run(tt, func(t *testing.T) {
+			io, _, out, _ := iostreams.Test() // creates io streams to buffers
+			opts := &WorkflowOptions{
+				IO:          io,
+				Platform:    tt,
+				Interactive: false,
+				Stdout:      true,
+			}
+
+			err := workflowRun(opts)
+
+			assert.NoError(t, err, "Unexpected error")
+			assert.NotEqual(t, "", out, "Workflow has not been generated to stdout")
+
+		})
+	}
 }
