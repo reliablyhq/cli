@@ -9,6 +9,7 @@ require (
 	github.com/fatih/color v1.7.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/google/go-github/v33 v33.0.0
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gookit/color v1.3.2
 	github.com/hashicorp/go-version v1.2.1
 	github.com/icza/dyno v0.0.0-20200205103839-49cb13720835
@@ -34,10 +35,5 @@ require (
 	k8s.io/api v0.17.0
 	k8s.io/apimachinery v0.17.0
 	k8s.io/client-go v0.17.0
-	// k8s.io/api v0.20.2 // indirect
-	// k8s.io/apimachinery v0.20.2
-	// k8s.io/client-go v11.0.0+incompatible
-	// k8s.io/client-go v0.17.0 // indirect
-	k8s.io/klog v1.0.0 // indirect
 	k8s.io/utils v0.0.0-20210111153108-fddb29f9d009 // indirect
 )

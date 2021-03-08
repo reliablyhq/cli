@@ -37,19 +37,9 @@ func TestCmdVersion(t *testing.T) {
 	var out bytes.Buffer
 
 	cmd := NewCmdVersion()
-
-	// TODO cobra hack-around
-	//cmd.Flags().BoolP("help", "x", false, "")
-
 	cmd.SetOut(&out)
 	cmd.SetErr(&out)
 	cmd.SetArgs(strings.Split("", " "))
-
-	/*
-		argv, err := shlex.Split("--help")
-		assert.NoError(t, err)
-		cmd.SetArgs(argv)
-	*/
 
 	fErr := cmd.Execute()
 	_ = out.String()
@@ -96,25 +86,8 @@ func TestFormatVersion(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			v := FormatVersion(tt.args[0], tt.args[1])
-			//v = strings.TrimSuffix(v, "\n")
-
-			/*
-				func FormatVersion(version string, buildDate string) string {
-					version = strings.TrimPrefix(version, "v")
-					var buildDateStr string = ""
-
-					if buildDate != "" {
-						buildDateStr = fmt.Sprintf(" (%s)", buildDate)
-					}
-
-					return fmt.Sprintf("Reliably CLI version %s%s\n", version, buildDateStr)
-				}
-			*/
-
 			assert.Equal(t, tt.want, v, "Unexpected version")
-
 		})
 	}
 
