@@ -69,7 +69,7 @@ func run(cmd *cobra.Command, args []string) {
 	for _, res := range resources {
 		go func(res *core.Resource) {
 			defer wg.Done()
-			pol, err := core.FetchPolicy(".reliably", platform, res.ID)
+			pol, err := core.FetchPolicy(".reliably", platform, res.Kind)
 			if err == nil {
 				log.Warn(err)
 				return
@@ -85,7 +85,7 @@ func run(cmd *cobra.Command, args []string) {
 	// 5: analyse
 	for pol, res := range policyResources {
 		rs := core.Eval(pol, res)
-		violations := core.ReportViolations(rs, pol, platform, res.ID, -1, "na", "na")
+		violations := core.ReportViolations(rs, pol, platform, res.Kind, -1, "na", "na")
 		log.Print(violations)
 	}
 }
