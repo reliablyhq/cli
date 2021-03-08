@@ -18,12 +18,6 @@ var (
 	file string
 )
 
-type resource struct {
-	Actual interface{}
-	ID     string
-	Name   string
-}
-
 // New returns a new plan command
 func New() *cobra.Command {
 	cmd := cobra.Command{
@@ -61,14 +55,19 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	// 3: extract resources
-	resources := extractResources(&tfPlan)
-	policyResources := make(map[string]*resource)
+	resources, err := terraform.ExtractResourcesFromPlan(&tfPlan)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	policyResources := make(map[string]*core.Resource)
 	wg := sync.WaitGroup{}
 
 	// 4: download policies
 	wg.Add(len(resources))
 	for _, res := range resources {
-		go func(res *resource) {
+		go func(res *core.Resource) {
 			defer wg.Done()
 			pol, err := core.FetchPolicy(".reliably", platform, res.ID)
 			if err == nil {
@@ -85,7 +84,7 @@ func run(cmd *cobra.Command, args []string) {
 
 	// 5: analyse
 	for pol, res := range policyResources {
-		rs := core.Eval(pol, res.Actual)
+		rs := core.Eval(pol, res)
 		violations := core.ReportViolations(rs, pol, platform, res.ID, -1, "na", "na")
 		log.Print(violations)
 	}
@@ -93,19 +92,4 @@ func run(cmd *cobra.Command, args []string) {
 
 func getFileContent(path string) ([]byte, error) {
 	return ioutil.ReadFile(path)
-}
-
-// ExtractResources from the plan
-func extractResources(p *terraform.PlanRepresentation) []*resource {
-	res := []*resource{}
-
-	for _, x := range p.ResourceChanges {
-		res = append(res, &resource{
-			Actual: x,
-			ID:     x.Type,
-			Name:   x.Name,
-		})
-	}
-
-	return res
 }
