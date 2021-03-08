@@ -53,38 +53,71 @@ func run(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	// 3: extract resources
-	resources, err := terraform.ExtractResourcesFromPlan(&tfPlan)
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
+	// 3: download policies
+	policyMap := map[string]string{}
+	var downloadFunc func(*terraform.ModuleRepresentation)
+	downloadFunc = func(module *terraform.ModuleRepresentation) {
+		for _, resource := range module.Resources {
+			kind := resource.Type
+			path, err := core.FetchPolicy(".reliably", platform, kind)
+			if err != nil {
+				log.Warn(err)
+				continue
+			}
 
-	// 4: download policies
-	policyResources := make(map[string]*core.Resource)
-
-	for _, res := range resources {
-		pol, err := core.FetchPolicy(".reliably", platform, res.Kind)
-		if err != nil {
-			log.Warn(err)
-			continue
+			policyMap[kind] = path
 		}
 
-		if pol != "" {
-			policyResources[pol] = res
+		for _, childModule := range module.ChildModules {
+			downloadFunc(childModule.ToModule())
 		}
 	}
 
-	// 5: analyse
-	if len(policyResources) == 0 {
-		log.Info("no policies found for the scanned resources")
-		os.Exit(1)
+	downloadFunc(tfPlan.PlannedValues.RootModule)
+
+	// evaluate the resources
+	var evalFunc func(*terraform.ModuleRepresentation)
+	evalFunc = func(module *terraform.ModuleRepresentation) {
+		for _, res := range module.Resources {
+			kind := res.Type
+			if policyPath, ok := policyMap[kind]; ok {
+				resultSet := core.Eval(policyPath, res.Values)
+				core.PrintViolations(resultSet, policyPath, platform, kind, 0)
+			}
+		}
+
+		for _, childModule := range module.ChildModules {
+			evalFunc(childModule.ToModule())
+		}
 	}
 
-	for pol, res := range policyResources {
-		rs := core.Eval(pol, res)
-		core.PrintViolations(rs, pol, platform, res.Kind, res.StartingLine)
-	}
+	evalFunc(tfPlan.PlannedValues.RootModule)
+
+	// // 4: download policies
+	// policyResources := make(map[string]*core.Resource)
+
+	// for _, res := range resources {
+	// 	pol, err := core.FetchPolicy(".reliably", platform, res.Kind)
+	// 	if err != nil {
+	// 		log.Warn(err)
+	// 		continue
+	// 	}
+
+	// 	if pol != "" {
+	// 		policyResources[pol] = res
+	// 	}
+	// }
+
+	// // 5: analyse
+	// if len(policyResources) == 0 {
+	// 	log.Info("no policies found for the scanned resources")
+	// 	os.Exit(1)
+	// }
+
+	// for pol, res := range policyResources {
+	// 	rs := core.Eval(pol, res)
+	// 	core.PrintViolations(rs, pol, platform, res.Kind, res.StartingLine)
+	// }
 }
 
 func getFileContent(path string) ([]byte, error) {

@@ -18,7 +18,7 @@
               "desired_capacity": 4,
               "enabled_metrics": null,
               "force_delete": true,
-              "health_check_grace_period": 300,
+              "health_check_grace_period": 301,
               "health_check_type": "ELB",
               "initial_lifecycle_hook": [],
               "launch_configuration": "my_web_config",

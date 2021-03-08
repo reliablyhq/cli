@@ -102,6 +102,13 @@ type ChildModuleRepresentation struct {
 	ChildModules []*ChildModuleRepresentation `json:"child_modules"`
 }
 
+func (m ChildModuleRepresentation) ToModule() *ModuleRepresentation {
+	return &ModuleRepresentation{
+		Resources:    m.Resources,
+		ChildModules: m.ChildModules,
+	}
+}
+
 type ProviderConfigRepresentation struct {
 	Name          string                         `json:"name"`
 	Alias         string                         `json:"alias"`

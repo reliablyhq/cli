@@ -2,12 +2,12 @@ package terraform.aws.aws_autoscaling_group
 
 violations[rule] {
     input.type = "aws_autoscaling_group"
-    input.values.health_check_grace_period <= 300
+    input.values.health_check_grace_period > 300
 
     rule := {
         "ruleID": "TF-AWS-AUTOSCALING-GROUP-0002",
-        "ruleDef": "Short health check grace period",
+        "ruleDef": "Long health check grace period",
         "level": 2,
-        "message": "The health check grace period quite short",
+        "message": "The health check grace period is too long",
     }
 }
