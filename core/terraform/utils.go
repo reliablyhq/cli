@@ -23,7 +23,7 @@ func ExtractResourcesFromPlan(plan *PlanRepresentation) ([]*core.Resource, error
 			Platform:     Platform,
 			Kind:         resChange.Type,
 			Name:         resChange.Name,
-			URI:          resChange.ModuleAddress,
+			URI:          resChange.Address,
 		}
 	}
 

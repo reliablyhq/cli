@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
-	"sync"
 
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/terraform"
@@ -62,30 +61,29 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	policyResources := make(map[string]*core.Resource)
-	wg := sync.WaitGroup{}
 
 	// 4: download policies
-	wg.Add(len(resources))
 	for _, res := range resources {
-		go func(res *core.Resource) {
-			defer wg.Done()
-			pol, err := core.FetchPolicy(".reliably", platform, res.Kind)
-			if err == nil {
-				log.Warn(err)
-				return
-			}
+		pol, err := core.FetchPolicy(".reliably", platform, res.Kind)
+		if err == nil {
+			log.Warn(err)
+			return
+		}
 
-			if pol != "" {
-				policyResources[pol] = res
-			}
-		}(res)
+		if pol != "" {
+			policyResources[pol] = res
+		}
 	}
-	wg.Wait()
 
 	// 5: analyse
+	if len(policyResources) == 0 {
+		log.Info("no policies found for the scanned resources")
+		os.Exit(1)
+	}
+
 	for pol, res := range policyResources {
 		rs := core.Eval(pol, res)
-		violations := core.ReportViolations(rs, pol, platform, res.Kind, -1, "na", "na")
+		violations := core.ReportViolations(rs, pol, platform, res.Kind, res.StartingLine, res.Name, res.URI)
 		log.Print(violations)
 	}
 }
