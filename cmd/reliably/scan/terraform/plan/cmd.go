@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/reliablyhq/cli/core"
-	"github.com/reliablyhq/cli/types/terraform"
+	"github.com/reliablyhq/cli/core/terraform"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
