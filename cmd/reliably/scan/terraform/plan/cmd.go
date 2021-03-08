@@ -83,8 +83,7 @@ func run(cmd *cobra.Command, args []string) {
 
 	for pol, res := range policyResources {
 		rs := core.Eval(pol, res)
-		violations := core.ReportViolations(rs, pol, platform, res.Kind, res.StartingLine, res.Name, res.URI)
-		log.Print(violations)
+		core.PrintViolations(rs, pol, platform, res.Kind, res.StartingLine)
 	}
 }
 
