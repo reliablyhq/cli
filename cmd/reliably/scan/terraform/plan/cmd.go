@@ -60,14 +60,14 @@ func run(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	// 4: download policies
 	policyResources := make(map[string]*core.Resource)
 
-	// 4: download policies
 	for _, res := range resources {
 		pol, err := core.FetchPolicy(".reliably", platform, res.Kind)
-		if err == nil {
+		if err != nil {
 			log.Warn(err)
-			return
+			continue
 		}
 
 		if pol != "" {
