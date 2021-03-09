@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/icza/dyno"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/terraform"
 	log "github.com/sirupsen/logrus"
@@ -54,70 +55,47 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	// 3: download policies
-	policyMap := map[string]string{}
-	var downloadFunc func(*terraform.ModuleRepresentation)
-	downloadFunc = func(module *terraform.ModuleRepresentation) {
+	var evalFunc func(*terraform.ModuleRepresentation)
+	evalFunc = func(module *terraform.ModuleRepresentation) {
 		for _, resource := range module.Resources {
 			kind := resource.Type
+			log.Infof("Analysing %s...", kind)
+
 			path, err := core.FetchPolicy(".reliably", platform, kind)
 			if err != nil {
 				log.Warn(err)
 				continue
 			}
 
-			policyMap[kind] = path
-		}
-
-		for _, childModule := range module.ChildModules {
-			downloadFunc(childModule.ToModule())
-		}
-	}
-
-	downloadFunc(tfPlan.PlannedValues.RootModule)
-
-	// evaluate the resources
-	var evalFunc func(*terraform.ModuleRepresentation)
-	evalFunc = func(module *terraform.ModuleRepresentation) {
-		for _, res := range module.Resources {
-			kind := res.Type
-			if policyPath, ok := policyMap[kind]; ok {
-				resultSet := core.Eval(policyPath, res.Values)
-				core.PrintViolations(resultSet, policyPath, platform, kind, 0)
+			if path == "" {
+				log.Warnf("policy not found for resource '%s'", kind)
+				continue
 			}
+
+			log.Debugf("Policy found for %s. Processing rules...", kind)
+
+			input := dyno.ConvertMapI2MapS(resource)
+			resultSet := core.Eval(path, input)
+			violationCount := core.CountViolations(resultSet, platform, kind)
+			log.Infof("Found %v violations", violationCount)
+
+			if violationCount > 0 {
+				core.PrintViolations(resultSet, path, platform, kind, 0)
+			}
+
+			log.Infof("Processing %s complete!", kind)
 		}
 
 		for _, childModule := range module.ChildModules {
+			log.WithField("module", childModule.Address)
 			evalFunc(childModule.ToModule())
 		}
 	}
 
+	log.WithField("module", "root")
 	evalFunc(tfPlan.PlannedValues.RootModule)
 
-	// // 4: download policies
-	// policyResources := make(map[string]*core.Resource)
-
-	// for _, res := range resources {
-	// 	pol, err := core.FetchPolicy(".reliably", platform, res.Kind)
-	// 	if err != nil {
-	// 		log.Warn(err)
-	// 		continue
-	// 	}
-
-	// 	if pol != "" {
-	// 		policyResources[pol] = res
-	// 	}
-	// }
-
-	// // 5: analyse
-	// if len(policyResources) == 0 {
-	// 	log.Info("no policies found for the scanned resources")
-	// 	os.Exit(1)
-	// }
-
-	// for pol, res := range policyResources {
-	// 	rs := core.Eval(pol, res)
-	// 	core.PrintViolations(rs, pol, platform, res.Kind, res.StartingLine)
-	// }
+	log.Info("Scan complete!")
 }
 
 func getFileContent(path string) ([]byte, error) {
