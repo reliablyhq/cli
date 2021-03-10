@@ -14,3 +14,16 @@ func RandomString(length int) (string, error) {
 	}
 	return hex.EncodeToString(b), nil
 }
+
+// TruncateString truncates the given string to the num provided and adds an
+// elipsis (...)
+func TruncateString(s string, num int) string {
+	truncStr := s
+	if len(s) > num {
+		if num > 3 {
+			num -= 3
+		}
+		truncStr = s[0:num] + "..."
+	}
+	return truncStr
+}

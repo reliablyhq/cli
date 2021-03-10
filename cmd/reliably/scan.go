@@ -35,7 +35,7 @@ var (
 
 	violations core.ResultSet
 
-	supportedFormats = Choice{"simple", "json", "yaml", "sarif", "codeclimate"}
+	supportedFormats = Choice{"simple", "text", "tabbed", "json", "yaml", "sarif", "codeclimate"}
 	supportedLevels  = Choice(core.Levels)
 )
 

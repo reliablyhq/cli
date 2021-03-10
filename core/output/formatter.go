@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"sort"
+	"text/tabwriter"
 	plainTemplate "text/template"
 
 	color "github.com/gookit/color"
@@ -11,11 +13,28 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/utils"
 	"github.com/reliablyhq/cli/version"
 )
 
-var text = `Results: {{ range $index, $issue := .Suggestions }}
-[{{ highlight $issue.FileLocation 0 }}] - {{ $issue.RuleID }} : {{ $issue.Message }} (Platform: {{ $issue.Platform}}, Kind: {{ $issue.Kind }}){{ end }}
+// this is the length the message part of a suggestion is truncated to in
+// the tabbed output
+const messageLen = 83
+const sortFlag = true
+
+var textTemplate = `Results: {{ range $index, $issue := .Suggestions }}
+[{{ coloredString $issue.Level}}][{{ highlight $issue.FileLocation 0 }}] - {{ $issue.RuleID }} : {{ $issue.Message }} (Platform: {{ $issue.Platform}}, Kind: {{ $issue.Kind }}){{ end }}
+{{ notice "Summary:" }}
+	{{ $count := len .Suggestions }}Suggestions: {{ if eq $count 0 }}
+	{{- success "No suggestion found" }}
+	{{- else }}
+	{{- danger $count " suggestion(s) found" }}
+	{{- end }}
+
+`
+
+var textTemplateTabbed = `Results: {{ range $index, $issue := .Suggestions }}
+[{{ coloredString $issue.Level}}]	[{{  $issue.FileLocation }}]	{{ $issue.Platform}}: {{ $issue.Kind }}	{{ $issue.RuleID  }}:{{ truncate $issue.Message }} {{ end }}
 {{ notice "Summary:" }}
 	{{ $count := len .Suggestions }}Suggestions: {{ if eq $count 0 }}
 	{{- success "No suggestion found" }}
@@ -50,7 +69,9 @@ func CreateReport(w io.Writer, format string, baseDir string, suggestions []*cor
 	case "yaml":
 		err = reportYAML(w, data)
 	case "text":
-		err = reportFromPlaintextTemplate(w, text, data)
+		err = reportFromPlaintextTemplate(w, textTemplate, data)
+	case "tabbed":
+		err = reportFromTabbedTextTemplate(w, data)
 	case "simple", "basic", "linter":
 		err = reportLinter(w, data)
 	case "sarif":
@@ -252,19 +273,76 @@ func reportFromPlaintextTemplate(w io.Writer, reportTemplate string, data *repor
 	return t.Execute(w, data)
 }
 
+func truncateMessage(s string) string {
+	return utils.TruncateString(s, messageLen)
+}
+
+// for sorting suggestions (by level)
+type bySuggestion []*core.Suggestion
+
+func (s bySuggestion) Len() int {
+	return len(s)
+}
+func (s bySuggestion) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+func (s bySuggestion) Less(i, j int) bool {
+	return s[i].Level > s[j].Level
+}
+
+func reportFromTabbedTextTemplate(w io.Writer, data *reportInfo) error {
+	// Output Format:
+	// file:row:col: [extra] Human readable message (Other:Value, ...)
+	// Output Sample:
+	// manifest.yaml:1:1: Reliably namespace is forbidden (Platform: Kubernetes, Kind: Namespace)
+
+	padding := 1
+	minWidth := 0
+	tabWidth := 0
+	const padChar = ' '
+
+	tw := tabwriter.NewWriter(w, minWidth, tabWidth, padding, padChar, 0)
+	if sortFlag {
+		sort.Sort(bySuggestion(data.Suggestions))
+	}
+
+	err := reportFromPlaintextTemplate(tw, textTemplateTabbed, data)
+
+	// suggestions := data.Suggestions
+
+	// sort.Sort(bySuggestion(suggestions))
+
+	if err != nil {
+
+		return err
+	}
+	tw.Flush()
+
+	return nil
+}
+
 func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 	if enableColor {
 		return plainTemplate.FuncMap{
-			"highlight": highlight,
-			"danger":    color.Danger.Render,
-			"notice":    color.Notice.Render,
-			"success":   color.Success.Render,
-			"printCode": fmt.Sprint,
+			"coloredString": coloredString,
+			"truncate":      truncateMessage,
+			"highlight":     highlight,
+			"danger":        color.Danger.Render,
+			"notice":        color.Notice.Render,
+			"success":       color.Success.Render,
+			"printCode":     fmt.Sprint,
 		}
 	}
 
 	// by default those functions return the given content untouched
+	// xxxxx
 	return plainTemplate.FuncMap{
+		"coloredString": func(l core.Level) string {
+			return l.ColoredString()
+		},
+		"truncateMessage": func(t string) string {
+			return t
+		},
 		"highlight": func(t string, i int) string {
 			return t
 		},
@@ -273,6 +351,10 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 		"success":   fmt.Sprint,
 		"printCode": fmt.Sprint,
 	}
+}
+
+func coloredString(l core.Level) string {
+	return l.ColoredString()
 }
 
 var (
