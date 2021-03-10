@@ -130,6 +130,21 @@ func (l Level) String() string {
 	var str string
 	switch l {
 	case Info:
+		str = levelInfo
+	case Warning:
+		str = levelWarning
+	case Error:
+		str = levelError
+	default:
+		str = ""
+	}
+	return str
+}
+
+func (l Level) ColoredString() string {
+	var str string
+	switch l {
+	case Info:
 		str = color.Yellow(levelInfo)
 	case Warning:
 		str = color.Magenta(levelWarning)

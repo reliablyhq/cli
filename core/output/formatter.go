@@ -101,7 +101,7 @@ func reportLinter(w io.Writer, data *reportInfo) error {
 		*/
 		_, err := fmt.Fprintf(w, "%s [%s] %s\n",
 			s.FileLocation(),
-			s.Level,
+			s.Level.ColoredString(),
 			s.Message,
 		)
 		if err != nil {
