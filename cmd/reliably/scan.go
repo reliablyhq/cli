@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
+	fColor "github.com/fatih/color"
 	"github.com/icza/dyno"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -193,6 +194,11 @@ Reliably can also scan for your live kubernetes cluster.`,
 					opts.Files = finder.GetKubernetesFiles(opts.BaseDirectory)
 				}
 				log.Debug(fmt.Sprintf("Kubernetes files found: %v", opts.Files))
+			}
+
+			// disable coloring when using output to file
+			if opts.OutputFile != "" {
+				fColor.NoColor = true
 			}
 
 			violationCount, err := scanRun(opts)
