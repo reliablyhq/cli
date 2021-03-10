@@ -23,7 +23,6 @@ func New() *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "plan",
 		Short: "scan a terraform plan",
-		Long:  "scan a terraform plan for policy violations",
 		Run:   run,
 	}
 
