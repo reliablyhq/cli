@@ -49,6 +49,7 @@ type Result struct {
 	Location Location
 	Rule     Rule
 	Message  string
+	Example  string
 }
 
 // ResultSet is a list of results after analysis

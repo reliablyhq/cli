@@ -219,7 +219,7 @@ func createReliablyWorkspace() error {
 	// so we remove before creating it
 	// as removeAll removes path and any children it contains
 	policiesFolder := filepath.Join(workspace, "policies")
-	os.RemoveAll(policiesFolder)
+	//os.RemoveAll(policiesFolder)
 	if _, err := os.Stat(policiesFolder); os.IsNotExist(err) {
 		log.Debug(fmt.Sprintf("Create folder '%v'", policiesFolder))
 		err := os.Mkdir(policiesFolder, 0755)

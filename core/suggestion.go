@@ -16,8 +16,9 @@ type Suggestion struct {
 	Level   Level  `json:"level"`           // level
 	File    string `json:"file"`            // File name we found it in
 	//Code       string `json:"code"`       // Impacted code line
-	Line int `json:"line"`   // Line number in file
-	Col  int `json:"column"` // Column number in line
+	Line    int    `json:"line"`    // Line number in file
+	Col     int    `json:"column"`  // Column number in line
+	Example string `json:"example"` // Example of valid rule usage
 
 	Platform string `json:"platform"` // Platform handling the resource
 	Kind     string `json:"type"`     // Type of resource
@@ -130,5 +131,6 @@ func NewSuggestion(result Result, live bool) *Suggestion {
 		Platform: result.Resource.Platform,
 		Kind:     result.Resource.Kind,
 		Name:     result.Resource.Name,
+		Example:  result.Example,
 	}
 }

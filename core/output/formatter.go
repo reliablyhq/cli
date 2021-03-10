@@ -15,12 +15,19 @@ import (
 )
 
 var text = `Results: {{ range $index, $issue := .Suggestions }}
-[{{ highlight $issue.FileLocation 0 }}] - {{ $issue.RuleID }} : {{ $issue.Message }} (Platform: {{ $issue.Platform}}, Kind: {{ $issue.Kind }}){{ end }}
+{{ $issue.FileLocation }} [{{ $issue.Level }}] - {{ $issue.RuleID }} : {{ $issue.Message }}
+Platform: {{ $issue.Platform}}, Kind: {{ $issue.Kind }}
+{{if $issue.Example }}Example:
+{{ $issue.Example}}
+{{ end }}{{ end }}
 {{ notice "Summary:" }}
 	{{ $count := len .Suggestions }}Suggestions: {{ if eq $count 0 }}
 	{{- success "No suggestion found" }}
-	{{- else }}
-	{{- danger $count " suggestion(s) found" }}
+	{{- else }}{{ if eq $count 1 }}
+			{{- danger $count " suggestion found" }}
+		{{- else }}
+			{{- danger $count " suggestions found" }}
+		{{- end }}
 	{{- end }}
 
 `
@@ -49,7 +56,7 @@ func CreateReport(w io.Writer, format string, baseDir string, suggestions []*cor
 		err = reportJSON(w, data)
 	case "yaml":
 		err = reportYAML(w, data)
-	case "text":
+	case "text", "extended":
 		err = reportFromPlaintextTemplate(w, text, data)
 	case "simple", "basic", "linter":
 		err = reportLinter(w, data)
