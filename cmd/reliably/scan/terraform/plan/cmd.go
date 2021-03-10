@@ -33,6 +33,11 @@ func New() *cobra.Command {
 }
 
 func run(cmd *cobra.Command, args []string) {
+	log.Info("This hasn't been implemented yet. Check back in a later version to see if its ready!")
+	os.Exit(1)
+}
+
+func runWip(cmd *cobra.Command, args []string) {
 	if file == "" {
 		log.Error("file argument is required")
 		os.Exit(1)
