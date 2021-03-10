@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"sort"
+	"text/tabwriter"
 	plainTemplate "text/template"
 
 	fColor "github.com/fatih/color"
@@ -13,6 +15,7 @@ import (
 
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
+	"github.com/reliablyhq/cli/utils"
 	"github.com/reliablyhq/cli/version"
 )
 
@@ -281,6 +284,54 @@ func reportFromPlaintextTemplate(w io.Writer, reportTemplate string, data *repor
 	return t.Execute(w, data)
 }
 
+func truncateMessage(s string) string {
+	return utils.TruncateString(s, messageLen)
+}
+
+// for sorting suggestions (by level)
+type bySuggestion []*core.Suggestion
+
+func (s bySuggestion) Len() int {
+	return len(s)
+}
+func (s bySuggestion) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+func (s bySuggestion) Less(i, j int) bool {
+	return s[i].Level > s[j].Level
+}
+
+func reportFromTabbedTextTemplate(w io.Writer, data *reportInfo) error {
+	// Output Format:
+	// file:row:col: [extra] Human readable message (Other:Value, ...)
+	// Output Sample:
+	// manifest.yaml:1:1: Reliably namespace is forbidden (Platform: Kubernetes, Kind: Namespace)
+
+	padding := 1
+	minWidth := 0
+	tabWidth := 0
+	const padChar = ' '
+
+	tw := tabwriter.NewWriter(w, minWidth, tabWidth, padding, padChar, 0)
+	if sortFlag {
+		sort.Sort(bySuggestion(data.Suggestions))
+	}
+
+	err := reportFromPlaintextTemplate(tw, textTemplateTabbed, data)
+
+	// suggestions := data.Suggestions
+
+	// sort.Sort(bySuggestion(suggestions))
+
+	if err != nil {
+
+		return err
+	}
+	tw.Flush()
+
+	return nil
+}
+
 func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 	if enableColor {
 		return plainTemplate.FuncMap{
@@ -311,7 +362,14 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 	}
 
 	// by default those functions return the given content untouched
+	// xxxxx
 	return plainTemplate.FuncMap{
+		"coloredString": func(l core.Level) string {
+			return l.ColoredString()
+		},
+		"truncateMessage": func(t string) string {
+			return t
+		},
 		"highlight": func(t string, i int) string {
 			return t
 		},
@@ -327,6 +385,10 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 			return fmt.Sprintf("%v %s", count, level)
 		},
 	}
+}
+
+func coloredString(l core.Level) string {
+	return l.ColoredString()
 }
 
 var (
