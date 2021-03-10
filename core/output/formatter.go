@@ -6,6 +6,7 @@ import (
 	"io"
 	plainTemplate "text/template"
 
+	fColor "github.com/fatih/color"
 	color "github.com/gookit/color"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -14,10 +15,11 @@ import (
 	"github.com/reliablyhq/cli/version"
 )
 
-var text = `Results: {{ range $index, $issue := .Suggestions }}
-{{ $issue.FileLocation }} [{{ $issue.Level }}] - {{ $issue.RuleID }} : {{ $issue.Message }}
-Platform: {{ $issue.Platform}}, Kind: {{ $issue.Kind }}
-{{if $issue.Example }}Example:
+var text = `{{ notice "Results:" }} {{ range $index, $issue := .Suggestions }}
+{{ prompt ">" }} {{ $issue.FileLocation }} [{{ printLevel $issue.Level }}] {{ $issue.Message }}
+Rule: {{ $issue.RuleID }}, Platform: {{ $issue.Platform}}, Kind: {{ $issue.Kind }}
+{{if $issue.Example }}
+Example:
 {{ $issue.Example}}
 {{ end }}{{ end }}
 {{ notice "Summary:" }}
@@ -247,7 +249,7 @@ func levelToSarifLevel(l core.Level) sarifLevel {
 }
 
 func reportFromPlaintextTemplate(w io.Writer, reportTemplate string, data *reportInfo) error {
-	enableColor := true
+	enableColor := !fColor.NoColor
 	t, e := plainTemplate.
 		New("reliably").
 		Funcs(plainTextFuncMap(enableColor)).
@@ -266,7 +268,11 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 			"danger":    color.Danger.Render,
 			"notice":    color.Notice.Render,
 			"success":   color.Success.Render,
+			"prompt":    color.Yellow.Render,
 			"printCode": fmt.Sprint,
+			"printLevel": func(l core.Level) string {
+				return l.ColoredString()
+			},
 		}
 	}
 
@@ -278,7 +284,11 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 		"danger":    fmt.Sprint,
 		"notice":    fmt.Sprint,
 		"success":   fmt.Sprint,
+		"prompt":    fmt.Sprint,
 		"printCode": fmt.Sprint,
+		"printLevel": func(l core.Level) string {
+			return l.String()
+		},
 	}
 }
 
