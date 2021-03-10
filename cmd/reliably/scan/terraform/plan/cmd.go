@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/icza/dyno"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/terraform"
 	log "github.com/sirupsen/logrus"
@@ -78,8 +77,7 @@ func runWip(cmd *cobra.Command, args []string) {
 
 			log.Debugf("Policy found for %s. Processing rules...", kind)
 
-			input := dyno.ConvertMapI2MapS(resource)
-			resultSet := core.Eval(path, input)
+			resultSet := core.Eval(path, resource)
 			violationCount := core.CountViolations(resultSet, platform, kind)
 			log.Infof("Found %v violations", violationCount)
 
