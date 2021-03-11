@@ -14,8 +14,5 @@ type EvalResult struct {
 
 type policy struct {
 	filepath string
-}
-
-func (p policy) String() string {
-	return string(p)
+	uri      string
 }
