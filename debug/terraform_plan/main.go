@@ -3,10 +3,10 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/terraform"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -47,9 +47,8 @@ func main() {
 		}
 
 		for _, expr := range result.Expressions {
-			if m, ok := expr.Value.(map[string]interface{}); ok {
-				printFn(m, "")
-			}
+			m := expr.Value.(map[string]interface{})
+			printFn(m, "")
 		}
 	}
 }
