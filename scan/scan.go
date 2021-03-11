@@ -117,7 +117,15 @@ func (p *policy) evaluate(target *EvalTarget) (*EvalResult, error) {
 		log.Fatal(err)
 	}
 
-	_ = rs
+	for _, r := range rs {
+		v, err := extractResults(&r, target.Platform, "aws", target.ResourceType)
+		if err != nil {
+			return nil, err
+		}
+
+		_ = v
+	}
+	// extractResults(rs, target.Platform, target.ResourceType)
 
 	// extractResults(rs, target.Platform, target.ResourceType)
 
@@ -151,12 +159,18 @@ func extractResults(result *rego.Result, ks ...string) (rval interface{}, err er
 		}
 	}
 
+	var results []interface{}
 	for _, expr := range result.Expressions {
 		if m, ok := expr.Value.(map[string]interface{}); ok {
-			return extractor(m, ks...)
+			v, err := extractor(m, ks...)
+			if err != nil {
+				return nil, err
+			}
+
+			results = append(results, v)
 		}
 	}
-
+	rval = result
 	return
 }
 
