@@ -34,7 +34,7 @@ var textTemplate = `Results: {{ range $index, $issue := .Suggestions }}
 `
 
 var textTemplateTabbed = `Results: {{ range $index, $issue := .Suggestions }}
-[{{ coloredString $issue.Level}}]	[{{  $issue.FileLocation }}]	{{ $issue.Platform}}: {{ $issue.Kind }}	{{ $issue.RuleID  }}:{{ truncate $issue.Message }} {{ end }}
+[{{ coloredSquare $issue.Level}}]	[{{  $issue.FileLocation }}]	{{ $issue.Platform}}:{{ $issue.Kind }}	{{ $issue.RuleID  }}:{{ truncate $issue.Message }} {{ end }}
 {{ notice "Summary:" }}
 	{{ $count := len .Suggestions }}Suggestions: {{ if eq $count 0 }}
 	{{- success "No suggestion found" }}
@@ -325,6 +325,7 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 	if enableColor {
 		return plainTemplate.FuncMap{
 			"coloredString": coloredString,
+			"coloredSquare": coloredSquare,
 			"truncate":      truncateMessage,
 			"highlight":     highlight,
 			"danger":        color.Danger.Render,
@@ -339,6 +340,9 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 	return plainTemplate.FuncMap{
 		"coloredString": func(l core.Level) string {
 			return l.ColoredString()
+		},
+		"coloredSquare": func(l core.Level) string {
+			return l.ColoredSquare()
 		},
 		"truncateMessage": func(t string) string {
 			return t
@@ -355,6 +359,10 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 
 func coloredString(l core.Level) string {
 	return l.ColoredString()
+}
+
+func coloredSquare(l core.Level) string {
+	return l.ColoredSquare()
 }
 
 var (
