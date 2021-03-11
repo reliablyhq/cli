@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/icza/dyno"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/terraform"
 	log "github.com/sirupsen/logrus"
@@ -31,12 +30,12 @@ func New() *cobra.Command {
 	return &cmd
 }
 
-func run(cmd *cobra.Command, args []string) {
+func runWip(cmd *cobra.Command, args []string) {
 	log.Info("This hasn't been implemented yet. Check back in a later version to see if its ready!")
 	os.Exit(1)
 }
 
-func runWip(cmd *cobra.Command, args []string) {
+func run(cmd *cobra.Command, args []string) {
 	if file == "" {
 		log.Error("file argument is required")
 		os.Exit(1)
@@ -78,8 +77,7 @@ func runWip(cmd *cobra.Command, args []string) {
 
 			log.Debugf("Policy found for %s. Processing rules...", kind)
 
-			input := dyno.ConvertMapI2MapS(resource)
-			resultSet := core.Eval(path, input)
+			resultSet := core.Eval(path, resource)
 			violationCount := core.CountViolations(resultSet, platform, kind)
 			log.Infof("Found %v violations", violationCount)
 
