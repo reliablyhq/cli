@@ -7,11 +7,12 @@ import (
 	plainTemplate "text/template"
 
 	fColor "github.com/fatih/color"
-	color "github.com/gookit/color"
+	gColor "github.com/gookit/color"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
 	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/version"
 )
 
@@ -19,23 +20,41 @@ var text = `{{ notice "Results:" }} {{ range $index, $issue := .Suggestions }}
 {{ prompt ">" }} {{ $issue.FileLocation }} [{{ printLevel $issue.Level }}] {{ $issue.Message }}
 Rule: {{ $issue.RuleID }}, Platform: {{ $issue.Platform}}, Kind: {{ $issue.Kind }}
 {{if $issue.Example }}
-Example:
+# Example:
 {{ $issue.Example}}
 {{ end }}{{ end }}
 {{ notice "Summary:" }}
-	{{ $count := len .Suggestions }}Suggestions: {{ if eq $count 0 }}
+	{{ $count := len .Suggestions }}{{ if eq $count 0 }}
 	{{- success "No suggestion found" }}
 	{{- else }}{{ if eq $count 1 }}
 			{{- danger $count " suggestion found" }}
 		{{- else }}
 			{{- danger $count " suggestions found" }}
 		{{- end }}
+	{{ counter "info" .Counters.info }} - {{ counter "warning" .Counters.warning }} - {{ counter "error" .Counters.error }}
 	{{- end }}
 
 `
 
 type reportInfo struct {
 	Suggestions []*core.Suggestion `json:"suggestions"`
+	Counters    map[string]int
+}
+
+func countsPerLevel(suggestions []*core.Suggestion) map[string]int {
+
+	var counters map[string]int = map[string]int{
+		"info":    0,
+		"warning": 0,
+		"error":   0,
+	}
+
+	for _, s := range suggestions {
+		l := s.Level.String()
+		counters[l] = counters[l] + 1
+	}
+
+	return counters
 }
 
 // CreateReport generates a report for the reported suggestions into
@@ -51,6 +70,7 @@ func CreateReport(w io.Writer, format string, baseDir string, suggestions []*cor
 
 	data := &reportInfo{
 		Suggestions: suggestions,
+		Counters:    countsPerLevel(suggestions),
 	}
 	var err error
 	switch format {
@@ -265,13 +285,27 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 	if enableColor {
 		return plainTemplate.FuncMap{
 			"highlight": highlight,
-			"danger":    color.Danger.Render,
-			"notice":    color.Notice.Render,
-			"success":   color.Success.Render,
-			"prompt":    color.Yellow.Render,
+			"danger":    gColor.Danger.Render,
+			"notice":    gColor.Notice.Render,
+			"success":   gColor.Success.Render,
+			"prompt":    gColor.Yellow.Render,
 			"printCode": fmt.Sprint,
 			"printLevel": func(l core.Level) string {
 				return l.ColoredString()
+			},
+			"counter": func(level string, count int) string {
+				var tick string
+				switch level {
+				case "info":
+					tick = color.BgYellow(" ")
+				case "warning":
+					tick = color.BgMagenta(" ")
+				case "error":
+					tick = color.BgRed(" ")
+				default:
+					tick = ""
+				}
+				return fmt.Sprintf("%s %v %s", tick, count, level)
 			},
 		}
 	}
@@ -289,13 +323,16 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 		"printLevel": func(l core.Level) string {
 			return l.String()
 		},
+		"counter": func(level string, count int) string {
+			return fmt.Sprintf("%v %s", count, level)
+		},
 	}
 }
 
 var (
-	errorTheme   = color.New(color.FgLightWhite, color.BgRed)
-	warningTheme = color.New(color.FgBlack, color.BgYellow)
-	defaultTheme = color.New(color.FgWhite, color.BgBlack)
+	errorTheme   = gColor.New(gColor.FgLightWhite, gColor.BgRed)
+	warningTheme = gColor.New(gColor.FgBlack, gColor.BgYellow)
+	defaultTheme = gColor.New(gColor.FgWhite, gColor.BgBlack)
 )
 
 // highlight returns content t colored based on Score
