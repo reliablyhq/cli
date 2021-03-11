@@ -4,7 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
+	"os/exec"
 	"sort"
+	"strconv"
+	"strings"
 	"text/tabwriter"
 	plainTemplate "text/template"
 
@@ -18,6 +22,9 @@ import (
 	"github.com/reliablyhq/cli/utils"
 	"github.com/reliablyhq/cli/version"
 )
+
+const sortFlag = true
+const messageLen = 83
 
 var text = `{{ notice "Results:" }} {{ range $index, $issue := .Suggestions }}
 {{ prompt ">" }} {{ $issue.FileLocation }} [{{ printLevel $issue.Level }}] {{ $issue.Message }}
@@ -39,6 +46,21 @@ Rule: {{ $issue.RuleID }}, Platform: {{ $issue.Platform}}, Kind: {{ $issue.Kind 
 
 `
 
+var textTemplateTabbed = `Results: {{ range $index, $issue := .Suggestions }}
+{{ levelSymbol $issue.Level}}	{{ printLiveFileLocation $issue.FileLocation $issue.Kind }}	{{ $issue.Platform}}:{{ $issue.Kind }}	{{ $issue.RuleID  }}	{{ truncate $issue.Message }} {{ end }}
+{{ notice "Summary:" }}
+	{{ $count := len .Suggestions }}{{ if eq $count 0 }}
+	{{- success "No suggestion found" }}
+	{{- else }}{{ if eq $count 1 }}
+			{{- danger $count " suggestion found" }}
+		{{- else }}
+			{{- danger $count " suggestions found" }}
+		{{- end }}
+	{{ counter "info" .Counters.info }} - {{ counter "warning" .Counters.warning }} - {{ counter "error" .Counters.error }}
+	{{- end }}
+
+	`
+
 type reportInfo struct {
 	Suggestions []*core.Suggestion `json:"suggestions"`
 	Counters    map[string]int
@@ -58,6 +80,30 @@ func countsPerLevel(suggestions []*core.Suggestion) map[string]int {
 	}
 
 	return counters
+}
+
+func consoleSize() (int, int) {
+	cmd := exec.Command("stty", "size")
+	cmd.Stdin = os.Stdin
+	out, err := cmd.Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s := string(out)
+	s = strings.TrimSpace(s)
+	sArr := strings.Split(s, " ")
+
+	heigth, err := strconv.Atoi(sArr[0])
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	width, err := strconv.Atoi(sArr[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+	return heigth, width
 }
 
 // CreateReport generates a report for the reported suggestions into
@@ -83,6 +129,8 @@ func CreateReport(w io.Writer, format string, baseDir string, suggestions []*cor
 		err = reportYAML(w, data)
 	case "text", "extended":
 		err = reportFromPlaintextTemplate(w, text, data)
+	case "tabbed":
+		err = reportFromTabbedTextTemplate(w, data)
 	case "simple", "basic", "linter":
 		err = reportLinter(w, data)
 	case "sarif":
@@ -302,12 +350,8 @@ func (s bySuggestion) Less(i, j int) bool {
 }
 
 func reportFromTabbedTextTemplate(w io.Writer, data *reportInfo) error {
-	// Output Format:
-	// file:row:col: [extra] Human readable message (Other:Value, ...)
-	// Output Sample:
-	// manifest.yaml:1:1: Reliably namespace is forbidden (Platform: Kubernetes, Kind: Namespace)
 
-	padding := 1
+	padding := 2
 	minWidth := 0
 	tabWidth := 0
 	const padChar = ' '
@@ -317,11 +361,11 @@ func reportFromTabbedTextTemplate(w io.Writer, data *reportInfo) error {
 		sort.Sort(bySuggestion(data.Suggestions))
 	}
 
+	h, ww := consoleSize()
+
+	fmt.Printf("***************** width:%v hieght:%v", ww, h)
+
 	err := reportFromPlaintextTemplate(tw, textTemplateTabbed, data)
-
-	// suggestions := data.Suggestions
-
-	// sort.Sort(bySuggestion(suggestions))
 
 	if err != nil {
 
@@ -341,8 +385,18 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 			"success":   gColor.Success.Render,
 			"prompt":    gColor.Yellow.Render,
 			"printCode": fmt.Sprint,
+			"truncate": func(s string) string {
+				return utils.TruncateString(s, messageLen)
+			},
 			"printLevel": func(l core.Level) string {
 				return l.ColoredString()
+			},
+			"printLiveFileLocation": func(s string, kind string) string {
+				r := kind + ":"
+				return strings.Replace(s, r, "", 1)
+			},
+			"levelSymbol": func(l core.Level) string {
+				return l.ColoredSquare()
 			},
 			"counter": func(level string, count int) string {
 				var tick string
@@ -362,17 +416,7 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 	}
 
 	// by default those functions return the given content untouched
-	// xxxxx
 	return plainTemplate.FuncMap{
-		"coloredString": func(l core.Level) string {
-			return l.ColoredString()
-		},
-		"coloredSquare": func(l core.Level) string {
-			return l.ColoredSquare()
-		},
-		"truncateMessage": func(t string) string {
-			return t
-		},
 		"highlight": func(t string, i int) string {
 			return t
 		},
@@ -381,21 +425,23 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 		"success":   fmt.Sprint,
 		"prompt":    fmt.Sprint,
 		"printCode": fmt.Sprint,
+		"truncate": func(s string) string {
+			return utils.TruncateString(s, messageLen)
+		},
 		"printLevel": func(l core.Level) string {
 			return l.String()
+		},
+		"printLiveFileLocation": func(s string, kind string) string {
+			r := kind + ":"
+			return strings.Replace(s, r, "", 1)
+		},
+		"levelSymbol": func(l core.Level) string {
+			return l.String()[0:1]
 		},
 		"counter": func(level string, count int) string {
 			return fmt.Sprintf("%v %s", count, level)
 		},
 	}
-}
-
-func coloredString(l core.Level) string {
-	return l.ColoredString()
-}
-
-func coloredSquare(l core.Level) string {
-	return l.ColoredSquare()
 }
 
 var (
