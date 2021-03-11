@@ -3,6 +3,8 @@
 ## [Unreleased]
 ### Added
 - Kubernetes live scan now provides suggestions for nodes
+- Scan has new `extended` format for having more verbose output
+- Suggestion examples are added to `sarif`, `codeclimate` and `extended` output formats
 
 ### Changed
 - policy retrieval logic has been changed to incorporate the API Version into the path to the remote policy. Locally cached policy also includes the API Version.
