@@ -113,7 +113,7 @@ func buildSarifRule(suggestion *core.Suggestion) *sarifRule {
 	if suggestion.Example != "" {
 		help = &sarifMultiformatMessage{
 			Text:     fmt.Sprintf("Example:\n%s", suggestion.Example),
-			Markdown: fmt.Sprintf("Example:\n```%s```", suggestion.Example),
+			Markdown: fmt.Sprintf("Example:\n%s", suggestion.Example),
 		}
 	}
 
