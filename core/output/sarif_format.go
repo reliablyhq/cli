@@ -54,7 +54,7 @@ type sarifMessage struct {
 
 type sarifMultiformatMessage struct {
 	Text     string `json:"text"`
-	Markdown string `json:"markdown"`
+	Markdown string `json:"-"`
 }
 
 type sarifResult struct {
