@@ -25,8 +25,8 @@ type sarifRule struct {
 	//Name             string           `json:"name"`
 	ShortDescription *sarifMessage `json:"shortDescription"`
 	//FullDescription  *sarifMessage    `json:"fullDescription"`
-	Help       *sarifMessage    `json:"help"`
-	Properties *sarifProperties `json:"properties"`
+	Help       *sarifMultiformatMessage `json:"help"`
+	Properties *sarifProperties         `json:"properties"`
 }
 
 type sarifArtifactLocation struct {
@@ -49,8 +49,12 @@ type sarifLocation struct {
 }
 
 type sarifMessage struct {
+	Text string `json:"text"`
+}
+
+type sarifMultiformatMessage struct {
 	Text     string `json:"text"`
-	Markdown string `json:"-"`
+	Markdown string `json:"markdown"`
 }
 
 type sarifResult struct {
@@ -105,9 +109,9 @@ func buildSarifRule(suggestion *core.Suggestion) *sarifRule {
 		description = suggestion.RuleDef
 	}
 
-	var help *sarifMessage
+	var help *sarifMultiformatMessage = &sarifMultiformatMessage{}
 	if suggestion.Example != "" {
-		help = &sarifMessage{
+		help = &sarifMultiformatMessage{
 			Text:     fmt.Sprintf("Example:\n%s", suggestion.Example),
 			Markdown: fmt.Sprintf("# Example:\n```%s```", suggestion.Example),
 		}
