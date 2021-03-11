@@ -49,7 +49,8 @@ type sarifLocation struct {
 }
 
 type sarifMessage struct {
-	Text string `json:"text"`
+	Text     string `json:"text"`
+	Markdown string `json:"markdown"`
 }
 
 type sarifResult struct {
@@ -107,7 +108,8 @@ func buildSarifRule(suggestion *core.Suggestion) *sarifRule {
 	var help *sarifMessage
 	if suggestion.Example != "" {
 		help = &sarifMessage{
-			Text: fmt.Sprintf("# Example: ```%s```", suggestion.Example),
+			Text:     fmt.Sprintf("Example:\n%s", suggestion.Example),
+			Markdown: fmt.Sprintf("# Example:\n```%s```", suggestion.Example),
 		}
 	}
 
