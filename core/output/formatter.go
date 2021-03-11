@@ -367,6 +367,9 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 		"coloredString": func(l core.Level) string {
 			return l.ColoredString()
 		},
+		"coloredSquare": func(l core.Level) string {
+			return l.ColoredSquare()
+		},
 		"truncateMessage": func(t string) string {
 			return t
 		},
@@ -389,6 +392,10 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 
 func coloredString(l core.Level) string {
 	return l.ColoredString()
+}
+
+func coloredSquare(l core.Level) string {
+	return l.ColoredSquare()
 }
 
 var (
