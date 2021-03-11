@@ -1,7 +1,7 @@
 package output
 
 import (
-	//"fmt"
+	"fmt"
 	"strings"
 
 	"github.com/reliablyhq/cli/core"
@@ -25,7 +25,7 @@ type sarifRule struct {
 	//Name             string           `json:"name"`
 	ShortDescription *sarifMessage `json:"shortDescription"`
 	//FullDescription  *sarifMessage    `json:"fullDescription"`
-	//Help             *sarifMessage    `json:"help"`
+	Help       *sarifMessage    `json:"help"`
 	Properties *sarifProperties `json:"properties"`
 }
 
@@ -104,6 +104,13 @@ func buildSarifRule(suggestion *core.Suggestion) *sarifRule {
 		description = suggestion.RuleDef
 	}
 
+	var help *sarifMessage
+	if suggestion.Example != "" {
+		help = &sarifMessage{
+			Text: fmt.Sprintf("# Example: ```%s```", suggestion.Example),
+		}
+	}
+
 	return &sarifRule{
 		ID: suggestion.RuleID,
 		//Name: suggestion.Message,
@@ -115,11 +122,7 @@ func buildSarifRule(suggestion *core.Suggestion) *sarifRule {
 				Text: description,
 			},
 		*/
-		/*
-			Help: &sarifMessage{
-				Text: fmt.Sprintf("%s\nPlatform: %s\nKind: %s\n", description, suggestion.Platform, suggestion.Kind),
-			},
-		*/
+		Help: help,
 		Properties: &sarifProperties{
 			Tags: []string{suggestion.Platform, suggestion.Kind},
 		},
