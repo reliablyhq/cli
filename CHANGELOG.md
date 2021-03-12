@@ -4,7 +4,9 @@
 
 ### Added
 - Kubernetes live scan now provides suggestions for nodes
-- added a stub for the `scan terraform plan` command. This will be fully implemented later.
+- added a scan terraform plan command for the `scan terraform plan` command.
+- added new `github.com/reliablyhq/cli/scan` package
+
 
 ### Changed
 - policy retrieval logic has been changed to incorporate the API Version into the path to the remote policy. Locally cached policy also includes the API Version.
