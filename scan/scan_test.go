@@ -24,6 +24,11 @@ func TestPolicyFind(t *testing.T) {
 	assert.NoError(t, p.find(testTarget.Platform, testTarget.ResourceType))
 	assert.Equal(t, ".reliably/policies/terraform/aws_autoscaling_group.rego", p.filepath)
 	assert.Equal(t, "https://static.reliably.com/opa/terraform/aws_autoscaling_group.rego", p.uri)
+
+	// check header
+	headers := p.packageHeaders()
+	assert.Len(t, headers, 3, "expected header length: 3")
+	t.Logf("headers found --> %s", headers)
 }
 
 func TestEvaluate(t *testing.T) {
