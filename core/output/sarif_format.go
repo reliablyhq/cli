@@ -1,7 +1,7 @@
 package output
 
 import (
-	//"fmt"
+	"fmt"
 	"strings"
 
 	"github.com/reliablyhq/cli/core"
@@ -25,8 +25,8 @@ type sarifRule struct {
 	//Name             string           `json:"name"`
 	ShortDescription *sarifMessage `json:"shortDescription"`
 	//FullDescription  *sarifMessage    `json:"fullDescription"`
-	//Help             *sarifMessage    `json:"help"`
-	Properties *sarifProperties `json:"properties"`
+	Help       *sarifMultiformatMessage `json:"help"`
+	Properties *sarifProperties         `json:"properties"`
 }
 
 type sarifArtifactLocation struct {
@@ -50,6 +50,11 @@ type sarifLocation struct {
 
 type sarifMessage struct {
 	Text string `json:"text"`
+}
+
+type sarifMultiformatMessage struct {
+	Text     string `json:"text"`
+	Markdown string `json:"markdown"`
 }
 
 type sarifResult struct {
@@ -104,6 +109,14 @@ func buildSarifRule(suggestion *core.Suggestion) *sarifRule {
 		description = suggestion.RuleDef
 	}
 
+	var help *sarifMultiformatMessage = &sarifMultiformatMessage{}
+	if suggestion.Example != "" {
+		help = &sarifMultiformatMessage{
+			Text:     fmt.Sprintf("Example:\n%s", suggestion.Example),
+			Markdown: fmt.Sprintf("**Example:**\n```\n%s\n```", suggestion.Example),
+		}
+	}
+
 	return &sarifRule{
 		ID: suggestion.RuleID,
 		//Name: suggestion.Message,
@@ -115,11 +128,7 @@ func buildSarifRule(suggestion *core.Suggestion) *sarifRule {
 				Text: description,
 			},
 		*/
-		/*
-			Help: &sarifMessage{
-				Text: fmt.Sprintf("%s\nPlatform: %s\nKind: %s\n", description, suggestion.Platform, suggestion.Kind),
-			},
-		*/
+		Help: help,
 		Properties: &sarifProperties{
 			Tags: []string{suggestion.Platform, suggestion.Kind},
 		},
