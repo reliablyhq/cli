@@ -8,7 +8,6 @@ type Target struct {
 	ResourceType string
 	Platform     string
 	Item         interface{}
-	Metadata     map[string]string
 	subgroups    []string
 }
 
