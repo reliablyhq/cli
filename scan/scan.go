@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -107,6 +108,16 @@ func (p *policy) download() (err error) {
 	return
 }
 
+// packageHeader - reads package name from policy string
+// to create evaluations keys.
+// For eg. package terraform.aws.resource --> []string{ tarraform, aws, resource }
+func (p *policy) packageHeaders() []string {
+	matches := regexp.MustCompile(`(?i)package.(.*)\n`).FindAllStringSubmatch(p.String(), -1)
+	return strings.Split(matches[0][1], ".")
+}
+
+// evaluate - executes policy evaluation against a given target(s)
+// a list of offendingTargets is returns, i.e targets with violations
 func (p *policy) evaluate(targets ...*Target) (offendingTargets []*Target, err error) {
 	log.Debug(fmt.Sprintf("policy: %s, evaluating %d target(s)", p, len(targets)))
 
@@ -145,14 +156,18 @@ func (p *policy) evaluate(targets ...*Target) (offendingTargets []*Target, err e
 				return
 			}
 
-			violations, err := violationLookup(&rs, target.Platform, "aws", target.ResourceType)
+			violations, err := violationLookup(&rs, p.packageHeaders()...)
+			// violations, err := violationLookup(&rs, target.Platform, "aws", target.ResourceType)
 			if err != nil {
 				return
 			}
 
-			// fmt.Println(target)
-			target.Result.Violations = append(target.Result.Violations, violations...)
-			targetChan <- target
+			if len(violations) > 0 {
+				// fmt.Println(target)
+				target.Result.Violations = append(target.Result.Violations, violations...)
+				targetChan <- target
+			}
+
 		}(target)
 	}
 
