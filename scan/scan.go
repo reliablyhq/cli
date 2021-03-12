@@ -3,12 +3,15 @@ package scan
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"net/http"
@@ -26,14 +29,20 @@ const (
 )
 
 // FindPolicyAndEvaluate -
-func FindPolicyAndEvaluate(target *EvalTarget) (*EvalResult, error) {
-
-	var p policy
-	if err := p.find(target.Platform, target.ResourceType); err != nil {
-		return nil, err
+func FindPolicyAndEvaluate(targets ...*Target) (offendingTargets []*Target, err error) {
+	if len(targets) == 0 {
+		return nil, errors.New("FindPolicyAndEvaluate requires atleast one [target] to be specified")
 	}
 
-	return p.evaluate(target)
+	// use initial target to find policy
+	// TODO: may be worth adding logic to handle target specific policy lookups
+	var p policy
+	target := targets[0]
+	if err = p.find(target.Platform, target.ResourceType); err != nil {
+		return
+	}
+
+	return p.evaluate(targets...)
 }
 
 func (p *policy) find(path ...string) (err error) {
@@ -51,6 +60,12 @@ func (p *policy) find(path ...string) (err error) {
 	}
 
 	return
+}
+
+func (p policy) String() string {
+	s, _ := ioutil.ReadFile(p.filepath)
+	return string(s)
+
 }
 
 // downloads a given policy
@@ -92,9 +107,10 @@ func (p *policy) download() (err error) {
 	return
 }
 
-func (p *policy) evaluate(target *EvalTarget) (*EvalResult, error) {
-	log.Debug(fmt.Sprintf("Evaluate policy %s", p))
+func (p *policy) evaluate(targets ...*Target) (offendingTargets []*Target, err error) {
+	log.Debug(fmt.Sprintf("policy: %s, evaluating %d target(s)", p, len(targets)))
 
+	fmt.Println(p.String())
 	ctx := context.Background()
 
 	// Construct a Rego object that can be prepared or evaluated.
@@ -110,32 +126,53 @@ func (p *policy) evaluate(target *EvalTarget) (*EvalResult, error) {
 		log.Fatal(err)
 	}
 
-	// Execute the prepared query.
-	rs, err := query.Eval(ctx, rego.EvalInput(target.Item))
-	if err != nil {
-		log.Debug("fatal #2")
-		log.Fatal(err)
+	var w sync.WaitGroup
+	var targetChan = make(chan *Target, 1000)
+	for _, target := range targets {
+		w.Add(1)
+		go func(target *Target) {
+			defer w.Done()
+			defer func() {
+				// TODO: better error handle
+				if err != nil {
+					log.Debugf("error evaluating target: %v - %s", target, err)
+				}
+			}()
+
+			// Execute the prepared query.
+			rs, err := query.Eval(ctx, rego.EvalInput(target.Item))
+			if err != nil {
+				return
+			}
+
+			violations, err := violationLookup(&rs, target.Platform, "aws", target.ResourceType)
+			if err != nil {
+				return
+			}
+
+			// fmt.Println(target)
+			target.Result.Violations = append(target.Result.Violations, violations...)
+			targetChan <- target
+		}(target)
 	}
 
-	for _, r := range rs {
-		v, err := extractResults(&r, target.Platform, "aws", target.ResourceType)
-		if err != nil {
-			return nil, err
-		}
+	w.Wait()
+	close(targetChan)
 
-		_ = v
+	// add offending targets
+	for target := range targetChan {
+		offendingTargets = append(offendingTargets, target)
 	}
-	// extractResults(rs, target.Platform, target.ResourceType)
-
-	// extractResults(rs, target.Platform, target.ResourceType)
-
-	return nil, errNotImplemented
+	return
 }
 
-func extractResults(result *rego.Result, ks ...string) (rval interface{}, err error) {
+func violationLookup(rs *rego.ResultSet, ks ...string) (violations []Rule, err error) {
 	if len(ks) == 0 { // degenerate input
-		return nil, fmt.Errorf("NestedMapLookup needs at least one key")
+		return nil, fmt.Errorf("resultlookup needs at least one key")
 	}
+
+	// add final key *violatiions*
+	ks = append(ks, "violations")
 
 	// extractor ...
 	// m:  a map from strings to other maps or values, of arbitrary depth
@@ -148,6 +185,7 @@ func extractResults(result *rego.Result, ks ...string) (rval interface{}, err er
 	var extractor func(m map[string]interface{}, ks ...string) (interface{}, error)
 	extractor = func(m map[string]interface{}, ks ...string) (interface{}, error) {
 		var ok bool
+		var rval interface{}
 		if rval, ok = m[ks[0]]; !ok {
 			return nil, fmt.Errorf("key not found; remaining keys: %v", ks)
 		} else if len(ks) == 1 { // we've reached the final key
@@ -159,18 +197,30 @@ func extractResults(result *rego.Result, ks ...string) (rval interface{}, err er
 		}
 	}
 
-	var results []interface{}
-	for _, expr := range result.Expressions {
-		if m, ok := expr.Value.(map[string]interface{}); ok {
-			v, err := extractor(m, ks...)
-			if err != nil {
-				return nil, err
-			}
+	// var results []interface{}
+	for _, r := range *rs {
+		for _, expr := range r.Expressions {
+			if m, ok := expr.Value.(map[string]interface{}); ok {
+				v, err := extractor(m, ks...)
+				if err != nil {
+					return nil, err
+				}
 
-			results = append(results, v)
+				if data, ok := v.([]interface{}); ok {
+					for _, d := range data {
+						vRule := d.(map[string]interface{})
+						b, _ := json.Marshal(&vRule)
+						var rule Rule
+						if err = json.Unmarshal(b, &rule); err != nil {
+							return nil, err
+						}
+						violations = append(violations, rule)
+					}
+				}
+			}
 		}
 	}
-	rval = result
+
 	return
 }
 
