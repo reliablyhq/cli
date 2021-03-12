@@ -87,7 +87,7 @@ func (p *policy) download() (err error) {
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("No file found at URL: %v", p.uri)
+		return fmt.Errorf("GET %s: %s ", p.uri, resp.Status)
 	}
 
 	defer resp.Body.Close()
