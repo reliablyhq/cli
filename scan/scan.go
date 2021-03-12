@@ -22,36 +22,88 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var errNotImplemented = errors.New("not implemented")
+var (
+	errNotImplemented = errors.New("not implemented")
+	errNotFound       = errors.New("not found")
+)
 
 const (
 	workspace = ".reliably"
 	policyURL = "https://static.reliably.com/opa/%s"
 )
 
-// FindPolicyAndEvaluate -
-func FindPolicyAndEvaluate(targets ...*Target) (offendingTargets []*Target, err error) {
-	if len(targets) == 0 {
-		return nil, errors.New("FindPolicyAndEvaluate requires atleast one [target] to be specified")
+// EvaluateMany policies concurrently - // TODO: WEP
+func EvaluateMany(targets []*Target, resultChan chan *Result, errorChan chan error) {
+	doWork := func(target *Target, rChan chan *Result, errChan chan error, wg *sync.WaitGroup) {
+		defer wg.Done()
+		r, e := FindPolicyAndEvaluate(target)
+
+		if e != nil && errChan != nil {
+			errorChan <- e
+			return
+		}
+
+		if r != nil && rChan != nil {
+			rChan <- r
+		}
 	}
+
+	var wg sync.WaitGroup
+	wg.Add(len(targets))
+	for _, t := range targets {
+		go doWork(t, resultChan, errorChan, &wg)
+	}
+	wg.Wait()
+}
+
+// FindPolicyAndEvaluate -
+func FindPolicyAndEvaluate(target *Target) (result *Result, err error) {
+	// if len(targets) == 0 {
+	// 	return nil, errors.New("FindPolicyAndEvaluate requires atleast one [target] to be specified")
+	// }
 
 	// use initial target to find policy
 	// TODO: may be worth adding logic to handle target specific policy lookups
 	var p policy
-	target := targets[0]
-	if err = p.find(target.Platform, target.ResourceType); err != nil {
+
+	// build path
+	path := []string{target.Platform}
+	path = append(path, target.subgroups...)
+	path = append(path, target.ResourceType)
+
+	if err = p.find(path...); err != nil {
 		return
 	}
 
-	return p.evaluate(targets...)
+	return p.evaluate(target)
 }
 
-func (p *policy) find(path ...string) (err error) {
-	// check whether policy is already in cache folder
-	// or download it from GitHub
-	// and returns its content
+// NewTarget - returns a pointer an instance of scan.Target
+func NewTarget(item interface{}, platform, resourcetype string) *Target {
+	return &Target{
+		Item:         item,
+		ResourceType: resourcetype,
+		Platform:     platform,
+	}
+}
 
-	p.uri = fmt.Sprintf(policyURL, filepath.Join(path...)) + ".rego"
+// AddSubGrouping - adds a sub group
+// subgroups are used by some resources that require additional partition beyond
+// platform --> resource
+// Note that subgroups are placed between platform & resource
+// during lookups, i.e platform --> [subgroups] --> resource
+// or kubernetes --> app/v1 --> resource
+func (t *Target) AddSubGrouping(groups ...string) *Target {
+	for _, g := range groups {
+		t.subgroups = append(t.subgroups, g)
+	}
+	return t
+}
+
+// find - sets the path to the cached policy or
+// downloads it if unavailable
+func (p *policy) find(path ...string) (err error) {
+	p.uri = strings.ToLower(fmt.Sprintf(policyURL, filepath.Join(path...)) + ".rego")
 	path = append([]string{workspace, "policies"}, path...)
 	p.filepath = strings.ToLower(filepath.Join(path...)) + ".rego"
 
@@ -59,14 +111,12 @@ func (p *policy) find(path ...string) (err error) {
 		// policy is not yet in local cache
 		return p.download()
 	}
-
 	return
 }
 
 func (p policy) String() string {
 	s, _ := ioutil.ReadFile(p.filepath)
 	return string(s)
-
 }
 
 // downloads a given policy
@@ -88,7 +138,10 @@ func (p *policy) download() (err error) {
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("GET %s: %s ", p.uri, resp.Status)
+		if resp.StatusCode == 404 {
+			return errNotFound
+		}
+		return fmt.Errorf("GET %s: %s", p.uri, resp.Status)
 	}
 
 	defer resp.Body.Close()
@@ -118,10 +171,11 @@ func (p *policy) packageHeaders() []string {
 
 // evaluate - executes policy evaluation against a given target(s)
 // a list of offendingTargets is returns, i.e targets with violations
-func (p *policy) evaluate(targets ...*Target) (offendingTargets []*Target, err error) {
-	log.Debug(fmt.Sprintf("policy: %s, evaluating %d target(s)", p, len(targets)))
+func (p *policy) evaluate(target *Target) (*Result, error) {
+	// log.Debug(fmt.Sprintf("policy: %s, evaluating %d target(s)", p, len(targets)))
+	var result Result
 
-	fmt.Println(p.String())
+	// fmt.Println(p.String())
 	ctx := context.Background()
 
 	// Construct a Rego object that can be prepared or evaluated.
@@ -137,50 +191,25 @@ func (p *policy) evaluate(targets ...*Target) (offendingTargets []*Target, err e
 		log.Fatal(err)
 	}
 
-	var w sync.WaitGroup
-	var targetChan = make(chan *Target, 1000)
-	for _, target := range targets {
-		w.Add(1)
-		go func(target *Target) {
-			defer w.Done()
-			defer func() {
-				// TODO: better error handle
-				if err != nil {
-					log.Debugf("error evaluating target: %v - %s", target, err)
-				}
-			}()
-
-			// Execute the prepared query.
-			rs, err := query.Eval(ctx, rego.EvalInput(target.Item))
-			if err != nil {
-				return
-			}
-
-			violations, err := violationLookup(&rs, p.packageHeaders()...)
-			// violations, err := violationLookup(&rs, target.Platform, "aws", target.ResourceType)
-			if err != nil {
-				return
-			}
-
-			if len(violations) > 0 {
-				// fmt.Println(target)
-				target.Result.Violations = append(target.Result.Violations, violations...)
-				targetChan <- target
-			}
-
-		}(target)
+	// Execute the prepared query.
+	rs, err := query.Eval(ctx, rego.EvalInput(target.Item))
+	if err != nil {
+		return nil, err
 	}
 
-	w.Wait()
-	close(targetChan)
-
-	// add offending targets
-	for target := range targetChan {
-		offendingTargets = append(offendingTargets, target)
+	violations, err := violationLookup(&rs, p.packageHeaders()...)
+	// violations, err := violationLookup(&rs, target.Platform, "aws", target.ResourceType)
+	if err != nil {
+		return nil, err
 	}
-	return
+
+	result.Violations = violations
+
+	return &result, nil
 }
 
+// violationLookup - handles looking up violations in targets against
+// policies recursively.
 func violationLookup(rs *rego.ResultSet, ks ...string) (violations []Rule, err error) {
 	if len(ks) == 0 { // degenerate input
 		return nil, fmt.Errorf("resultlookup needs at least one key")
@@ -212,7 +241,7 @@ func violationLookup(rs *rego.ResultSet, ks ...string) (violations []Rule, err e
 		}
 	}
 
-	// var results []interface{}
+	// Iterate expressions and evaluate violations (if any)
 	for _, r := range *rs {
 		for _, expr := range r.Expressions {
 			if m, ok := expr.Value.(map[string]interface{}); ok {
@@ -240,7 +269,6 @@ func violationLookup(rs *rego.ResultSet, ks ...string) (violations []Rule, err e
 }
 
 // TODO:
-
-func findPolicyFuzzy(platform string, metadata map[string]string) ([]*policy, error) {
+func (p *policy) findPolicyFuzzy(platform string, metadata map[string]string) ([]*policy, error) {
 	return nil, errNotImplemented
 }
