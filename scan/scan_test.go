@@ -10,7 +10,7 @@ import (
 
 var (
 	// target
-	testTarget = &EvalTarget{
+	testTarget = &Target{
 		ResourceType: "aws_autoscaling_group",
 		Platform:     "terraform",
 	}
@@ -29,14 +29,30 @@ func TestPolicyFind(t *testing.T) {
 func TestEvaluate(t *testing.T) {
 	var tfplan terraform.PlanRepresentation
 	assert.NoError(t, json.Unmarshal(terraformTestPlan, &tfplan))
-	testTarget.Item = tfplan
+	// testTarget.Item = tfplan
 
 	// get policy
 	var p policy
 	assert.NoError(t, p.find(testTarget.Platform, testTarget.ResourceType))
-	evalResult, err := p.evaluate(testTarget)
+
+	// iterate module
+	var targets []*Target
+	for _, resource := range tfplan.PlannedValues.RootModule.Resources {
+		targets = append(targets, &Target{
+			ResourceType: resource.Type,
+			Platform:     "terraform",
+			Item:         resource,
+		})
+	}
+
+	offendingTargets, err := p.evaluate(targets...)
 	assert.NoError(t, err)
-
-	t.Log(evalResult)
-
+	assert.Len(t, offendingTargets, 1, "exoected offending items length 1")
+	for _, target := range offendingTargets {
+		for _, rule := range target.Result.Violations {
+			t.Logf("Violation Detected:\n\tlevel: %d\n\tMessage: %s\n\tRuleID: %s\n\tRule Definition: %s\n\t----",
+				rule.Level, rule.Message, rule.RuleID, rule.RuleDefinition,
+			)
+		}
+	}
 }
