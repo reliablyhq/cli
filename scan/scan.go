@@ -83,7 +83,7 @@ func (p *policy) download() (err error) {
 	// Get the data
 	resp, err := client.Get(p.uri)
 	if err != nil {
-		return fmt.Errorf("error fetching policy via API: %s", err)
+		return err
 	}
 
 	if resp.StatusCode != 200 {
@@ -95,13 +95,13 @@ func (p *policy) download() (err error) {
 	// Create the file
 	out, err := os.Create(p.filepath)
 	if err != nil {
-		return fmt.Errorf("error creating policy file in local cache: %s", err)
+		return err
 	}
 	defer out.Close()
 
 	// Write the body to file
 	if _, err = io.Copy(out, resp.Body); err != nil {
-		return fmt.Errorf("error writing policy file to local cache: %s", err)
+		return err
 	}
 
 	return
