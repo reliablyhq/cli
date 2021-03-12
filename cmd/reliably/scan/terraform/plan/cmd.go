@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/terraform"
+	"github.com/reliablyhq/cli/scan"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -30,16 +30,11 @@ func New() *cobra.Command {
 	return &cmd
 }
 
-func runWip(cmd *cobra.Command, args []string) {
-	log.Info("This hasn't been implemented yet. Check back in a later version to see if its ready!")
-	os.Exit(1)
-}
-
 func run(cmd *cobra.Command, args []string) {
-	if file == "" {
-		log.Error("file argument is required")
-		os.Exit(1)
-	}
+	// if file == "" {
+	// 	log.Error("file argument is required")
+	// 	os.Exit(1)
+	// }
 
 	// 1: check for the file
 	contentBytes, err := getFileContent(file)
@@ -61,31 +56,20 @@ func run(cmd *cobra.Command, args []string) {
 	var evalFunc func(*terraform.ModuleRepresentation)
 	evalFunc = func(module *terraform.ModuleRepresentation) {
 		for _, resource := range module.Resources {
-			kind := resource.Type
-			log.Infof("Analysing %s...", kind)
 
-			path, err := core.FetchPolicy(".reliably", platform, kind)
+			target := scan.NewTarget(resource, platform, resource.Type)
+			result, err := scan.FindPolicyAndEvaluate(target)
 			if err != nil {
-				log.Warn(err)
+				log.Debug(err)
+				log.Warnf("error occured while scanning target: %s", target.ResourceType)
 				continue
 			}
 
-			if path == "" {
-				log.Warnf("policy not found for resource '%s'", kind)
-				continue
+			for _, r := range result.Violations {
+				log.Infof("Resource: [%s] - Message: %s", target.ResourceType, r.Message)
 			}
 
-			log.Debugf("Policy found for %s. Processing rules...", kind)
-
-			resultSet := core.Eval(path, resource)
-			violationCount := core.CountViolations(resultSet, platform, kind)
-			log.Infof("Found %v violations", violationCount)
-
-			if violationCount > 0 {
-				core.PrintViolations(resultSet, path, platform, kind, 0)
-			}
-
-			log.Infof("Processing %s complete!", kind)
+			log.Infof("Processing %s complete!", target.ResourceType)
 		}
 
 		for _, childModule := range module.ChildModules {
