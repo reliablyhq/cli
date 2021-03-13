@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 
+	"github.com/reliablyhq/cli/cmd/reliably/adviseme"
 	core "github.com/reliablyhq/cli/core"
 	color "github.com/reliablyhq/cli/core/color"
 	config "github.com/reliablyhq/cli/core/config"
@@ -94,6 +95,8 @@ Environment variables:
 	cmd.AddCommand(NewCmdWorkflow())
 	cmd.AddCommand(NewCmdHistory())
 	cmd.AddCommand(NewCmdScan())
+
+	cmd.AddCommand(adviseme.NewCommand())
 
 	//Help topics
 	cmd.AddCommand(NewHelpTopic("environment"))
