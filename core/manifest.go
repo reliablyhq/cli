@@ -10,8 +10,7 @@ const defaultManifestPath = "relably.yaml"
 
 // Manifest that describes a Reliably applciation
 type Manifest struct {
-	Type     string
-	Platform string
+	Type string
 }
 
 func LoadManifest() (*Manifest, error) {
