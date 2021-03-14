@@ -66,7 +66,8 @@ func run(cmd *cobra.Command, args []string) {
 			}
 
 			for _, r := range result.Violations {
-				log.Infof("Resource: [%s] - Message: %s", target.ResourceType, r.Message)
+				// log.Infof("Resource: [%s] - Message: %s", target.ResourceType, r.Message)
+				log.Infof("[%s] [%s]: %s", target.ResourceType, resource.Name, r.Message)
 			}
 
 			log.Infof("Processing %s complete!", target.ResourceType)

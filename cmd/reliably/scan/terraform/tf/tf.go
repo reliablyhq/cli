@@ -21,6 +21,7 @@ var file string
 
 // Resource -type used to create resource input for scanning
 type Resource struct {
+	Label  string                 `json:"label"`
 	Type   string                 `json:"type"`
 	Values map[string]interface{} `json:"values"`
 }
@@ -58,25 +59,27 @@ func run(cmd *cobra.Command, args []string) {
 			// resource := make(map[string]interface{})
 			var resource Resource
 			resource.Type = resourceType
-			for _, r := range v.([]map[string]interface{})[0] {
+			for label, r := range v.([]map[string]interface{})[0] {
+				resource.Label = label
 				resource.Values = r.([]map[string]interface{})[0]
 			}
 			target := scan.NewTarget(&resource, platform, resourceType)
 			result, err := scan.FindPolicyAndEvaluate(target)
 			if err != nil {
 				log.Debug(err)
-				log.Errorf("An error occured while scanning resource: [%s]", resource.Type)
+				log.Warnf("An error occured while scanning resource: [%s]", resource.Type)
 				continue
 			}
 
 			for _, r := range result.Violations {
-				log.Infof("[%s]: %s", target.ResourceType, r.Message)
+				log.Infof("[%s] [%s]: %s", target.ResourceType, resource.Label, r.Message)
 			}
 
 			log.Infof("Processing %s complete!", target.ResourceType)
 		}
 	}
 
+	log.Info("Scan complete!")
 }
 
 // unmarshal .tf files by recursively removing
@@ -97,6 +100,7 @@ func unmarshalTF(tf []byte, v interface{}) error {
 		var lineNo = 1
 		scanner := bufio.NewScanner(strings.NewReader(string(tf)))
 
+		// remove lineNo
 		for scanner.Scan() {
 			if lineNo != badlineNo {
 				fmt.Fprintln(&updated, scanner.Text())
@@ -105,6 +109,5 @@ func unmarshalTF(tf []byte, v interface{}) error {
 		}
 		unmarshalTF([]byte(updated.String()), v)
 	}
-
 	return nil
 }
