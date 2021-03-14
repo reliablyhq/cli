@@ -2,6 +2,7 @@ package terraform
 
 import (
 	"github.com/reliablyhq/cli/cmd/reliably/scan/terraform/plan"
+	"github.com/reliablyhq/cli/cmd/reliably/scan/terraform/tf"
 	"github.com/spf13/cobra"
 )
 
@@ -14,6 +15,6 @@ func New() *cobra.Command {
 	}
 
 	cmd.AddCommand(plan.New())
-
+	cmd.AddCommand(tf.New())
 	return cmd
 }
