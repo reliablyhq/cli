@@ -1,4 +1,5 @@
-// Package scan contains...
+// Package scan contains implementation and logic for running scans using
+// pre-defined policies against specified targets.
 package scan
 
 import (
