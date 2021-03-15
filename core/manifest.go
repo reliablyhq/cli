@@ -1,7 +1,10 @@
 package core
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
@@ -13,8 +16,8 @@ type (
 	AppType string
 
 	Manifest struct {
-		Type AppType
-		CI   ContinuousIntegrationInfo
+		Type AppType                   `yaml:"type",json:"type"`
+		CI   ContinuousIntegrationInfo `yaml:"ci",json:""`
 	}
 
 	ContinuousIntegrationInfo struct {
@@ -31,8 +34,25 @@ func LoadManifest(path string) (*Manifest, error) {
 	defer file.Close()
 
 	var m Manifest
+	var decoder interface{ Decode(interface{}) error }
 
-	if err := yaml.NewDecoder(file).Decode(&m); err != nil {
+	ext := getExtensionFromPath(p)
+	switch ext {
+	case ".yaml":
+		{
+			decoder = yaml.NewDecoder(file)
+		}
+	case ".json":
+		{
+			decoder = json.NewDecoder(file)
+		}
+	default:
+		{
+			return nil, fmt.Errorf("file type '%s' is not a supported manifest type", ext)
+		}
+	}
+
+	if err := decoder.Decode(&m); err != nil {
 		return nil, err
 	}
 
@@ -51,4 +71,9 @@ func getManifestPath(path string) string {
 	}
 
 	return s
+}
+
+func getExtensionFromPath(path string) string {
+	i := strings.LastIndex(path, ".")
+	return path[i:]
 }
