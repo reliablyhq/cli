@@ -13,12 +13,15 @@ type (
 	}
 
 	ServiceInfo struct {
-		DesiredAvailability float32 `yaml:"name=desired_availability,omitempty" json:"name=desired_availability,omitempty"`
+		DesiredAvailability float32 `yaml:"name=desired_availability" json:"name=desired_availability"`
 	}
 
 	ContinuousIntegrationInfo struct {
-		Type string
+		Type string `yaml:"name=type" json:"name=type"`
 	}
 
-	AppInfo struct{}
+	AppInfo struct {
+		Name string `yame:"name=name" json:"name=name"`
+		Root string `yaml:"name=root" json:"name=root"`
+	}
 )

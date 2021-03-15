@@ -1,0 +1,9 @@
+service:
+  desired_availability: 99.5
+ci:
+  type: github actions
+apps:
+  - name: some app
+    root: dummy/app1
+  - name: some other app
+    root: dummy/app2
