@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func LoadManifest(path string) (*Manifest, error) {
+func Load(path string) (*Manifest, error) {
 	p := getManifestPath(path)
 	file, err := os.Open(p)
 	if err != nil {
