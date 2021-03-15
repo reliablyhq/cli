@@ -1,17 +1,11 @@
 package advice
 
 import (
-	"strings"
+	"errors"
 
-	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/manifest"
 )
 
-func getAdviceForType(t core.AppType) ([]*Advice, error) {
-	tString := string(t)
-	switch strings.ToLower(tString) {
-	default:
-		{
-			return nil, notSuportedErrorBuilder("Application", tString)
-		}
-	}
+func getSuggestionsForApp(app *manifest.AppInfo) ([]Suggestion, error) {
+	return nil, errors.New("getSuggestionsForApp has not been implemented")
 }

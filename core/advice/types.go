@@ -1,6 +1,7 @@
 package advice
 
+type Suggestion string
+
 type Advice struct {
-	Type        string
-	Suggestions []string
+	Suggestions []Suggestion
 }

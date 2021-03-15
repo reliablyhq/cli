@@ -1,14 +1,11 @@
 package advice
 
 import (
-	"strings"
+	"errors"
+
+	"github.com/reliablyhq/cli/manifest"
 )
 
-func getAdviceForCI(ci string) ([]*Advice, error) {
-	switch strings.ToLower(ci) {
-	default:
-		{
-			return nil, notSuportedErrorBuilder("CI", ci)
-		}
-	}
+func getSuggestionsForCI(ci *manifest.ContinuousIntegrationInfo) ([]Suggestion, error) {
+	return nil, errors.New("getSuggestionForCI has not been implemented")
 }
