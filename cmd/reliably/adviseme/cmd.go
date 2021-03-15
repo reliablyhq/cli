@@ -20,7 +20,7 @@ func NewCommand() *cobra.Command {
 		Run:   run,
 	}
 
-	cmd.Flags().StringVarP(&manifestPath, "manifest-path", "p", "", "the path to the manifest file")
+	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", "", "the path to the manifest file")
 
 	return cmd
 }
@@ -37,6 +37,8 @@ func run(_ *cobra.Command, _ []string) {
 
 		log.Fatal("An error occured while attempting to load the manifest")
 	}
+
+	log.Debug("manifest: ", m)
 
 	allAdvice, err := advice.GetAdviceFor(m)
 	if err != nil {
