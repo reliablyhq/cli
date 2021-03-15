@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -29,8 +30,13 @@ type Resource struct {
 // New returns a new plan command
 func New() *cobra.Command {
 	cmd := cobra.Command{
-		Use:   "tf",
-		Short: "scan a terraform .tf manifest",
+		Use: "tf",
+		Example: strings.Join([]string{
+			"reliably scan terraform tf .",
+			"reliably scan terraform tf ./path/to/terraform/dir",
+			"reliably scan terraform tf -f path/to/file.tf",
+		}, "\n"),
+		Short: "scan a terraform .tf manifest(s)",
 		Run:   run,
 	}
 
@@ -39,44 +45,77 @@ func New() *cobra.Command {
 }
 
 func run(cmd *cobra.Command, args []string) {
+	var (
+		tfiles []string
+		err    error
+	)
 
-	b, err := ioutil.ReadFile(file)
-	if err != nil {
-		log.Debug(err)
-		log.Error("An error occured while opening the file")
-		os.Exit(1)
-	}
-
-	var resources map[string]interface{}
-	if err := unmarshalTF(b, &resources); err != nil {
-		log.Debug(err)
-		log.Error("An error occured while parsing the file")
-		os.Exit(1)
-	}
-
-	for _, resourceMap := range resources["resource"].([]map[string]interface{}) {
-		for resourceType, v := range resourceMap {
-			// resource := make(map[string]interface{})
-			var resource Resource
-			resource.Type = resourceType
-			for label, r := range v.([]map[string]interface{})[0] {
-				resource.Label = label
-				resource.Values = r.([]map[string]interface{})[0]
-			}
-			target := scan.NewTarget(&resource, platform, resourceType)
-			result, err := scan.FindPolicyAndEvaluate(target)
-			if err != nil {
-				log.Debug(err)
-				log.Warnf("An error occured while scanning resource: [%s]", resource.Type)
-				continue
-			}
-
-			for _, r := range result.Violations {
-				log.Infof("[%s] [%s]: %s", target.ResourceType, resource.Label, r.Message)
-			}
-
-			log.Infof("Processing %s complete!", target.ResourceType)
+	// 1. determine tf file(s) with --file flag or direct args, --file takes priority
+	if file != "" {
+		tfiles = []string{file}
+	} else {
+		var dir = "."
+		if len(args) != 0 {
+			dir = args[0]
 		}
+
+		log.Debugf("checking for (.tf) files in: [%s]", filepath.Join(dir, "*.tf"))
+		tfiles, err = filepath.Glob(filepath.Join(dir, "*.tf"))
+		if err != nil {
+			log.Debug(err)
+			log.Error("An error occured while looking up tfiles in directory")
+			os.Exit(1)
+		}
+	}
+
+	if len(tfiles) == 0 {
+		log.Info("no terraform (.tf) files detected")
+		os.Exit(0)
+	}
+
+	// 2. Read and Unmarshal files in sequence
+	for _, f := range tfiles {
+		b, err := ioutil.ReadFile(f)
+		if err != nil {
+			log.Debug(err)
+			log.Error("An error occured while opening the file")
+			os.Exit(1)
+		}
+
+		var resources map[string]interface{}
+		if err := unmarshalTF(b, &resources); err != nil {
+			log.Debug(err)
+			log.Error("An error occured while parsing the file")
+			os.Exit(1)
+		}
+
+		// 3. structure resource and scan
+		for _, resourceMap := range resources["resource"].([]map[string]interface{}) {
+			for resourceType, v := range resourceMap {
+				// resource := make(map[string]interface{})
+				var resource Resource
+				resource.Type = resourceType
+				for label, r := range v.([]map[string]interface{})[0] {
+					resource.Label = label
+					resource.Values = r.([]map[string]interface{})[0]
+				}
+				target := scan.NewTarget(&resource, platform, resourceType)
+				result, err := scan.FindPolicyAndEvaluate(target)
+				if err != nil {
+					log.Debug(err)
+					log.Warnf("An error occured while scanning resource: [%s]", resource.Type)
+					continue
+				}
+
+				// 4. print result for a given resource, (if any)
+				for _, r := range result.Violations {
+					log.Infof("[%s] [%s] [%s]: %s", f, target.ResourceType, resource.Label, r.Message)
+				}
+
+				log.Infof("Processing %s complete!", target.ResourceType)
+			}
+		}
+
 	}
 
 	log.Info("Scan complete!")
