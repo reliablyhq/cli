@@ -3,8 +3,8 @@ package adviseme
 import (
 	"os"
 
-	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/advice"
+	"github.com/reliablyhq/cli/manifest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -26,7 +26,7 @@ func NewCommand() *cobra.Command {
 }
 
 func run(_ *cobra.Command, _ []string) {
-	m, err := core.LoadManifest(manifestPath)
+	m, err := manifest.Load(manifestPath)
 	if err != nil {
 		log.Debug(err)
 
@@ -44,9 +44,7 @@ func run(_ *cobra.Command, _ []string) {
 		os.Exit(1)
 	}
 
-	for _, a := range allAdvice {
-		for _, s := range a.Suggestions {
-			log.Infof("%s -> %s", a.Type, s)
-		}
+	for _, s := range allAdvice.Suggestions {
+		log.Info(s)
 	}
 }
