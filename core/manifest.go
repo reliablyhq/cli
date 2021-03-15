@@ -6,16 +6,16 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const defaultManifestPath = "relably.yaml"
+const defaultManifestPath = "reliably.yaml"
 
 // Manifest that describes a Reliably applciation
 type Manifest struct {
 	Type string
 }
 
-func LoadManifest() (*Manifest, error) {
-	path := getManifestPath()
-	file, err := os.Open(path)
+func LoadManifest(path string) (*Manifest, error) {
+	p := getManifestPath(path)
+	file, err := os.Open(p)
 	if err != nil {
 		return nil, err
 	}
@@ -30,6 +30,16 @@ func LoadManifest() (*Manifest, error) {
 	return &m, nil
 }
 
-func getManifestPath() string {
-	return defaultManifestPath
+func getManifestPath(path string) string {
+	s := defaultManifestPath
+
+	if x := os.Getenv("RELIABLY_MANIFEST_PATH"); x != "" {
+		s = x
+	}
+
+	if path != "" {
+		s = path
+	}
+
+	return s
 }
