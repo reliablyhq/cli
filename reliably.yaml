@@ -1,3 +1,0 @@
-type: service
-ci:
-  type: github actions
