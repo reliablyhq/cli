@@ -1,4 +1,4 @@
-package core
+package manifest
 
 import (
 	"encoding/json"
@@ -7,22 +7,6 @@ import (
 	"strings"
 
 	"gopkg.in/yaml.v2"
-)
-
-const defaultManifestPath = "reliably.yaml"
-
-// Manifest that describes a Reliably applciation
-type (
-	AppType string
-
-	Manifest struct {
-		Type AppType                   `yaml:"type",json:"type"`
-		CI   ContinuousIntegrationInfo `yaml:"ci",json:""`
-	}
-
-	ContinuousIntegrationInfo struct {
-		Type string
-	}
 )
 
 func LoadManifest(path string) (*Manifest, error) {
