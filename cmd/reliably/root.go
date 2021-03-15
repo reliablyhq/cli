@@ -14,12 +14,12 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	viper "github.com/spf13/viper"
+	"github.com/spf13/viper"
 
-	"github.com/reliablyhq/cli/cmd/reliably/adviseme"
-	core "github.com/reliablyhq/cli/core"
-	color "github.com/reliablyhq/cli/core/color"
-	config "github.com/reliablyhq/cli/core/config"
+	"github.com/reliablyhq/cli/cmd/reliably/report"
+	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/core/color"
+	"github.com/reliablyhq/cli/core/config"
 	ctx "github.com/reliablyhq/cli/core/context"
 	"github.com/reliablyhq/cli/core/update"
 	"github.com/reliablyhq/cli/utils"
@@ -96,7 +96,7 @@ Environment variables:
 	cmd.AddCommand(NewCmdHistory())
 	cmd.AddCommand(NewCmdScan())
 
-	cmd.AddCommand(adviseme.NewCommand())
+	cmd.AddCommand(report.NewCommand())
 
 	//Help topics
 	cmd.AddCommand(NewHelpTopic("environment"))
