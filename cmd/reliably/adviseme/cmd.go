@@ -40,8 +40,8 @@ func run(_ *cobra.Command, _ []string) {
 
 	allAdvice, err := advice.GetAdviceFor(m)
 	if err != nil {
-		log.Debug(err)
-		log.Fatal("an error occured while geting advice")
+		log.Error(err)
+		os.Exit(1)
 	}
 
 	for _, a := range allAdvice {
