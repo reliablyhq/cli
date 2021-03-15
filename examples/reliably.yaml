@@ -1,9 +1,21 @@
-service:
-  desired_availability: 99.5
+service_level:
+  availability: 99.995
+  latency: 200ms
+  error_budget: 1%
+hosting:
+  name: k8s|gcp|aws|azure
+  things: ...
 ci:
   type: github actions
+  max_build_time: 300s
+  max_start_time: 30s
 apps:
-  - name: some app
-    root: dummy/app1
-  - name: some other app
-    root: dummy/app2
+- name: some app
+  root: dummy/app1
+- name: some other app
+  root: dummy/app2
+iac:
+  type: terraform
+dependencies:
+- abc
+- def

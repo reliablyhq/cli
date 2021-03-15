@@ -52,7 +52,7 @@ func GetAdviceFor(m *manifest.Manifest) (*Advice, error) {
 	}
 
 	if len(allErrors) > 0 {
-		return nil, errors.NewCompoundError("multiple errors occured", allErrors)
+		return &advice, errors.NewCompoundError("multiple errors occured", allErrors)
 	}
 
 	return &advice, nil

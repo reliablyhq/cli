@@ -43,7 +43,6 @@ func run(_ *cobra.Command, _ []string) {
 	allAdvice, err := advice.GetAdviceFor(m)
 	if err != nil {
 		log.Error(err)
-		os.Exit(1)
 	}
 
 	for _, s := range allAdvice.Suggestions {
