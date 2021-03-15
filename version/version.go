@@ -25,3 +25,8 @@ func init() {
 		}
 	}
 }
+
+// IsDevVersion indicates whether the current version is DEV
+func IsDevVersion() bool {
+	return Version == devVersion
+}
