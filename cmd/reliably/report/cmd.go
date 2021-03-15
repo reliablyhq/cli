@@ -1,4 +1,4 @@
-package adviseme
+package report
 
 import (
 	"os"
@@ -15,8 +15,8 @@ var (
 
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "adviseme",
-		Short: "Get some advice",
+		Use:   "report",
+		Short: "Report my resiliency metrics",
 		Run:   run,
 	}
 
