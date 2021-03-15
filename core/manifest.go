@@ -9,9 +9,18 @@ import (
 const defaultManifestPath = "reliably.yaml"
 
 // Manifest that describes a Reliably applciation
-type Manifest struct {
-	Type string
-}
+type (
+	AppType string
+
+	Manifest struct {
+		Type AppType
+		CI   ContinuousIntegrationInfo
+	}
+
+	ContinuousIntegrationInfo struct {
+		Type string
+	}
+)
 
 func LoadManifest(path string) (*Manifest, error) {
 	p := getManifestPath(path)
