@@ -2,12 +2,7 @@ package manifest
 
 import "time"
 
-const defaultManifestPath = "reliably.yaml"
-
-// Manifest that describes a Reliably applciation
 type (
-	AppType string
-
 	Manifest struct {
 		CI           *ContinuousIntegrationInfo `yaml:"ci,omitempty" json:"ci,omitempty"`
 		ServiceLevel *ServiceLevel              `yaml:"service_level,omitempty" json:"service_level,omitempty"`
