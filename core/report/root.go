@@ -31,6 +31,7 @@ func GenerateReport(m *manifest.Manifest) (*Report, error) {
 	r.Targets.ErrorBudgetPercent = m.ServiceLevel.ErrorBudgetPercent
 	r.Targets.ServiceLevel = m.ServiceLevel.Availability
 	r.Targets.Latency = m.ServiceLevel.Latency
+	r.Dependencies = m.Dependencies
 
 	if actual, err := getCurrentErrorPc(m, oneWeek); err == nil {
 		r.Delta.ErrorBudgetPercent = actual - m.ServiceLevel.ErrorBudgetPercent
