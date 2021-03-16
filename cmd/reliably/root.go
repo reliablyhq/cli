@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	init_cmd "github.com/reliablyhq/cli/cmd/reliably/init"
 	"github.com/reliablyhq/cli/cmd/reliably/report"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
@@ -96,6 +97,7 @@ Environment variables:
 	cmd.AddCommand(NewCmdHistory())
 	cmd.AddCommand(NewCmdScan())
 
+	cmd.AddCommand(init_cmd.NewCommand())
 	cmd.AddCommand(report.NewCommand())
 
 	//Help topics
