@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/terraform"
 	"github.com/reliablyhq/cli/scan"
 	log "github.com/sirupsen/logrus"
@@ -67,7 +68,7 @@ func run(cmd *cobra.Command, args []string) {
 
 			for _, r := range result.Violations {
 				// log.Infof("Resource: [%s] - Message: %s", target.ResourceType, r.Message)
-				log.Infof("[%s] [%s]: %s", target.ResourceType, resource.Name, r.Message)
+				log.Infof("[%s] [%s] [%s]: %s", core.Level(r.Level), target.ResourceType, resource.Name, r.Message)
 			}
 
 			log.Infof("Processing %s complete!", target.ResourceType)
