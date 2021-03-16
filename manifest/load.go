@@ -9,6 +9,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const defaultManifestPath = "reliably.yaml"
+
 func Load(path string) (*Manifest, error) {
 	p := getManifestPath(path)
 	file, err := os.Open(p)
