@@ -38,8 +38,6 @@ func run(_ *cobra.Command, _ []string) {
 		log.Fatal("An error occured while attempting to load the manifest")
 	}
 
-	log.Debug("manifest: ", m)
-
 	allAdvice, err := report.GetAdviceFor(m)
 	if err != nil {
 		log.Error(err)

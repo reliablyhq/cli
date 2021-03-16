@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -13,6 +15,8 @@ const defaultManifestPath = "reliably.yaml"
 
 func Load(path string) (*Manifest, error) {
 	p := getManifestPath(path)
+	log.Debug("Loading manifest at ", p)
+
 	file, err := os.Open(p)
 	if err != nil {
 		return nil, err
