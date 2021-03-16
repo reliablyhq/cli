@@ -38,12 +38,10 @@ func run(_ *cobra.Command, _ []string) {
 		log.Fatal("An error occured while attempting to load the manifest")
 	}
 
-	allAdvice, err := report.GetAdviceFor(m)
+	r, err := report.GetAdviceFor(m)
 	if err != nil {
 		log.Error(err)
 	}
 
-	for _, s := range allAdvice.Suggestions {
-		log.Info(s)
-	}
+	report.Write(r, log.StandardLogger())
 }
