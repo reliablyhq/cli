@@ -1,20 +1,28 @@
 package output
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
+	"sort"
+	"strings"
+	"text/tabwriter"
 	plainTemplate "text/template"
 
 	fColor "github.com/fatih/color"
 	gColor "github.com/gookit/color"
+	"github.com/nathan-fiscaletti/consolesize-go"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
+	"github.com/reliablyhq/cli/utils"
 	"github.com/reliablyhq/cli/version"
 )
+
+const sortFlag = true
 
 var text = `{{ notice "Results:" }} {{ range $index, $issue := .Suggestions }}
 {{ prompt ">" }} {{ $issue.FileLocation }} [{{ printLevel $issue.Level }}] {{ $issue.Message }}
@@ -36,10 +44,27 @@ Rule: {{ $issue.RuleID }}, Platform: {{ $issue.Platform}}, Kind: {{ $issue.Kind 
 
 `
 
+var textTemplateTabbed = `Results:{{ range $index, $issue := .Suggestions }}
+{{ levelSymbol $issue.Level}}	{{ printLiveFileLocation $issue.FileLocation $issue.Kind }}	{{ $issue.Platform}}:{{ $issue.Kind }}	{{ $issue.RuleID  }}	{{ $issue.Message }} {{ end }}
+{{ notice "Summary:" }}
+	{{ $count := len .Suggestions }}{{ if eq $count 0 }}
+	{{- success "No suggestion found" }}
+	{{- else }}{{ if eq $count 1 }}
+			{{- danger $count " suggestion found" }}
+		{{- else }}
+			{{- danger $count " suggestions found" }}
+		{{- end }}
+	{{ counter "info" .Counters.info }} - {{ counter "warning" .Counters.warning }} - {{ counter "error" .Counters.error }}
+	{{- end }}
+
+	`
+
 type reportInfo struct {
 	Suggestions []*core.Suggestion `json:"suggestions"`
 	Counters    map[string]int
 }
+
+type bySuggestion []*core.Suggestion
 
 func countsPerLevel(suggestions []*core.Suggestion) map[string]int {
 
@@ -80,6 +105,8 @@ func CreateReport(w io.Writer, format string, baseDir string, suggestions []*cor
 		err = reportYAML(w, data)
 	case "text", "extended":
 		err = reportFromPlaintextTemplate(w, text, data)
+	case "tabbed":
+		err = reportFromTabbedTextTemplate(w, data)
 	case "simple", "basic", "linter":
 		err = reportLinter(w, data)
 	case "sarif":
@@ -281,6 +308,53 @@ func reportFromPlaintextTemplate(w io.Writer, reportTemplate string, data *repor
 	return t.Execute(w, data)
 }
 
+func (s bySuggestion) Len() int {
+	return len(s)
+}
+func (s bySuggestion) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+func (s bySuggestion) Less(i, j int) bool {
+	return s[i].Level > s[j].Level
+}
+
+func reportFromTabbedTextTemplate(w io.Writer, data *reportInfo) error {
+
+	padding := 2
+	minWidth := 0
+	tabWidth := 0
+	const padChar = ' '
+
+	reportBuffer := new(bytes.Buffer)
+
+	tw := tabwriter.NewWriter(reportBuffer, minWidth, tabWidth, padding, padChar, 0)
+	if sortFlag {
+		sort.Sort(bySuggestion(data.Suggestions))
+	}
+
+	consoleColumns, _ := consolesize.GetConsoleSize()
+
+	err := reportFromPlaintextTemplate(tw, textTemplateTabbed, data)
+
+	if err != nil {
+
+		return err
+	}
+	tw.Flush()
+
+	reportString := reportBuffer.String()
+	reportLines := strings.Split(reportString, "\n")
+	for _, reportLine := range reportLines {
+
+		// the truncate is off by 3 characters because of the ■ character at the
+		// begining of the line
+		fmt.Println(utils.TruncateString(reportLine, consoleColumns))
+
+	}
+
+	return nil
+}
+
 func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 	if enableColor {
 		return plainTemplate.FuncMap{
@@ -292,6 +366,13 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 			"printCode": fmt.Sprint,
 			"printLevel": func(l core.Level) string {
 				return l.ColoredString()
+			},
+			"printLiveFileLocation": func(s string, kind string) string {
+				r := kind + ":"
+				return strings.Replace(s, r, "", 1)
+			},
+			"levelSymbol": func(l core.Level) string {
+				return l.ColoredSquare()
 			},
 			"counter": func(level string, count int) string {
 				var tick string
@@ -322,6 +403,13 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 		"printCode": fmt.Sprint,
 		"printLevel": func(l core.Level) string {
 			return l.String()
+		},
+		"printLiveFileLocation": func(s string, kind string) string {
+			r := kind + ":"
+			return strings.Replace(s, r, "", 1)
+		},
+		"levelSymbol": func(l core.Level) string {
+			return l.String()[0:1]
 		},
 		"counter": func(level string, count int) string {
 			return fmt.Sprintf("%v %s", count, level)
