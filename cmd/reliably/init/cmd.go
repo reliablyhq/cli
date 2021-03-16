@@ -4,7 +4,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/reliablyhq/cli/manifest"
+	"github.com/reliablyhq/cli/core/manifest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
