@@ -3,7 +3,7 @@ package report
 import (
 	"os"
 
-	"github.com/reliablyhq/cli/core/advice"
+	"github.com/reliablyhq/cli/core/report"
 	"github.com/reliablyhq/cli/manifest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -40,7 +40,7 @@ func run(_ *cobra.Command, _ []string) {
 
 	log.Debug("manifest: ", m)
 
-	allAdvice, err := advice.GetAdviceFor(m)
+	allAdvice, err := report.GetAdviceFor(m)
 	if err != nil {
 		log.Error(err)
 	}

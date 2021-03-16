@@ -1,4 +1,4 @@
-package advice
+package report
 
 import (
 	"github.com/reliablyhq/cli/manifest"

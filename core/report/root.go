@@ -1,15 +1,11 @@
-package advice
+package report
 
 import (
 	"fmt"
 
-	"github.com/reliablyhq/cli/core/errors"
+	"github.com/reliablyhq/cli/errors"
 	"github.com/reliablyhq/cli/manifest"
 )
-
-type CompoundError struct {
-	innerErrors []error
-}
 
 var notSuportedErrorBuilder = func(thingType, thingName string) error {
 	return fmt.Errorf("%s type '%s' is not currently supported. I've informed ReliablyHQ about this; check back later - maybe we'll be able to help then.", thingType, thingName)
