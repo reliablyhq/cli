@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/user"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/reliablyhq/cli/utils"
@@ -36,6 +37,18 @@ type RuntimeContext struct {
 	Command    []string  `json:"command"`
 	OS         string    `json:"os"`
 	Arch       string    `json:"arch"`
+}
+
+var localEnv = make(map[string]string)
+
+func init() {
+
+	for _, val := range os.Environ() {
+		if equalIndex := strings.Index(val, "="); equalIndex >= 0 {
+			localEnv[val[:equalIndex]] = val[equalIndex+1:]
+		}
+	}
+
 }
 
 // NewRuntimeContext is a constructor to initialize a CLI execution context
@@ -79,6 +92,10 @@ type GithubEnv StringMap
 // GitlabEnv is a map of targeted Gitlab env variables set
 // when running the CLI via a Gitlab workflow
 type GitlabEnv StringMap
+
+// CircleCIEnv is a map of targeted CircleCI env variables set
+// when running the CLI via a CircleCI workflow
+type CircleCIEnv StringMap
 
 // GetGithubEnv returns a map of GitHub env variables
 func GetGithubEnv() GithubEnv {
@@ -151,13 +168,30 @@ func (env GitlabEnv) toContextMap() *ContextMap {
 }
 */
 
+// GetCircleCIEnv returns a map of CircleCI env variables
+func GetCircleCIEnv() CircleCIEnv {
+
+	keys := []string{"CI"}
+
+	ciKeys := []string{
+		"CIRCLECI", "CIRCLE_BRANCH",
+		"CIRCLE_BUILD_NUM", "CIRCLE_BUILD_URL", "CIRCLE_JOB",
+		"CIRCLE_NODE_INDEX", "CIRCLE_NODE_TOTAL", "CIRCLE_PR_NUMBER",
+		"CIRCLE_PREVIOUS_BUILD_NUM", "CIRCLE_PROJECT_REPONAME",
+		"CIRCLE_PROJECT_USERNAME", "CIRCLE_PULL_REQUESTS", "CIRCLE_REPOSITORY_URL",
+		"CIRCLE_SHA1", "CIRCLE_USERNAME", "CIRCLE_WORKFLOW_ID",
+	}
+	keys = append(keys, ciKeys...)
+
+	return getOsEnvs(keys)
+}
+
 // getOsEnvs returns a map of env variables, from a list of targeted keys
 // only if the key is defined as env var; otherwise key is ignored
 func getOsEnvs(keys []string) map[string]string {
 	env := make(map[string]string)
 	for _, key := range keys {
-		// env[key] = os.Getenv(key)
-		if val, found := os.LookupEnv(key); found {
+		if val, found := localEnv[key]; found {
 			env[key] = val
 		}
 	}
@@ -166,28 +200,33 @@ func getOsEnvs(keys []string) map[string]string {
 
 // IsCI indicates whether the CLI is run from a CI platform
 func IsCI() bool {
-	return os.Getenv("CI") == "true"
+	return localEnv["CI"] == "true"
 }
 
 // IsGithubCI indicates whether the CLI is run from a Github worflow
 func IsGithubCI() bool {
-	return IsCI() && os.Getenv("GITHUB_ACTIONS") == "true"
+	return IsCI() && localEnv["GITHUB_ACTIONS"] == "true"
 }
 
 // IsGitlabCI indicates whether the CLI is run from a Gitlab pipeline job
 func IsGitlabCI() bool {
-	return IsCI() && os.Getenv("GITLAB_CI") == "true"
+	return IsCI() && localEnv["GITLAB_CI"] == "true"
+}
+
+// IsCircleCI indicates whether the CLI is run from a Gitlab pipeline job
+func IsCircleCI() bool {
+	return IsCI() && localEnv["CIRCLECI"] == "true"
 }
 
 // IsGithubRepo indicates whether the CLI is run against a github repo
 func IsGithubRepo() bool {
-	_, ok := os.LookupEnv("GITHUB_REPOSITORY")
+	_, ok := localEnv["GITHUB_REPOSITORY"]
 	return ok
 }
 
 // IsGitlabRepo indicates whether the CLI is run against a gitlab repo
 func IsGitlabRepo() bool {
-	_, ok := os.LookupEnv("CI_PROJECT_NAME")
+	_, ok := localEnv["CI_PROJECT_NAME"]
 	return ok
 }
 
@@ -204,6 +243,8 @@ func NewContext() *Context {
 		environ = StringMap(GetGithubEnv())
 	} else if IsGitlabCI() {
 		environ = StringMap(GetGitlabEnv())
+	} else if IsCircleCI() {
+		environ = StringMap(GetCircleCIEnv())
 	}
 
 	context := &Context{

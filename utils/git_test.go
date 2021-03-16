@@ -29,7 +29,13 @@ func TestGitRemoteOriginURl(t *testing.T) {
 	assert.Equal(t, nil, err, "Unexpected error")
 	b := strings.Contains(url, "github.com")
 	assert.Equal(t, true, b, "Remote origin URL is not on github.com")
-	assert.Equal(t, "https://github.com/reliablyhq/cli", url, "Unexpected remote origin url")
+	assert.Condition(t, func() bool {
+		if url == "https://github.com/reliablyhq/cli" || url == "git@github.com:reliablyhq/cli.git" {
+			return true
+		} else {
+			return false
+		}
+	}, "Unexpected remote origin url")
 }
 
 func TestExtractOwnerRepoFromGitURL(t *testing.T) {
