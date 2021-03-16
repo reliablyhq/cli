@@ -26,20 +26,24 @@ func GetAdviceFor(m *manifest.Manifest) (*Report, error) {
 	r := Report{}
 	allErrors := make([]error, 0)
 
-	if d, err := getCurrentErrorPc(m, oneWeek); err == nil {
-		r.Delta.ErrorBudgetPercent = m.ServiceLevel.ErrorBudgetPercent - d
+	r.Targets.ErrorBudgetPercent = m.ServiceLevel.ErrorBudgetPercent
+	r.Targets.ServiceLevel = m.ServiceLevel.Availability
+	r.Targets.Latency = m.ServiceLevel.Latency
+
+	if actual, err := getCurrentErrorPc(m, oneWeek); err == nil {
+		r.Delta.ErrorBudgetPercent = actual - m.ServiceLevel.ErrorBudgetPercent
 	} else {
 		allErrors = append(allErrors, err)
 	}
 
-	if d, err := getCurrentAvailability(m, oneWeek); err == nil {
-		r.Delta.ServiceLevelPercent = m.ServiceLevel.Availability - d
+	if actual, err := getCurrentAvailability(m, oneWeek); err == nil {
+		r.Delta.ServiceLevel = actual - m.ServiceLevel.Availability
 	} else {
 		allErrors = append(allErrors, err)
 	}
 
-	if d, err := get99PercentLatency(m, oneWeek); err == nil {
-		r.Delta.LatencyCeilingPercent = float32(d / m.ServiceLevel.Latency * 100)
+	if actual, err := get99PercentLatency(m, oneWeek); err == nil {
+		r.Delta.Latency = actual - m.ServiceLevel.Latency
 	} else {
 		allErrors = append(allErrors, err)
 	}
