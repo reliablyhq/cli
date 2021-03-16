@@ -11,14 +11,13 @@ import (
 	"strings"
 
 	"github.com/hashicorp/hcl"
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/scan"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 const platform = "terraform"
-
-var file string
 
 // Resource -type used to create resource input for scanning
 type Resource struct {
@@ -34,13 +33,11 @@ func New() *cobra.Command {
 		Example: strings.Join([]string{
 			"reliably scan terraform tf .",
 			"reliably scan terraform tf ./path/to/terraform/dir",
-			"reliably scan terraform tf -f path/to/file.tf",
+			"reliably scan terraform tf ./path/to/resources.tf",
 		}, "\n"),
 		Short: "scan a terraform .tf manifest(s)",
 		Run:   run,
 	}
-
-	cmd.Flags().StringVarP(&file, "file", "f", "", "the path to the terraform (.tf) file")
 	return &cmd
 }
 
@@ -50,15 +47,15 @@ func run(cmd *cobra.Command, args []string) {
 		err    error
 	)
 
-	// 1. determine tf file(s) with --file flag or direct args, --file takes priority
-	if file != "" {
-		tfiles = []string{file}
-	} else {
-		var dir = "."
-		if len(args) != 0 {
-			dir = args[0]
-		}
+	// 1. determine tf file(s) with direct args, A single file or dir can be passed
+	var dir = "."
+	if len(args) != 0 {
+		dir = args[0]
+	}
 
+	if strings.HasSuffix(strings.ToLower(dir), ".tf") {
+		tfiles = []string{dir}
+	} else {
 		log.Debugf("checking for (.tf) files in: [%s]", filepath.Join(dir, "*.tf"))
 		tfiles, err = filepath.Glob(filepath.Join(dir, "*.tf"))
 		if err != nil {
@@ -109,7 +106,7 @@ func run(cmd *cobra.Command, args []string) {
 
 				// 4. print result for a given resource, (if any)
 				for _, r := range result.Violations {
-					log.Infof("[%s] [%s] [%s]: %s", f, target.ResourceType, resource.Label, r.Message)
+					log.Infof("[%s] [%s] [%s] [%s]: %s", core.Level(r.Level), f, target.ResourceType, resource.Label, r.Message)
 				}
 
 				log.Infof("Processing %s complete!", target.ResourceType)
