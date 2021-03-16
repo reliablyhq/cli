@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"strings"
 
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
@@ -52,12 +53,17 @@ func run(_ *cobra.Command, _ []string) {
 	report.Write(r, log.StandardLogger())
 
 	if outputPath != "" {
+		if !strings.HasSuffix(outputPath, ".json") {
+			log.Warn("output file should have a .json extension")
+			return
+		}
+
 		bytes, err := json.Marshal(r)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		if err := os.WriteFile(outputPath, bytes, 666); err != nil {
+		if err := os.WriteFile(outputPath, bytes, 0666); err != nil {
 			log.Fatal(err)
 		}
 	}

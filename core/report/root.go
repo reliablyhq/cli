@@ -30,7 +30,7 @@ func GenerateReport(m *manifest.Manifest) (*Report, error) {
 	r.Timestamp = time.Now().UTC()
 	r.Targets.ErrorBudgetPercent = m.ServiceLevel.ErrorBudgetPercent
 	r.Targets.ServiceLevel = m.ServiceLevel.Availability
-	r.Targets.Latency = m.ServiceLevel.Latency
+	r.Targets.LatencyMs = m.ServiceLevel.Latency.Milliseconds()
 	r.Dependencies = m.Dependencies
 
 	if actual, err := getCurrentErrorPc(m, oneWeek); err == nil {
@@ -46,7 +46,7 @@ func GenerateReport(m *manifest.Manifest) (*Report, error) {
 	}
 
 	if actual, err := get99PercentLatency(m, oneWeek); err == nil {
-		r.Delta.Latency = actual - m.ServiceLevel.Latency
+		r.Delta.LatencyMs = actual.Milliseconds() - m.ServiceLevel.Latency.Milliseconds()
 	} else {
 		allErrors = append(allErrors, err)
 	}
