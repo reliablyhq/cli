@@ -18,7 +18,7 @@ func GetAdviceFor(m *manifest.Manifest) (*Advice, error) {
 	if m.ServiceLevel == nil {
 		advice.Suggestions = append(advice.Suggestions, "I don't know about the service you are trying to provide. Run `reliably init service` to add a 'Service' block to your manifest.")
 	} else {
-		if s, err := getSuggestionsForService(m); err == nil {
+		if s, err := getSuggestionsForServiceLevel(m); err == nil {
 			advice.Suggestions = append(advice.Suggestions, s...)
 		} else {
 			allErrors = append(allErrors, err)
