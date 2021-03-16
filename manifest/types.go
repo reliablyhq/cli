@@ -8,8 +8,8 @@ type (
 		ServiceLevel *ServiceLevel              `yaml:"service_level,omitempty" json:"service_level,omitempty"`
 		Apps         []*AppInfo                 `yaml:"apps" json:"apps"`
 		Dependencies []*Dependency              `yaml:"dependency" json:"dependency"`
-		Hosting      *Hosting                   `yaml:"hosting" json:"hosting"`
-		IAC          *IAC                       `yaml:"infrastructure_as_code" json:"infrastructure_as_code"`
+		Hosting      *Hosting                   `yaml:"hosting,omitempty" json:"hosting,omitempty"`
+		IAC          *IAC                       `yaml:"infrastructure_as_code,omitempty" json:"infrastructure_as_code,omitempty"`
 	}
 
 	ServiceLevel struct {
