@@ -1,6 +1,7 @@
 package report
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 
@@ -12,6 +13,7 @@ import (
 
 var (
 	manifestPath string
+	outputPath   string
 )
 
 func NewCommand() *cobra.Command {
@@ -22,6 +24,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", "", "the path to the manifest file")
+	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
 
 	return cmd
 }
@@ -47,6 +50,17 @@ func run(_ *cobra.Command, _ []string) {
 	sendReportToReliably(r)
 
 	report.Write(r, log.StandardLogger())
+
+	if outputPath != "" {
+		bytes, err := json.Marshal(r)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := os.WriteFile(outputPath, bytes, 666); err != nil {
+			log.Fatal(err)
+		}
+	}
 }
 
 func sendReportToReliably(r *report.Report) error {
