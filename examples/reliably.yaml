@@ -3,8 +3,9 @@ service_level:
   latency: 200ms
   error_budget: 1%
 hosting:
-  name: k8s|gcp|aws|azure
-  things: ...
+  provider: k8s
+  connection_info:
+    context: abc123
 ci:
   type: github actions
   max_build_time: 300s
@@ -14,8 +15,17 @@ apps:
   root: dummy/app1
 - name: some other app
   root: dummy/app2
-iac:
+infrastructure_as_code:
   type: terraform
+  root: terraform/
 dependencies:
-- abc
-- def
+- name: github actions
+  type: service
+  status_url: https://github.com/status?type=actions
+- name: graphql
+  type: service
+  repository_url: https://github.com/my/graphql
+  status_url: https://my.graphql.io/.well_known/health
+- name: aws cli
+  type: binary
+  repository_url: https://github.com/aws/aws-cli

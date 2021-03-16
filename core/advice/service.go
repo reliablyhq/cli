@@ -1,22 +1,24 @@
 package advice
 
 import (
-	"fmt"
-
 	"github.com/reliablyhq/cli/manifest"
 )
 
-func getSuggestionsForService(s *manifest.ServiceInfo) ([]Suggestion, error) {
+const (
+	lessThan95pcAvailabilityMessage   = "An availability of less than 95% should be possible for any well built app, deployed  as a single instance"
+	moreThan9999pcAvailabilityMessage = "An availabiliy of more than 99.99% is possible, but is quite expensive and may be unnecessary. 99.99% availability allows 4.38 minutes of downtime per month. You should make sure that less downtime is a requirement of your service."
+)
+
+func getSuggestionsForService(m *manifest.Manifest) ([]Suggestion, error) {
 	suggestions := make([]Suggestion, 0)
 
-	if s.DesiredAvailability < 95 {
-		suggestions = append(suggestions, "A desired availability of less than 95% should be possible for any well built app, deployed as a single instance")
-	} else if s.DesiredAvailability < 99 {
-		suggestions = append(suggestions, "A desired availability of less than 99% should be possible for any well built app, deployed with horizontal scaling in mind")
-	} else {
-		message := fmt.Sprintf("A desired availability of %v percent should be possible for any well built app, deployed with high availability in mind. That will involve load balancing the application, auto scaling it based on respource usage and controlling deployments to minimise downtime", s.DesiredAvailability)
-		suggestions = append(suggestions, Suggestion(message))
+	if m.ServiceLevel.Availability < 95 {
+		suggestions = append(suggestions, lessThan95pcAvailabilityMessage)
+	} else if m.ServiceLevel.Availability > 99.99 {
+		suggestions = append(suggestions, moreThan9999pcAvailabilityMessage)
 	}
+
+	// todo: get current availability
 
 	return suggestions, nil
 }
