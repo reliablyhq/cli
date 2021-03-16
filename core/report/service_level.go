@@ -3,7 +3,7 @@ package report
 import (
 	"time"
 
-	"github.com/reliablyhq/cli/manifest"
+	"github.com/reliablyhq/cli/core/manifest"
 )
 
 func getCurrentAvailability(m *manifest.Manifest, d time.Duration) (float32, error) {

@@ -1,3 +1,4 @@
+application_name: "my dummy app"
 ci:
   type: ""
 service_level:
@@ -5,7 +6,6 @@ service_level:
   latency: 200ms
   error_budget_pc: 1
   warning_threshold_pc: 1
-apps: []
 dependency: []
 hosting:
   provider: ""

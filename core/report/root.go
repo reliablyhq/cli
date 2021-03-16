@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/reliablyhq/cli/errors"
-	"github.com/reliablyhq/cli/manifest"
+	"github.com/reliablyhq/cli/core/errors"
+	"github.com/reliablyhq/cli/core/manifest"
 )
 
 const (
@@ -22,10 +22,12 @@ var notSuportedErrorBuilder = func(thingType, thingName string) error {
 	return fmt.Errorf("%s type '%s' is not currently supported. I've informed ReliablyHQ about this; check back later - maybe we'll be able to help then.", thingType, thingName)
 }
 
-func GetAdviceFor(m *manifest.Manifest) (*Report, error) {
+func GenerateReport(m *manifest.Manifest) (*Report, error) {
 	r := Report{}
 	allErrors := make([]error, 0)
 
+	r.ApplicationName = m.ApplicationName
+	r.Timestamp = time.Now().UTC()
 	r.Targets.ErrorBudgetPercent = m.ServiceLevel.ErrorBudgetPercent
 	r.Targets.ServiceLevel = m.ServiceLevel.Availability
 	r.Targets.Latency = m.ServiceLevel.Latency

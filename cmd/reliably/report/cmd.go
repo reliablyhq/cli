@@ -1,10 +1,11 @@
 package report
 
 import (
+	"errors"
 	"os"
 
+	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
-	"github.com/reliablyhq/cli/manifest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -38,10 +39,16 @@ func run(_ *cobra.Command, _ []string) {
 		log.Fatal("An error occured while attempting to load the manifest")
 	}
 
-	r, err := report.GetAdviceFor(m)
+	r, err := report.GenerateReport(m)
 	if err != nil {
 		log.Error(err)
 	}
 
+	sendReportToReliably(r)
+
 	report.Write(r, log.StandardLogger())
+}
+
+func sendReportToReliably(r *report.Report) error {
+	return errors.New("not implemented")
 }

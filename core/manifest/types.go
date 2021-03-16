@@ -4,12 +4,12 @@ import "time"
 
 type (
 	Manifest struct {
-		CI           *ContinuousIntegrationInfo `yaml:"ci,omitempty" json:"ci,omitempty"`
-		ServiceLevel *ServiceLevel              `yaml:"service_level,omitempty" json:"service_level,omitempty"`
-		Apps         []*AppInfo                 `yaml:"apps" json:"apps"`
-		Dependencies []*Dependency              `yaml:"dependency" json:"dependency"`
-		Hosting      *Hosting                   `yaml:"hosting,omitempty" json:"hosting,omitempty"`
-		IAC          *IAC                       `yaml:"infrastructure_as_code,omitempty" json:"infrastructure_as_code,omitempty"`
+		ApplicationName string                     `yaml:"application_name" json:"application_name"`
+		CI              *ContinuousIntegrationInfo `yaml:"ci,omitempty" json:"ci,omitempty"`
+		ServiceLevel    *ServiceLevel              `yaml:"service_level,omitempty" json:"service_level,omitempty"`
+		Dependencies    []*Dependency              `yaml:"dependency" json:"dependency"`
+		Hosting         *Hosting                   `yaml:"hosting,omitempty" json:"hosting,omitempty"`
+		IAC             *IAC                       `yaml:"infrastructure_as_code,omitempty" json:"infrastructure_as_code,omitempty"`
 	}
 
 	ServiceLevel struct {
@@ -21,11 +21,6 @@ type (
 
 	ContinuousIntegrationInfo struct {
 		Type string `yaml:"type" json:"type"`
-	}
-
-	AppInfo struct {
-		Name string `yame:"name" json:"name"`
-		Root string `yaml:"root" json:"root"`
 	}
 
 	Dependency struct {
