@@ -1,19 +1,18 @@
 package output
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
-	"os/exec"
 	"sort"
-	"strconv"
 	"strings"
 	"text/tabwriter"
 	plainTemplate "text/template"
 
 	fColor "github.com/fatih/color"
 	gColor "github.com/gookit/color"
+	"github.com/nathan-fiscaletti/consolesize-go"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
@@ -46,7 +45,7 @@ Rule: {{ $issue.RuleID }}, Platform: {{ $issue.Platform}}, Kind: {{ $issue.Kind 
 
 `
 
-var textTemplateTabbed = `Results: {{ range $index, $issue := .Suggestions }}
+var textTemplateTabbed = `Results:{{ range $index, $issue := .Suggestions }}
 {{ levelSymbol $issue.Level}}	{{ printLiveFileLocation $issue.FileLocation $issue.Kind }}	{{ $issue.Platform}}:{{ $issue.Kind }}	{{ $issue.RuleID  }}	{{ truncate $issue.Message }} {{ end }}
 {{ notice "Summary:" }}
 	{{ $count := len .Suggestions }}{{ if eq $count 0 }}
@@ -80,30 +79,6 @@ func countsPerLevel(suggestions []*core.Suggestion) map[string]int {
 	}
 
 	return counters
-}
-
-func consoleSize() (int, int) {
-	cmd := exec.Command("stty", "size")
-	cmd.Stdin = os.Stdin
-	out, err := cmd.Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	s := string(out)
-	s = strings.TrimSpace(s)
-	sArr := strings.Split(s, " ")
-
-	heigth, err := strconv.Atoi(sArr[0])
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	width, err := strconv.Atoi(sArr[1])
-	if err != nil {
-		log.Fatal(err)
-	}
-	return heigth, width
 }
 
 // CreateReport generates a report for the reported suggestions into
@@ -356,14 +331,14 @@ func reportFromTabbedTextTemplate(w io.Writer, data *reportInfo) error {
 	tabWidth := 0
 	const padChar = ' '
 
-	tw := tabwriter.NewWriter(w, minWidth, tabWidth, padding, padChar, 0)
+	reportBuffer := new(bytes.Buffer)
+
+	tw := tabwriter.NewWriter(reportBuffer, minWidth, tabWidth, padding, padChar, 0)
 	if sortFlag {
 		sort.Sort(bySuggestion(data.Suggestions))
 	}
 
-	h, ww := consoleSize()
-
-	fmt.Printf("***************** width:%v hieght:%v", ww, h)
+	consoleColumns, _ := consolesize.GetConsoleSize()
 
 	err := reportFromPlaintextTemplate(tw, textTemplateTabbed, data)
 
@@ -372,6 +347,16 @@ func reportFromTabbedTextTemplate(w io.Writer, data *reportInfo) error {
 		return err
 	}
 	tw.Flush()
+
+	reportString := reportBuffer.String()
+	reportLines := strings.Split(reportString, "\n")
+	for _, reportLine := range reportLines {
+
+		// the truncate is off by 3 characters because of the ■ character at the
+		// begining of the line
+		fmt.Println(utils.TruncateString(reportLine, consoleColumns))
+
+	}
 
 	return nil
 }
