@@ -93,7 +93,7 @@ Environment variables:
 	cmd.AddCommand(NewCmdVersion())
 	cmd.AddCommand(NewCmdWorkflow())
 	cmd.AddCommand(NewCmdHistory())
-	cmd.AddCommand(NewCmdScan())
+	cmd.AddCommand(NewCmdScan(cmd))
 
 	//Help topics
 	cmd.AddCommand(NewHelpTopic("environment"))
