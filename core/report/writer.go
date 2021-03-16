@@ -2,7 +2,6 @@ package report
 
 import (
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -11,6 +10,7 @@ const (
 	actualAvailabilityTooHighf      = "Current availability is higher than target availability by %.2f percent. Think about reducing the resources allocated to your application - this could save you some money."
 	errorBudgetExceededf            = "Error budget has been exceeded by %.2f percent. This is pretty bad :("
 	errorBudgetTooLowf              = "You are under your error budget by %.2f percent. You could tighten your budget, or could decrease the quality of the experience your application provides (e.g by reducing the amount of resources given to your application)."
+	latencyExceeded                 = "The latency threshold has been exceeeded boy %.2f percent"
 )
 
 func Write(r *Report, l *logrus.Logger) {
@@ -18,13 +18,19 @@ func Write(r *Report, l *logrus.Logger) {
 		return
 	}
 
-	if r.Delta.ServiceLevelPercent > r.Threshold.Error {
-		log.Errorf(actualAvailabilityTooHighf, r.Delta.ServiceLevelPercent)
-	} else if r.Delta.ServiceLevelPercent > r.Threshold.Warning {
-		log.Warnf(actualAvailabilityTooHighf, r.Delta.ServiceLevelPercent)
-	} else if r.Delta.ServiceLevelPercent < 95 {
-		log.Warn(lessThan95pcAvailabilityMessage)
+	if r.Delta.ServiceLevel < 0 { // low service level
+		l.Warnf(actualAvailabilityTooLowf, -r.Delta.ServiceLevel)
+	} else if r.Delta.ServiceLevel > 2 {
+		l.Warnf(actualAvailabilityTooHighf, r.Delta.ServiceLevel)
 	}
 
-	// todo: write more stuff
+	if r.Delta.ErrorBudgetPercent < -2 {
+		l.Warnf(errorBudgetTooLowf, r.Delta.ErrorBudgetPercent)
+	} else if r.Delta.ErrorBudgetPercent > 0 {
+		l.Warnf(errorBudgetExceededf, r.Delta.ErrorBudgetPercent)
+	}
+
+	if r.Delta.Latency > 0 {
+		l.Warnf(latencyExceeded, r.Delta.Latency)
+	}
 }
