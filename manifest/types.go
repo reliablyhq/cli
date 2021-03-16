@@ -13,9 +13,9 @@ type (
 	}
 
 	ServiceLevel struct {
-		Availability float32       `yaml:"availability" json:"availability"`
-		Latency      time.Duration `yaml:"latency" json:"latency"`
-		ErrorBudget  float32       `yaml:"error_budget" json:"error_budget"`
+		Availability       float32       `yaml:"availability" json:"availability"`
+		Latency            time.Duration `yaml:"latency" json:"latency"`
+		ErrorBudgetPercent float32       `yaml:"error_budget_pc" json:"error_budget_pc"`
 	}
 
 	ContinuousIntegrationInfo struct {

@@ -2,8 +2,8 @@ ci:
   type: ""
 service_level:
   availability: 75
-  latency: 0s
-  error_budget: 0
+  latency: 200ms
+  error_budget_pc: 1
 apps: []
 dependency: []
 hosting:
