@@ -4,6 +4,7 @@ service_level:
   availability: 75
   latency: 200ms
   error_budget_pc: 1
+  warning_threshold_pc: 1
 apps: []
 dependency: []
 hosting:
