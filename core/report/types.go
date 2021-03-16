@@ -1,4 +1,4 @@
-package advice
+package report
 
 type Suggestion string
 
