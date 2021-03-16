@@ -60,7 +60,7 @@ func run(cmd *cobra.Command, args []string) {
 		tfiles, err = filepath.Glob(filepath.Join(dir, "*.tf"))
 		if err != nil {
 			log.Debug(err)
-			log.Error("An error occured while looking up tfiles in directory")
+			log.Error("An error occurred while looking up tfiles in directory")
 			os.Exit(1)
 		}
 	}
@@ -75,14 +75,14 @@ func run(cmd *cobra.Command, args []string) {
 		b, err := ioutil.ReadFile(f)
 		if err != nil {
 			log.Debug(err)
-			log.Error("An error occured while opening the file")
+			log.Error("An error occurred while opening the file")
 			os.Exit(1)
 		}
 
 		var resources map[string]interface{}
 		if err := unmarshalTF(b, &resources); err != nil {
 			log.Debug(err)
-			log.Error("An error occured while parsing the file")
+			log.Error("An error occurred while parsing the file")
 			os.Exit(1)
 		}
 
@@ -100,7 +100,7 @@ func run(cmd *cobra.Command, args []string) {
 				result, err := scan.FindPolicyAndEvaluate(target)
 				if err != nil {
 					log.Debug(err)
-					log.Warnf("An error occured while scanning resource: [%s]", resource.Type)
+					log.Warnf("An error occurred while scanning resource: [%s]", resource.Type)
 					continue
 				}
 

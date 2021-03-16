@@ -41,7 +41,7 @@ func run(cmd *cobra.Command, args []string) {
 	contentBytes, err := getFileContent(file)
 	if err != nil {
 		log.Debug(err)
-		log.Error("An error occured while opening the file")
+		log.Error("An error occurred while opening the file")
 		os.Exit(1)
 	}
 
@@ -49,7 +49,7 @@ func run(cmd *cobra.Command, args []string) {
 	var tfPlan terraform.PlanRepresentation
 	if err := json.Unmarshal(contentBytes, &tfPlan); err != nil {
 		log.Debug(err)
-		log.Error("An error occured while trying to deserailize the content of the file")
+		log.Error("An error occurred while trying to deserailize the content of the file")
 		os.Exit(1)
 	}
 
@@ -62,7 +62,7 @@ func run(cmd *cobra.Command, args []string) {
 			result, err := scan.FindPolicyAndEvaluate(target)
 			if err != nil {
 				log.Debug(err)
-				log.Warnf("error occured while scanning target: %s", target.ResourceType)
+				log.Warnf("error occurred while scanning target: %s", target.ResourceType)
 				continue
 			}
 
