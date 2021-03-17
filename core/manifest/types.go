@@ -10,6 +10,7 @@ type (
 		Dependencies    []*Dependency              `yaml:"dependency" json:"dependency"`
 		Hosting         *Hosting                   `yaml:"hosting,omitempty" json:"hosting,omitempty"`
 		IAC             *IAC                       `yaml:"infrastructure_as_code,omitempty" json:"infrastructure_as_code,omitempty"`
+		Tags            map[string]string          `yaml:"tags" json:"tags"`
 	}
 
 	ServiceLevel struct {
