@@ -1,4 +1,4 @@
-package manifest
+package core
 
 import (
 	"encoding/json"

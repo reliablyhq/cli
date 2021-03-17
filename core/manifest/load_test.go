@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/reliablyhq/cli/core"
 )
 
 func TestLoad(t *testing.T) {
@@ -31,7 +33,7 @@ func TestLoad(t *testing.T) {
 				},
 				ServiceLevel: &ServiceLevel{
 					Availability:       75,
-					Latency:            Duration{200 * time.Millisecond},
+					Latency:            core.Duration{Duration: 200 * time.Millisecond},
 					ErrorBudgetPercent: 0.5,
 				},
 				Dependencies: []*Dependency{
@@ -63,7 +65,7 @@ func TestLoad(t *testing.T) {
 				},
 				ServiceLevel: &ServiceLevel{
 					Availability:       75,
-					Latency:            Duration{200 * time.Millisecond},
+					Latency:            core.Duration{Duration: 200 * time.Millisecond},
 					ErrorBudgetPercent: 0.5,
 				},
 				Dependencies: []*Dependency{
