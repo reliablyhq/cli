@@ -15,6 +15,7 @@ import (
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
+	"github.com/reliablyhq/cli/cmd/reliably/scan/terraform"
 	"github.com/reliablyhq/cli/core"
 	ctx "github.com/reliablyhq/cli/core/context"
 	finder "github.com/reliablyhq/cli/core/find"
@@ -238,6 +239,8 @@ Reliably can also scan for your live kubernetes cluster.`,
 	configPath, _ := k8s.FindKubeConfigPath()
 	cmd.Flags().StringVarP(
 		&opts.KubeConfigPath, "kubeconfig", "k", configPath, "Specifies the path and file to use for kubeconfig for live scan")
+
+	cmd.AddCommand(terraform.New())
 
 	// reformat the flags usage to be able to group them into sub sections
 	flagsUsages := strings.Split(cmd.Flags().FlagUsages(), "\n")
