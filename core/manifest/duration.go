@@ -9,6 +9,7 @@ import (
 
 const durationSuffix = "ms"
 
+// This has been built to mitigate the poor support in JSON and YAML unmarshalling for the time.Duration type
 type Duration struct {
 	time.Duration
 }
