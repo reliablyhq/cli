@@ -2,6 +2,7 @@ package manifest
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -11,13 +12,16 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const defaultManifestPath = "reliably.yaml"
+const DefaultManifestPath = "reliably.yaml"
 
 func Load(path string) (*Manifest, error) {
-	p := getManifestPath(path)
-	log.Debug("Loading manifest at ", p)
+	if path == "" {
+		return nil, errors.New("path is empty")
+	}
 
-	file, err := os.Open(p)
+	log.Debug("Loading manifest at ", path)
+
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +30,7 @@ func Load(path string) (*Manifest, error) {
 	var m Manifest
 	var decoder interface{ Decode(interface{}) error }
 
-	ext := getExtensionFromPath(p)
+	ext := getExtensionFromPath(path)
 	switch ext {
 	case ".yaml":
 		{
@@ -47,20 +51,6 @@ func Load(path string) (*Manifest, error) {
 	}
 
 	return &m, nil
-}
-
-func getManifestPath(path string) string {
-	s := defaultManifestPath
-
-	if x := os.Getenv("RELIABLY_MANIFEST_PATH"); x != "" {
-		s = x
-	}
-
-	if path != "" {
-		s = path
-	}
-
-	return s
 }
 
 func getExtensionFromPath(path string) string {
