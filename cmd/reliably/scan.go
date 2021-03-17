@@ -274,7 +274,6 @@ Reliably can also scan for your live kubernetes cluster.`,
 	cmd.SetUsageTemplate(template)
 	// end custom overridden template for grouped flags
 
-
 	return cmd
 }
 
