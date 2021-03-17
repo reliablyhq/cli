@@ -25,15 +25,11 @@ type (
 	}
 
 	Dependency struct {
-		Name          string `yaml:"name" json:"name"`
-		Type          string `yaml:"type" json:"type"`
-		RepositoryURL string `yaml:"repository_url" json:"repository_url"`
-		StatusURL     string `yaml:"status_url" json:"status_url"`
+		Name string `yaml:"name" json:"name"`
 	}
 
 	Hosting struct {
-		Provider       string            `yaml:"provider" json:"provider"`
-		ConnectionInfo map[string]string `yaml:"connection_info" json:"connection_info"`
+		Provider string `yaml:"provider" json:"provider"`
 	}
 
 	IAC struct {
