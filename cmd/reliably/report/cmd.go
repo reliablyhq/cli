@@ -24,7 +24,7 @@ func NewCommand() *cobra.Command {
 		Run:   run,
 	}
 
-	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", "", "the path to the manifest file")
+	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", manifest.DefaultManifestPath, "the path to the manifest file")
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
 
 	return cmd

@@ -1,0 +1,14 @@
+application_name: unit test app
+ci:
+  type: unit test ci
+service_level:
+  availability: 75
+  latency: 200ms
+  error_budget_pc: 0.5
+dependency:
+- name: some service
+- name: some other service
+hosting:
+  provider: some dummy provider
+infrastructure_as_code:
+  type: some IAC system
