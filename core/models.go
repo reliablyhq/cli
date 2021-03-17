@@ -157,6 +157,23 @@ func (l Level) ColoredString() string {
 	return str
 }
 
+// ColoredSquare is a function that will return a string with a
+// colored square ("■"), where the color is determined by the level
+func (l Level) ColoredSquare() string {
+	var str string
+	switch l {
+	case Info:
+		str = color.Yellow("■")
+	case Warning:
+		str = color.Magenta("■")
+	case Error:
+		str = color.Red("■")
+	default:
+		str = " "
+	}
+	return str
+}
+
 // MarshalJSON is used convert a Level object into a JSON representation
 func (l Level) MarshalJSON() ([]byte, error) {
 	return json.Marshal(l.String())

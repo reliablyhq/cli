@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Added
 - Kubernetes live scan now provides suggestions for nodes
+- Scan has new `tabbed` format that provides tabbed formatted output
 - Scan has new `extended` format for having more verbose output
 - Suggestion examples are added to `sarif` and `extended` output formats
 
