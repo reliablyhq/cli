@@ -93,7 +93,7 @@ Environment variables:
 	cmd.AddCommand(NewCmdVersion())
 	cmd.AddCommand(NewCmdWorkflow())
 	cmd.AddCommand(NewCmdHistory())
-	cmd.AddCommand(NewCmdScan())
+	cmd.AddCommand(NewCmdScan(cmd))
 
 	//Help topics
 	cmd.AddCommand(NewHelpTopic("environment"))
@@ -218,8 +218,11 @@ func createReliablyWorkspace() error {
 	// ensure policies cache is starting clean
 	// so we remove before creating it
 	// as removeAll removes path and any children it contains
+	// NO_CACHE_CLEAN is an internal env var only for dev purpose
 	policiesFolder := filepath.Join(workspace, "policies")
-	os.RemoveAll(policiesFolder)
+	if !(os.Getenv("NO_CACHE_CLEAN") != "" && v.IsDevVersion()) {
+		os.RemoveAll(policiesFolder)
+	}
 	if _, err := os.Stat(policiesFolder); os.IsNotExist(err) {
 		log.Debug(fmt.Sprintf("Create folder '%v'", policiesFolder))
 		err := os.Mkdir(policiesFolder, 0755)

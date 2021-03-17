@@ -7,12 +7,11 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
+	fColor "github.com/fatih/color"
 	"github.com/icza/dyno"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
-
-	// "k8s.io/client-go/kubernetes"
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
@@ -35,7 +34,7 @@ var (
 
 	violations core.ResultSet
 
-	supportedFormats = Choice{"simple", "json", "yaml", "sarif", "codeclimate"}
+	supportedFormats = Choice{"simple", "json", "yaml", "sarif", "codeclimate", "extended", "tabbed"}
 	supportedLevels  = Choice(core.Levels)
 )
 
@@ -55,7 +54,7 @@ type ScanOptions struct {
 	KubeConfigPath      string
 }
 
-func NewCmdScan() *cobra.Command {
+func NewCmdScan(rootCmd *cobra.Command) *cobra.Command {
 	opts := &ScanOptions{
 		IO: iostreams.System(),
 	}
@@ -196,6 +195,11 @@ Reliably can also scan for your live kubernetes cluster.`,
 				log.Debug(fmt.Sprintf("Kubernetes files found: %v", opts.Files))
 			}
 
+			// disable coloring when using output to file
+			if opts.OutputFile != "" {
+				fColor.NoColor = true
+			}
+
 			violationCount, err := scanRun(opts)
 			if err != nil {
 				return err
@@ -212,7 +216,6 @@ Reliably can also scan for your live kubernetes cluster.`,
 	cmd.Flags().StringVarP(
 		&opts.OutputFormat, "format", "f", "",
 		fmt.Sprintf("Specify the output format: %v", supportedFormats))
-	//reviewCmd.Flags().Lookup("format").NoOptDefVal = "default"
 
 	cmd.Flags().StringVarP(
 		&opts.OutputFile, "output", "o", "", "Write results to a file instead of standard output")
@@ -238,6 +241,39 @@ Reliably can also scan for your live kubernetes cluster.`,
 		&opts.KubeConfigPath, "kubeconfig", "k", configPath, "Specifies the path and file to use for kubeconfig for live scan")
 
 	cmd.AddCommand(terraform.New())
+
+	// reformat the flags usage to be able to group them into sub sections
+	flagsUsages := strings.Split(cmd.Flags().FlagUsages(), "\n")
+	var groupedFlags map[string][]string = map[string][]string{
+		"":     []string{"format", "level", "output"},
+		"live": []string{"live", "kubecontext", "kubeconfig", "namespace"},
+	}
+
+	var groupedFlagsUsages map[string]string = make(map[string]string)
+	for group, flags := range groupedFlags {
+		var usage string = ""
+		for _, flag := range flags {
+			for _, flagUsage := range flagsUsages {
+				if strings.Contains(flagUsage, fmt.Sprintf("--%s", flag)) {
+					usage = fmt.Sprintf("%s%s\n", usage, flagUsage)
+					break
+				}
+			}
+		}
+		groupedFlagsUsages[group] = usage
+	}
+
+	// we get custom template from root command to have root annotations
+	template := customUsageTemplate(rootCmd)
+	template = strings.Replace(template,
+		"{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}",
+		fmt.Sprintf("%s\n\n{{StyleHeading \"Kubernetes live Cluster Flags:\"}}\n%s",
+			strings.TrimSuffix(groupedFlagsUsages[""], "\n"),
+			strings.TrimSuffix(groupedFlagsUsages["live"], "\n")),
+		1)
+	cmd.SetUsageTemplate(template)
+	// end custom overridden template for grouped flags
+
 
 	return cmd
 }

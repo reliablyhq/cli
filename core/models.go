@@ -49,6 +49,7 @@ type Result struct {
 	Location Location
 	Rule     Rule
 	Message  string
+	Example  string
 }
 
 // ResultSet is a list of results after analysis
@@ -130,6 +131,21 @@ func (l Level) String() string {
 	var str string
 	switch l {
 	case Info:
+		str = levelInfo
+	case Warning:
+		str = levelWarning
+	case Error:
+		str = levelError
+	default:
+		str = ""
+	}
+	return str
+}
+
+func (l Level) ColoredString() string {
+	var str string
+	switch l {
+	case Info:
 		str = color.Yellow(levelInfo)
 	case Warning:
 		str = color.Magenta(levelWarning)
@@ -137,6 +153,23 @@ func (l Level) String() string {
 		str = color.Red(levelError)
 	default:
 		str = ""
+	}
+	return str
+}
+
+// ColoredSquare is a function that will return a string with a
+// colored square ("■"), where the color is determined by the level
+func (l Level) ColoredSquare() string {
+	var str string
+	switch l {
+	case Info:
+		str = color.Yellow("■")
+	case Warning:
+		str = color.Magenta("■")
+	case Error:
+		str = color.Red("■")
+	default:
+		str = " "
 	}
 	return str
 }

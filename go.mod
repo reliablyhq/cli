@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.7
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
+	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/cli/safeexec v1.0.0
 	github.com/fatih/color v1.7.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -21,6 +22,7 @@ require (
 	github.com/mattn/go-isatty v0.0.12
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/nathan-fiscaletti/consolesize-go v0.0.0-20210105204122-a87d9f614b9d
 	github.com/open-policy-agent/opa v0.24.0
 	github.com/pkg/browser v0.0.0-20201207095918-0426ae3fba23
 	github.com/pkg/errors v0.9.1 // indirect

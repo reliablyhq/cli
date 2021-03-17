@@ -92,11 +92,10 @@ func buildCcIssue(suggestion *core.Suggestion) (*ccIssue, error) {
 		Type:        "issue",
 		CheckName:   suggestion.RuleID,
 		Description: suggestion.Message,
+		//Content:     content, // not handled by GitLab Code Quality
 		Categories:  []ccCategory{ccCategory("Reliability")},
 		Location:    location,
 		Severity:    levelToCCSecurity(suggestion.Level),
-		// CAUTIOUS !! the fingerprint is based on the issue location
-		// so it's not safe to be used !!
 		Fingerprint: suggestion.Fingerprint(),
 	}
 

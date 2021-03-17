@@ -19,4 +19,9 @@ var (
 	Cyan = color.New(color.FgCyan).SprintFunc()
 	// Underline returns an underline string
 	Underline = color.New(color.Underline).SprintFunc()
+
+	// Background colored string
+	BgYellow  = color.New(color.BgYellow).SprintFunc()
+	BgMagenta = color.New(color.BgMagenta).SprintFunc()
+	BgRed     = color.New(color.BgRed).SprintFunc()
 )

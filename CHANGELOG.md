@@ -4,7 +4,10 @@
 
 ### Added
 - Kubernetes live scan now provides suggestions for nodes
-- added a scan terraform plan command for the `scan terraform plan` command.
+- Scan has new `tabbed` format that provides tabbed formatted output
+- Scan has new `extended` format for having more verbose output
+- Suggestion examples are added to `sarif` and `extended` output formats
+- added support for scanning terraform resources, `reliably scan terraform`.
 - added new `github.com/reliablyhq/cli/scan` package
 
 
