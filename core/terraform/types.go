@@ -127,3 +127,10 @@ type BlockExpressionRepresentation struct {
 	RootBlockDevice *ExpressionRepresentation   `json:"root_block_device"`
 	EBSBlockDevice  []*ExpressionRepresentation `json:"ebs_block_device"`
 }
+
+// TFResource -type used to create resource input for .tf file scanning
+type TFResource struct {
+	Label  string                 `json:"label"`
+	Type   string                 `json:"type"`
+	Values map[string]interface{} `json:"values"`
+}
