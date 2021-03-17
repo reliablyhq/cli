@@ -1,5 +1,7 @@
 package manifest
 
+import "github.com/reliablyhq/cli/core"
+
 type (
 	Manifest struct {
 		ApplicationName string                     `yaml:"application_name" json:"application_name"`
@@ -12,10 +14,10 @@ type (
 	}
 
 	ServiceLevel struct {
-		Availability            float32  `yaml:"availability" json:"availability"`
-		Latency                 Duration `yaml:"latency" json:"latency"`
-		ErrorBudgetPercent      float32  `yaml:"error_budget_pc" json:"error_budget_pc"`
-		WarningThresholdPercent float32  `yaml:"warning_threshold_pc" json:"warning_threshold_pc"`
+		Availability            float32       `yaml:"availability" json:"availability"`
+		Latency                 core.Duration `yaml:"latency" json:"latency"`
+		ErrorBudgetPercent      float32       `yaml:"error_budget_pc" json:"error_budget_pc"`
+		WarningThresholdPercent float32       `yaml:"warning_threshold_pc" json:"warning_threshold_pc"`
 	}
 
 	ContinuousIntegrationInfo struct {
