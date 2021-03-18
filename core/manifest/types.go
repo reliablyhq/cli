@@ -5,7 +5,6 @@ import "github.com/reliablyhq/cli/core"
 type (
 	Manifest struct {
 		App          *AppInfo                   `yaml:"app" json:"app"`
-		Onwer        string                     `yaml:"owner" json:"owner"`
 		CI           *ContinuousIntegrationInfo `yaml:"ci,omitempty" json:"ci,omitempty"`
 		ServiceLevel *ServiceLevel              `yaml:"service_level,omitempty" json:"service_level,omitempty"`
 		Dependencies []*Dependency              `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`

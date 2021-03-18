@@ -1,5 +1,5 @@
 {
-  "application": {
+  "app": {
     "name": "unit test app",
     "owner": "unit test owner",
     "repo": "github.com/reliablyhq/cli"
@@ -12,7 +12,7 @@
     "latency": "200ms",
     "error_budget_pc": 0.5
   },
-  "dependency": [
+  "dependencies": [
     {
       "name": "some service"
     },
@@ -24,6 +24,11 @@
     "provider": "some dummy provider"
   },
   "infrastructure_as_code": {
-    "type": "some IAC system"
+    "type": "some IAC system",
+    "root": "./abc"
+  },
+  "tags": {
+    "team": "abc",
+    "domain": "xyz"
   }
 }

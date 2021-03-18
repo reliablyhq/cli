@@ -1,7 +1,6 @@
 package manifest
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
@@ -53,6 +52,11 @@ func TestLoad(t *testing.T) {
 				},
 				IAC: &IAC{
 					Type: "some IAC system",
+					Root: "./abc",
+				},
+				Tags: map[string]string{
+					"team":   "abc",
+					"domain": "xyz",
 				},
 			},
 			wantErr: false,
@@ -89,6 +93,11 @@ func TestLoad(t *testing.T) {
 				},
 				IAC: &IAC{
 					Type: "some IAC system",
+					Root: "./abc",
+				},
+				Tags: map[string]string{
+					"team":   "abc",
+					"domain": "xyz",
 				},
 			},
 			wantErr: false,
@@ -115,8 +124,44 @@ func TestLoad(t *testing.T) {
 				t.Errorf("Load() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Load() = %v, want %v", got, tt.want)
+
+			if tt.wantErr {
+				return
+			}
+
+			if w, g := tt.want.App == nil, got.App == nil; w != g {
+				t.Errorf("Wanted App == nil to be %v but was %v", w, g)
+				return
+			}
+
+			if w, g := tt.want.CI == nil, got.CI == nil; w != g {
+				t.Errorf("Wanted CI == nil to be %v but was %v", w, g)
+				return
+			}
+
+			if w, g := tt.want.Dependencies == nil, got.Dependencies == nil; w != g {
+				t.Errorf("Wanted Dependencies == nil to be %v but was %v", w, g)
+				return
+			}
+
+			if w, g := tt.want.Hosting == nil, got.Hosting == nil; w != g {
+				t.Errorf("Wanted Hosting == nil to be %v but was %v", w, g)
+				return
+			}
+
+			if w, g := tt.want.IAC == nil, got.IAC == nil; w != g {
+				t.Errorf("Wanted IAC == nil to be %v but was %v", w, g)
+				return
+			}
+
+			if w, g := tt.want.ServiceLevel == nil, got.ServiceLevel == nil; w != g {
+				t.Errorf("Wanted ServiceLevel == nil to be %v but was %v", w, g)
+				return
+			}
+
+			if w, g := tt.want.Tags == nil, got.Tags == nil; w != g {
+				t.Errorf("Wanted Tags == nil to be %v but was %v", w, g)
+				return
 			}
 		})
 	}
