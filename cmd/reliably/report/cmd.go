@@ -50,8 +50,7 @@ func run(_ *cobra.Command, _ []string) {
 	}
 
 	if err := sendReportToReliably(r); err != nil {
-		log.Fatal(err)
-		os.Exit(1)
+		log.Warn(err)
 	}
 
 	report.Write(r, log.StandardLogger())
@@ -74,5 +73,5 @@ func run(_ *cobra.Command, _ []string) {
 }
 
 func sendReportToReliably(r *report.Report) error {
-	return errors.New("not implemented")
+	return errors.New("sendReportToReliably not implemented")
 }

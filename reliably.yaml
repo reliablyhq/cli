@@ -4,3 +4,7 @@ app:
   repo: https://github.com/reliablyh/cli
 ci:
   type: github actions
+service_level:
+  availability: 75
+  latency: 200ms
+  error_budget_pc: 0.5
