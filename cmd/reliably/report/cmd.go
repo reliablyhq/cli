@@ -46,9 +46,13 @@ func run(_ *cobra.Command, _ []string) {
 	r, err := report.GenerateReport(m)
 	if err != nil {
 		log.Error(err)
+		os.Exit(1)
 	}
 
-	sendReportToReliably(r)
+	if err := sendReportToReliably(r); err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
 
 	report.Write(r, log.StandardLogger())
 

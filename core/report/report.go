@@ -10,16 +10,18 @@ type Report struct {
 	ApplicationName string                 `json:"application_name"`
 	Timestamp       time.Time              `json:"timestamp"`
 	Dependencies    []*manifest.Dependency `json:"dependencies"`
+	Targets         *ServiceLevelTarget    `json:"target"`
+	Delta           *ServiceLevelDelta     `json:"delta"`
+}
 
-	Targets struct {
-		ServiceLevel       float64 `json:"service_level"`
-		ErrorBudgetPercent float64 `json:"error_budget"`
-		LatencyMs          int64   `json:"latency_ms"`
-	} `json:"target"`
+type ServiceLevelTarget struct {
+	ServiceLevel       float64 `json:"service_level"`
+	ErrorBudgetPercent float64 `json:"error_budget"`
+	LatencyMs          int64   `json:"latency_ms"`
+}
 
-	Delta struct {
-		ServiceLevel       float64 `json:"service_level"`
-		ErrorBudgetPercent float64 `json:"error_budget_pc"`
-		LatencyMs          int64   `json:"latency_ms"`
-	} `json:"delta"`
+type ServiceLevelDelta struct {
+	ServiceLevel       float64 `json:"service_level"`
+	ErrorBudgetPercent float64 `json:"error_budget_pc"`
+	LatencyMs          int64   `json:"latency_ms"`
 }
