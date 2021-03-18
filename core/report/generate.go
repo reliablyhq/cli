@@ -39,9 +39,11 @@ func GenerateReport(m *manifest.Manifest) (*Report, error) {
 	r.Timestamp = time.Now().UTC()
 
 	if m.ServiceLevel != nil {
-		r.Targets.ErrorBudgetPercent = m.ServiceLevel.ErrorBudgetPercent
-		r.Targets.ServiceLevel = m.ServiceLevel.Availability
-		r.Targets.LatencyMs = m.ServiceLevel.Latency.Milliseconds()
+		r.Targets = &ServiceLevelTarget{
+			ErrorBudgetPercent: m.ServiceLevel.ErrorBudgetPercent,
+			ServiceLevel:       m.ServiceLevel.Availability,
+			LatencyMs:          m.ServiceLevel.Latency.Milliseconds(),
+		}
 
 		if delta, err := getServiceLevelDeltas(m); err == nil {
 			r.Delta = delta
