@@ -9,7 +9,10 @@ jobs:
     env:
       GCP_CA_RULE_PRIORITY: ${{ secrets.GCP_CA_RULE_PRIORITY }}
       CLOUDSDK_CORE_PROJECT: ${{ secrets.GCP_PROJECT }}
+      RELIABLY_HOST: ${{ secrets.RELIABLY_HOST }}
+      RELIABLY_TOKEN: ${{ secrets.RELIABLY_TOKEN }}
     steps:
+      ### Workflow setup
       - name: Public IP
         id: ip
         uses: haythem/public-ip@v1.2
@@ -30,7 +33,9 @@ jobs:
             --security-policy deny-all-to-staging \
             --src-ip-ranges "${{ steps.ip.outputs.ipv4 }}" \
             --action allow --description "Whitelist GitHub Workflow"
+      - run: sleep 60 # sleep is required to have the firewall being operational - it takes some time to whitelist -
 
+      ### Build the CLI
       - name: Checkout source code
         uses: actions/checkout@v2
       - name: Download Go dependencies
@@ -38,18 +43,13 @@ jobs:
       - name: Build the CLI
         run: go build -o bin/reliably main.go
 
-      # sleep is required to have the firewall being operational - it takes some time to whitelist -
-      - run: sleep 120
-
-      # Tests some CLI commands with API usage in backend
+      ### Tests some CLI commands with API usage in backend
       - name: Check CLI is authenticated to API
         run: ./bin/reliably auth status
-
       - name: Run simple demo scan
         run: ./bin/reliably scan .
 
-      # End basic integration tests
-
+      ### Workflow teardown
       - name: Removes public IP from Cloud Armor Whitelist (failure)
         if: failure()
         # exit 1 - to fail the entire workflow in case a previous step failed - but ensure to remove the policy
@@ -57,7 +57,6 @@ jobs:
           gcloud compute security-policies rules delete $GCP_CA_RULE_PRIORITY \
           --security-policy deny-all-to-staging --quiet
           exit 1
-
       - name: Removes public IP from Cloud Armor Whitelist
         if: success()  # does not fail the workflow
         run: |
