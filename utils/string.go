@@ -19,7 +19,7 @@ func RandomString(length int) (string, error) {
 }
 
 // ansiDiff retruns the difference in length between the string in runes and
-// the length of the string - if hte strings have special characters the
+// the length of the string - if the strings have special characters the
 // lengths are different
 func runeDiff(s string) int {
 	runeCount := utf8.RuneCountInString(s)
@@ -27,15 +27,15 @@ func runeDiff(s string) int {
 	return strLen - runeCount
 }
 
-// ansiDiff retruns the difference in length between the string and the  same
-//string when it is stipped on non ansi characters
+// ansiDiff returns the difference in length between the string and the  same
+// string when it is stipped of non ansi characters
 func ansiDiff(s string) int {
 	ansiStr := stripansi.Strip(s)
 	return len(s) - len(ansiStr)
 }
 
 // TruncateString truncates the given string to the num provided and adds an
-// elipsis (...).
+// ellipsis (...).
 func TruncateString(s string, num int) string {
 	truncStr := s
 	nonPrintLen := runeDiff(s) + ansiDiff(s)
