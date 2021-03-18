@@ -50,7 +50,7 @@ func run(_ *cobra.Command, _ []string) {
 	}
 
 	if err := sendReportToReliably(r); err != nil {
-		log.Warn(err)
+		log.Error(err)
 	}
 
 	report.Write(r, log.StandardLogger())
