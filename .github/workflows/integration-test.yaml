@@ -48,6 +48,7 @@ jobs:
         run: ./bin/reliably auth status
       - name: Run simple demo scan
         run: ./bin/reliably scan .
+        continue-on-error: true
 
       ### Workflow teardown
       - name: Removes public IP from Cloud Armor Whitelist (failure)
