@@ -27,7 +27,11 @@ func TestLoad(t *testing.T) {
 				path: dummyReliablyYamlManifestPath,
 			},
 			want: &Manifest{
-				ApplicationName: "unit test app",
+				App: &AppInfo{
+					Name:       "unit test app",
+					Owner:      "unit test owner",
+					Repository: "github.com/reliablyhq/cli",
+				},
 				CI: &ContinuousIntegrationInfo{
 					Type: "unit test ci",
 				},
@@ -59,7 +63,11 @@ func TestLoad(t *testing.T) {
 				path: dummyReliablyJsonManifestPath,
 			},
 			want: &Manifest{
-				ApplicationName: "unit test app",
+				App: &AppInfo{
+					Name:       "unit test app",
+					Owner:      "unit test owner",
+					Repository: "github.com/reliablyhq/cli",
+				},
 				CI: &ContinuousIntegrationInfo{
 					Type: "unit test ci",
 				},

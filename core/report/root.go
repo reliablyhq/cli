@@ -26,7 +26,7 @@ func GenerateReport(m *manifest.Manifest) (*Report, error) {
 	r := Report{}
 	allErrors := make([]error, 0)
 
-	r.ApplicationName = m.ApplicationName
+	r.ApplicationName = m.App.Name
 	r.Timestamp = time.Now().UTC()
 	r.Targets.ErrorBudgetPercent = m.ServiceLevel.ErrorBudgetPercent
 	r.Targets.ServiceLevel = m.ServiceLevel.Availability

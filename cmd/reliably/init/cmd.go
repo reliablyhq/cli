@@ -36,9 +36,9 @@ func NewCommand() *cobra.Command {
 func run(_ *cobra.Command, _ []string) {
 	validateFilePath()
 
-	m := manifest.Empty()
+	var m manifest.Manifest
 
-	populateManifest(m)
+	populateManifest(&m)
 
 	f, err := os.Create(manifestPath)
 	if err != nil {
@@ -64,12 +64,63 @@ func validateFilePath() {
 func populateManifest(m *manifest.Manifest) {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	m.ApplicationName = askQuestion(scanner, "What is the name of your application?")
-	m.CI.Type = askQuestion(scanner, "What type of CI are you using?")
+	m.App = &manifest.AppInfo{
+		Name:       askQuestion(scanner, "What is the name of your application?"),
+		Owner:      askQuestion(scanner, "Who owns this app? Its a good idea to put an email address in here!"),
+		Repository: askQuestion(scanner, "What is the URL to the repository for this app?"),
+	}
 
-	m.ServiceLevel.Availability = askQuestionWithFloat64Answer(scanner, "What percentage of availability do you want your application to have?", 0, 100)
-	m.ServiceLevel.ErrorBudgetPercent = askQuestionWithFloat64Answer(scanner, "What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100)
-	m.ServiceLevel.Latency = askQuestionWithDurationAnswer(scanner, "What is the maximum request-response latency you want from this service")
+	if askQuestionWithBoolAnswer(scanner, "Are you using Continuous Integration?") {
+		m.CI = &manifest.ContinuousIntegrationInfo{
+			Type: askQuestion(scanner, "What type of CI are you using?"),
+		}
+	} else {
+		m.CI = nil
+	}
+
+	if askQuestionWithBoolAnswer(scanner, "Are you building something that will be provided to customers 'as a service'?") {
+		m.ServiceLevel.Availability = askQuestionWithFloat64Answer(scanner, "What percentage of availability do you want your application to have?", 0, 100)
+		m.ServiceLevel.ErrorBudgetPercent = askQuestionWithFloat64Answer(scanner, "What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100)
+		m.ServiceLevel.Latency = askQuestionWithDurationAnswer(scanner, "What is the maximum request-response latency you want from this service")
+	} else {
+		m.ServiceLevel = nil
+	}
+
+	if askQuestionWithBoolAnswer(scanner, "Will your app be hosted on a commercial platform?") {
+		m.Hosting = &manifest.Hosting{
+			Provider: askQuestion(scanner, "What is the name of the provider?"),
+		}
+	} else {
+		m.Hosting = nil
+	}
+
+	if askQuestionWithBoolAnswer(scanner, "Does your application have 'service level' dependencies?") {
+		deps := make([]*manifest.Dependency, 0)
+
+		addMore := true
+		for addMore {
+			d := &manifest.Dependency{
+				Name: askQuestion(scanner, "what is the name of the dependency?"),
+			}
+
+			deps = append(deps, d)
+
+			addMore = askQuestionWithBoolAnswer(scanner, "Do you want to add another dependency?")
+		}
+
+		m.Dependencies = deps
+	} else {
+		m.Dependencies = nil
+	}
+
+	if askQuestionWithBoolAnswer(scanner, "") {
+		m.IAC = &manifest.IAC{
+			Type: askQuestion(scanner, "What IAC provider are you using (terraform, ARM templates, CDK, etc...)?"),
+			Root: askQuestion(scanner, "Where is the root folder for your IAC code?"),
+		}
+	} else {
+		m.IAC = nil
+	}
 }
 
 func askQuestion(scanner *bufio.Scanner, questionText string) string {
@@ -106,6 +157,25 @@ func askQuestionWithDurationAnswer(scanner *bufio.Scanner, question string) core
 			fmt.Println("The value you entered could not be parsed to a duration.")
 		} else {
 			return core.Duration{Duration: d}
+		}
+	}
+}
+
+func askQuestionWithBoolAnswer(scanner *bufio.Scanner, question string) bool {
+	for {
+		answer := askQuestion(scanner, question)
+		if b, err := strconv.ParseBool(answer); err == nil {
+			return b
+		} else {
+			// do some noddy-level parsing
+			lAnswer := strings.ToLower(answer)
+			if lAnswer == "y" || lAnswer == "yes" {
+				return true
+			} else if lAnswer == "n" || lAnswer == "no" {
+				return false
+			}
+
+			fmt.Println("the answer you gave could not be parsed to a boolean")
 		}
 	}
 }

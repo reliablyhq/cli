@@ -1,4 +1,7 @@
-application_name: unit test app
+application: 
+  name: unit test app
+  owner: unit test owner
+  repo: github.com/reliablyhq/cli
 ci:
   type: unit test ci
 service_level:

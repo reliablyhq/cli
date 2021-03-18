@@ -4,13 +4,20 @@ import "github.com/reliablyhq/cli/core"
 
 type (
 	Manifest struct {
-		ApplicationName string                     `yaml:"application_name" json:"application_name"`
-		CI              *ContinuousIntegrationInfo `yaml:"ci,omitempty" json:"ci,omitempty"`
-		ServiceLevel    *ServiceLevel              `yaml:"service_level,omitempty" json:"service_level,omitempty"`
-		Dependencies    []*Dependency              `yaml:"dependency" json:"dependency"`
-		Hosting         *Hosting                   `yaml:"hosting,omitempty" json:"hosting,omitempty"`
-		IAC             *IAC                       `yaml:"infrastructure_as_code,omitempty" json:"infrastructure_as_code,omitempty"`
-		Tags            map[string]string          `yaml:"tags" json:"tags"`
+		App          *AppInfo                   `yaml:"app" json:"app"`
+		Onwer        string                     `yaml:"owner" json:"owner"`
+		CI           *ContinuousIntegrationInfo `yaml:"ci,omitempty" json:"ci,omitempty"`
+		ServiceLevel *ServiceLevel              `yaml:"service_level,omitempty" json:"service_level,omitempty"`
+		Dependencies []*Dependency              `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+		Hosting      *Hosting                   `yaml:"hosting,omitempty" json:"hosting,omitempty"`
+		IAC          *IAC                       `yaml:"infrastructure_as_code,omitempty" json:"infrastructure_as_code,omitempty"`
+		Tags         map[string]string          `yaml:"tags,omitempty" json:"tags,omitempty"`
+	}
+
+	AppInfo struct {
+		Name       string `yaml:"name" json:"name"`
+		Owner      string `yaml:"owner" json:"owner"`
+		Repository string `yaml:"repository" json:"repository"`
 	}
 
 	ServiceLevel struct {
