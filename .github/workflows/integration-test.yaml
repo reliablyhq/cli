@@ -1,6 +1,11 @@
 name: Integration Tests
 
 on:
+  push:
+    branches:
+      - 'main'
+    tags-ignore:
+      - 'v*' # We don't want this to run on release
   workflow_dispatch:
 
 jobs:
