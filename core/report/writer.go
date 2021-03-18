@@ -14,7 +14,16 @@ const (
 )
 
 func Write(r *Report, l *logrus.Logger) {
+	if r == nil {
+		return
+	}
+
 	if l == nil {
+		return
+	}
+
+	if r.Delta == nil {
+		l.Error("the report does not include a 'Delta'")
 		return
 	}
 

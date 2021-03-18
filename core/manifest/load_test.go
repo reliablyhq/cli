@@ -126,78 +126,8 @@ func TestLoad(t *testing.T) {
 				return
 			}
 
-			if tt.wantErr {
-				return
-			}
-
-			if w, g := tt.want.App == nil, got.App == nil; w != g {
-				t.Errorf("Wanted App == nil to be %v but was %v", w, g)
-				return
-			}
-
-			if !reflect.DeepEqual(tt.want.App, got.App) {
-				t.Errorf("Wanted App to be %v but was %v", tt.want.App, got.App)
-				return
-			}
-
-			if w, g := tt.want.CI == nil, got.CI == nil; w != g {
-				t.Errorf("Wanted CI == nil to be %v but was %v", w, g)
-				return
-			}
-
-			if !reflect.DeepEqual(tt.want.CI, got.CI) {
-				t.Errorf("Wanted CI to be %v but was %v", tt.want.CI, got.CI)
-				return
-			}
-
-			if w, g := tt.want.Dependencies == nil, got.Dependencies == nil; w != g {
-				t.Errorf("Wanted Dependencies == nil to be %v but was %v", w, g)
-				return
-			}
-
-			if !reflect.DeepEqual(tt.want.Dependencies, got.Dependencies) {
-				t.Errorf("Wanted Dependencies to be %v but was %v", tt.want.Dependencies, got.Dependencies)
-				return
-			}
-
-			if w, g := tt.want.Hosting == nil, got.Hosting == nil; w != g {
-				t.Errorf("Wanted Hosting == nil to be %v but was %v", w, g)
-				return
-			}
-
-			if !reflect.DeepEqual(tt.want.Hosting, got.Hosting) {
-				t.Errorf("Wanted Hosting to be %v but was %v", tt.want.Hosting, got.Hosting)
-				return
-			}
-
-			if w, g := tt.want.IAC == nil, got.IAC == nil; w != g {
-				t.Errorf("Wanted IAC == nil to be %v but was %v", w, g)
-				return
-			}
-
-			if !reflect.DeepEqual(tt.want.IAC, got.IAC) {
-				t.Errorf("Wanted IAC to be %v but was %v", tt.want.IAC, got.IAC)
-				return
-			}
-
-			if w, g := tt.want.ServiceLevel == nil, got.ServiceLevel == nil; w != g {
-				t.Errorf("Wanted ServiceLevel == nil to be %v but was %v", w, g)
-				return
-			}
-
-			if !reflect.DeepEqual(tt.want.ServiceLevel, got.ServiceLevel) {
-				t.Errorf("Wanted ServiceLevel to be %v but was %v", tt.want.ServiceLevel, got.ServiceLevel)
-				return
-			}
-
-			if w, g := tt.want.Tags == nil, got.Tags == nil; w != g {
-				t.Errorf("Wanted Tags == nil to be %v but was %v", w, g)
-				return
-			}
-
-			if !reflect.DeepEqual(tt.want.Tags, got.Tags) {
-				t.Errorf("Wanted Tags to be %v but was %v", tt.want.Tags, got.Tags)
-				return
+			if !reflect.DeepEqual(tt.want, got) {
+				t.Errorf("Wanted %v but got %v", tt.want.App, got.App)
 			}
 		})
 	}

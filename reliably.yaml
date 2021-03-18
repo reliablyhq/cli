@@ -1,14 +1,6 @@
-application_name: reliably cli
+app:
+  name: reliably cli
+  owner: https://github.com/reliablyhq
+  repo: https://github.com/reliablyh/cli
 ci:
   type: github actions
-service_level:
-  availability: 99
-  latency: 100ms
-  error_budget_pc: 1
-dependency: []
-hosting:
-  provider: ""
-infrastructure_as_code:
-  type: ""
-  root: ""
-tags: {}

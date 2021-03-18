@@ -36,9 +36,9 @@ func NewCommand() *cobra.Command {
 func run(_ *cobra.Command, _ []string) {
 	validateFilePath()
 
-	var m manifest.Manifest
+	m := manifest.New()
 
-	populateManifest(&m)
+	populateManifest(m)
 
 	f, err := os.Create(manifestPath)
 	if err != nil {
@@ -64,16 +64,12 @@ func validateFilePath() {
 func populateManifest(m *manifest.Manifest) {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	m.App = &manifest.AppInfo{
-		Name:       askQuestion(scanner, "What is the name of your application?"),
-		Owner:      askQuestion(scanner, "Who owns this app? Its a good idea to put an email address in here!"),
-		Repository: askQuestion(scanner, "What is the URL to the repository for this app?"),
-	}
+	m.App.Name = askQuestion(scanner, "What is the name of your application?")
+	m.App.Owner = askQuestion(scanner, "Who owns this app? Its a good idea to put an email address in here!")
+	m.App.Repository = askQuestion(scanner, "What is the URL to the repository for this app?")
 
 	if askQuestionWithBoolAnswer(scanner, "Are you using Continuous Integration?") {
-		m.CI = &manifest.ContinuousIntegrationInfo{
-			Type: askQuestion(scanner, "What type of CI are you using?"),
-		}
+		m.CI.Type = askQuestion(scanner, "What type of CI are you using?")
 	} else {
 		m.CI = nil
 	}
@@ -113,7 +109,7 @@ func populateManifest(m *manifest.Manifest) {
 		m.Dependencies = nil
 	}
 
-	if askQuestionWithBoolAnswer(scanner, "") {
+	if askQuestionWithBoolAnswer(scanner, "Are you using Infrastucture as Code?") {
 		m.IAC = &manifest.IAC{
 			Type: askQuestion(scanner, "What IAC provider are you using (terraform, ARM templates, CDK, etc...)?"),
 			Root: askQuestion(scanner, "Where is the root folder for your IAC code?"),
