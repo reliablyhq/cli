@@ -345,11 +345,7 @@ func reportFromTabbedTextTemplate(w io.Writer, data *reportInfo) error {
 	reportString := reportBuffer.String()
 	reportLines := strings.Split(reportString, "\n")
 	for _, reportLine := range reportLines {
-
-		// the truncate is off by 3 characters because of the ■ character at the
-		// begining of the line
 		fmt.Println(utils.TruncateString(reportLine, consoleColumns))
-
 	}
 
 	return nil
