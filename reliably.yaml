@@ -1,11 +1,10 @@
-application_name: sadsad
+application_name: reliably cli
 ci:
-  type: asdas
+  type: github actions
 service_level:
-  availability: 1
-  latency: 0ms
-  error_budget_pc: 0
-  warning_threshold_pc: 0
+  availability: 99
+  latency: 100ms
+  error_budget_pc: 1
 dependency: []
 hosting:
   provider: ""

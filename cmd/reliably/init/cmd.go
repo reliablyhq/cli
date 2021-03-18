@@ -6,7 +6,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/manifest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -61,24 +63,13 @@ func validateFilePath() {
 
 func populateManifest(m *manifest.Manifest) {
 	scanner := bufio.NewScanner(os.Stdin)
-	ok := false
 
-	m.ApplicationName = askQuestion(scanner, "what is the name of your application?")
+	m.ApplicationName = askQuestion(scanner, "What is the name of your application?")
 	m.CI.Type = askQuestion(scanner, "What type of CI are you using?")
 
-	for !ok {
-		targetAvailabilityStr := askQuestion(scanner, "what percentage of availability do you want your application to have?")
-		if f, err := strconv.ParseFloat(targetAvailabilityStr, 32); err != nil {
-			fmt.Println("Please make sure you type a numner")
-		} else {
-			if f < 0 || f > 100 {
-				fmt.Println("the value must be between 0 and 100")
-			} else {
-				m.ServiceLevel.Availability = f
-				ok = true
-			}
-		}
-	}
+	m.ServiceLevel.Availability = askQuestionWithFloat64Answer(scanner, "What percentage of availability do you want your application to have?", 0, 100)
+	m.ServiceLevel.ErrorBudgetPercent = askQuestionWithFloat64Answer(scanner, "What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100)
+	m.ServiceLevel.Latency = askQuestionWithDurationAnswer(scanner, "What is the maximum request-response latency you want from this service")
 }
 
 func askQuestion(scanner *bufio.Scanner, questionText string) string {
@@ -91,4 +82,30 @@ func askQuestion(scanner *bufio.Scanner, questionText string) string {
 	}
 
 	return text
+}
+
+func askQuestionWithFloat64Answer(scanner *bufio.Scanner, question string, min, max float64) float64 {
+	for {
+		answer := askQuestion(scanner, question)
+		if f, err := strconv.ParseFloat(answer, 32); err != nil {
+			fmt.Println("Please make sure you type a number")
+		} else {
+			if f < min || f > max {
+				fmt.Printf("the value must be between %.2f and %.2f\n", min, max)
+			} else {
+				return f
+			}
+		}
+	}
+}
+
+func askQuestionWithDurationAnswer(scanner *bufio.Scanner, question string) core.Duration {
+	for {
+		answer := askQuestion(scanner, question)
+		if d, err := time.ParseDuration(answer); err != nil {
+			fmt.Println("The value you entered could not be parsed to a duration.")
+		} else {
+			return core.Duration{Duration: d}
+		}
+	}
 }
