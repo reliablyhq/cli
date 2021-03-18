@@ -16,7 +16,7 @@ type (
 	AppInfo struct {
 		Name       string `yaml:"name" json:"name"`
 		Owner      string `yaml:"owner" json:"owner"`
-		Repository string `yaml:"repository" json:"repository"`
+		Repository string `yaml:"repo" json:"repo"`
 	}
 
 	ServiceLevel struct {
