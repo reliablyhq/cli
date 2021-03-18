@@ -12,14 +12,14 @@ type Report struct {
 	Dependencies    []*manifest.Dependency `json:"dependencies"`
 
 	Targets struct {
-		ServiceLevel       float32 `json:"service_level"`
-		ErrorBudgetPercent float32 `json:"error_budget"`
+		ServiceLevel       float64 `json:"service_level"`
+		ErrorBudgetPercent float64 `json:"error_budget"`
 		LatencyMs          int64   `json:"latency_ms"`
 	} `json:"target"`
 
 	Delta struct {
-		ServiceLevel       float32 `json:"service_level"`
-		ErrorBudgetPercent float32 `json:"error_budget_pc"`
+		ServiceLevel       float64 `json:"service_level"`
+		ErrorBudgetPercent float64 `json:"error_budget_pc"`
 		LatencyMs          int64   `json:"latency_ms"`
 	} `json:"delta"`
 }

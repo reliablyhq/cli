@@ -14,10 +14,10 @@ type (
 	}
 
 	ServiceLevel struct {
-		Availability            float32       `yaml:"availability" json:"availability"`
+		Availability            float64       `yaml:"availability" json:"availability"`
 		Latency                 core.Duration `yaml:"latency" json:"latency"`
-		ErrorBudgetPercent      float32       `yaml:"error_budget_pc" json:"error_budget_pc"`
-		WarningThresholdPercent float32       `yaml:"warning_threshold_pc" json:"warning_threshold_pc"`
+		ErrorBudgetPercent      float64       `yaml:"error_budget_pc" json:"error_budget_pc"`
+		WarningThresholdPercent float64       `yaml:"warning_threshold_pc" json:"warning_threshold_pc"`
 	}
 
 	ContinuousIntegrationInfo struct {

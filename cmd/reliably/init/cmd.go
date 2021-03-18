@@ -1,7 +1,10 @@
 package init
 
 import (
+	"bufio"
+	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/reliablyhq/cli/core/manifest"
@@ -33,7 +36,7 @@ func run(_ *cobra.Command, _ []string) {
 
 	m := manifest.Empty()
 
-	// todo: ask some questions to populate the manifest
+	populateManifest(m)
 
 	f, err := os.Create(manifestPath)
 	if err != nil {
@@ -54,4 +57,38 @@ func validateFilePath() {
 	}
 
 	log.Fatalf("manifest file must have one of the these extensions: %v", supportedExtensions)
+}
+
+func populateManifest(m *manifest.Manifest) {
+	scanner := bufio.NewScanner(os.Stdin)
+	ok := false
+
+	m.ApplicationName = askQuestion(scanner, "what is the name of your application?")
+	m.CI.Type = askQuestion(scanner, "What type of CI are you using?")
+
+	for !ok {
+		targetAvailabilityStr := askQuestion(scanner, "what percentage of availability do you want your application to have?")
+		if f, err := strconv.ParseFloat(targetAvailabilityStr, 32); err != nil {
+			fmt.Println("Please make sure you type a numner")
+		} else {
+			if f < 0 || f > 100 {
+				fmt.Println("the value must be between 0 and 100")
+			} else {
+				m.ServiceLevel.Availability = f
+				ok = true
+			}
+		}
+	}
+}
+
+func askQuestion(scanner *bufio.Scanner, questionText string) string {
+	var text string
+
+	for len(text) == 0 {
+		fmt.Println(questionText)
+		scanner.Scan()
+		text = scanner.Text()
+	}
+
+	return text
 }

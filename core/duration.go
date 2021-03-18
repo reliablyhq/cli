@@ -7,19 +7,14 @@ import (
 	"time"
 )
 
-const durationSuffix = "ms"
-
 // This has been built to mitigate the poor support in JSON and YAML unmarshalling for the time.Duration type
 type Duration struct {
 	time.Duration
 }
 
 func (d Duration) MarhalJSON() ([]byte, error) {
-	return marshal(d)
-}
-
-func (d Duration) MarshalYAML() ([]byte, error) {
-	return marshal(d)
+	s := fmt.Sprintf("%dms", d.Milliseconds())
+	return []byte(s), nil
 }
 
 func (d *Duration) UnmarshalJSON(b []byte) error {
@@ -47,6 +42,10 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+func (d Duration) MarshalYAML() (interface{}, error) {
+	return fmt.Sprintf("%dms", d.Milliseconds()), nil
+}
+
 func (d *Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var tmp interface{}
 	if err := unmarshal(&tmp); err != nil {
@@ -72,9 +71,4 @@ func (d *Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	return nil
-}
-
-func marshal(d Duration) ([]byte, error) {
-	s := fmt.Sprintf("%v%s", d.Milliseconds(), durationSuffix)
-	return []byte(s), nil
 }

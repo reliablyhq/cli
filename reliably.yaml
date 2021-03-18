@@ -1,15 +1,15 @@
-application_name: "my dummy app"
+application_name: sadsad
 ci:
-  type: ""
+  type: asdas
 service_level:
-  availability: 75
-  latency: 200ms
-  error_budget_pc: 1
-  warning_threshold_pc: 1
+  availability: 1
+  latency: 0ms
+  error_budget_pc: 0
+  warning_threshold_pc: 0
 dependency: []
 hosting:
   provider: ""
-  connection_info: {}
 infrastructure_as_code:
   type: ""
   root: ""
+tags: {}
