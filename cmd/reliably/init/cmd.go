@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/manifest"
 	log "github.com/sirupsen/logrus"
@@ -23,8 +24,8 @@ func NewCommand() *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "init",
 		Short: "initialise reliably",
-		// Long: "Lorem ipsum...",
-		Run: run,
+		Long:  longCommandDescription(),
+		Run:   run,
 	}
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", "reliably.yaml", "the location of the manifest file")
@@ -124,4 +125,18 @@ func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner)
 	} else {
 		m.IAC = nil
 	}
+}
+
+func longCommandDescription() string {
+	return heredoc.Doc(`
+		Initialise the reliably manifest.
+
+		The manifest describes the operational contraints of the application, as well as some metadata about the app that allows users to reach out and communicate with the maintainer.
+
+		Usage:
+		1. reliably init: this method interactively creates a manifest file, asking you questions on the command line and adding your answers to the manifest file.
+		2. reliably init -y: this method automatically creates an empty manifest file that you can manually complete later.
+		3. realibly init -f <path>: this method works the same as reliably init, but allows you to specify the location of the file. This is useful if you use a multi-repo approach to source control.
+		4. reliably init -f <path> -y: this method works the same as reliably init -y, but allows you to specify the location of the file. This is useful if you use a multi-repo approach to source control.
+	`)
 }
