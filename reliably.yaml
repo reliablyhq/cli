@@ -1,15 +1,18 @@
 app:
-  name: ""
-  owner: ""
-  repo: ""
+  name: reliablyhq/cli
+  owner: alsdnklasn
+  repo: a;dlal;ad
 ci:
-  type: ""
+  type: github actions
 service_level:
-  availability: 0
-  latency: 0ms
-  error_budget_pc: 0
+  availability: 50
+  latency: 1000ms
+  error_budget_pc: 50
+dependencies:
+- name: some service
+- name: some other service
 hosting:
-  provider: ""
+  provider: aws
 infrastructure_as_code:
-  type: ""
-  root: ""
+  type: terraform
+  root: terraform/

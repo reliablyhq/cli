@@ -5,6 +5,7 @@ import (
 )
 
 const (
+	threshold                       = 0
 	lessThan95pcAvailabilityMessage = "An availability of less than 95% allows more than 36.5 hours of downtime per month, which should be possible for any well built app deployed as a single instance. This availability target is probably not high enough for a production-ready system."
 	actualAvailabilityTooLowf       = "Current availability is lower than target availability by %.2f percent. Think about increasing the resources allocated of your application"
 	actualAvailabilityTooHighf      = "Current availability is higher than target availability by %.2f percent. Think about reducing the resources allocated to your application - this could reduce operating costs."
@@ -27,19 +28,19 @@ func Write(r *Report, l *logrus.Logger) {
 		return
 	}
 
-	if r.Delta.ServiceLevel < 0 { // low service level
+	if r.Delta.ServiceLevel < threshold { // low service level
 		l.Warnf(actualAvailabilityTooLowf, -r.Delta.ServiceLevel)
-	} else if r.Delta.ServiceLevel > 2 {
+	} else if r.Delta.ServiceLevel > threshold {
 		l.Warnf(actualAvailabilityTooHighf, r.Delta.ServiceLevel)
 	}
 
-	if r.Delta.ErrorBudgetPercent < -2 {
-		l.Warnf(errorBudgetTooLowf, r.Delta.ErrorBudgetPercent)
-	} else if r.Delta.ErrorBudgetPercent > 0 {
+	if r.Delta.ErrorBudgetPercent < threshold {
+		l.Warnf(errorBudgetTooLowf, -r.Delta.ErrorBudgetPercent)
+	} else if r.Delta.ErrorBudgetPercent > threshold {
 		l.Warnf(errorBudgetExceededf, r.Delta.ErrorBudgetPercent)
 	}
 
-	if r.Delta.LatencyMs > 0 {
+	if r.Delta.LatencyMs > threshold {
 		l.Warnf(latencyExceeded, r.Delta.LatencyMs)
 	}
 }
