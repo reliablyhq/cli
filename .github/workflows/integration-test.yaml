@@ -36,7 +36,7 @@ jobs:
         run: |
           gcloud compute security-policies rules create $GCP_CA_RULE_PRIORITY \
             --security-policy deny-all-to-staging \
-            --src-ip-ranges "${{ steps.ip.outputs.ipv4 }}" \
+            --expression "inIpRange(origin.ip, '${{ steps.ip.outputs.ipv4 }}/32') && has(request.headers['user-agent']) && request.headers['user-agent'].contains('Reliably CLI')" \
             --action allow --description "Whitelist GitHub Workflow"
       - run: sleep 60 # sleep is required to have the firewall being operational - it takes some time to whitelist -
 
