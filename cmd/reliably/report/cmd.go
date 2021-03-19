@@ -3,9 +3,11 @@ package report
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 
+	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
 	log "github.com/sirupsen/logrus"
@@ -73,5 +75,9 @@ func run(_ *cobra.Command, _ []string) {
 }
 
 func sendReportToReliably(r *report.Report) error {
+	url := fmt.Sprintf("%s/%s/reports", api.GetReliablyApiServerHostURL(), r.ApplicationName)
+
+	log.Debug("POST ", url)
+
 	return errors.New("sendReportToReliably not implemented")
 }
