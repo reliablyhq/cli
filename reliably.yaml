@@ -1,12 +1,12 @@
 app:
   name: reliablyhq/cli
-  owner: alsdnklasn
-  repo: a;dlal;ad
+  owner: mick@reliablyhq.io
+  repo: githu.com/reliablyhq/cli
 ci:
   type: github actions
 service_level:
   availability: 50
-  latency: 1000ms
+  latency: 250ms
   error_budget_pc: 50
 dependencies:
 - name: some service
