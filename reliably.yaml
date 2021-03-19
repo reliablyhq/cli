@@ -1,10 +1,15 @@
 app:
-  name: reliably cli
-  owner: https://github.com/reliablyhq
-  repo: https://github.com/reliablyh/cli
+  name: ""
+  owner: ""
+  repo: ""
 ci:
-  type: github actions
+  type: ""
 service_level:
-  availability: 75
-  latency: 200ms
-  error_budget_pc: 0.5
+  availability: 0
+  latency: 0ms
+  error_budget_pc: 0
+hosting:
+  provider: ""
+infrastructure_as_code:
+  type: ""
+  root: ""
