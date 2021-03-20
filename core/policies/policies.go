@@ -1,23 +1,13 @@
-package core
+package policies
 
 import (
 	"errors"
-	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
-
-	http "github.com/reliablyhq/cli/utils"
-	log "github.com/sirupsen/logrus"
-)
-
-const (
-	policyURL = "https://static.reliably.com/opa/%s/%s.rego"
 )
 
 // ErrPolicyNotFound is returned when a policy could not be found
 var ErrPolicyNotFound = errors.New("Policy not found")
 
+/*
 func policyDir(workspace, platform string, extras ...string) string {
 	lplatform := strings.ToLower(platform)
 	folder := filepath.Join(workspace, "policies", lplatform)
@@ -26,34 +16,18 @@ func policyDir(workspace, platform string, extras ...string) string {
 	}
 	return folder
 }
+*/
 
+/*
 func policyPath(workspace string, platform string, name string) string {
 	pdir := policyDir(workspace, platform)
 	lname := strings.ToLower(name)
 	ppath := filepath.Join(pdir, fmt.Sprintf("%v.rego", lname))
 	return ppath
 }
+*/
 
-// FetchPolicy ensure the policy is available in cache and returns
-// its file path. If policy is not in the cache, it downloads it from GitHub
-func FetchPolicy(workspace, platform, path string) (string, error) {
-	// check whether policy is already in cache folder
-	// or download it from GitHub
-	// and returns its content
-
-	var ppath = policyPath(workspace, platform, path)
-	if _, err := os.Stat(ppath); os.IsNotExist(err) {
-		// policy is not yet in local cache
-		ppath, err = downloadPolicyToCache(workspace, platform, path)
-
-		if err != nil {
-			return "", err
-		}
-	}
-
-	return ppath, nil
-}
-
+/*
 // downloadPolicyToCache downloads a given policy (by name for a targeted platform)
 // into the .reliably local policies cache
 func downloadPolicyToCache(workspace, platform, path string) (string, error) {
@@ -87,3 +61,4 @@ func downloadPolicyToCache(workspace, platform, path string) (string, error) {
 
 	return ppath, nil
 }
+*/
