@@ -14,7 +14,8 @@ import (
 func TestEval(t *testing.T) {
 
 	manifest := filepath.Join("..", "tests", "manifests", "ns.yaml")
-	policy := filepath.Join("..", "tests", "kubernetes.rego")
+	policyPath := filepath.Join("..", "tests", "kubernetes.rego")
+	policy, _ := ioutil.ReadFile(policyPath)
 
 	// load manifest from file and unmarshall yaml
 	var input interface{}
@@ -23,7 +24,9 @@ func TestEval(t *testing.T) {
 	_ = yaml.Unmarshal([]byte(fileContent), &input)
 	input = dyno.ConvertMapI2MapS(input)
 
-	rs := Eval(policy, input)
+	rmod := RegoModule{Name: "kubernetes.rego", Raw: string(policy)}
+
+	rs := Eval(rmod, input)
 
 	violations, _ := utils.NestedMapLookup(rs[0].Expressions[0].Value.(map[string]interface{}), "kubernetes", "violations")
 
