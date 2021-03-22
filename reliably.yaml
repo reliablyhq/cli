@@ -5,9 +5,11 @@ app:
 ci:
   type: github actions
 service_level:
-  availability: 50
-  latency: 250ms
-  error_budget_pc: 50
+  availability: 99
+  latency: 500ms
+  error_budget_pc: 1
+  resources:
+  - arn:asdasd:asdasd:asd
 dependencies:
 - name: some service
 - name: some other service
