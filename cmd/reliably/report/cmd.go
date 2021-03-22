@@ -47,8 +47,7 @@ func run(_ *cobra.Command, _ []string) {
 
 	r, err := report.GenerateReport(m)
 	if err != nil {
-		log.Error(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
 	if err := sendReportToReliably(r); err != nil {

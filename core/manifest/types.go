@@ -1,6 +1,8 @@
 package manifest
 
-import "github.com/reliablyhq/cli/core"
+import (
+	"github.com/reliablyhq/cli/core"
+)
 
 type (
 	Manifest struct {
@@ -11,12 +13,25 @@ type (
 		Hosting      *Hosting                   `yaml:"hosting,omitempty" json:"hosting,omitempty"`
 		IAC          *IAC                       `yaml:"infrastructure_as_code,omitempty" json:"infrastructure_as_code,omitempty"`
 		Tags         map[string]string          `yaml:"tags,omitempty" json:"tags,omitempty"`
+		Services     []*Service                 `yaml:"services" json:"services"`
 	}
 
 	AppInfo struct {
 		Name       string `yaml:"name" json:"name"`
 		Owner      string `yaml:"owner" json:"owner"`
 		Repository string `yaml:"repo" json:"repo"`
+	}
+
+	Service struct {
+		Name               string             `yaml:"name" json:"name"`
+		Availability       float64            `yaml:"availability" json:"availability"`
+		ErrorBudgetPercent float64            `yaml:"error_budget_percent" json:"error_budget_percent"`
+		Resources          []*ServiceResource `yaml:"resources" json:"resources"`
+	}
+
+	ServiceResource struct {
+		ID       string `yaml:"id" json:"id"`
+		Provider string `yaml:"provider" json:"provider"`
 	}
 
 	ServiceLevel struct {
