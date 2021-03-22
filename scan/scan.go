@@ -25,7 +25,7 @@ import (
 
 var (
 	errNotImplemented = errors.New("not implemented")
-	errNotFound       = errors.New("not found")
+	ErrNotFound       = errors.New("policy not found")
 )
 
 const (
@@ -140,7 +140,7 @@ func (p *policy) download() (err error) {
 
 	if resp.StatusCode != 200 {
 		if resp.StatusCode == 404 {
-			return errNotFound
+			return ErrNotFound
 		}
 		return fmt.Errorf("GET %s: %s", p.uri, resp.Status)
 	}
