@@ -1,0 +1,19 @@
+@startuml
+title Reports: Generation Sequence
+
+actor User
+
+User -> CLI: reliably report
+CLI -> Manifest: read
+Manifest --> CLI: array of services
+loop for each service
+    CLI -> Platform: get metrics for service resources
+    Platform --> CLI: metrics
+    CLI -> CLI: calculate actual vs.\ntargetted availability
+end
+CLI -> CLI: calculate aggregate actual vs.\naggregate targetted availability\nand generate a report
+participant "Reliably API" as api
+CLI -> api: report
+api --> CLI
+CLI --> User: report
+@enduml
