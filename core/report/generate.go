@@ -18,8 +18,7 @@ const (
 )
 
 var (
-	r                 = rand.New(rand.NewSource(time.Now().Unix()))
-	providerFactories = map[string]func() metrics.Provider{}
+	r = rand.New(rand.NewSource(time.Now().Unix()))
 )
 
 var notSuportedErrorBuilder = func(thingType, thingName string) error {
@@ -98,8 +97,8 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 func getProviderForResource(ID string) (metrics.Provider, error) {
 	providerID := strings.SplitN(ID, "/", 1)[0]
 
-	if factory, ok := providerFactories[providerID]; ok {
-		return factory(), nil
+	if factory, ok := metrics.ProviderFactories[providerID]; ok {
+		factory()
 	}
 
 	return nil, fmt.Errorf("No provider factory found for '%s'", providerID)
