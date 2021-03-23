@@ -23,24 +23,24 @@ func Write(r *Report, l *logrus.Logger) {
 		return
 	}
 
-	if r.Delta == nil {
+	if r.ServiceLevel.Delta == nil {
 		l.Error("the report does not include a 'Delta'")
 		return
 	}
 
-	if r.Delta.ServiceLevel < threshold { // low service level
-		l.Warnf(actualAvailabilityTooLowf, -r.Delta.ServiceLevel)
-	} else if r.Delta.ServiceLevel > threshold {
-		l.Warnf(actualAvailabilityTooHighf, r.Delta.ServiceLevel)
+	if r.ServiceLevel.Delta.ServiceLevel < threshold { // low service level
+		l.Warnf(actualAvailabilityTooLowf, -r.ServiceLevel.Delta.ServiceLevel)
+	} else if r.ServiceLevel.Delta.ServiceLevel > threshold {
+		l.Warnf(actualAvailabilityTooHighf, r.ServiceLevel.Delta.ServiceLevel)
 	}
 
-	if r.Delta.ErrorBudgetPercent < threshold {
-		l.Warnf(errorBudgetTooLowf, -r.Delta.ErrorBudgetPercent)
-	} else if r.Delta.ErrorBudgetPercent > threshold {
-		l.Warnf(errorBudgetExceededf, r.Delta.ErrorBudgetPercent)
+	if r.ServiceLevel.Delta.ErrorBudgetPercent < threshold {
+		l.Warnf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorBudgetPercent)
+	} else if r.ServiceLevel.Delta.ErrorBudgetPercent > threshold {
+		l.Warnf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorBudgetPercent)
 	}
 
-	if r.Delta.LatencyMs > threshold {
-		l.Warnf(latencyExceeded, r.Delta.LatencyMs)
+	if r.ServiceLevel.Delta.LatencyMs > threshold {
+		l.Warnf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)
 	}
 }

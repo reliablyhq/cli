@@ -39,22 +39,22 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	r.Timestamp = time.Now().UTC()
 
 	if m.ServiceLevel != nil {
-		r.Actual = &ServiceLevelIndicators{
+		r.ServiceLevel.Actual = &ServiceLevelIndicators{
 			ErrorBudgetPercent: getCurrentErrorPc(m, oneWeek),
 			ServiceLevel:       getCurrentAvailability(m, oneWeek),
 			LatencyMs:          get99PercentLatencyMs(m, oneWeek).Milliseconds(),
 		}
 
-		r.Target = &ServiceLevelIndicators{
+		r.ServiceLevel.Target = &ServiceLevelIndicators{
 			ErrorBudgetPercent: m.ServiceLevel.ErrorBudgetPercent,
 			ServiceLevel:       m.ServiceLevel.Availability,
 			LatencyMs:          m.ServiceLevel.Latency.Milliseconds(),
 		}
 
-		r.Delta = &ServiceLevelIndicators{
-			ErrorBudgetPercent: r.Actual.ErrorBudgetPercent - r.Target.ErrorBudgetPercent,
-			ServiceLevel:       r.Actual.ServiceLevel - r.Target.ServiceLevel,
-			LatencyMs:          r.Actual.LatencyMs - r.Target.LatencyMs,
+		r.ServiceLevel.Delta = &ServiceLevelIndicators{
+			ErrorBudgetPercent: r.ServiceLevel.Actual.ErrorBudgetPercent - r.ServiceLevel.Target.ErrorBudgetPercent,
+			ServiceLevel:       r.ServiceLevel.Actual.ServiceLevel - r.ServiceLevel.Target.ServiceLevel,
+			LatencyMs:          r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs,
 		}
 	}
 

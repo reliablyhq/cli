@@ -1,0 +1,29 @@
+{
+    "application_name": "reliablyhq/cli",
+    "timestamp": "2021-03-23T08:25:47.709936Z",
+    "dependencies": [
+        {
+            "name": "mick-roper/awesome-service"
+        },
+        {
+            "name": "some other service"
+        }
+    ],
+    "service_level": {
+        "target": {
+            "service_level": 50,
+            "error_budget": 50,
+            "latency_ms": 100
+        },
+        "actual": {
+            "service_level": 39.890844533162536,
+            "error_budget": 8.967603837663296,
+            "latency_ms": 1587
+        },
+        "delta": {
+            "service_level": -10.109155466837464,
+            "error_budget": -41.0323961623367,
+            "latency_ms": 1487
+        }
+    }
+}

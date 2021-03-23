@@ -5,7 +5,7 @@ func New() *Manifest {
 		App:          &AppInfo{},
 		CI:           &ContinuousIntegrationInfo{},
 		ServiceLevel: &ServiceLevel{},
-		Dependencies: []*Dependency{},
+		Dependencies: []*AppInfo{},
 		Hosting:      &Hosting{},
 		IAC:          &IAC{},
 		Tags:         map[string]string{},

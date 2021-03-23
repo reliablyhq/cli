@@ -99,11 +99,11 @@ func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner)
 	}
 
 	if question.WithBoolAnswer(scanner, "Does your application have 'service level' dependencies? (y/n)") {
-		deps := make([]*manifest.Dependency, 0)
+		deps := make([]*manifest.AppInfo, 0)
 
 		addMore := true
 		for addMore {
-			d := &manifest.Dependency{
+			d := &manifest.AppInfo{
 				Name: question.WithStringAnswer(scanner, "what is the name of the dependency?"),
 			}
 

@@ -9,7 +9,7 @@ type (
 		App          *AppInfo                   `yaml:"app" json:"app"`
 		CI           *ContinuousIntegrationInfo `yaml:"ci,omitempty" json:"ci,omitempty"`
 		ServiceLevel *ServiceLevel              `yaml:"service_level,omitempty" json:"service_level,omitempty"`
-		Dependencies []*Dependency              `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+		Dependencies []*AppInfo                 `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
 		Hosting      *Hosting                   `yaml:"hosting,omitempty" json:"hosting,omitempty"`
 		IAC          *IAC                       `yaml:"infrastructure_as_code,omitempty" json:"infrastructure_as_code,omitempty"`
 		Tags         map[string]string          `yaml:"tags,omitempty" json:"tags,omitempty"`
@@ -43,10 +43,6 @@ type (
 
 	ContinuousIntegrationInfo struct {
 		Type string `yaml:"type" json:"type"`
-	}
-
-	Dependency struct {
-		Name string `yaml:"name" json:"name"`
 	}
 
 	Hosting struct {
