@@ -2,6 +2,7 @@ package policies
 
 import (
 	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,6 +14,7 @@ func TestStorage(t *testing.T) {
 	if err != nil {
 		t.Error("Unable to create temporary folder")
 	}
+	defer os.RemoveAll(dir)
 	assert.NotEqual(t, "", dir)
 
 	tests := []struct {
