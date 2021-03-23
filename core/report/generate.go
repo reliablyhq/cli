@@ -3,7 +3,6 @@ package report
 import (
 	go_errors "errors"
 	"fmt"
-	"log"
 	"math/rand"
 	"strings"
 	"time"
@@ -49,7 +48,7 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 		for _, resource := range m.Service.Resources {
 			provider, err := getProviderForResource(resource.ID)
 			if err != nil {
-				log.Fatal(err)
+				return nil, err
 			}
 
 			to := time.Now()
@@ -58,13 +57,13 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 			if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
 				allLatency = append(allLatency, l)
 			} else {
-				log.Fatal(err)
+				return nil, err
 			}
 
 			if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
 				allErrorPercentages = append(allErrorPercentages, e)
 			} else {
-				log.Fatal(err)
+				return nil, err
 			}
 		}
 
