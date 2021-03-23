@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 
@@ -67,7 +68,7 @@ func run(_ *cobra.Command, _ []string) {
 			log.Fatal(err)
 		}
 
-		if err := os.WriteFile(outputPath, bytes, 0666); err != nil {
+		if err := ioutil.WriteFile(outputPath, bytes, 0666); err != nil {
 			log.Fatal(err)
 		}
 	}

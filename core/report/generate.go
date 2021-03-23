@@ -8,6 +8,7 @@ import (
 
 	"github.com/reliablyhq/cli/core/errors"
 	"github.com/reliablyhq/cli/core/manifest"
+	"github.com/reliablyhq/cli/core/metrics"
 )
 
 const (
@@ -37,6 +38,10 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 
 	r.ApplicationName = m.App.Name
 	r.Timestamp = time.Now().UTC()
+
+	// TODO: Testing GCP package, remove after
+	gcpClient, _ := metrics.NewGCP()
+	gcpClient.GetMetricList("alpha1-e3d83fa0")
 
 	if m.ServiceLevel != nil {
 		r.ServiceLevel.Actual = &ServiceLevelIndicators{
