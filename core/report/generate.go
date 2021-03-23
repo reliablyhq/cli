@@ -4,6 +4,7 @@ import (
 	go_errors "errors"
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/reliablyhq/cli/core/errors"
@@ -44,16 +45,41 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	gcpClient.GetMetricList("alpha1-e3d83fa0")
 
 	if m.ServiceLevel != nil {
-		r.ServiceLevel.Actual = &ServiceLevelIndicators{
-			ErrorBudgetPercent: getCurrentErrorPc(m, oneWeek),
-			ServiceLevel:       getCurrentAvailability(m, oneWeek),
-			LatencyMs:          get99PercentLatencyMs(m, oneWeek).Milliseconds(),
+		allLatency := []float64{}
+		allErrorPercentages := []float64{}
+
+		for _, resource := range m.Service.Resources {
+			provider, err := getProviderForResource(resource.ID)
+			if err != nil {
+				return nil, err
+			}
+
+			to := time.Now()
+			from := to.Add(-oneDay)
+
+			if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
+				allLatency = append(allLatency, l)
+			} else {
+				return nil, err
+			}
+
+			if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
+				allErrorPercentages = append(allErrorPercentages, e)
+			} else {
+				return nil, err
+			}
 		}
 
 		r.ServiceLevel.Target = &ServiceLevelIndicators{
 			ErrorBudgetPercent: m.ServiceLevel.ErrorBudgetPercent,
 			ServiceLevel:       m.ServiceLevel.Availability,
 			LatencyMs:          m.ServiceLevel.Latency.Milliseconds(),
+		}
+
+		r.ServiceLevel.Actual = &ServiceLevelIndicators{
+			ErrorBudgetPercent: average(allErrorPercentages),
+			LatencyMs:          int64(average(allLatency)),
+			ServiceLevel:       -1, // TODO: figure out what this means!
 		}
 
 		r.ServiceLevel.Delta = &ServiceLevelIndicators{
@@ -70,4 +96,14 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	}
 
 	return &r, nil
+}
+
+func getProviderForResource(ID string) (metrics.Provider, error) {
+	providerID := strings.SplitN(ID, "/", 1)[0]
+
+	if factory, ok := metrics.ProviderFactories[providerID]; ok {
+		factory()
+	}
+
+	return nil, fmt.Errorf("No provider factory found for '%s'", providerID)
 }
