@@ -23,7 +23,7 @@ var notSuportedErrorBuilder = func(thingType, thingName string) error {
 	return fmt.Errorf("%s type '%s' is not currently supported. I've informed ReliablyHQ about this; check back later - maybe we'll be able to help then.", thingType, thingName)
 }
 
-func GenerateReport(m *manifest.Manifest) (*Report, error) {
+func FromManifest(m *manifest.Manifest) (*Report, error) {
 	if m == nil {
 		return nil, go_errors.New("manifest is nil")
 	}
@@ -39,16 +39,22 @@ func GenerateReport(m *manifest.Manifest) (*Report, error) {
 	r.Timestamp = time.Now().UTC()
 
 	if m.ServiceLevel != nil {
-		r.Targets = &ServiceLevelTarget{
+		r.Actual = &ServiceLevelIndicators{
+			ErrorBudgetPercent: getCurrentErrorPc(m, oneWeek),
+			ServiceLevel:       getCurrentAvailability(m, oneWeek),
+			LatencyMs:          get99PercentLatencyMs(m, oneWeek).Milliseconds(),
+		}
+
+		r.Target = &ServiceLevelIndicators{
 			ErrorBudgetPercent: m.ServiceLevel.ErrorBudgetPercent,
 			ServiceLevel:       m.ServiceLevel.Availability,
 			LatencyMs:          m.ServiceLevel.Latency.Milliseconds(),
 		}
 
-		if delta, err := getServiceLevelDeltas(m); err == nil {
-			r.Delta = delta
-		} else {
-			allErrors = append(allErrors, err)
+		r.Delta = &ServiceLevelIndicators{
+			ErrorBudgetPercent: r.Actual.ErrorBudgetPercent - r.Target.ErrorBudgetPercent,
+			ServiceLevel:       r.Actual.ServiceLevel - r.Target.ServiceLevel,
+			LatencyMs:          r.Actual.LatencyMs - r.Target.LatencyMs,
 		}
 	}
 
@@ -59,37 +65,4 @@ func GenerateReport(m *manifest.Manifest) (*Report, error) {
 	}
 
 	return &r, nil
-}
-
-func getServiceLevelDeltas(m *manifest.Manifest) (*ServiceLevelDelta, error) {
-	if m == nil {
-		return nil, go_errors.New("manifest is nil")
-	}
-
-	if m.ServiceLevel == nil {
-		return nil, go_errors.New("manifest.ServiceLevel is nil")
-	}
-
-	var d ServiceLevelDelta
-	errors := make([]error, 0)
-
-	if actual, err := getCurrentErrorPc(m, oneWeek); err == nil {
-		d.ErrorBudgetPercent = actual - m.ServiceLevel.ErrorBudgetPercent
-	} else {
-		errors = append(errors, err)
-	}
-
-	if actual, err := getCurrentAvailability(m, oneWeek); err == nil {
-		d.ServiceLevel = actual - m.ServiceLevel.Availability
-	} else {
-		errors = append(errors, err)
-	}
-
-	if actual, err := get99PercentLatency(m, oneWeek); err == nil {
-		d.LatencyMs = actual.Milliseconds() - m.ServiceLevel.Latency.Milliseconds()
-	} else {
-		errors = append(errors, err)
-	}
-
-	return &d, nil
 }

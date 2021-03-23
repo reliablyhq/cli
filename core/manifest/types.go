@@ -27,6 +27,7 @@ type (
 		Availability       float64            `yaml:"availability" json:"availability"`
 		ErrorBudgetPercent float64            `yaml:"error_budget_percent" json:"error_budget_percent"`
 		Resources          []*ServiceResource `yaml:"resources" json:"resources"`
+		DefaultProvider    string             `yaml:"default_provider" json:"default_provider"`
 	}
 
 	ServiceResource struct {

@@ -6,14 +6,14 @@ import (
 	"github.com/reliablyhq/cli/core/manifest"
 )
 
-func getCurrentAvailability(m *manifest.Manifest, d time.Duration) (float64, error) {
-	return 100 * r.Float64(), nil
+func getCurrentAvailability(m *manifest.Manifest, _ time.Duration) float64 {
+	return 100 * r.Float64()
 }
 
-func getCurrentErrorPc(m *manifest.Manifest, d time.Duration) (float64, error) {
-	return 25 * r.Float64(), nil
+func getCurrentErrorPc(m *manifest.Manifest, _ time.Duration) float64 {
+	return 20 * r.Float64()
 }
 
-func get99PercentLatency(m *manifest.Manifest, d time.Duration) (time.Duration, error) {
-	return 100 * time.Millisecond, nil
+func get99PercentLatencyMs(m *manifest.Manifest, _ time.Duration) time.Duration {
+	return time.Duration(r.Int31n(2000)) * time.Millisecond
 }
