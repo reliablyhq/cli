@@ -30,10 +30,6 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 		return nil, go_errors.New("manifest is nil")
 	}
 
-	if m.App == nil {
-		return nil, go_errors.New("m.App is nil")
-	}
-
 	r := Report{}
 	allErrors := make([]error, 0)
 
