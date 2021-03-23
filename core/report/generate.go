@@ -73,8 +73,8 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 		}
 
 		r.ServiceLevel.Actual = &ServiceLevelIndicators{
-			ErrorBudgetPercent: sum(allErrorPercentages) / float64(len(allErrorPercentages)),
-			LatencyMs:          int64(sum(allLatency) / float64(len(allLatency))),
+			ErrorBudgetPercent: average(allErrorPercentages),
+			LatencyMs:          int64(average(allLatency)),
 			ServiceLevel:       -1, // TODO: figure out what this means!
 		}
 
@@ -102,14 +102,4 @@ func getProviderForResource(ID string) (metrics.Provider, error) {
 	}
 
 	return nil, fmt.Errorf("No provider factory found for '%s'", providerID)
-}
-
-func sum(array []float64) float64 {
-	var f float64 = 0
-
-	for _, x := range array {
-		f += x
-	}
-
-	return f
 }
