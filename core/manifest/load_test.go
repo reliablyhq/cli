@@ -40,7 +40,7 @@ func TestLoad(t *testing.T) {
 					Latency:            core.Duration{Duration: 200 * time.Millisecond},
 					ErrorBudgetPercent: 0.5,
 				},
-				Dependencies: []*Dependency{
+				Dependencies: []*AppInfo{
 					{
 						Name: "some service",
 					},
@@ -81,7 +81,7 @@ func TestLoad(t *testing.T) {
 					Latency:            core.Duration{Duration: 200 * time.Millisecond},
 					ErrorBudgetPercent: 0.5,
 				},
-				Dependencies: []*Dependency{
+				Dependencies: []*AppInfo{
 					{
 						Name: "some service",
 					},
