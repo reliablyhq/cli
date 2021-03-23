@@ -95,10 +95,14 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 }
 
 func getProviderForResource(ID string) (metrics.Provider, error) {
-	providerID := strings.SplitN(ID, "/", 1)[0]
+	if ID == "" {
+		return nil, go_errors.New("ID is empty")
+	}
+
+	providerID := strings.SplitN(ID, "/", 2)[0]
 
 	if factory, ok := metrics.ProviderFactories[providerID]; ok {
-		factory()
+		return factory()
 	}
 
 	return nil, fmt.Errorf("No provider factory found for '%s'", providerID)
