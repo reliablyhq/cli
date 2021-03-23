@@ -20,7 +20,5 @@ service:
   availability: 99
   latency: 500ms
   error_budget_percentage: 1
-  default_provider: aws
-  duration: 1day
   resources:
-  - id: gcloud/123456/Google Cloud Load Balancers/reliablyadvicealpha1
+  - id: gcp/123456/Google Cloud Load Balancers/reliablyadvicealpha1
