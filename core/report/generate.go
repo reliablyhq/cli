@@ -3,11 +3,14 @@ package report
 import (
 	go_errors "errors"
 	"fmt"
+	"log"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/reliablyhq/cli/core/errors"
 	"github.com/reliablyhq/cli/core/manifest"
+	"github.com/reliablyhq/cli/core/metrics"
 )
 
 const (
@@ -16,7 +19,8 @@ const (
 )
 
 var (
-	r = rand.New(rand.NewSource(time.Now().Unix()))
+	r                 = rand.New(rand.NewSource(time.Now().Unix()))
+	providerFactories = map[string]func() metrics.Provider{}
 )
 
 var notSuportedErrorBuilder = func(thingType, thingName string) error {
@@ -39,16 +43,41 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	r.Timestamp = time.Now().UTC()
 
 	if m.ServiceLevel != nil {
-		r.ServiceLevel.Actual = &ServiceLevelIndicators{
-			ErrorBudgetPercent: getCurrentErrorPc(m, oneWeek),
-			ServiceLevel:       getCurrentAvailability(m, oneWeek),
-			LatencyMs:          get99PercentLatencyMs(m, oneWeek).Milliseconds(),
+		allLatency := []float64{}
+		allErrorPercentages := []float64{}
+
+		for _, resource := range m.Service.Resources {
+			provider, err := getProviderForResource(resource.ID)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			to := time.Now()
+			from := to.Add(-oneDay)
+
+			if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
+				allLatency = append(allLatency, l)
+			} else {
+				log.Fatal(err)
+			}
+
+			if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
+				allErrorPercentages = append(allErrorPercentages, e)
+			} else {
+				log.Fatal(err)
+			}
 		}
 
 		r.ServiceLevel.Target = &ServiceLevelIndicators{
 			ErrorBudgetPercent: m.ServiceLevel.ErrorBudgetPercent,
 			ServiceLevel:       m.ServiceLevel.Availability,
 			LatencyMs:          m.ServiceLevel.Latency.Milliseconds(),
+		}
+
+		r.ServiceLevel.Actual = &ServiceLevelIndicators{
+			ErrorBudgetPercent: sum(allErrorPercentages) / float64(len(allErrorPercentages)),
+			LatencyMs:          int64(sum(allLatency) / float64(len(allLatency))),
+			ServiceLevel:       -1, // TODO: figure out what this means!
 		}
 
 		r.ServiceLevel.Delta = &ServiceLevelIndicators{
@@ -65,4 +94,24 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	}
 
 	return &r, nil
+}
+
+func getProviderForResource(ID string) (metrics.Provider, error) {
+	providerID := strings.SplitN(ID, "/", 1)[0]
+
+	if factory, ok := providerFactories[providerID]; ok {
+		return factory(), nil
+	}
+
+	return nil, fmt.Errorf("No provider factory found for '%s'", providerID)
+}
+
+func sum(array []float64) float64 {
+	var f float64 = 0
+
+	for _, x := range array {
+		f += x
+	}
+
+	return f
 }

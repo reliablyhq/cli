@@ -13,7 +13,7 @@ type (
 		Hosting      *Hosting                   `yaml:"hosting,omitempty" json:"hosting,omitempty"`
 		IAC          *IAC                       `yaml:"infrastructure_as_code,omitempty" json:"infrastructure_as_code,omitempty"`
 		Tags         map[string]string          `yaml:"tags,omitempty" json:"tags,omitempty"`
-		Services     []*Service                 `yaml:"services" json:"services"`
+		Service      *Service                   `yaml:"service" json:"service"`
 	}
 
 	AppInfo struct {
