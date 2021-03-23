@@ -65,8 +65,8 @@ func scanTF(args []string) {
 	if strings.HasSuffix(strings.ToLower(dir), ".tf") {
 		tfiles = []string{dir}
 	} else {
-		log.Debugf("checking for (.tf) files in: [%s]", filepath.Join(dir, "*.tf"))
-		tfiles, err = filepath.Glob(filepath.Join(dir, "*.tf"))
+		log.Debugf("checking for (.tf) files in: [%s]", dir)
+		tfiles, err = findTerraformFiles(dir)
 		if err != nil {
 			log.Debug(err)
 			log.Error("An error occurred while looking up tfiles in directory")
@@ -173,4 +173,26 @@ func scanPlan() {
 
 	log.WithField("module", "root")
 	evalFunc(tfPlan.PlannedValues.RootModule)
+}
+
+// findTerraformFiles - checks directory path for tf files.
+// if the given directory has a .terraform directory
+// then all sub-directories are scanned for tf files, otherwise
+// only the given directory is checked.
+func findTerraformFiles(dir string) ([]string, error) {
+	info, err := os.Stat(filepath.Join(dir, ".terraform"))
+	if os.IsNotExist(err) || !info.IsDir() {
+		return filepath.Glob(filepath.Join(dir, "*.tf"))
+	}
+
+	log.Debug(".terraform directory detected, checking all subdirectories for .tf files")
+	var tfFiles []string
+	filepath.Walk(dir, func(path string, _ os.FileInfo, _ error) error {
+		if strings.HasSuffix(strings.ToLower(path), ".tf") {
+			tfFiles = append(tfFiles, path)
+		}
+		return nil
+	})
+
+	return tfFiles, nil
 }
