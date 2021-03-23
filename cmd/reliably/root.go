@@ -141,9 +141,11 @@ func init() {
 
 }
 
+/*
 func init() {
 	_ = createReliablyWorkspace()
 }
+*/
 
 // initLogging ensure the log level is set depending on the verbose flag
 func initLogging() {
@@ -205,6 +207,7 @@ func setUpVerboseLogLevel(verbose bool) error {
 	return nil
 }
 
+/*
 func createReliablyWorkspace() error {
 	//Create dir output using above code
 	if _, err := os.Stat(workspace); os.IsNotExist(err) {
@@ -231,17 +234,10 @@ func createReliablyWorkspace() error {
 		}
 	}
 
-	/*
-		manifestsFolder := filepath.Join(workspace, "manifests")
-		if _, err := os.Stat(manifestsFolder); os.IsNotExist(err) {
-			log.Debug(fmt.Sprintf("Create folder '%v'", manifestsFolder))
-			os.Mkdir(manifestsFolder, 0755)
-		}
-	*/
-
 	return nil
 
 }
+*/
 
 // CustomUsageTemplate returns usage template for the command.
 // This is the default usage template from the command,
