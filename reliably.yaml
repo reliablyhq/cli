@@ -20,7 +20,8 @@ services:
     availability: 99
     latency: 500ms
     error_budget_percentage: 1
-    default_platform: aws
+    default_provider: aws
+    duration: 1day
     resources:
     - id: arn:123456:some-region:lambda:function-1:version-1
     - id: arn:123456:some-region:lambda:function-2:version-1
