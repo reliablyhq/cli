@@ -15,27 +15,10 @@ dependencies:
 infrastructure_as_code:
   type: terraform
   root: terraform/
-services:
-  - name: Service A
-    availability: 99
-    latency: 500ms
-    error_budget_percentage: 1
-    default_provider: aws
-    duration: 1day
-    resources:
-    - id: arn:123456:some-region:lambda:function-1:version-1
-    - id: arn:123456:some-region:lambda:function-2:version-1
-    - id: arn:123456:some-region:lambda:function-2:version-2
-    - id: cdn-provider.customer.distribution-id
-      provider: maxcdn
-  - name: Service B
-    availability: 99.9
-    latency: 250ms
-    error_budget_percentage: 1
-    default_platform: aws
-    resources:
-    - id: arn:123456:some-region:lambda:function-1:version-1
-    - id: arn:123456:some-region:lambda:function-2:version-1
-    - id: arn:123456:some-region:lambda:function-2:version-2
-    - id: cdn-provider.customer.distribution-id
-      provider: maxcdn
+service:
+  name: Service A
+  availability: 99
+  latency: 500ms
+  error_budget_percentage: 1
+  resources:
+  - id: gcp/123456/Google Cloud Load Balancers/reliablyadvicealpha1
