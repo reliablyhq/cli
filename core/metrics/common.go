@@ -6,7 +6,7 @@ import (
 
 type (
 	Provider interface {
-		GetAverageLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error)
+		Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error)
 		GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error)
 	}
 )
