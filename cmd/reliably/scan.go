@@ -243,7 +243,10 @@ Reliably can also scan for your live kubernetes cluster.`,
 	cmd.Flags().StringVarP(
 		&opts.KubeConfigPath, "kubeconfig", "k", configPath, "Specifies the path and file to use for kubeconfig for live scan")
 
-	cmd.AddCommand(terraform.New())
+	// create the subcommand and pass the root usage template
+	tfScanCmd := terraform.New()
+	tfScanCmd.SetUsageTemplate(customUsageTemplate(rootCmd))
+	cmd.AddCommand(tfScanCmd)
 
 	// reformat the flags usage to be able to group them into sub sections
 	flagsUsages := strings.Split(cmd.Flags().FlagUsages(), "\n")
