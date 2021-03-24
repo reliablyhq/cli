@@ -63,17 +63,17 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 
 		r.ServiceLevel = &ServiceLevel{
 			Target: &ServiceLevelIndicators{
-				ErrorBudgetPercent: m.ServiceLevel.ErrorBudgetPercent,
-				LatencyMs:          m.ServiceLevel.Latency.Milliseconds(),
+				ErrorPercent: m.ServiceLevel.ErrorBudgetPercent,
+				LatencyMs:    m.ServiceLevel.Latency.Milliseconds(),
 			},
 			Actual: &ServiceLevelIndicators{
-				ErrorBudgetPercent: average(allErrorPercentages),
-				LatencyMs:          int64(average(allLatency)),
+				ErrorPercent: average(allErrorPercentages),
+				LatencyMs:    int64(average(allLatency)),
 			},
 			Delta: &ServiceLevelIndicators{},
 		}
 
-		r.ServiceLevel.Delta.ErrorBudgetPercent = r.ServiceLevel.Actual.ErrorBudgetPercent - r.ServiceLevel.Target.ErrorBudgetPercent
+		r.ServiceLevel.Delta.ErrorPercent = r.ServiceLevel.Actual.ErrorPercent - r.ServiceLevel.Target.ErrorPercent
 		r.ServiceLevel.Delta.LatencyMs = r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs
 	}
 

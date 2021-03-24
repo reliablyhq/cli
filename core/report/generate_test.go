@@ -123,16 +123,16 @@ func TestFromManifest(t *testing.T) {
 				Timestamp:       tVal,
 				ServiceLevel: &ServiceLevel{
 					Target: &ServiceLevelIndicators{
-						ErrorBudgetPercent: 2.5,
-						LatencyMs:          250,
+						ErrorPercent: 2.5,
+						LatencyMs:    250,
 					},
 					Actual: &ServiceLevelIndicators{
-						ErrorBudgetPercent: p.errorPercentValue,
-						LatencyMs:          int64(p.latencyMetricValue),
+						ErrorPercent: p.errorPercentValue,
+						LatencyMs:    int64(p.latencyMetricValue),
 					},
 					Delta: &ServiceLevelIndicators{
-						ErrorBudgetPercent: p.errorPercentValue - 2.5,
-						LatencyMs:          int64(p.latencyMetricValue) - 250,
+						ErrorPercent: p.errorPercentValue - 2.5,
+						LatencyMs:    int64(p.latencyMetricValue) - 250,
 					},
 				},
 				Dependencies: []*manifest.AppInfo{

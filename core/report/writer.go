@@ -28,10 +28,10 @@ func Write(r *Report, l *logrus.Logger) {
 		return
 	}
 
-	if r.ServiceLevel.Delta.ErrorBudgetPercent < threshold {
-		l.Warnf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorBudgetPercent)
-	} else if r.ServiceLevel.Delta.ErrorBudgetPercent > threshold {
-		l.Warnf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorBudgetPercent)
+	if r.ServiceLevel.Delta.ErrorPercent < threshold {
+		l.Warnf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)
+	} else if r.ServiceLevel.Delta.ErrorPercent > threshold {
+		l.Warnf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)
 	}
 
 	if r.ServiceLevel.Delta.LatencyMs > threshold {
