@@ -18,22 +18,39 @@ func RandomString(length int) (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
+// ansiDiff retruns the difference in length between the string in runes and
+// the length of the string - if the strings have special characters the
+// lengths are different
+func runeDiff(s string) int {
+	runeCount := utf8.RuneCountInString(s)
+	strLen := len(s)
+	return strLen - runeCount
+}
+
+// ansiDiff returns the difference in length between the string and the  same
+// string when it is stipped of non ansi characters
+func ansiDiff(s string) int {
+	ansiStr := stripansi.Strip(s)
+	return len(s) - len(ansiStr)
+}
+
 // TruncateString truncates the given string to the num provided and adds an
-// elipsis (...). This function truncates will not be accurate if the string
-// contains special characters e.g if you use ■, it has a length of 2
+// ellipsis (...).
 func TruncateString(s string, num int) string {
 	truncStr := s
-	ansiStr := stripansi.Strip(s)
-	ansiStrLen := utf8.RuneCountInString(ansiStr)
-	offset := utf8.RuneCountInString(s) - ansiStrLen
-	// fmt.Printf("%v\n", getStringLen(s)-getStrippedStringLen(s))
+	nonPrintLen := runeDiff(s) + ansiDiff(s)
+	printLen := len(s) - nonPrintLen
 
-	if ansiStrLen > num {
+	if printLen > num {
 		if num > 3 {
 			num -= 3
+			truncStr = s[0:num+nonPrintLen] + "..."
+		} else {
+			truncStr = s[0 : num+nonPrintLen]
 		}
-		// +offest accounts for hte difference bettween
-		truncStr = s[0:num+offset] + "..."
+		// +nonPrintLen accounts for the  difference between the printable and non
+		// printable characters
+
 	}
 	return truncStr
 }

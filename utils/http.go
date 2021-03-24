@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -38,4 +40,30 @@ func DownloadFile(filepath string, url string) error {
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)
 	return err
+}
+
+// DownloadURL downloads from a given URL and returns the response body
+func DownloadURL(url string) ([]byte, error) {
+
+	client := &http.Client{
+		Timeout: time.Second * 2,
+	}
+
+	resp, err := client.Get(url)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	if resp.StatusCode != 200 {
+		return []byte{}, fmt.Errorf("No file found at URL: %v", url)
+	}
+
+	defer resp.Body.Close()
+
+	bs, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return []byte{}, errors.New("Unable to read response body")
+	}
+
+	return bs, nil
 }

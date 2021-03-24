@@ -20,7 +20,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	resultSet := core.Eval("policy.rego", &x)
+	policy, err := ioutil.ReadFile("policy.rego")
+
+	resultSet := core.Eval(core.RegoModule{Name: "policy.rego", Raw: string(policy)}, &x)
 
 	log.Printf("Results %v\n", len(resultSet))
 
