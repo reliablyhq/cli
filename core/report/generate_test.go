@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/metrics"
 )
@@ -71,8 +72,14 @@ func Test_getProviderForResource(t *testing.T) {
 }
 
 func TestFromManifest(t *testing.T) {
-	p := &dummyProvider{}
+	p := &dummyProvider{
+		latencyMetricValue: 100,
+		errorPercentValue:  1,
+	}
 	metrics.ProviderFactories["test_from_manifest"] = func() (metrics.Provider, error) { return p, nil }
+
+	tVal := time.Now()
+	timestampFn = func() time.Time { return tVal }
 
 	type args struct {
 		m *manifest.Manifest
@@ -84,9 +91,56 @@ func TestFromManifest(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "happy path",
-			args:    args{},
-			want:    &Report{},
+			name: "returns report with correct info",
+			args: args{
+				m: &manifest.Manifest{
+					App: &manifest.AppInfo{
+						Name:       "test app",
+						Owner:      "test owner",
+						Repository: "test repo",
+					},
+					ServiceLevel: &manifest.ServiceLevel{
+						Availability:       95,
+						Latency:            core.Duration{Duration: time.Millisecond * 250},
+						ErrorBudgetPercent: 2.5,
+					},
+					Service: &manifest.Service{
+						Resources: []*manifest.ServiceResource{
+							{
+								ID: "test_from_manifest/abc13",
+							},
+						},
+					},
+					Dependencies: []*manifest.AppInfo{
+						{
+							Name: "abc",
+						},
+					},
+				},
+			},
+			want: &Report{
+				ApplicationName: "test app",
+				Timestamp:       tVal,
+				ServiceLevel: &ServiceLevel{
+					Target: &ServiceLevelIndicators{
+						ErrorBudgetPercent: 2.5,
+						LatencyMs:          250,
+					},
+					Actual: &ServiceLevelIndicators{
+						ErrorBudgetPercent: p.errorPercentValue,
+						LatencyMs:          int64(p.latencyMetricValue),
+					},
+					Delta: &ServiceLevelIndicators{
+						ErrorBudgetPercent: p.errorPercentValue - 2.5,
+						LatencyMs:          int64(p.latencyMetricValue) - 250,
+					},
+				},
+				Dependencies: []*manifest.AppInfo{
+					{
+						Name: "abc",
+					},
+				},
+			},
 			wantErr: false,
 		},
 		{
@@ -104,9 +158,28 @@ func TestFromManifest(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FromManifest() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			} else if err != nil && tt.wantErr {
+				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FromManifest() = %v, want %v", got, tt.want)
+
+			if tt.want.ApplicationName != got.ApplicationName {
+				t.Errorf("wanted ApplicationName to be %s but was %s", tt.want.ApplicationName, got.ApplicationName)
+				return
+			}
+
+			if !reflect.DeepEqual(got.Timestamp, tt.want.Timestamp) {
+				t.Errorf("FromManifest().Timestamp = %v, want %v", got.Timestamp, tt.want.Timestamp)
+				return
+			}
+
+			if !reflect.DeepEqual(got.ServiceLevel, tt.want.ServiceLevel) {
+				t.Errorf("FromManifest().ServiceLevel = %v, want %v", got.ServiceLevel, tt.want.ServiceLevel)
+				return
+			}
+
+			if !reflect.DeepEqual(got.Dependencies, tt.want.Dependencies) {
+				t.Errorf("FromManifest().Dependencies = %v, want %v", got.Dependencies, tt.want.Dependencies)
+				return
 			}
 		})
 	}

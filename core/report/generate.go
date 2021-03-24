@@ -3,7 +3,6 @@ package report
 import (
 	go_errors "errors"
 	"fmt"
-	"math/rand"
 	"strings"
 	"time"
 
@@ -18,7 +17,7 @@ const (
 )
 
 var (
-	r = rand.New(rand.NewSource(time.Now().Unix()))
+	timestampFn func() time.Time = time.Now().UTC
 )
 
 var notSuportedErrorBuilder = func(thingType, thingName string) error {
@@ -34,7 +33,7 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	allErrors := make([]error, 0)
 
 	r.ApplicationName = m.App.Name
-	r.Timestamp = time.Now().UTC()
+	r.Timestamp = timestampFn()
 
 	if m.ServiceLevel != nil {
 		allLatency := []float64{}
@@ -62,23 +61,20 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 			}
 		}
 
-		r.ServiceLevel.Target = &ServiceLevelIndicators{
-			ErrorBudgetPercent: m.ServiceLevel.ErrorBudgetPercent,
-			ServiceLevel:       m.ServiceLevel.Availability,
-			LatencyMs:          m.ServiceLevel.Latency.Milliseconds(),
+		r.ServiceLevel = &ServiceLevel{
+			Target: &ServiceLevelIndicators{
+				ErrorBudgetPercent: m.ServiceLevel.ErrorBudgetPercent,
+				LatencyMs:          m.ServiceLevel.Latency.Milliseconds(),
+			},
+			Actual: &ServiceLevelIndicators{
+				ErrorBudgetPercent: average(allErrorPercentages),
+				LatencyMs:          int64(average(allLatency)),
+			},
+			Delta: &ServiceLevelIndicators{},
 		}
 
-		r.ServiceLevel.Actual = &ServiceLevelIndicators{
-			ErrorBudgetPercent: average(allErrorPercentages),
-			LatencyMs:          int64(average(allLatency)),
-			ServiceLevel:       -1, // TODO: figure out what this means!
-		}
-
-		r.ServiceLevel.Delta = &ServiceLevelIndicators{
-			ErrorBudgetPercent: r.ServiceLevel.Actual.ErrorBudgetPercent - r.ServiceLevel.Target.ErrorBudgetPercent,
-			ServiceLevel:       r.ServiceLevel.Actual.ServiceLevel - r.ServiceLevel.Target.ServiceLevel,
-			LatencyMs:          r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs,
-		}
+		r.ServiceLevel.Delta.ErrorBudgetPercent = r.ServiceLevel.Actual.ErrorBudgetPercent - r.ServiceLevel.Target.ErrorBudgetPercent
+		r.ServiceLevel.Delta.LatencyMs = r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs
 	}
 
 	r.Dependencies = m.Dependencies
