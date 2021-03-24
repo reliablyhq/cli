@@ -89,18 +89,6 @@ func (spd *SinglePolicyDownloader) DownloadPolicy(id string) ([]byte, error) {
 
 func TestPolicyRegistryCachedPolicy(t *testing.T) {
 
-	// check cache is empty
-
-	// fetch a policy
-
-	// check policy is now stored in cache
-
-	// fetch same policy a second time
-
-	// check downloader has not been used a second time
-
-	// check fetched policies are equal - and no error occured
-
 	policyStr := "this is a dummy policy content"
 
 	pr := NewRegistry()
