@@ -20,6 +20,6 @@ type ServiceLevel struct {
 }
 
 type ServiceLevelIndicators struct {
-	ErrorBudgetPercent float64 `json:"error_budget"`
-	LatencyMs          int64   `json:"latency_ms"`
+	ErrorPercent float64 `json:"error_percent"`
+	LatencyMs    int64   `json:"latency_ms"`
 }
