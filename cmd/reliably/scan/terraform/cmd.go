@@ -108,14 +108,18 @@ func scanTF(args []string) {
 				target := scan.NewTarget(&resource, terraform.Platform, resourceType)
 				result, err := scan.FindPolicyAndEvaluate(target)
 				if err != nil {
+					if err == scan.ErrNotFound {
+						log.Warnf("no existing policy for resource: [%s]", target.ResourceType)
+						continue
+					}
 					log.Debug(err)
-					log.Warnf("An error occurred while scanning resource: [%s]", resource.Type)
+					log.Errorf("error occurred while scanning target: [%s]", target.ResourceType)
 					continue
 				}
 
 				// 4. print result for a given resource, (if any)
 				for _, r := range result.Violations {
-					log.Infof("[%s] [%s] [%s] [%s]: %s", core.Level(r.Level), f, target.ResourceType, resource.Label, r.Message)
+					log.Infof("[%s] [%s] [%s] [%s]: %s", core.Level(r.Level).ColoredString(), f, target.ResourceType, resource.Label, r.Message)
 				}
 
 				log.Infof("Processing %s complete!", target.ResourceType)
@@ -152,14 +156,18 @@ func scanPlan() {
 			target := scan.NewTarget(resource, terraform.Platform, resource.Type)
 			result, err := scan.FindPolicyAndEvaluate(target)
 			if err != nil {
+				if err == scan.ErrNotFound {
+					log.Warnf("no existing policy for resource: [%s]", target.ResourceType)
+					continue
+				}
 				log.Debug(err)
-				log.Warnf("error occurred while scanning target: %s", target.ResourceType)
+				log.Errorf("error occurred while scanning target: [%s]", target.ResourceType)
 				continue
 			}
 
 			for _, r := range result.Violations {
 				// log.Infof("Resource: [%s] - Message: %s", target.ResourceType, r.Message)
-				log.Infof("[%s] [%s] [%s]: %s", core.Level(r.Level), target.ResourceType, resource.Name, r.Message)
+				log.Infof("[%s] [%s] [%s]: %s", core.Level(r.Level).ColoredString(), target.ResourceType, resource.Name, r.Message)
 			}
 
 			log.Infof("Processing %s complete!", target.ResourceType)

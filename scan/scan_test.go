@@ -51,7 +51,7 @@ func TestTerraformEvaluate(t *testing.T) {
 		// get policy
 		var p policy
 		if resource.Type == "aws_launch_template" {
-			assert.Error(t, p.find("terraform", resource.Type), "err expected: %s", errNotFound)
+			assert.Error(t, p.find("terraform", resource.Type), "err expected: %s", ErrNotFound)
 			continue
 		}
 
