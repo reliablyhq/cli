@@ -15,7 +15,6 @@ import (
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
-	"github.com/reliablyhq/cli/cmd/reliably/scan/terraform"
 	"github.com/reliablyhq/cli/core"
 	ctx "github.com/reliablyhq/cli/core/context"
 	finder "github.com/reliablyhq/cli/core/find"
@@ -244,9 +243,10 @@ Reliably can also scan for your live kubernetes cluster.`,
 		&opts.KubeConfigPath, "kubeconfig", "k", configPath, "Specifies the path and file to use for kubeconfig for live scan")
 
 	// create the subcommand and pass the root usage template
-	tfScanCmd := terraform.New()
-	tfScanCmd.SetUsageTemplate(customUsageTemplate(rootCmd))
-	cmd.AddCommand(tfScanCmd)
+	// TODO: re-add this later!
+	// tfScanCmd := terraform.New()
+	// tfScanCmd.SetUsageTemplate(customUsageTemplate(rootCmd))
+	// cmd.AddCommand(tfScanCmd)
 
 	// reformat the flags usage to be able to group them into sub sections
 	flagsUsages := strings.Split(cmd.Flags().FlagUsages(), "\n")
