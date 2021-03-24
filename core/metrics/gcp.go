@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	monitoring "cloud.google.com/go/monitoring/apiv3"
+	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/api/iterator"
 	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
@@ -31,13 +33,18 @@ func NewGCP() (*GCP, error) {
 	}, errors.New("NewGCP not implemented")
 }
 
-func (p *GCP) GetMetricList(projectID string) error {
+func (p *GCP) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
+	projectID := strings.SplitN(resourceID, "/", -1)[1]
 
-	startTime := time.Now().UTC().Add(time.Minute * -20)
-	endTime := time.Now().UTC()
+	startTime := from
+	endTime := to
+	metricType := "loadbalancing.googleapis.com/https/total_latencies"
+	// resourceName := strings.SplitN(resourceID, "/", -1)[3]
+
 	req := &monitoringpb.ListTimeSeriesRequest{
-		Name:   "projects/" + projectID,
-		Filter: `metric.type="compute.googleapis.com/instance/cpu/utilization"`,
+		Name: "projects/" + projectID,
+		// Filter: fmt.Sprintf(`metric.type="%s" AND resource.url_map_name="%s"`, metricType, resourceName),
+		Filter: fmt.Sprintf(`metric.type="%s"`, metricType),
 		Interval: &monitoringpb.TimeInterval{
 			StartTime: &timestamp.Timestamp{
 				Seconds: startTime.Unix(),
@@ -46,7 +53,13 @@ func (p *GCP) GetMetricList(projectID string) error {
 				Seconds: endTime.Unix(),
 			},
 		},
-		View: monitoringpb.ListTimeSeriesRequest_HEADERS,
+		Aggregation: &monitoringpb.Aggregation{
+			CrossSeriesReducer: monitoringpb.Aggregation_REDUCE_MEAN,
+			PerSeriesAligner:   monitoringpb.Aggregation_ALIGN_PERCENTILE_99,
+			AlignmentPeriod: &duration.Duration{
+				Seconds: 600,
+			},
+		},
 	}
 	fmt.Println("Found data points for the following instances:")
 	it := p.client.ListTimeSeries(p.ctx, req)
@@ -56,17 +69,12 @@ func (p *GCP) GetMetricList(projectID string) error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("could not read time series value: %v", err)
+			return 1, fmt.Errorf("could not read time series value: %v", err)
 		}
-		fmt.Printf("\t%v\n", resp.GetMetric().GetLabels()["instance_name"])
+		fmt.Printf("Metric: %v\n", resp.GetPoints()[0].GetValue().GetDoubleValue())
 	}
 	fmt.Println("Done")
-	return nil
-
-}
-
-func (p *GCP) GetLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
-	return -1, errors.New("GetLatencyMetricForResource not implemented")
+	return 1, errors.New("Get99PercentLatencyMetricForResource not implemented")
 }
 
 func (p *GCP) GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error) {

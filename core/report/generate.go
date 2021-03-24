@@ -40,34 +40,39 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	r.ApplicationName = m.App.Name
 	r.Timestamp = time.Now().UTC()
 
-	// TODO: Testing GCP package, remove after
-	gcpClient, _ := metrics.NewGCP()
-	gcpClient.GetMetricList("alpha1-e3d83fa0")
-
 	if m.ServiceLevel != nil {
 		allLatency := []float64{}
 		allErrorPercentages := []float64{}
 
 		for _, resource := range m.Service.Resources {
-			provider, err := getProviderForResource(resource.ID)
-			if err != nil {
-				return nil, err
-			}
+			// provider, err := getProviderForResource(resource.ID)
+			// if err != nil {
+			// 	return nil, err
+			// }
 
 			to := time.Now()
 			from := to.Add(-oneDay)
 
-			if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
+			// TODO: Testing GCP package, remove after, integrate with commented
+			gcpClient, _ := metrics.NewGCP()
+			gcpClient.Get99PercentLatencyMetricForResource(resource.ID, from, to)
+			if l, err := gcpClient.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
 				allLatency = append(allLatency, l)
 			} else {
 				return nil, err
 			}
 
-			if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
-				allErrorPercentages = append(allErrorPercentages, e)
-			} else {
-				return nil, err
-			}
+			// if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
+			// 	allLatency = append(allLatency, l)
+			// } else {
+			// 	return nil, err
+			// }
+
+			// if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
+			// 	allErrorPercentages = append(allErrorPercentages, e)
+			// } else {
+			// 	return nil, err
+			// }
 		}
 
 		r.ServiceLevel.Target = &ServiceLevelIndicators{
@@ -99,7 +104,7 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 }
 
 func getProviderForResource(ID string) (metrics.Provider, error) {
-	providerID := strings.SplitN(ID, "/", 1)[0]
+	providerID := strings.SplitN(ID, "/", -1)[0]
 
 	if factory, ok := metrics.ProviderFactories[providerID]; ok {
 		factory()
