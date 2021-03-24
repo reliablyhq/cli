@@ -71,6 +71,22 @@ func TestPolicyRegistry(t *testing.T) {
 
 }
 
+type SinglePolicyDownloader struct {
+	Downloader
+	cache map[string]string
+}
+
+func (spd *SinglePolicyDownloader) DownloadPolicy(id string) ([]byte, error) {
+	if p, found := spd.cache[id]; found {
+		// once we found it, we remove it to avoid consecutive download
+		// in order to be able to check the caching system
+		spd.cache[id] = "POLICY HAS ALREADY BEEN DOWNLOADED"
+
+		return []byte(p), nil
+	}
+	return []byte{}, ErrPolicyNotFound
+}
+
 func TestPolicyRegistryCachedPolicy(t *testing.T) {
 
 	// check cache is empty
@@ -85,4 +101,36 @@ func TestPolicyRegistryCachedPolicy(t *testing.T) {
 
 	// check fetched policies are equal - and no error occured
 
+	policyStr := "this is a dummy policy content"
+
+	pr := NewRegistry()
+	pr.downloader = &SinglePolicyDownloader{
+		cache: map[string]string{
+			"dummy": policyStr,
+		},
+	}
+
+	// cache is empty at start
+	pl, err := pr.registry.ListPolicies()
+	assert.NoError(t, err, "Unexpected error")
+	assert.Equal(t, []string{}, pl, "Cache should be empty")
+
+	// fetch the policy from registry - use the downloader and put it into cache
+	p1, err := pr.GetPolicy("dummy")
+	assert.NoError(t, err, "Unexpected error")
+	assert.Equal(t, policyStr, string(p1), "Wrong policy data")
+
+	// cache is no more empty
+	pl, err = pr.registry.ListPolicies()
+	assert.NoError(t, err, "Unexpected error")
+	assert.NotEqual(t, []string{}, pl, "Cache should not be empty")
+
+	// Fetch the policy a second time from registry - should use cache
+	// ie downloader should not be called
+	p2, err := pr.GetPolicy("dummy")
+	assert.NoError(t, err, "Unexpected error")
+	assert.Equal(t, policyStr, string(p2), "Wrong policy data")
+
+	// Both policy are equal - same content returned
+	assert.Equal(t, string(p1), string(p2), "Policy data differ")
 }
