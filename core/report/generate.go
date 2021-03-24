@@ -59,11 +59,11 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 				return nil, err
 			}
 
-			// if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
-			// 	allErrorPercentages = append(allErrorPercentages, e)
-			// } else {
-			// 	return nil, err
-			// }
+			if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
+				allErrorPercentages = append(allErrorPercentages, e)
+			} else {
+				return nil, err
+			}
 
 		}
 

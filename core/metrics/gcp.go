@@ -79,5 +79,62 @@ func (p *GCP) Get99PercentLatencyMetricForResource(resourceID string, from, to t
 }
 
 func (p *GCP) GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error) {
-	return -1, errors.New("GetErrorPercentageMetricForResource not implemented")
+	fmt.Printf("GetErrorPercentageMetricForResource \n")
+	projectID := strings.SplitN(resourceID, "/", -1)[1]
+
+	startTime := from
+	endTime := to
+	metricType := "loadbalancing.googleapis.com/https/request_count"
+	// resourceName := "473344846455" //strings.SplitN(resourceID, "/", -1)[3]
+
+	req := &monitoringpb.ListTimeSeriesRequest{
+		Name: "projects/" + projectID,
+		// Filter: fmt.Sprintf(`metric.type = "%s" AND resource.url_map_name = "%s" AND
+		// metric.response_code_class != 0`, metricType, resourceName),
+		// Filter: fmt.Sprintf(`metric.type = "%s" AND
+		// metric.response_code_class != 0`, metricType),
+		Filter: fmt.Sprintf(`metric.type="%s"`, metricType),
+		//resource.project_id == '473344846455'
+		//&& (resource.url_map_name == 'reliablyadvicealpha1')
+		//&& (metric.response_code_class != 0)
+		// Filter: fmt.Sprintf(`metric.type ="%s"`, metricType),
+		Interval: &monitoringpb.TimeInterval{
+			StartTime: &timestamp.Timestamp{
+				Seconds: startTime.Unix(),
+			},
+			EndTime: &timestamp.Timestamp{
+				Seconds: endTime.Unix(),
+			},
+		},
+		Aggregation: &monitoringpb.Aggregation{
+			CrossSeriesReducer: monitoringpb.Aggregation_REDUCE_SUM,
+			PerSeriesAligner:   monitoringpb.Aggregation_ALIGN_COUNT,
+			AlignmentPeriod: &duration.Duration{
+				Seconds: 600,
+			},
+			// Aggregation: &monitoringpb.Aggregation{
+			// 	CrossSeriesReducer: monitoringpb.Aggregation_REDUCE_MEAN,
+			// 	PerSeriesAligner:   monitoringpb.Aggregation_ALIGN_PERCENTILE_99,
+			// 	AlignmentPeriod: &duration.Duration{
+			// 		Seconds: 600,
+			// 	},
+		},
+	}
+	fmt.Println("Found data points for the following instances:")
+	it := p.client.ListTimeSeries(p.ctx, req)
+	for {
+		resp, err := it.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return 1, fmt.Errorf("could not read time series value: %v", err)
+		}
+		// fmt.Printf("Metric: %v\n", resp)
+		fmt.Printf("Metric: %v\n", resp.GetPoints()[0].GetValue().GetInt64Value())
+	}
+	fmt.Println("Done")
+	return 1, nil
+
+	// return -1, errors.New("GetErrorPercentageMetricForResource not implemented")
 }
