@@ -28,12 +28,6 @@ func Write(r *Report, l *logrus.Logger) {
 		return
 	}
 
-	if r.ServiceLevel.Delta.ServiceLevel < threshold { // low service level
-		l.Warnf(actualAvailabilityTooLowf, -r.ServiceLevel.Delta.ServiceLevel)
-	} else if r.ServiceLevel.Delta.ServiceLevel > threshold {
-		l.Warnf(actualAvailabilityTooHighf, r.ServiceLevel.Delta.ServiceLevel)
-	}
-
 	if r.ServiceLevel.Delta.ErrorBudgetPercent < threshold {
 		l.Warnf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorBudgetPercent)
 	} else if r.ServiceLevel.Delta.ErrorBudgetPercent > threshold {
