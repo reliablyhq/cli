@@ -13,6 +13,7 @@
 
 ### Changed
 - policy retrieval logic has been changed to incorporate the API Version into the path to the remote policy. Locally cached policy also includes the API Version.
+- removed the code wiring up the `reliably scan terraform` command. This command will be reintroduced at a later date.
 
 ## [0.5.0] - 2021-03-03
 
