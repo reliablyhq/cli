@@ -45,34 +45,26 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 		allErrorPercentages := []float64{}
 
 		for _, resource := range m.Service.Resources {
-			// provider, err := getProviderForResource(resource.ID)
-			// if err != nil {
-			// 	return nil, err
-			// }
+			provider, err := getProviderForResource(resource.ID)
+			if err != nil {
+				return nil, err
+			}
 
 			to := time.Now()
 			from := to.Add(-oneDay)
 
-			// TODO: Testing GCP package, remove after, integrate with commented
-			gcpClient, _ := metrics.NewGCP()
-			gcpClient.Get99PercentLatencyMetricForResource(resource.ID, from, to)
-			if l, err := gcpClient.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
+			if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
 				allLatency = append(allLatency, l)
 			} else {
 				return nil, err
 			}
-
-			// if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
-			// 	allLatency = append(allLatency, l)
-			// } else {
-			// 	return nil, err
-			// }
 
 			// if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
 			// 	allErrorPercentages = append(allErrorPercentages, e)
 			// } else {
 			// 	return nil, err
 			// }
+
 		}
 
 		r.ServiceLevel.Target = &ServiceLevelIndicators{
@@ -107,8 +99,9 @@ func getProviderForResource(ID string) (metrics.Provider, error) {
 	providerID := strings.SplitN(ID, "/", -1)[0]
 
 	if factory, ok := metrics.ProviderFactories[providerID]; ok {
-		factory()
+		return factory()
 	}
 
 	return nil, fmt.Errorf("No provider factory found for '%s'", providerID)
+
 }

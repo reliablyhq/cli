@@ -4,7 +4,9 @@ import (
 	"time"
 )
 
-var ProviderFactories = map[string]ProviderFactory{}
+var ProviderFactories = map[string]ProviderFactory{
+	"gcp": func() (Provider, error) { return NewGCP() },
+}
 
 type (
 	ProviderFactory func() (Provider, error)

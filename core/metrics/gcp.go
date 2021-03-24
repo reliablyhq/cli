@@ -19,10 +19,12 @@ type GCP struct {
 	client *monitoring.MetricClient
 }
 
+// Currently needs a service account configured or gcloud auth within same session
 func NewGCP() (*GCP, error) {
 
 	ctx := context.Background()
 	client, err := monitoring.NewMetricClient(ctx)
+	fmt.Print(*client)
 	if err != nil {
 		return nil, fmt.Errorf("NewMetricClient: %v", err)
 	}
@@ -30,7 +32,7 @@ func NewGCP() (*GCP, error) {
 	return &GCP{
 		ctx:    ctx,
 		client: client,
-	}, errors.New("NewGCP not implemented")
+	}, nil
 }
 
 func (p *GCP) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
@@ -61,7 +63,6 @@ func (p *GCP) Get99PercentLatencyMetricForResource(resourceID string, from, to t
 			},
 		},
 	}
-	fmt.Println("Found data points for the following instances:")
 	it := p.client.ListTimeSeries(p.ctx, req)
 	for {
 		resp, err := it.Next()
@@ -71,10 +72,10 @@ func (p *GCP) Get99PercentLatencyMetricForResource(resourceID string, from, to t
 		if err != nil {
 			return 1, fmt.Errorf("could not read time series value: %v", err)
 		}
-		fmt.Printf("Metric: %v\n", resp.GetPoints()[0].GetValue().GetDoubleValue())
+		return resp.GetPoints()[0].GetValue().GetDoubleValue(), nil
 	}
-	fmt.Println("Done")
-	return 1, errors.New("Get99PercentLatencyMetricForResource not implemented")
+
+	return -1, errors.New("Get99PercentLatencyMetricForResource not implemented")
 }
 
 func (p *GCP) GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error) {
