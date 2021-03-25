@@ -4,29 +4,24 @@
     "owner": "unit test owner",
     "repo": "github.com/reliablyhq/cli"
   },
-  "ci": {
-    "type": "unit test ci"
-  },
-  "service_level": {
-    "availability": 75,
-    "latency": "200ms",
-    "error_budget_pc": 0.5
+  "service": {
+    "latency": "100ms",
+    "error_budget_percent": 0.5,
+    "resources": [
+      {
+        "provider": "abc",
+        "id": "123"
+      },
+      {
+        "provider": "xyz",
+        "id": "456"
+      }
+    ]
   },
   "dependencies": [
-    {
-      "name": "some service"
-    },
-    {
-      "name": "some other service"
-    }
+    "some service",
+    "some other service"
   ],
-  "hosting": {
-    "provider": "some dummy provider"
-  },
-  "infrastructure_as_code": {
-    "type": "some IAC system",
-    "root": "./abc"
-  },
   "tags": {
     "team": "abc",
     "domain": "xyz"

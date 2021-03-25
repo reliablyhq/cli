@@ -1,9 +1,8 @@
 app:
-  name: some app
-  owner: some owner
-  repo: some repo
+  name: my-app
+  owner: me
+  repo: /Users/mickroper/repos/github.com/reliablyhq/cli
 service:
-  name: ""
-  latency: 0ms
-  error_budget_percent: 0
+  latency: 100ms
+  error_budget_percent: 90
   resources: []

@@ -108,11 +108,7 @@ func TestFromManifest(t *testing.T) {
 							},
 						},
 					},
-					Dependencies: []*manifest.AppInfo{
-						{
-							Name: "abc",
-						},
-					},
+					Dependencies: []string{"abc"},
 				},
 			},
 			want: &Report{
@@ -132,11 +128,7 @@ func TestFromManifest(t *testing.T) {
 						LatencyMs:    int64(p.latencyMetricValue) - 250,
 					},
 				},
-				Dependencies: []*manifest.AppInfo{
-					{
-						Name: "abc",
-					},
-				},
+				Dependencies: []string{"abc"},
 			},
 			wantErr: false,
 		},
