@@ -69,8 +69,8 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 	fmt.Println("resource iD for api ", apiID)
 
 	var (
-		id         string = "http_error_count"
-		expression string = "SUM([METRICS(\"4xx\"), METRICS(\"5xx\")])"
+	//id string = "http_error_count"
+	//expression string = "SUM([METRICS(\"4xx\"), METRICS(\"5xx\")])"
 	)
 
 	//"AWS/ApiGateway", "4xx", "ApiId", "trj7cyiqib"
@@ -81,9 +81,35 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 		StartTime: &from,
 		EndTime:   &to,
 		MetricDataQueries: []types.MetricDataQuery{
+			/*
+				{
+					Id: aws.String("http_error_count"),
+					//Expression: aws.String("SUM([METRICS(\"4xx\"), METRICS(\"5xx\")])"),
+					//Expression: &expression,
+					MetricStat: &types.MetricStat{
+						Metric: &types.Metric{
+							Namespace:  aws.String("AWS/ApiGateway"),
+							MetricName: aws.String("4xx"),
+						},
+					},
+				},
+			*/
 			{
-				Id:         &id,
-				Expression: &expression,
+				Id: aws.String("http_error_count"),
+				MetricStat: &types.MetricStat{
+					Metric: &types.Metric{
+						Namespace:  aws.String("AWS/ApiGateway"),
+						MetricName: aws.String("5xx"),
+						Dimensions: []types.Dimension{
+							{
+								Name:  aws.String("ApiId"),
+								Value: aws.String(apiID),
+							},
+						},
+					},
+					Period: aws.Int32(300),
+					Stat:   aws.String("Average"),
+				},
 			},
 		},
 	}
@@ -93,8 +119,13 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 	}
 
 	fmt.Printf("metric data: %#v\n", data)
-	for _, ts := range data.MetricDataResults {
-		fmt.Printf(">TS %#v\n", ts)
+	for _, r := range data.MetricDataResults {
+
+		for i, ts := range r.Timestamps {
+
+			fmt.Println("%#v -> %v", ts, r.Values[i])
+		}
+
 	}
 
 	return -1, nil
