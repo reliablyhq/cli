@@ -3,7 +3,6 @@ package report
 import (
 	go_errors "errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/reliablyhq/cli/core/errors"
@@ -36,13 +35,18 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	r.ApplicationName = m.App.Name
 	r.Timestamp = timestampFn()
 	r.ReportVersion = reportVersion
+	r.Dependencies = []string{}
 
 	if m.Service != nil {
 		allLatency := []float64{}
 		allErrorPercentages := []float64{}
 
+		if len(m.Service.Resources) == 0 {
+			return nil, go_errors.New("you haven't told us about any resources, so we won't be able to give you a report. Sorry :(")
+		}
+
 		for _, resource := range m.Service.Resources {
-			provider, err := getProviderForResource(resource.ID)
+			provider, err := getProviderForResource(resource.Provider)
 			if err != nil {
 				return nil, err
 			}
@@ -79,7 +83,9 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 		r.ServiceLevel.Delta.LatencyMs = r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs
 	}
 
-	r.Dependencies = m.Dependencies
+	if m.Dependencies != nil {
+		r.Dependencies = m.Dependencies
+	}
 
 	if len(allErrors) > 0 {
 		return &r, errors.NewCompoundError("multiple errors occured", allErrors)
@@ -88,13 +94,7 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	return &r, nil
 }
 
-func getProviderForResource(ID string) (metrics.Provider, error) {
-	if ID == "" {
-		return nil, go_errors.New("ID is empty")
-	}
-
-	providerID := strings.SplitN(ID, "/", 2)[0]
-
+func getProviderForResource(providerID string) (metrics.Provider, error) {
 	if factory, ok := metrics.ProviderFactories[providerID]; ok {
 		return factory()
 	}

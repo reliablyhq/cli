@@ -5,4 +5,6 @@ app:
 service:
   latency: 100ms
   error_budget_percent: 90
-  resources: []
+  resources:
+  - provider: dummy
+    id: my lovely resource
