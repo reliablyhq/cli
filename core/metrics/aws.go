@@ -1,44 +1,103 @@
 package metrics
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	//"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
+	//"github.com/aws/aws-sdk-go-v2/aws/session"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 )
 
-// we support ARN with resource kind in it
-// arn:partition:service:region:account-id:resource-type/resource-id
-// arn:partition:service:region:account-id:resource-type:resource-id
-// see: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
-
 type AwsCloudWatch struct {
-	Provider
+	client *cloudwatch.Client
+	config aws.Config
 }
 
-func NewAwsCloudWatch() (*AwsCloudWatch, error) {
+type AwsResource struct {
+	arn arn.ARN
+}
 
-	c := cloudwatch.Client{}
-	c = c
-	b := arn.IsARN("arn:partition:service:region:account-id:resource-type:resource-id")
-	b = b
+// NewAwsCloudWatch is the factory function for AWS cloud watch metric provider
+func NewAwsCloudWatch() (cw *AwsCloudWatch, err error) {
 
-	fmt.Println("Is valid ARN ? ", b)
+	/*
+		sess := session.Must(session.NewSessionWithOptions(session.Options{
+			SharedConfigState: session.SharedConfigEnable,
+		}))
+		fmt.Println("aws session ", sess)
+	*/
+	// Credentials to AWS go SDK can be setup as described in the offical doc:
+	// https://aws.github.io/aws-sdk-go-v2/docs/configuring-sdk/#specifying-credentials
 
-	return nil, errors.New("NewAws not implemented")
+	cw = &AwsCloudWatch{}
 
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		err = fmt.Errorf("failed to load configuration, %v", err)
+		return
+	}
+	cw.config = cfg
+
+	cw.client = cloudwatch.NewFromConfig(cfg)
+
+	fmt.Println("AWS Cloud Watch -> ", cw)
+	fmt.Printf("cloud watch client -> %#v\n", cw.client)
+	return
 }
 
 func (cw *AwsCloudWatch) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
-
-	return -1, errors.New("Get99PercentLatencyMetricForResource not implemented")
+	return -1, nil
 }
 
 func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error) {
-	return -1, errors.New("GetErrorPercentageMetricForResource not implemented")
+	res, err := parseResourceID(resourceID)
+	if err != nil {
+		return -1, err
+	}
+
+	fmt.Println(res.arn.Resource)
+	parts := strings.Split(res.arn.Resource, "/")
+	apiID := parts[len(parts)-1]
+	fmt.Println("resource iD for api ", apiID)
+
+	var (
+		id         string = "http_error_count"
+		expression string = "SUM([METRICS(\"4xx\"), METRICS(\"5xx\")])"
+	)
+
+	//"AWS/ApiGateway", "4xx", "ApiId", "trj7cyiqib"
+
+	fmt.Println(from, to)
+
+	params := &cloudwatch.GetMetricDataInput{
+		StartTime: &from,
+		EndTime:   &to,
+		MetricDataQueries: []types.MetricDataQuery{
+			{
+				Id:         &id,
+				Expression: &expression,
+			},
+		},
+	}
+	data, err := cw.client.GetMetricData(context.TODO(), params)
+	if err != nil {
+		return -1, err
+	}
+
+	fmt.Printf("metric data: %#v\n", data)
+	for _, ts := range data.MetricDataResults {
+		fmt.Printf(">TS %#v\n", ts)
+	}
+
+	return -1, nil
 }
 
 // extractArnFromResourceID returns the ARN subpart of a service resource ID
@@ -61,4 +120,33 @@ func extractArnFromResourceID(id string) (arn.ARN, error) {
 	}
 
 	return arn.Parse(arnStr)
+}
+
+// IsSupportedService indicates wether the resource is supported
+// for metrics retrieval
+func (aws *AwsResource) IsSupportedService() bool {
+	switch aws.arn.Service {
+	case "apigateway", "apigateway2":
+		return true
+	default:
+		return false
+	}
+}
+
+func parseResourceID(resId string) (AwsResource, error) {
+
+	zerovalue := AwsResource{}
+
+	arn, err := extractArnFromResourceID(resId)
+	if err != nil {
+		return zerovalue, err
+	}
+
+	resource := AwsResource{arn: arn}
+	if !resource.IsSupportedService() {
+		return zerovalue,
+			fmt.Errorf("AWS Service '%s' is not supported", resource.arn.Service)
+	}
+
+	return resource, nil
 }

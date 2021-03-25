@@ -9,4 +9,4 @@ service:
   - provider: dummy
     id: my lovely resource
   - provider: aws
-    id: arn:aws:rds:eu-west-1:123456789012:db:mysql-db
+    id: arn:317464599277:apigateway:eu-west-2::/apis/trj7cyiqib
