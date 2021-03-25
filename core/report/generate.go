@@ -35,7 +35,7 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	r.ApplicationName = m.App.Name
 	r.Timestamp = timestampFn()
 
-	if m.ServiceLevel != nil {
+	if m.Service != nil {
 		allLatency := []float64{}
 		allErrorPercentages := []float64{}
 
@@ -63,8 +63,8 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 
 		r.ServiceLevel = &ServiceLevel{
 			Target: &ServiceLevelIndicators{
-				ErrorPercent: m.ServiceLevel.ErrorBudgetPercent,
-				LatencyMs:    m.ServiceLevel.Latency.Milliseconds(),
+				ErrorPercent: m.Service.ErrorBudgetPercent,
+				LatencyMs:    m.Service.Latency.Milliseconds(),
 			},
 			Actual: &ServiceLevelIndicators{
 				ErrorPercent: average(allErrorPercentages),

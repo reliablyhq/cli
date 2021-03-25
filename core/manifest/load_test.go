@@ -32,28 +32,15 @@ func TestLoad(t *testing.T) {
 					Owner:      "unit test owner",
 					Repository: "github.com/reliablyhq/cli",
 				},
-				CI: &ContinuousIntegrationInfo{
-					Type: "unit test ci",
-				},
-				ServiceLevel: &ServiceLevel{
-					Availability:       75,
-					Latency:            core.Duration{Duration: 200 * time.Millisecond},
-					ErrorBudgetPercent: 0.5,
-				},
-				Dependencies: []*AppInfo{
-					{
-						Name: "some service",
+				Service: &Service{
+					Name:               "some service",
+					Latency:            core.Duration{Duration: 100 * time.Second},
+					ErrorBudgetPercent: 2,
+					Resources: []*ServiceResource{
+						{
+							ID: "some ID",
+						},
 					},
-					{
-						Name: "some other service",
-					},
-				},
-				Hosting: &Hosting{
-					Provider: "some dummy provider",
-				},
-				IAC: &IAC{
-					Type: "some IAC system",
-					Root: "./abc",
 				},
 				Tags: map[string]string{
 					"team":   "abc",
@@ -73,28 +60,15 @@ func TestLoad(t *testing.T) {
 					Owner:      "unit test owner",
 					Repository: "github.com/reliablyhq/cli",
 				},
-				CI: &ContinuousIntegrationInfo{
-					Type: "unit test ci",
-				},
-				ServiceLevel: &ServiceLevel{
-					Availability:       75,
-					Latency:            core.Duration{Duration: 200 * time.Millisecond},
-					ErrorBudgetPercent: 0.5,
-				},
-				Dependencies: []*AppInfo{
-					{
-						Name: "some service",
+				Service: &Service{
+					Name:               "some service",
+					Latency:            core.Duration{Duration: 100 * time.Millisecond},
+					ErrorBudgetPercent: 2,
+					Resources: []*ServiceResource{
+						{
+							ID: "some ID",
+						},
 					},
-					{
-						Name: "some other service",
-					},
-				},
-				Hosting: &Hosting{
-					Provider: "some dummy provider",
-				},
-				IAC: &IAC{
-					Type: "some IAC system",
-					Root: "./abc",
 				},
 				Tags: map[string]string{
 					"team":   "abc",
