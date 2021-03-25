@@ -45,7 +45,7 @@ func run(_ *cobra.Command, args []string) {
 			Repository: getDefaultRepository(),
 		},
 		Service:      &manifest.Service{},
-		Dependencies: []*manifest.AppInfo{},
+		Dependencies: []string{},
 		Tags:         map[string]string{},
 	}
 
@@ -71,6 +71,12 @@ func run(_ *cobra.Command, args []string) {
 }
 
 func validateFilePath() {
+	if file, err := os.Stat(manifestPath); file != nil {
+		log.Fatalf("File '%s' already exists. You must delete it before continuing.", manifestPath)
+	} else if err != os.ErrNotExist {
+		log.Fatal(err)
+	}
+
 	for _, ext := range supportedExtensions {
 		if strings.HasSuffix(manifestPath, ext) {
 			return
@@ -106,16 +112,11 @@ func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner)
 	}
 
 	if question.WithBoolAnswer(scanner, "Does your application have 'service level' dependencies? (y/n)") {
-		deps := make([]*manifest.AppInfo, 0)
+		deps := make([]string, 0)
 
 		addMore := true
 		for addMore {
-			d := &manifest.AppInfo{
-				Name: question.WithStringAnswer(scanner, "what is the name of the dependency?"),
-			}
-
-			deps = append(deps, d)
-
+			deps = append(deps, question.WithStringAnswer(scanner, "what is the name of the dependency?"))
 			addMore = question.WithBoolAnswer(scanner, "Do you want to add another dependency? (y/n)")
 		}
 

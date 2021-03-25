@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	oneDay  = 24 * time.Hour
-	oneWeek = 7 * oneDay
+	oneDay        = 24 * time.Hour
+	oneWeek       = 7 * oneDay
+	reportVersion = "1.0-rc"
 )
 
 var (
@@ -34,6 +35,7 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 
 	r.ApplicationName = m.App.Name
 	r.Timestamp = timestampFn()
+	r.ReportVersion = reportVersion
 
 	if m.Service != nil {
 		allLatency := []float64{}

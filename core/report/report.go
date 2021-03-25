@@ -2,15 +2,14 @@ package report
 
 import (
 	"time"
-
-	"github.com/reliablyhq/cli/core/manifest"
 )
 
 type Report struct {
-	ApplicationName string              `json:"application_name"`
-	Timestamp       time.Time           `json:"timestamp"`
-	Dependencies    []*manifest.AppInfo `json:"dependencies"`
-	ServiceLevel    *ServiceLevel       `json:"service_level"`
+	ReportVersion   string        `json:"report_version"`
+	ApplicationName string        `json:"application_name"`
+	Timestamp       time.Time     `json:"timestamp"`
+	Dependencies    []string      `json:"dependencies"`
+	ServiceLevel    *ServiceLevel `json:"service_level"`
 }
 
 type ServiceLevel struct {

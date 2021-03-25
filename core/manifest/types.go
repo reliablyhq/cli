@@ -8,8 +8,8 @@ type (
 	Manifest struct {
 		App          *AppInfo          `yaml:"app" json:"app"`
 		Service      *Service          `yaml:"service" json:"service"`
+		Dependencies []string          `yaml:"dependencies" json:"dependencies"`
 		Tags         map[string]string `yaml:"tags,omitempty" json:"tags,omitempty"`
-		Dependencies []*AppInfo        `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
 		// ServiceLevel *ServiceLevel     `yaml:"service_level,omitempty" json:"service_level,omitempty"`
 		// CI           *ContinuousIntegrationInfo `yaml:"ci,omitempty" json:"ci,omitempty"`
 		// Hosting      *Hosting          `yaml:"hosting,omitempty" json:"hosting,omitempty"`
@@ -23,14 +23,14 @@ type (
 	}
 
 	Service struct {
-		Name               string             `yaml:"name" json:"name"`
 		Latency            core.Duration      `yaml:"latency" json:"latency"`
 		ErrorBudgetPercent float64            `yaml:"error_budget_percent" json:"error_budget_percent"`
 		Resources          []*ServiceResource `yaml:"resources" json:"resources"`
 	}
 
 	ServiceResource struct {
-		ID string `yaml:"id" json:"id"`
+		ID       string `yaml:"id" json:"id"`
+		Provider string `yaml:"provider" json:"provider"`
 	}
 
 	ServiceLevel struct {
