@@ -96,6 +96,7 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 			*/
 			{
 				Id: aws.String("http_error_count"),
+				//Expression: aws.String("SUM([METRICS(\"4xx\"), METRICS(\"5xx\")])"),
 				MetricStat: &types.MetricStat{
 					Metric: &types.Metric{
 						Namespace:  aws.String("AWS/ApiGateway"),
@@ -107,8 +108,8 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 							},
 						},
 					},
-					Period: aws.Int32(300),
-					Stat:   aws.String("Average"),
+					Period: aws.Int32(60),
+					Stat:   aws.String("Sum"),
 				},
 			},
 		},
@@ -123,7 +124,7 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 
 		for i, ts := range r.Timestamps {
 
-			fmt.Println("%#v -> %v", ts, r.Values[i])
+			fmt.Printf("%v -> %v\n", ts, r.Values[i])
 		}
 
 	}
