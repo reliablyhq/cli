@@ -10,3 +10,5 @@ service:
     id: my lovely resource
   - provider: aws
     id: arn:317464599277:apigateway:eu-west-2::/apis/trj7cyiqib
+  # id: arn:aws:cloudfront::123456789012:distribution/EDFDVBD632BHDS5
+  # id: arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188"

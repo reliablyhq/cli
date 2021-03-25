@@ -7,13 +7,12 @@ import (
 	"strings"
 	"time"
 
-	//"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
-	//"github.com/aws/aws-sdk-go-v2/aws/session"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
+	log "github.com/sirupsen/logrus"
 )
 
 type AwsCloudWatch struct {
@@ -27,14 +26,6 @@ type AwsResource struct {
 
 // NewAwsCloudWatch is the factory function for AWS cloud watch metric provider
 func NewAwsCloudWatch() (cw *AwsCloudWatch, err error) {
-
-	/*
-		sess := session.Must(session.NewSessionWithOptions(session.Options{
-			SharedConfigState: session.SharedConfigEnable,
-		}))
-		fmt.Println("aws session ", sess)
-	*/
-
 	// Credentials to AWS go SDK can be setup as described in the offical doc:
 	// https://aws.github.io/aws-sdk-go-v2/docs/configuring-sdk/#specifying-credentials
 
@@ -46,11 +37,7 @@ func NewAwsCloudWatch() (cw *AwsCloudWatch, err error) {
 		return
 	}
 	cw.config = cfg
-
 	cw.client = cloudwatch.NewFromConfig(cfg)
-
-	fmt.Println("AWS Cloud Watch -> ", cw)
-	fmt.Printf("cloud watch client -> %#v\n", cw.client)
 	return
 }
 
@@ -63,17 +50,20 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 	if err != nil {
 		return -1, err
 	}
+	log.Debugf("%#v", res)
 
-	fmt.Println(res.arn.Resource)
+	// !! we currently only support api gateway resources
 	parts := strings.Split(res.arn.Resource, "/")
 	apiID := parts[len(parts)-1]
-	fmt.Println("resource iD for api ", apiID)
+	log.Debug("Resource ID for API Gateway: ", apiID)
 
 	//"AWS/ApiGateway", "4xx", "ApiId", "trj7cyiqib"
 
 	fmt.Println(from, to)
+	log.Debugf("Retrieve metrics From %s To %s", from, to)
 
 	period := int32(to.Sub(from).Seconds())
+	ns := res.MetricNamespace()
 
 	params := &cloudwatch.GetMetricDataInput{
 		StartTime: &from,
@@ -88,18 +78,20 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 			{
 				Id:         aws.String("error_rate"),
 				Expression: aws.String("errors / requests"),
+				ReturnData: aws.Bool(false),
 			},
 
 			{
 				Id:         aws.String("errors"),
 				Expression: aws.String("SUM([http_5xx_error_count, http_4xx_error_count])"),
+				ReturnData: aws.Bool(false),
 			},
 
 			{
 				Id: aws.String("requests"),
 				MetricStat: &types.MetricStat{
 					Metric: &types.Metric{
-						Namespace:  aws.String("AWS/ApiGateway"),
+						Namespace:  aws.String(ns),
 						MetricName: aws.String("Count"),
 						Dimensions: []types.Dimension{
 							{
@@ -108,18 +100,17 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 							},
 						},
 					},
-					//Period: aws.Int32(60),
 					Period: aws.Int32(period),
 					Stat:   aws.String("SampleCount"),
 				},
-				//ReturnData: aws.Bool(false),
+				ReturnData: aws.Bool(false),
 			},
 
 			{
 				Id: aws.String("http_5xx_error_count"),
 				MetricStat: &types.MetricStat{
 					Metric: &types.Metric{
-						Namespace:  aws.String("AWS/ApiGateway"),
+						Namespace:  aws.String(ns),
 						MetricName: aws.String("5xx"),
 						Dimensions: []types.Dimension{
 							{
@@ -128,7 +119,6 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 							},
 						},
 					},
-					//Period: aws.Int32(60),
 					Period: aws.Int32(period),
 					Stat:   aws.String("Sum"),
 				},
@@ -139,7 +129,7 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 				Id: aws.String("http_4xx_error_count"),
 				MetricStat: &types.MetricStat{
 					Metric: &types.Metric{
-						Namespace:  aws.String("AWS/ApiGateway"),
+						Namespace:  aws.String(ns),
 						MetricName: aws.String("4xx"),
 						Dimensions: []types.Dimension{
 							{
@@ -148,7 +138,6 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 							},
 						},
 					},
-					//Period: aws.Int32(60),
 					Period: aws.Int32(period),
 					Stat:   aws.String("Sum"),
 				},
@@ -161,19 +150,21 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 		return -1, err
 	}
 
-	fmt.Printf("metric data: %#v\n", data)
+	var errorRatePercent float64 = -1
 	for _, r := range data.MetricDataResults {
-
-		fmt.Println(string(*r.Id), string(*r.Label))
-
-		for i, ts := range r.Timestamps {
-
-			fmt.Printf("%v -> %v\n", ts, r.Values[i])
+		if string(*r.Id) == "error_rate_percent" {
+			if len(r.Values) > 0 {
+				errorRatePercent = r.Values[0]
+			}
+			break
 		}
-
+	}
+	if errorRatePercent == -1 {
+		return errorRatePercent, errors.New("No error rate percent value retrieved from cloud watch")
 	}
 
-	return -1, nil
+	log.Debugf("error rate is %v%%\n", errorRatePercent)
+	return errorRatePercent, nil
 }
 
 // extractArnFromResourceID returns the ARN subpart of a service resource ID
@@ -200,8 +191,8 @@ func extractArnFromResourceID(id string) (arn.ARN, error) {
 
 // IsSupportedService indicates wether the resource is supported
 // for metrics retrieval
-func (aws *AwsResource) IsSupportedService() bool {
-	switch aws.arn.Service {
+func (r *AwsResource) IsSupportedService() bool {
+	switch r.arn.Service {
 	case "apigateway":
 		return true
 	default:
@@ -225,4 +216,20 @@ func parseResourceID(resId string) (AwsResource, error) {
 	}
 
 	return resource, nil
+}
+
+func (r *AwsResource) MetricNamespace() string {
+
+	ns := ""
+
+	switch r.arn.Service {
+	case "apigateway":
+		ns = "AWS/ApiGateway"
+	case "cloudfront":
+		ns = "AWS/CloudFront"
+	case "elasticloadbalancing":
+		ns = "AWS/ApplicationELB"
+	}
+
+	return ns
 }
