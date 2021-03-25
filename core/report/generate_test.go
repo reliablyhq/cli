@@ -99,12 +99,9 @@ func TestFromManifest(t *testing.T) {
 						Owner:      "test owner",
 						Repository: "test repo",
 					},
-					ServiceLevel: &manifest.ServiceLevel{
-						Availability:       95,
+					Service: &manifest.Service{
 						Latency:            core.Duration{Duration: time.Millisecond * 250},
 						ErrorBudgetPercent: 2.5,
-					},
-					Service: &manifest.Service{
 						Resources: []*manifest.ServiceResource{
 							{
 								ID: "test_from_manifest/abc13",

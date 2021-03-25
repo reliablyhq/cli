@@ -6,14 +6,14 @@ import (
 
 type (
 	Manifest struct {
-		App          *AppInfo                   `yaml:"app" json:"app"`
-		CI           *ContinuousIntegrationInfo `yaml:"ci,omitempty" json:"ci,omitempty"`
-		ServiceLevel *ServiceLevel              `yaml:"service_level,omitempty" json:"service_level,omitempty"`
-		Dependencies []*AppInfo                 `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
-		Hosting      *Hosting                   `yaml:"hosting,omitempty" json:"hosting,omitempty"`
-		IAC          *IAC                       `yaml:"infrastructure_as_code,omitempty" json:"infrastructure_as_code,omitempty"`
-		Tags         map[string]string          `yaml:"tags,omitempty" json:"tags,omitempty"`
-		Service      *Service                   `yaml:"service" json:"service"`
+		App          *AppInfo          `yaml:"app" json:"app"`
+		Service      *Service          `yaml:"service" json:"service"`
+		Tags         map[string]string `yaml:"tags,omitempty" json:"tags,omitempty"`
+		Dependencies []*AppInfo        `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+		// ServiceLevel *ServiceLevel     `yaml:"service_level,omitempty" json:"service_level,omitempty"`
+		// CI           *ContinuousIntegrationInfo `yaml:"ci,omitempty" json:"ci,omitempty"`
+		// Hosting      *Hosting          `yaml:"hosting,omitempty" json:"hosting,omitempty"`
+		// IAC          *IAC              `yaml:"infrastructure_as_code,omitempty" json:"infrastructure_as_code,omitempty"`
 	}
 
 	AppInfo struct {
@@ -24,7 +24,7 @@ type (
 
 	Service struct {
 		Name               string             `yaml:"name" json:"name"`
-		Availability       float64            `yaml:"availability" json:"availability"`
+		Latency            core.Duration      `yaml:"latency" json:"latency"`
 		ErrorBudgetPercent float64            `yaml:"error_budget_percent" json:"error_budget_percent"`
 		Resources          []*ServiceResource `yaml:"resources" json:"resources"`
 	}
