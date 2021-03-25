@@ -34,6 +34,7 @@ func NewAwsCloudWatch() (cw *AwsCloudWatch, err error) {
 		}))
 		fmt.Println("aws session ", sess)
 	*/
+
 	// Credentials to AWS go SDK can be setup as described in the offical doc:
 	// https://aws.github.io/aws-sdk-go-v2/docs/configuring-sdk/#specifying-credentials
 
@@ -95,6 +96,10 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 				},
 			*/
 			{
+				Id:         aws.String("http_error_count"),
+				Expression: aws.String("SUM([http_5xx_error_count, http_4xx_error_count])"),
+			},
+			{
 				Id: aws.String("http_5xx_error_count"),
 				//Expression: aws.String("SUM([METRICS(\"4xx\"), METRICS(\"5xx\")])"),
 				MetricStat: &types.MetricStat{
@@ -111,6 +116,7 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 					Period: aws.Int32(60),
 					Stat:   aws.String("Sum"),
 				},
+				ReturnData: aws.Bool(false),
 			},
 			{
 				Id: aws.String("http_4xx_error_count"),
@@ -129,6 +135,7 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 					Period: aws.Int32(60),
 					Stat:   aws.String("Sum"),
 				},
+				ReturnData: aws.Bool(false),
 			},
 		},
 	}
