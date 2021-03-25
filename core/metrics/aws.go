@@ -69,11 +69,6 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 	apiID := parts[len(parts)-1]
 	fmt.Println("resource iD for api ", apiID)
 
-	var (
-	//id string = "http_error_count"
-	//expression string = "SUM([METRICS(\"4xx\"), METRICS(\"5xx\")])"
-	)
-
 	//"AWS/ApiGateway", "4xx", "ApiId", "trj7cyiqib"
 
 	fmt.Println(from, to)
@@ -82,26 +77,43 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 		StartTime: &from,
 		EndTime:   &to,
 		MetricDataQueries: []types.MetricDataQuery{
-			/*
-				{
-					Id: aws.String("http_error_count"),
-					//Expression: aws.String("SUM([METRICS(\"4xx\"), METRICS(\"5xx\")])"),
-					//Expression: &expression,
-					MetricStat: &types.MetricStat{
-						Metric: &types.Metric{
-							Namespace:  aws.String("AWS/ApiGateway"),
-							MetricName: aws.String("4xx"),
-						},
-					},
-				},
-			*/
+
 			{
-				Id:         aws.String("http_error_count"),
+				Id:         aws.String("error_rate_percent"),
+				Expression: aws.String("error_rate * 100"),
+			},
+
+			{
+				Id:         aws.String("error_rate"),
+				Expression: aws.String("errors / requests"),
+			},
+
+			{
+				Id:         aws.String("errors"),
 				Expression: aws.String("SUM([http_5xx_error_count, http_4xx_error_count])"),
 			},
+
+			{
+				Id: aws.String("requests"),
+				MetricStat: &types.MetricStat{
+					Metric: &types.Metric{
+						Namespace:  aws.String("AWS/ApiGateway"),
+						MetricName: aws.String("Count"),
+						Dimensions: []types.Dimension{
+							{
+								Name:  aws.String("ApiId"),
+								Value: aws.String(apiID),
+							},
+						},
+					},
+					Period: aws.Int32(60),
+					Stat:   aws.String("SampleCount"),
+				},
+				//ReturnData: aws.Bool(false),
+			},
+
 			{
 				Id: aws.String("http_5xx_error_count"),
-				//Expression: aws.String("SUM([METRICS(\"4xx\"), METRICS(\"5xx\")])"),
 				MetricStat: &types.MetricStat{
 					Metric: &types.Metric{
 						Namespace:  aws.String("AWS/ApiGateway"),
@@ -118,9 +130,9 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 				},
 				ReturnData: aws.Bool(false),
 			},
+
 			{
 				Id: aws.String("http_4xx_error_count"),
-				//Expression: aws.String("SUM([METRICS(\"4xx\"), METRICS(\"5xx\")])"),
 				MetricStat: &types.MetricStat{
 					Metric: &types.Metric{
 						Namespace:  aws.String("AWS/ApiGateway"),
@@ -185,7 +197,7 @@ func extractArnFromResourceID(id string) (arn.ARN, error) {
 // for metrics retrieval
 func (aws *AwsResource) IsSupportedService() bool {
 	switch aws.arn.Service {
-	case "apigateway", "apigateway2":
+	case "apigateway":
 		return true
 	default:
 		return false
