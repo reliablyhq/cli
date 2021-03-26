@@ -65,6 +65,10 @@ func (cw *AwsCloudWatch) Get99PercentLatencyMetricForResource(resourceID string,
 			if len(r.Values) > 0 {
 				latencyPercentile = r.Values[0]
 			}
+
+			for i, ts := range r.Timestamps {
+				log.Debugf("> %v : %.3fms", ts, r.Values[i])
+			}
 			break
 		}
 	}
@@ -100,6 +104,10 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 			if len(r.Values) > 0 {
 				errorRatePercent = r.Values[0]
 			}
+
+			for i, ts := range r.Timestamps {
+				log.Debugf("> %v : %.2f%%", ts, r.Values[i])
+			}
 			break
 		}
 	}
@@ -107,7 +115,7 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 		return errorRatePercent, errors.New("No error rate percent value retrieved from cloud watch")
 	}
 
-	log.Debugf("error rate is %v%%\n", errorRatePercent)
+	log.Debugf("error rate is %.2f%%\n", errorRatePercent)
 	return errorRatePercent, nil
 }
 
