@@ -21,3 +21,6 @@ bin/
 *.sarif.json
 output.txt
 output2.txt
+
+# this is the default output of the `reliably report` command
+report.json
