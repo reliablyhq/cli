@@ -119,28 +119,6 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 	return errorRatePercent, nil
 }
 
-// extractArnFromResourceID returns the ARN subpart of a service resource ID
-// ie aws/arn:partition:service:region:account-id:resource-type:resource-id
-func extractArnFromResourceID(id string) (arn.ARN, error) {
-
-	var arnStr string
-	if strings.HasPrefix(id, "aws/") {
-		arnStr = strings.SplitN(id, "/", 2)[1] // ID is aws/arn:aws:...
-	} else {
-		arnStr = id // ID is directly arn:aws:...
-	}
-
-	if arnStr == "" {
-		return arn.ARN{}, errors.New("Missing ARN in resource identifier: aws/arn:...")
-	}
-
-	if !arn.IsARN(arnStr) {
-		return arn.ARN{}, fmt.Errorf("'%s' is not a valid ARN", arnStr)
-	}
-
-	return arn.Parse(arnStr)
-}
-
 // IsSupportedService indicates wether the resource is supported
 // for metrics retrieval
 func (r *AwsResource) IsSupportedService() bool {
@@ -156,7 +134,11 @@ func parseResourceID(resId string) (AwsResource, error) {
 
 	zerovalue := AwsResource{}
 
-	arn, err := extractArnFromResourceID(resId)
+	if !arn.IsARN(resId) {
+		return zerovalue, fmt.Errorf("Resource ID '%s' is not a valid ARN", resId)
+	}
+
+	arn, err := arn.Parse(resId)
 	if err != nil {
 		return zerovalue, err
 	}

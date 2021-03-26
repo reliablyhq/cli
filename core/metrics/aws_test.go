@@ -7,9 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestExtratArnFromResourceID(t *testing.T) {
+func TestParseResourceID(t *testing.T) {
 
-	null := arn.ARN{}
+	noarn := arn.ARN{}
+	zerovalue := AwsResource{arn: noarn}
 
 	tests := []struct {
 		name    string
@@ -17,28 +18,28 @@ func TestExtratArnFromResourceID(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "missing ARN value",
-			resID:   "aws/",
+			name:    "missing resource ID",
+			resID:   "",
 			wantErr: true,
 		},
 		{
 			name:    "invalid ARN",
-			resID:   "aws/this is not an arn",
+			resID:   "this is not an arn",
 			wantErr: true,
 		},
 		{
 			name:    "incorrect ARN format",
-			resID:   "aws/arn:aws:invalid",
+			resID:   "arn:aws:invalid",
 			wantErr: true,
 		},
 		{
-			name:    "valid ARN with aws/ prefix",
-			resID:   "aws/arn:aws:rds:eu-west-1:123456789012:db:mysql-db",
-			wantErr: false,
+			name:    "valid ARN with unsupported Service",
+			resID:   "arn:aws:rds:eu-west-1:123456789012:db:mysql-db",
+			wantErr: true,
 		},
 		{
-			name:    "ARN without aws/ prefix",
-			resID:   "arn:aws:rds:eu-west-1:123456789012:db:mysql-db",
+			name:    "valid ARN",
+			resID:   "arn:aws:apigateway:eu-west-2::/apis/trj7cyiqib",
 			wantErr: false,
 		},
 	}
@@ -46,18 +47,17 @@ func TestExtratArnFromResourceID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			arn, err := extractArnFromResourceID(tt.resID)
+			r, err := parseResourceID(tt.resID)
 
 			if tt.wantErr {
 				assert.NotEqual(t, nil, err, "Expected error not returned in result")
-				assert.Equal(t, null, arn, "ARN should be zero value")
+				assert.Equal(t, zerovalue, r, "AwsResource should be zero value")
+				t.Log(err)
 				return
 			}
 
 			assert.NoError(t, err, "Unexpected error")
-			assert.NotEqual(t, null, arn, "ARN should not be zero value")
-			assert.NotEqual(t, nil, arn, "ARN should not be nil")
-
+			assert.NotEqual(t, zerovalue, r, "ARN should not be zero value")
 		})
 	}
 
