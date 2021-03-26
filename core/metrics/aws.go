@@ -42,7 +42,38 @@ func NewAwsCloudWatch() (cw *AwsCloudWatch, err error) {
 }
 
 func (cw *AwsCloudWatch) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
-	return -1, nil
+	res, err := parseResourceID(resourceID)
+	if err != nil {
+		return -1, err
+	}
+	log.Debugf("%#v", res)
+
+	params, err := res.GetLatencyMetricDataInput(from, to)
+	if err != nil {
+		return -1, err
+	}
+
+	log.Debugf("Retrieve latency metrics From %s To %s", from, to)
+	data, err := cw.client.GetMetricData(context.TODO(), params)
+	if err != nil {
+		return -1, err
+	}
+
+	var latencyPercentile float64 = -1
+	for _, r := range data.MetricDataResults {
+		if string(*r.Id) == "latency_percentile" {
+			if len(r.Values) > 0 {
+				latencyPercentile = r.Values[0]
+			}
+			break
+		}
+	}
+	if latencyPercentile == -1 {
+		return latencyPercentile, errors.New("No error rate percent value retrieved from cloud watch")
+	}
+
+	log.Debugf("99 percentile latency is %.3fms\n", latencyPercentile)
+	return latencyPercentile, nil
 }
 
 func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error) {
@@ -52,12 +83,12 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 	}
 	log.Debugf("%#v", res)
 
-	params, err := res.GetMetricDataInput(from, to)
+	params, err := res.GetErrorRateMetricDataInput(from, to)
 	if err != nil {
 		return -1, err
 	}
 
-	log.Debugf("Retrieve metrics From %s To %s", from, to)
+	log.Debugf("Retrieve error rate metrics From %s To %s", from, to)
 	data, err := cw.client.GetMetricData(context.TODO(), params)
 	if err != nil {
 		return -1, err
@@ -147,11 +178,11 @@ func (r *AwsResource) MetricNamespace() string {
 	return ns
 }
 
-// GetMetricDataInput retuns the MetricDataInput struct for querying
+// GetErrorRateMetricDataInput retuns the MetricDataInput struct for querying
 // with cloud watch API. It must ONLY return a single value for the
 // required 'error_rate_percent' metric ID
 // This function handles data input depending on different targeted AWS Service
-func (r *AwsResource) GetMetricDataInput(from, to time.Time) (*cloudwatch.GetMetricDataInput, error) {
+func (r *AwsResource) GetErrorRateMetricDataInput(from, to time.Time) (*cloudwatch.GetMetricDataInput, error) {
 
 	var params *cloudwatch.GetMetricDataInput
 
@@ -251,4 +282,49 @@ func (r *AwsResource) GetMetricDataInput(from, to time.Time) (*cloudwatch.GetMet
 
 	return params, nil
 
+}
+
+func (r *AwsResource) GetLatencyMetricDataInput(from, to time.Time) (*cloudwatch.GetMetricDataInput, error) {
+
+	var params *cloudwatch.GetMetricDataInput
+
+	period := int32(to.Sub(from).Seconds())
+	ns := r.MetricNamespace()
+
+	switch r.arn.Service {
+	case "apigateway":
+
+		parts := strings.Split(r.arn.Resource, "/")
+		apiID := parts[len(parts)-1]
+
+		params = &cloudwatch.GetMetricDataInput{
+			StartTime: &from,
+			EndTime:   &to,
+			MetricDataQueries: []types.MetricDataQuery{
+
+				{
+					Id: aws.String("latency_percentile"),
+					MetricStat: &types.MetricStat{
+						Metric: &types.Metric{
+							Namespace:  aws.String(ns),
+							MetricName: aws.String("Latency"),
+							Dimensions: []types.Dimension{
+								{
+									Name:  aws.String("ApiId"),
+									Value: aws.String(apiID),
+								},
+							},
+						},
+						Period: aws.Int32(period),
+						Stat:   aws.String("p99"),
+					},
+				},
+			},
+		}
+
+	default:
+		return nil, fmt.Errorf("Unable to construct Metric Query for AWS Service '%s'", r.arn.Service)
+	}
+
+	return params, nil
 }
