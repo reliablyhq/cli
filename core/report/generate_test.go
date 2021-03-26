@@ -15,13 +15,16 @@ type dummyProvider struct {
 	latencyError       error
 	errorPercentValue  float64
 	errorPercentError  error
+	resourceID         string
 }
 
 func (p *dummyProvider) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
+	p.resourceID = resourceID
 	return p.latencyMetricValue, p.latencyError
 }
 
 func (p *dummyProvider) GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error) {
+	p.resourceID = resourceID
 	return p.errorPercentValue, p.errorPercentError
 }
 
@@ -30,7 +33,7 @@ func Test_getProviderForResource(t *testing.T) {
 	metrics.ProviderFactories["test_get_provider_for_resource"] = func() (metrics.Provider, error) { return p, nil }
 
 	type args struct {
-		ID string
+		providerID string
 	}
 	tests := []struct {
 		name    string
@@ -40,26 +43,26 @@ func Test_getProviderForResource(t *testing.T) {
 	}{
 		{
 			name:    "returns the correct provider",
-			args:    args{ID: "test_get_provider_for_resource/123"},
+			args:    args{providerID: "test_get_provider_for_resource"},
 			want:    p,
 			wantErr: false,
 		},
 		{
 			name:    "returns error if no provider was found",
-			args:    args{ID: "xyz/123"},
+			args:    args{providerID: "xyz"},
 			want:    nil,
 			wantErr: true,
 		},
 		{
 			name:    "returns error if no ID was supplied",
-			args:    args{ID: ""},
+			args:    args{providerID: ""},
 			want:    nil,
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getProviderForResource(tt.args.ID)
+			got, err := getProviderForResource(tt.args.providerID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getProviderForResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -104,7 +107,8 @@ func TestFromManifest(t *testing.T) {
 						ErrorBudgetPercent: 2.5,
 						Resources: []*manifest.ServiceResource{
 							{
-								ID: "test_from_manifest/abc13",
+								Provider: "test_from_manifest",
+								ID:       "abc13",
 							},
 						},
 					},
