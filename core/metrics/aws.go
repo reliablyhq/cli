@@ -52,99 +52,12 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 	}
 	log.Debugf("%#v", res)
 
-	// !! we currently only support api gateway resources
-	parts := strings.Split(res.arn.Resource, "/")
-	apiID := parts[len(parts)-1]
-	log.Debug("Resource ID for API Gateway: ", apiID)
-
-	//"AWS/ApiGateway", "4xx", "ApiId", "trj7cyiqib"
-
-	fmt.Println(from, to)
-	log.Debugf("Retrieve metrics From %s To %s", from, to)
-
-	period := int32(to.Sub(from).Seconds())
-	ns := res.MetricNamespace()
-
-	params := &cloudwatch.GetMetricDataInput{
-		StartTime: &from,
-		EndTime:   &to,
-		MetricDataQueries: []types.MetricDataQuery{
-
-			{
-				Id:         aws.String("error_rate_percent"),
-				Expression: aws.String("error_rate * 100"),
-			},
-
-			{
-				Id:         aws.String("error_rate"),
-				Expression: aws.String("errors / requests"),
-				ReturnData: aws.Bool(false),
-			},
-
-			{
-				Id:         aws.String("errors"),
-				Expression: aws.String("SUM([http_5xx_error_count, http_4xx_error_count])"),
-				ReturnData: aws.Bool(false),
-			},
-
-			{
-				Id: aws.String("requests"),
-				MetricStat: &types.MetricStat{
-					Metric: &types.Metric{
-						Namespace:  aws.String(ns),
-						MetricName: aws.String("Count"),
-						Dimensions: []types.Dimension{
-							{
-								Name:  aws.String("ApiId"),
-								Value: aws.String(apiID),
-							},
-						},
-					},
-					Period: aws.Int32(period),
-					Stat:   aws.String("SampleCount"),
-				},
-				ReturnData: aws.Bool(false),
-			},
-
-			{
-				Id: aws.String("http_5xx_error_count"),
-				MetricStat: &types.MetricStat{
-					Metric: &types.Metric{
-						Namespace:  aws.String(ns),
-						MetricName: aws.String("5xx"),
-						Dimensions: []types.Dimension{
-							{
-								Name:  aws.String("ApiId"),
-								Value: aws.String(apiID),
-							},
-						},
-					},
-					Period: aws.Int32(period),
-					Stat:   aws.String("Sum"),
-				},
-				ReturnData: aws.Bool(false),
-			},
-
-			{
-				Id: aws.String("http_4xx_error_count"),
-				MetricStat: &types.MetricStat{
-					Metric: &types.Metric{
-						Namespace:  aws.String(ns),
-						MetricName: aws.String("4xx"),
-						Dimensions: []types.Dimension{
-							{
-								Name:  aws.String("ApiId"),
-								Value: aws.String(apiID),
-							},
-						},
-					},
-					Period: aws.Int32(period),
-					Stat:   aws.String("Sum"),
-				},
-				ReturnData: aws.Bool(false),
-			},
-		},
+	params, err := res.GetMetricDataInput(from, to)
+	if err != nil {
+		return -1, err
 	}
+
+	log.Debugf("Retrieve metrics From %s To %s", from, to)
 	data, err := cw.client.GetMetricData(context.TODO(), params)
 	if err != nil {
 		return -1, err
@@ -232,4 +145,110 @@ func (r *AwsResource) MetricNamespace() string {
 	}
 
 	return ns
+}
+
+// GetMetricDataInput retuns the MetricDataInput struct for querying
+// with cloud watch API. It must ONLY return a single value for the
+// required 'error_rate_percent' metric ID
+// This function handles data input depending on different targeted AWS Service
+func (r *AwsResource) GetMetricDataInput(from, to time.Time) (*cloudwatch.GetMetricDataInput, error) {
+
+	var params *cloudwatch.GetMetricDataInput
+
+	period := int32(to.Sub(from).Seconds())
+	ns := r.MetricNamespace()
+
+	switch r.arn.Service {
+	case "apigateway":
+
+		parts := strings.Split(r.arn.Resource, "/")
+		apiID := parts[len(parts)-1]
+
+		params = &cloudwatch.GetMetricDataInput{
+			StartTime: &from,
+			EndTime:   &to,
+			MetricDataQueries: []types.MetricDataQuery{
+
+				{
+					Id:         aws.String("error_rate_percent"),
+					Expression: aws.String("error_rate * 100"),
+				},
+
+				{
+					Id:         aws.String("error_rate"),
+					Expression: aws.String("errors / requests"),
+					ReturnData: aws.Bool(false),
+				},
+
+				{
+					Id:         aws.String("errors"),
+					Expression: aws.String("SUM([http_5xx_error_count, http_4xx_error_count])"),
+					ReturnData: aws.Bool(false),
+				},
+
+				{
+					Id: aws.String("requests"),
+					MetricStat: &types.MetricStat{
+						Metric: &types.Metric{
+							Namespace:  aws.String(ns),
+							MetricName: aws.String("Count"),
+							Dimensions: []types.Dimension{
+								{
+									Name:  aws.String("ApiId"),
+									Value: aws.String(apiID),
+								},
+							},
+						},
+						Period: aws.Int32(period),
+						Stat:   aws.String("SampleCount"),
+					},
+					ReturnData: aws.Bool(false),
+				},
+
+				{
+					Id: aws.String("http_5xx_error_count"),
+					MetricStat: &types.MetricStat{
+						Metric: &types.Metric{
+							Namespace:  aws.String(ns),
+							MetricName: aws.String("5xx"),
+							Dimensions: []types.Dimension{
+								{
+									Name:  aws.String("ApiId"),
+									Value: aws.String(apiID),
+								},
+							},
+						},
+						Period: aws.Int32(period),
+						Stat:   aws.String("Sum"),
+					},
+					ReturnData: aws.Bool(false),
+				},
+
+				{
+					Id: aws.String("http_4xx_error_count"),
+					MetricStat: &types.MetricStat{
+						Metric: &types.Metric{
+							Namespace:  aws.String(ns),
+							MetricName: aws.String("4xx"),
+							Dimensions: []types.Dimension{
+								{
+									Name:  aws.String("ApiId"),
+									Value: aws.String(apiID),
+								},
+							},
+						},
+						Period: aws.Int32(period),
+						Stat:   aws.String("Sum"),
+					},
+					ReturnData: aws.Bool(false),
+				},
+			},
+		}
+
+	default:
+		return nil, fmt.Errorf("Unable to construct Metric Query for AWS Service '%s'", r.arn.Service)
+	}
+
+	return params, nil
+
 }
