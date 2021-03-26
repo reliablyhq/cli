@@ -2,7 +2,6 @@ package metrics
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -24,7 +23,6 @@ func NewGCP() (*GCP, error) {
 
 	ctx := context.Background()
 	client, err := monitoring.NewMetricClient(ctx)
-	fmt.Print(*client)
 	if err != nil {
 		return nil, fmt.Errorf("NewMetricClient: %v", err)
 	}
@@ -38,90 +36,104 @@ func NewGCP() (*GCP, error) {
 func (p *GCP) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
 	projectID := strings.SplitN(resourceID, "/", -1)[1]
 
-	startTime := from
-	endTime := to
-	metricType := "loadbalancing.googleapis.com/https/total_latencies"
-	// resourceName := strings.SplitN(resourceID, "/", -1)[3]
+	metricType := "loadbalancing.googleapis.com/https/backend_latencies"
+	resourceName := strings.SplitN(resourceID, "/", -1)[3]
+	alignmentSeconds := to.Unix() - from.Unix()
 
 	req := &monitoringpb.ListTimeSeriesRequest{
 		Name: "projects/" + projectID,
-		// Filter: fmt.Sprintf(`metric.type="%s" AND resource.url_map_name="%s"`, metricType, resourceName),
-		Filter: fmt.Sprintf(`metric.type="%s"`, metricType),
+		Filter: fmt.Sprintf(
+			`metric.type="%s" AND resource.labels.url_map_name="%s"`,
+			metricType,
+			resourceName,
+		),
 		Interval: &monitoringpb.TimeInterval{
 			StartTime: &timestamp.Timestamp{
-				Seconds: startTime.Unix(),
+				Seconds: from.Unix(),
 			},
 			EndTime: &timestamp.Timestamp{
-				Seconds: endTime.Unix(),
+				Seconds: to.Unix(),
 			},
 		},
 		Aggregation: &monitoringpb.Aggregation{
 			CrossSeriesReducer: monitoringpb.Aggregation_REDUCE_MEAN,
 			PerSeriesAligner:   monitoringpb.Aggregation_ALIGN_PERCENTILE_99,
 			AlignmentPeriod: &duration.Duration{
-				Seconds: 600,
+				Seconds: alignmentSeconds,
 			},
 		},
 	}
-	it := p.client.ListTimeSeries(p.ctx, req)
-	for {
-		resp, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return 1, fmt.Errorf("could not read time series value: %v", err)
-		}
-		return resp.GetPoints()[0].GetValue().GetDoubleValue(), nil
+
+	latency, err := parseLatency(p.client.ListTimeSeries(p.ctx, req))
+
+	if err != nil {
+		return -1, err
 	}
 
-	return -1, errors.New("Get99PercentLatencyMetricForResource not implemented")
+	return latency, nil
 }
 
 func (p *GCP) GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error) {
-	fmt.Printf("GetErrorPercentageMetricForResource \n")
 	projectID := strings.SplitN(resourceID, "/", -1)[1]
 
-	startTime := from
-	endTime := to
 	metricType := "loadbalancing.googleapis.com/https/request_count"
-	// resourceName := "473344846455" //strings.SplitN(resourceID, "/", -1)[3]
+	resourceName := strings.SplitN(resourceID, "/", -1)[3]
+	alignmentSeconds := to.Unix() - from.Unix()
 
 	req := &monitoringpb.ListTimeSeriesRequest{
 		Name: "projects/" + projectID,
-		// Filter: fmt.Sprintf(`metric.type = "%s" AND resource.url_map_name = "%s" AND
-		// metric.response_code_class != 0`, metricType, resourceName),
-		// Filter: fmt.Sprintf(`metric.type = "%s" AND
-		// metric.response_code_class != 0`, metricType),
-		Filter: fmt.Sprintf(`metric.type="%s"`, metricType),
-		//resource.project_id == '473344846455'
-		//&& (resource.url_map_name == 'reliablyadvicealpha1')
-		//&& (metric.response_code_class != 0)
-		// Filter: fmt.Sprintf(`metric.type ="%s"`, metricType),
+		Filter: fmt.Sprintf(
+			`metric.type="%s" AND resource.labels.url_map_name="%s" AND metric.label.response_code_class != 0`,
+			metricType,
+			resourceName,
+		),
 		Interval: &monitoringpb.TimeInterval{
 			StartTime: &timestamp.Timestamp{
-				Seconds: startTime.Unix(),
+				Seconds: from.Unix(),
 			},
 			EndTime: &timestamp.Timestamp{
-				Seconds: endTime.Unix(),
+				Seconds: to.Unix(),
 			},
 		},
 		Aggregation: &monitoringpb.Aggregation{
 			CrossSeriesReducer: monitoringpb.Aggregation_REDUCE_SUM,
-			PerSeriesAligner:   monitoringpb.Aggregation_ALIGN_COUNT,
+			PerSeriesAligner:   monitoringpb.Aggregation_ALIGN_SUM,
 			AlignmentPeriod: &duration.Duration{
-				Seconds: 600,
+				Seconds: alignmentSeconds,
 			},
-			// Aggregation: &monitoringpb.Aggregation{
-			// 	CrossSeriesReducer: monitoringpb.Aggregation_REDUCE_MEAN,
-			// 	PerSeriesAligner:   monitoringpb.Aggregation_ALIGN_PERCENTILE_99,
-			// 	AlignmentPeriod: &duration.Duration{
-			// 		Seconds: 600,
-			// 	},
+			GroupByFields: []string{"metric.label.response_code_class"},
 		},
 	}
-	fmt.Println("Found data points for the following instances:")
-	it := p.client.ListTimeSeries(p.ctx, req)
+
+	errorPercentage, err := parseStatusErrors(p.client.ListTimeSeries(p.ctx, req))
+
+	if err != nil {
+		return -1, err
+	}
+
+	return errorPercentage, nil
+}
+
+func parseLatency(it *monitoring.TimeSeriesIterator) (float64, error) {
+	var latency float64
+	for {
+		resp, err := it.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return -1, fmt.Errorf("Could not read time series value: %v", err)
+		}
+
+		latency = resp.GetPoints()[0].GetValue().GetDoubleValue()
+	}
+	return latency, nil
+}
+
+func parseStatusErrors(it *monitoring.TimeSeriesIterator) (float64, error) {
+	responseTotal := 0
+	errorCount := 0
+	var errorPercentage float64 = 0
 	for {
 		resp, err := it.Next()
 		if err == iterator.Done {
@@ -130,11 +142,16 @@ func (p *GCP) GetErrorPercentageMetricForResource(resourceID string, from, to ti
 		if err != nil {
 			return 1, fmt.Errorf("could not read time series value: %v", err)
 		}
-		// fmt.Printf("Metric: %v\n", resp)
-		fmt.Printf("Metric: %v\n", resp.GetPoints()[0].GetValue().GetInt64Value())
-	}
-	fmt.Println("Done")
-	return 1, nil
+		if resp.GetMetric().GetLabels()["response_code_class"] == "500" {
+			errorCount = int(resp.GetPoints()[0].GetValue().GetInt64Value())
+		}
 
-	// return -1, errors.New("GetErrorPercentageMetricForResource not implemented")
+		responseTotal += int(resp.GetPoints()[0].GetValue().GetInt64Value())
+	}
+	if errorCount != 0 {
+		errorPercentage = (float64(errorCount) / float64(responseTotal)) * 100
+	} else {
+		errorPercentage = 0
+	}
+	return errorPercentage, nil
 }
