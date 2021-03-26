@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	oneDay  = 24 * time.Hour
-	oneWeek = 7 * oneDay
+	oneDay     = 24 * time.Hour
+	oneWeek    = 7 * oneDay
+	apiVersion = "1.0rc"
 )
 
 var (
@@ -32,6 +33,7 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	allErrors := make([]error, 0)
 
 	r.ApplicationName = m.App.Name
+	r.APIVersion = apiVersion
 	r.Timestamp = timestampFn()
 	r.Dependencies = []string{}
 

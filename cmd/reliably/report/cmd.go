@@ -75,7 +75,7 @@ func run(_ *cobra.Command, _ []string) {
 }
 
 func sendReportToReliably(r *report.Report) error {
-	url := fmt.Sprintf("%s/%s/reports", api.GetReliablyApiServerHostURL(), r.ApplicationName)
+	url := fmt.Sprintf("%s/%s/%s/reports", api.GetReliablyApiServerHostURL(), r.APIVersion, r.ApplicationName)
 
 	log.Debug("POST ", url)
 
