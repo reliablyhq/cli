@@ -5,7 +5,6 @@ import (
 )
 
 type Report struct {
-	ReportVersion   string        `json:"report_version"`
 	ApplicationName string        `json:"application_name"`
 	Timestamp       time.Time     `json:"timestamp"`
 	Dependencies    []string      `json:"dependencies"`
