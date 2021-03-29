@@ -52,7 +52,7 @@ func run(_ *cobra.Command, _ []string) {
 	}
 
 	if err := sendReportToReliably(r); err != nil {
-		log.Error(err)
+		log.Warn(err)
 	}
 
 	report.Write(r, log.StandardLogger())
@@ -75,9 +75,9 @@ func run(_ *cobra.Command, _ []string) {
 }
 
 func sendReportToReliably(r *report.Report) error {
-	url := fmt.Sprintf("%s/%s/reports", api.GetReliablyApiServerHostURL(), r.ApplicationName)
+	url := fmt.Sprintf("%s/%s/%s/reports", api.GetReliablyApiServerHostURL(), r.APIVersion, r.ApplicationName)
 
 	log.Debug("POST ", url)
 
-	return errors.New("sendReportToReliably not implemented")
+	return errors.New("Sending reports to Reliably is not available yet. Check back later :D")
 }

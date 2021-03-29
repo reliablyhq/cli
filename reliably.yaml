@@ -1,24 +1,12 @@
-version: 0.1
 app:
-  name: reliablyhq/cli
-  owner: mick@reliablyhq.io
-  repo: github.com/reliablyhq/cli
-ci:
-  type: github actions
-service_level:
-  availability: 50
-  latency: 100ms
-  error_budget_pc: 50
-dependencies:
-- name: mick-roper/awesome-service
-- name: some other service
-infrastructure_as_code:
-  type: terraform
-  root: terraform/
+  name: my-app
+  owner: me
+  repo: /Users/mickroper/repos/github.com/reliablyhq/cli
 service:
-  name: Service A
-  availability: 99
-  latency: 500ms
-  error_budget_percentage: 1
+  latency: 100ms
+  error_budget_percent: 90
   resources:
-  - id: gcp/123456/Google Cloud Load Balancers/reliablyadvicealpha1
+  - provider: dummy
+    id: my lovely resource
+  - provider: aws
+    id: arn:317464599277:apigateway:eu-west-2::/apis/trj7cyiqib

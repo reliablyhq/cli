@@ -3,8 +3,6 @@ package report
 import (
 	go_errors "errors"
 	"fmt"
-	"math/rand"
-	"strings"
 	"time"
 
 	"github.com/reliablyhq/cli/core/errors"
@@ -13,12 +11,13 @@ import (
 )
 
 const (
-	oneDay  = 24 * time.Hour
-	oneWeek = 7 * oneDay
+	oneDay     = 24 * time.Hour
+	oneWeek    = 7 * oneDay
+	apiVersion = "1.0rc"
 )
 
 var (
-	r = rand.New(rand.NewSource(time.Now().Unix()))
+	timestampFn func() time.Time = time.Now().UTC
 )
 
 var notSuportedErrorBuilder = func(thingType, thingName string) error {
@@ -30,22 +29,23 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 		return nil, go_errors.New("manifest is nil")
 	}
 
-	if m.App == nil {
-		return nil, go_errors.New("m.App is nil")
-	}
-
 	r := Report{}
 	allErrors := make([]error, 0)
 
 	r.ApplicationName = m.App.Name
-	r.Timestamp = time.Now().UTC()
+	r.APIVersion = apiVersion
+	r.Timestamp = timestampFn()
+	r.Dependencies = []string{}
 
-	if m.ServiceLevel != nil {
+	if m.Service != nil {
 		allLatency := []float64{}
 		allErrorPercentages := []float64{}
 
+		if len(m.Service.Resources) == 0 {
+			return nil, go_errors.New("you haven't told us about any resources, so we won't be able to give you a report. Sorry :(")
+		}
 		for _, resource := range m.Service.Resources {
-			provider, err := getProviderForResource(resource.ID)
+			provider, err := getProviderForResource(resource.Provider)
 			if err != nil {
 				return nil, err
 			}
@@ -67,26 +67,25 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 
 		}
 
-		r.ServiceLevel.Target = &ServiceLevelIndicators{
-			ErrorBudgetPercent: m.ServiceLevel.ErrorBudgetPercent,
-			ServiceLevel:       m.ServiceLevel.Availability,
-			LatencyMs:          m.ServiceLevel.Latency.Milliseconds(),
+		r.ServiceLevel = &ServiceLevel{
+			Target: &ServiceLevelIndicators{
+				ErrorPercent: m.Service.ErrorBudgetPercent,
+				LatencyMs:    m.Service.Latency.Milliseconds(),
+			},
+			Actual: &ServiceLevelIndicators{
+				ErrorPercent: average(allErrorPercentages),
+				LatencyMs:    int64(average(allLatency)),
+			},
+			Delta: &ServiceLevelIndicators{},
 		}
 
-		r.ServiceLevel.Actual = &ServiceLevelIndicators{
-			ErrorBudgetPercent: average(allErrorPercentages),
-			LatencyMs:          int64(average(allLatency)),
-			ServiceLevel:       -1, // TODO: figure out what this means!
-		}
-
-		r.ServiceLevel.Delta = &ServiceLevelIndicators{
-			ErrorBudgetPercent: r.ServiceLevel.Actual.ErrorBudgetPercent - r.ServiceLevel.Target.ErrorBudgetPercent,
-			ServiceLevel:       r.ServiceLevel.Actual.ServiceLevel - r.ServiceLevel.Target.ServiceLevel,
-			LatencyMs:          r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs,
-		}
+		r.ServiceLevel.Delta.ErrorPercent = r.ServiceLevel.Actual.ErrorPercent - r.ServiceLevel.Target.ErrorPercent
+		r.ServiceLevel.Delta.LatencyMs = r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs
 	}
 
-	r.Dependencies = m.Dependencies
+	if m.Dependencies != nil {
+		r.Dependencies = m.Dependencies
+	}
 
 	if len(allErrors) > 0 {
 		return &r, errors.NewCompoundError("multiple errors occured", allErrors)
@@ -95,9 +94,7 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	return &r, nil
 }
 
-func getProviderForResource(ID string) (metrics.Provider, error) {
-	providerID := strings.SplitN(ID, "/", -1)[0]
-
+func getProviderForResource(providerID string) (metrics.Provider, error) {
 	if factory, ok := metrics.ProviderFactories[providerID]; ok {
 		return factory()
 	}

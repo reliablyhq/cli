@@ -7,10 +7,6 @@
 - Scan has new `tabbed` format that provides tabbed formatted output
 - Scan has new `extended` format for having more verbose output
 - Suggestion examples are added to `sarif` and `extended` output formats
-- Added the concept of a `manifest` that provides context to Reliably
-- added support for scanning terraform resources, `reliably scan terraform`.
-- added new `github.com/reliablyhq/cli/scan` package
-- added `reliably init` command
 
 ### Changed
 - policy retrieval logic has been changed to incorporate the API Version into the path to the remote policy. Locally cached policy also includes the API Version.

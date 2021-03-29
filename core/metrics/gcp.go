@@ -34,10 +34,11 @@ func NewGCP() (*GCP, error) {
 }
 
 func (p *GCP) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
-	projectID := strings.SplitN(resourceID, "/", -1)[1]
+
+	projectID := strings.SplitN(resourceID, "/", -1)[0]
 
 	metricType := "loadbalancing.googleapis.com/https/backend_latencies"
-	resourceName := strings.SplitN(resourceID, "/", -1)[3]
+	resourceName := strings.SplitN(resourceID, "/", -1)[2]
 	alignmentSeconds := to.Unix() - from.Unix()
 
 	req := &monitoringpb.ListTimeSeriesRequest{
@@ -77,10 +78,11 @@ func (p *GCP) Get99PercentLatencyMetricForResource(resourceID string, from, to t
 }
 
 func (p *GCP) GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error) {
-	projectID := strings.SplitN(resourceID, "/", -1)[1]
+
+	projectID := strings.SplitN(resourceID, "/", -1)[0]
 
 	metricType := "loadbalancing.googleapis.com/https/request_count"
-	resourceName := strings.SplitN(resourceID, "/", -1)[3]
+	resourceName := strings.SplitN(resourceID, "/", -1)[2]
 	alignmentSeconds := to.Unix() - from.Unix()
 
 	req := &monitoringpb.ListTimeSeriesRequest{

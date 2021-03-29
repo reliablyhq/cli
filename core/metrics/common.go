@@ -1,11 +1,16 @@
 package metrics
 
 import (
+	"math/rand"
 	"time"
 )
 
+var r = rand.New(rand.NewSource(time.Now().Unix()))
+
 var ProviderFactories = map[string]ProviderFactory{
-	"gcp": func() (Provider, error) { return NewGCP() },
+	"dummy": func() (Provider, error) { return &DummyProvider{}, nil },
+	"aws":   func() (Provider, error) { return NewAwsCloudWatch() },
+	"gcp":   func() (Provider, error) { return NewGCP() },
 }
 
 type (
@@ -16,3 +21,13 @@ type (
 		GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error)
 	}
 )
+
+type DummyProvider struct{}
+
+func (d *DummyProvider) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
+	return 500 * r.Float64(), nil
+}
+
+func (d *DummyProvider) GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error) {
+	return 25 * r.Float64(), nil
+}

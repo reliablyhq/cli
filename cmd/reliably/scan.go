@@ -15,13 +15,13 @@ import (
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
-	"github.com/reliablyhq/cli/cmd/reliably/scan/terraform"
 	"github.com/reliablyhq/cli/core"
 	ctx "github.com/reliablyhq/cli/core/context"
 	finder "github.com/reliablyhq/cli/core/find"
 	"github.com/reliablyhq/cli/core/iostreams"
 	k8s "github.com/reliablyhq/cli/core/kubernetes"
 	output "github.com/reliablyhq/cli/core/output"
+	"github.com/reliablyhq/cli/core/policies"
 	"github.com/reliablyhq/cli/utils"
 )
 
@@ -39,7 +39,8 @@ var (
 )
 
 type ScanOptions struct {
-	IO *iostreams.IOStreams
+	IO       *iostreams.IOStreams
+	Policies *policies.PolicyRegistry
 
 	Files []string
 	Exec  *api.NewExecution
@@ -56,7 +57,8 @@ type ScanOptions struct {
 
 func NewCmdScan(rootCmd *cobra.Command) *cobra.Command {
 	opts := &ScanOptions{
-		IO: iostreams.System(),
+		IO:       iostreams.System(),
+		Policies: policies.NewRegistry(policies.MemStore),
 	}
 
 	cmd := &cobra.Command{
@@ -240,7 +242,11 @@ Reliably can also scan for your live kubernetes cluster.`,
 	cmd.Flags().StringVarP(
 		&opts.KubeConfigPath, "kubeconfig", "k", configPath, "Specifies the path and file to use for kubeconfig for live scan")
 
-	cmd.AddCommand(terraform.New())
+	// create the subcommand and pass the root usage template
+	// TODO: re-add this later!
+	// tfScanCmd := terraform.New()
+	// tfScanCmd.SetUsageTemplate(customUsageTemplate(rootCmd))
+	// cmd.AddCommand(tfScanCmd)
 
 	// reformat the flags usage to be able to group them into sub sections
 	flagsUsages := strings.Split(cmd.Flags().FlagUsages(), "\n")
@@ -425,13 +431,14 @@ func staticScan(opts *ScanOptions) (core.ResultSet, error) {
 			// to map[string]interface{} (recursively)
 			input = dyno.ConvertMapI2MapS(input)
 
-			ppath, err := getCachedPolicyPath(header.APIVersion, header.Kind)
+			pID := getPolicyID(platform, header.APIVersion, header.Kind)
+			policy, err := opts.Policies.GetPolicy(pID)
 			if err != nil {
 				log.Debug(err)
 				continue
 			}
 
-			rs := core.Eval(ppath, input)
+			rs := core.Eval(core.RegoModule{Name: pID, Raw: string(policy)}, input)
 			newIssues := core.ReportViolations(rs, fpath, platform, kind, startLine, name, uri)
 			violations = append(violations, newIssues...)
 		}
@@ -504,14 +511,15 @@ func liveScan(opts *ScanOptions) (core.ResultSet, error) {
 		input = dyno.ConvertMapI2MapS(input)
 
 		// fetch the policies
-		ppath, err := getCachedPolicyPath(header.APIVersion, header.Kind)
+		pID := getPolicyID(platform, header.APIVersion, header.Kind)
+		policy, err := opts.Policies.GetPolicy(pID)
 		if err != nil {
 			log.Debug(err)
 			continue
 		}
 
 		// evaluate the input with the policies
-		rs := core.Eval(ppath, input)
+		rs := core.Eval(core.RegoModule{Name: pID, Raw: string(policy)}, input)
 
 		newIssues := core.ReportViolations(rs, "fpath", platform, kind, startLine, name, uri)
 		violations = append(violations, newIssues...)
@@ -537,16 +545,6 @@ func filterViolations(violations core.ResultSet, l string) (core.ResultSet, erro
 	return filtered.(core.ResultSet), nil
 }
 
-func getCachedPolicyPath(APIVersion, kind string) (string, error) {
-	path := fmt.Sprintf("%s/%s", APIVersion, kind)
-	ppath, err := core.FetchPolicy(workspace, platform, path)
-	if err != nil {
-		if err == core.ErrPolicyNotFound {
-			log.Warn(fmt.Sprint("no policy found for resource ", path))
-			return "", err
-		}
-
-		return "", err
-	}
-	return ppath, nil
+func getPolicyID(platform string, APIVersion string, kind string) string {
+	return strings.ToLower(fmt.Sprintf("%s/%s/%s", platform, APIVersion, kind))
 }

@@ -32,28 +32,14 @@ func TestLoad(t *testing.T) {
 					Owner:      "unit test owner",
 					Repository: "github.com/reliablyhq/cli",
 				},
-				CI: &ContinuousIntegrationInfo{
-					Type: "unit test ci",
-				},
-				ServiceLevel: &ServiceLevel{
-					Availability:       75,
-					Latency:            core.Duration{Duration: 200 * time.Millisecond},
+				Service: &Service{
+					Latency:            core.Duration{Duration: 100 * time.Millisecond},
 					ErrorBudgetPercent: 0.5,
+					Resources:          []*ServiceResource{},
 				},
-				Dependencies: []*AppInfo{
-					{
-						Name: "some service",
-					},
-					{
-						Name: "some other service",
-					},
-				},
-				Hosting: &Hosting{
-					Provider: "some dummy provider",
-				},
-				IAC: &IAC{
-					Type: "some IAC system",
-					Root: "./abc",
+				Dependencies: []string{
+					"some service",
+					"some other service",
 				},
 				Tags: map[string]string{
 					"team":   "abc",
@@ -73,28 +59,23 @@ func TestLoad(t *testing.T) {
 					Owner:      "unit test owner",
 					Repository: "github.com/reliablyhq/cli",
 				},
-				CI: &ContinuousIntegrationInfo{
-					Type: "unit test ci",
-				},
-				ServiceLevel: &ServiceLevel{
-					Availability:       75,
-					Latency:            core.Duration{Duration: 200 * time.Millisecond},
+				Service: &Service{
+					Latency:            core.Duration{Duration: 100 * time.Millisecond},
 					ErrorBudgetPercent: 0.5,
-				},
-				Dependencies: []*AppInfo{
-					{
-						Name: "some service",
+					Resources: []*ServiceResource{
+						{
+							Provider: "abc",
+							ID:       "123",
+						},
+						{
+							Provider: "xyz",
+							ID:       "456",
+						},
 					},
-					{
-						Name: "some other service",
-					},
 				},
-				Hosting: &Hosting{
-					Provider: "some dummy provider",
-				},
-				IAC: &IAC{
-					Type: "some IAC system",
-					Root: "./abc",
+				Dependencies: []string{
+					"some service",
+					"some other service",
 				},
 				Tags: map[string]string{
 					"team":   "abc",
@@ -126,8 +107,50 @@ func TestLoad(t *testing.T) {
 				return
 			}
 
-			if !reflect.DeepEqual(tt.want, got) {
-				t.Errorf("Wanted %v but got %v", tt.want.App, got.App)
+			if tt.wantErr == true {
+				return
+			}
+
+			if !reflect.DeepEqual(tt.want.App, got.App) {
+				t.Errorf("Wanted App to be %v but got %v", tt.want.App, got.App)
+				return
+			}
+
+			if tt.want.Service.ErrorBudgetPercent != got.Service.ErrorBudgetPercent {
+				t.Errorf("Wanted Service.ErrorBudgetPercent to be %v but was %v", tt.want.Service.ErrorBudgetPercent, got.Service.ErrorBudgetPercent)
+				return
+			}
+
+			if tt.want.Service.Latency != got.Service.Latency {
+				t.Errorf("Wanted Service.Latency to be %v but was %v", tt.want.Service.Latency, got.Service.Latency)
+				return
+			}
+
+			if len(tt.want.Service.Resources) == len(got.Service.Resources) {
+				for i, r := range tt.want.Service.Resources {
+					if r.ID != got.Service.Resources[i].ID {
+						t.Errorf("%v != %v", r.ID, got.Service.Resources[i].ID)
+						return
+					}
+
+					if r.Provider != got.Service.Resources[i].Provider {
+						t.Errorf("%v != %v", r.Provider, got.Service.Resources[i].Provider)
+						return
+					}
+				}
+			} else {
+				t.Errorf("Wanted Service.Resources to be %v but was %v", len(tt.want.Service.Resources), len(got.Service.Resources))
+				return
+			}
+
+			if !reflect.DeepEqual(tt.want.Dependencies, got.Dependencies) {
+				t.Errorf("Wanted Dependencies to be %v but got %v", tt.want.Dependencies, got.Dependencies)
+				return
+			}
+
+			if !reflect.DeepEqual(tt.want.Tags, got.Tags) {
+				t.Errorf("Wanted Tags to be %v but got %v", tt.want.Tags, got.Tags)
+				return
 			}
 		})
 	}
