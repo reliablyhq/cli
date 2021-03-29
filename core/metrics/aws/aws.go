@@ -15,30 +15,33 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type AwsCloudWatch struct {
-	client *cloudwatch.Client
-	config aws.Config
-}
+type AwsCloudWatch struct{}
 
 type AwsResource struct {
 	arn arn.ARN
 }
+
+var ctx = context.TODO()
 
 // NewAwsCloudWatch is the factory function for AWS cloud watch metric provider
 func NewAwsCloudWatch() (cw *AwsCloudWatch, err error) {
 	// Credentials to AWS go SDK can be setup as described in the offical doc:
 	// https://aws.github.io/aws-sdk-go-v2/docs/configuring-sdk/#specifying-credentials
 
-	cw = &AwsCloudWatch{}
+	return &AwsCloudWatch{}, nil
+}
 
-	cfg, err := config.LoadDefaultConfig(context.TODO())
+func newClient(region string) (*cloudwatch.Client, error) {
+	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
-		err = fmt.Errorf("failed to load configuration, %v", err)
-		return
+		return nil, fmt.Errorf("failed to load configuration, %v", err)
 	}
-	cw.config = cfg
-	cw.client = cloudwatch.NewFromConfig(cfg)
-	return
+
+	if region != "" {
+		cfg.Region = region
+	}
+
+	return cloudwatch.NewFromConfig(cfg), nil
 }
 
 func (cw *AwsCloudWatch) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
@@ -48,13 +51,18 @@ func (cw *AwsCloudWatch) Get99PercentLatencyMetricForResource(resourceID string,
 	}
 	log.Debugf("%#v", res)
 
+	client, err := newClient(res.arn.Region)
+	if err != nil {
+		return -1, err
+	}
+
 	params, err := res.GetLatencyMetricDataInput(from, to)
 	if err != nil {
 		return -1, err
 	}
 
 	log.Debugf("Retrieve latency metrics From %s To %s", from, to)
-	data, err := cw.client.GetMetricData(context.TODO(), params)
+	data, err := client.GetMetricData(ctx, params)
 	if err != nil {
 		return -1, err
 	}
@@ -87,13 +95,18 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 	}
 	log.Debugf("%#v", res)
 
+	client, err := newClient(res.arn.Region)
+	if err != nil {
+		return -1, err
+	}
+
 	params, err := res.GetErrorRateMetricDataInput(from, to)
 	if err != nil {
 		return -1, err
 	}
 
 	log.Debugf("Retrieve error rate metrics From %s To %s", from, to)
-	data, err := cw.client.GetMetricData(context.TODO(), params)
+	data, err := client.GetMetricData(ctx, params)
 	if err != nil {
 		return -1, err
 	}
