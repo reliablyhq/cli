@@ -45,6 +45,7 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 		if len(m.Service.Resources) == 0 {
 			return nil, go_errors.New("you haven't told us about any resources, so we won't be able to give you a report. Sorry :(")
 		}
+
 		for _, resource := range m.Service.Resources {
 			provider, err := getProviderForResource(resource.Provider)
 			if err != nil {
