@@ -63,9 +63,12 @@ func (p *GCP) Get99PercentLatencyMetricForResource(resourceID string, from, to t
 			},
 		},
 	}
+	timeSeries, err := collectIterations(p.client.ListTimeSeries(p.ctx, req))
+	if err != nil {
+		return -1, err
+	}
 
-	latency, err := parseLatency(p.client.ListTimeSeries(p.ctx, req))
-
+	latency, err := parseLatency(timeSeries[0])
 	if err != nil {
 		return -1, err
 	}
@@ -105,8 +108,12 @@ func (p *GCP) GetErrorPercentageMetricForResource(resourceID string, from, to ti
 		},
 	}
 
-	errorPercentage, err := parseStatusErrors(p.client.ListTimeSeries(p.ctx, req))
+	timeSeries, err := collectIterations(p.client.ListTimeSeries(p.ctx, req))
+	if err != nil {
+		return -1, err
+	}
 
+	errorPercentage, err := parseStatusErrors(timeSeries)
 	if err != nil {
 		return -1, err
 	}
@@ -114,34 +121,20 @@ func (p *GCP) GetErrorPercentageMetricForResource(resourceID string, from, to ti
 	return errorPercentage, nil
 }
 
-func parseLatency(it *monitoring.TimeSeriesIterator) (float64, error) {
-	var latency float64
-	for {
-		resp, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return -1, fmt.Errorf("Could not read time series value: %v", err)
-		}
+func parseLatency(resp *monitoringpb.TimeSeries) (float64, error) {
 
-		latency = resp.GetPoints()[0].GetValue().GetDoubleValue()
-	}
+	latency := resp.GetPoints()[0].GetValue().GetDoubleValue()
+
 	return latency, nil
 }
 
-func parseStatusErrors(it *monitoring.TimeSeriesIterator) (float64, error) {
+func parseStatusErrors(it []*monitoringpb.TimeSeries) (float64, error) {
+
 	responseTotal := 0
 	errorCount := 0
 	var errorPercentage float64 = 0
-	for {
-		resp, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return 1, fmt.Errorf("could not read time series value: %v", err)
-		}
+
+	for _, resp := range it {
 		if resp.GetMetric().GetLabels()["response_code_class"] == "500" {
 			errorCount = int(resp.GetPoints()[0].GetValue().GetInt64Value())
 		}
@@ -153,5 +146,24 @@ func parseStatusErrors(it *monitoring.TimeSeriesIterator) (float64, error) {
 	} else {
 		errorPercentage = 0
 	}
+
 	return errorPercentage, nil
+}
+
+func collectIterations(it *monitoring.TimeSeriesIterator) ([]*monitoringpb.TimeSeries, error) {
+	var result []*monitoringpb.TimeSeries
+
+	for {
+		resp, err := it.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("Could not read time series value: %v", err)
+		}
+
+		result = append(result, resp)
+	}
+
+	return result, nil
 }
