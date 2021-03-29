@@ -6,6 +6,9 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.2.7
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
+	github.com/aws/aws-sdk-go-v2 v1.3.0
+	github.com/aws/aws-sdk-go-v2/config v1.1.3
+	github.com/aws/aws-sdk-go-v2/service/cloudwatch v1.2.0
 	github.com/cli/safeexec v1.0.0
 	github.com/fatih/color v1.7.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
