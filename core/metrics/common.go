@@ -10,6 +10,7 @@ var r = rand.New(rand.NewSource(time.Now().Unix()))
 var ProviderFactories = map[string]ProviderFactory{
 	"dummy": func() (Provider, error) { return &DummyProvider{}, nil },
 	"aws":   func() (Provider, error) { return NewAwsCloudWatch() },
+	"gcp":   func() (Provider, error) { return NewGCP() },
 }
 
 type (
