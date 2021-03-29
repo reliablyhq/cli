@@ -21,7 +21,10 @@ type AwsResource struct {
 	arn arn.ARN
 }
 
-var ctx = context.TODO()
+var (
+	ctx               = context.TODO()
+	cloudwatchClients = map[string]*cloudwatch.Client{}
+)
 
 // NewAwsCloudWatch is the factory function for AWS cloud watch metric provider
 func NewAwsCloudWatch() (cw *AwsCloudWatch, err error) {
@@ -31,17 +34,20 @@ func NewAwsCloudWatch() (cw *AwsCloudWatch, err error) {
 	return &AwsCloudWatch{}, nil
 }
 
-func newClient(region string) (*cloudwatch.Client, error) {
-	cfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load configuration, %v", err)
-	}
-
-	if region != "" {
+func tryGetClient(region string) (*cloudwatch.Client, error) {
+	var ok bool
+	var client *cloudwatch.Client
+	if client, ok = cloudwatchClients[region]; !ok {
+		cfg, err := config.LoadDefaultConfig(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load configuration, %v", err)
+		}
 		cfg.Region = region
+		client = cloudwatch.NewFromConfig(cfg)
+		cloudwatchClients[region] = client
 	}
 
-	return cloudwatch.NewFromConfig(cfg), nil
+	return client, nil
 }
 
 func (cw *AwsCloudWatch) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
@@ -51,7 +57,7 @@ func (cw *AwsCloudWatch) Get99PercentLatencyMetricForResource(resourceID string,
 	}
 	log.Debugf("%#v", res)
 
-	client, err := newClient(res.arn.Region)
+	client, err := tryGetClient(res.arn.Region)
 	if err != nil {
 		return -1, err
 	}
@@ -95,7 +101,7 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 	}
 	log.Debugf("%#v", res)
 
-	client, err := newClient(res.arn.Region)
+	client, err := tryGetClient(res.arn.Region)
 	if err != nil {
 		return -1, err
 	}
