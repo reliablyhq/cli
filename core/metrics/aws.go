@@ -203,7 +203,7 @@ func (r *AwsResource) GetErrorRateMetricDataInput(from, to time.Time) (*cloudwat
 
 				{
 					Id:         aws.String("errors"),
-					Expression: aws.String("SUM([http_5xx_error_count, http_4xx_error_count])"),
+					Expression: aws.String("SUM([http_5xx_error_count])"),
 					ReturnData: aws.Bool(false),
 				},
 
@@ -232,25 +232,6 @@ func (r *AwsResource) GetErrorRateMetricDataInput(from, to time.Time) (*cloudwat
 						Metric: &types.Metric{
 							Namespace:  aws.String(ns),
 							MetricName: aws.String("5xx"),
-							Dimensions: []types.Dimension{
-								{
-									Name:  aws.String("ApiId"),
-									Value: aws.String(apiID),
-								},
-							},
-						},
-						Period: aws.Int32(period),
-						Stat:   aws.String("Sum"),
-					},
-					ReturnData: aws.Bool(false),
-				},
-
-				{
-					Id: aws.String("http_4xx_error_count"),
-					MetricStat: &types.MetricStat{
-						Metric: &types.Metric{
-							Namespace:  aws.String(ns),
-							MetricName: aws.String("4xx"),
 							Dimensions: []types.Dimension{
 								{
 									Name:  aws.String("ApiId"),
