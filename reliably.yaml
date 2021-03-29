@@ -6,7 +6,7 @@ service:
   latency: 100ms
   error_budget_percent: 90
   resources:
-  - provider: dummy
-    id: my lovely resource
   - provider: aws
     id: arn:317464599277:apigateway:eu-west-2::/apis/trj7cyiqib
+  - provider: aws
+    id: arn:317464599277:apigateway:eu-west-1::/apis/trj7cyiqib

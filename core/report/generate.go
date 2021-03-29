@@ -8,6 +8,7 @@ import (
 	"github.com/reliablyhq/cli/core/errors"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/metrics"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -47,7 +48,8 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 		for _, resource := range m.Service.Resources {
 			provider, err := getProviderForResource(resource.Provider)
 			if err != nil {
-				return nil, err
+				log.Warn("an error occured while getting a provider for resource: %s", resource.Provider)
+				continue
 			}
 
 			to := time.Now()
@@ -56,13 +58,13 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 			if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
 				allLatency = append(allLatency, l)
 			} else {
-				return nil, err
+				log.Warnf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
 			}
 
 			if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
 				allErrorPercentages = append(allErrorPercentages, e)
 			} else {
-				return nil, err
+				log.Warnf("an error occured while getting error percentage data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
 			}
 
 		}
