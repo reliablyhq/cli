@@ -42,7 +42,11 @@ func tryGetClient(region string) (*cloudwatch.Client, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to load configuration, %v", err)
 		}
-		cfg.Region = region
+
+		if region != "" {
+			cfg.Region = region
+		}
+
 		client = cloudwatch.NewFromConfig(cfg)
 		cloudwatchClients[region] = client
 	}
