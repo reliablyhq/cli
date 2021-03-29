@@ -12,7 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
-	"github.com/reliablyhq/cli/core/metrics"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -24,9 +23,6 @@ type AwsCloudWatch struct {
 type AwsResource struct {
 	arn arn.ARN
 }
-
-// type checking
-var _ metrics.Provider = &AwsCloudWatch{}
 
 // NewAwsCloudWatch is the factory function for AWS cloud watch metric provider
 func NewAwsCloudWatch() (cw *AwsCloudWatch, err error) {

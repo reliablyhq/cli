@@ -9,7 +9,6 @@ import (
 	monitoring "cloud.google.com/go/monitoring/apiv3"
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/timestamp"
-	"github.com/reliablyhq/cli/core/metrics"
 	"google.golang.org/api/iterator"
 	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
 )
@@ -18,9 +17,6 @@ type GCP struct {
 	ctx    context.Context
 	client *monitoring.MetricClient
 }
-
-// type checking
-var _ metrics.Provider = &GCP{}
 
 // Currently needs a service account configured or gcloud auth within same session
 func NewGCP() (*GCP, error) {
