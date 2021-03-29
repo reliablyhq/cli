@@ -8,3 +8,5 @@ service:
   resources:
   - provider: dummy
     id: my lovely resource
+  - provider: aws
+    id: arn:317464599277:apigateway:eu-west-2::/apis/trj7cyiqib
