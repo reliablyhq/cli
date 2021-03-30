@@ -12,6 +12,7 @@
 
 ### Changed
 - policy retrieval logic has been changed to incorporate the API Version into the path to the remote policy. Locally cached policy also includes the API Version.
+- changed suggestion printing to exclude line numbers when they are ':1:1' - this indicates that we couldn't extract a line number and so are using defaults.
 
 ## [0.5.0] - 2021-03-03
 
