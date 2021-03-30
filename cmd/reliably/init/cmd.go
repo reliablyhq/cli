@@ -38,6 +38,12 @@ func run(_ *cobra.Command, args []string) {
 	validateFilePath()
 	scanner := bufio.NewScanner(os.Stdin)
 
+	if _, err := os.Stat(manifestPath); err == nil {
+		if !question.WithBoolAnswer(scanner, fmt.Sprintf("File '%s' already exists. Do you want to replace it (y/n)?", manifestPath)) {
+			return
+		}
+	}
+
 	m := &manifest.Manifest{
 		App: manifest.AppInfo{
 			Name:       getDefaultAppName(),
@@ -49,12 +55,6 @@ func run(_ *cobra.Command, args []string) {
 	}
 
 	if !autoInitialise {
-		if _, err := os.Stat(manifestPath); err == nil {
-			if !question.WithBoolAnswer(scanner, fmt.Sprintf("File '%s' already exists. Do you want to replace it (y/n)?", manifestPath)) {
-				return
-			}
-		}
-
 		populateManifestInteractively(m, scanner)
 	}
 
