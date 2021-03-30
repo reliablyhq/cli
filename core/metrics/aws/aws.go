@@ -21,9 +21,14 @@ type AwsResource struct {
 	arn arn.ARN
 }
 
+type AwsCloudWatchClient interface {
+	GetMetricData(ctx context.Context, params *cloudwatch.GetMetricDataInput,
+		optFns ...func(*cloudwatch.Options)) (*cloudwatch.GetMetricDataOutput, error)
+}
+
 var (
 	ctx               = context.TODO()
-	cloudwatchClients = map[string]*cloudwatch.Client{}
+	cloudwatchClients = map[string]AwsCloudWatchClient{}
 )
 
 // NewAwsCloudWatch is the factory function for AWS cloud watch metric provider
@@ -34,9 +39,9 @@ func NewAwsCloudWatch() (cw *AwsCloudWatch, err error) {
 	return &AwsCloudWatch{}, nil
 }
 
-func tryGetClient(region string) (*cloudwatch.Client, error) {
+func tryGetClient(region string) (AwsCloudWatchClient, error) {
 	var ok bool
-	var client *cloudwatch.Client
+	var client AwsCloudWatchClient
 	if client, ok = cloudwatchClients[region]; !ok {
 		cfg, err := config.LoadDefaultConfig(ctx)
 		if err != nil {
