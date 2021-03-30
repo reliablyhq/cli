@@ -4,9 +4,7 @@ app:
   repo: /Users/mickroper/repos/github.com/reliablyhq/cli
 service:
   latency: 100ms
-  error_budget_percent: 90
+  error_budget_percent: 1
   resources:
   - provider: aws
-    id: arn:317464599277:apigateway:eu-west-2::/apis/trj7cyiqib
-  - provider: aws
-    id: arn:317464599277:apigateway:eu-west-1::/apis/trj7cyiqib
+    id: arn:912823331559:apigateway:eu-west-3::/apis/8vdt1fhj3f
