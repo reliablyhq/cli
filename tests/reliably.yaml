@@ -3,9 +3,14 @@ app:
   owner: unit test owner
   repo: github.com/reliablyhq/cli
 service:
-  latency: 100ms
-  error_budget_percent: 0.5
+  objective:
+    latency: 100ms
+    error_budget_percent: 0.5
   resources:
+  - provider: abc
+    id: 123
+  - provider: xyz
+    id: 456
 dependencies:
 - some service
 - some other service

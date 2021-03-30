@@ -103,8 +103,10 @@ func TestFromManifest(t *testing.T) {
 						Repository: "test repo",
 					},
 					Service: &manifest.Service{
-						Latency:            core.Duration{Duration: time.Millisecond * 250},
-						ErrorBudgetPercent: 2.5,
+						Objective: &manifest.ServiceLevelObjective{
+							Latency:            core.Duration{Duration: time.Millisecond * 250},
+							ErrorBudgetPercent: 2.5,
+						},
 						Resources: []*manifest.ServiceResource{
 							{
 								Provider: "test_from_manifest",

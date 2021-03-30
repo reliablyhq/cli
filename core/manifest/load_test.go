@@ -33,9 +33,20 @@ func TestLoad(t *testing.T) {
 					Repository: "github.com/reliablyhq/cli",
 				},
 				Service: &Service{
-					Latency:            core.Duration{Duration: 100 * time.Millisecond},
-					ErrorBudgetPercent: 0.5,
-					Resources:          []*ServiceResource{},
+					Objective: &ServiceLevelObjective{
+						Latency:            core.Duration{Duration: 100 * time.Millisecond},
+						ErrorBudgetPercent: 0.5,
+					},
+					Resources: []*ServiceResource{
+						{
+							Provider: "abc",
+							ID:       "123",
+						},
+						{
+							Provider: "xyz",
+							ID:       "456",
+						},
+					},
 				},
 				Dependencies: []string{
 					"some service",
@@ -60,8 +71,10 @@ func TestLoad(t *testing.T) {
 					Repository: "github.com/reliablyhq/cli",
 				},
 				Service: &Service{
-					Latency:            core.Duration{Duration: 100 * time.Millisecond},
-					ErrorBudgetPercent: 0.5,
+					Objective: &ServiceLevelObjective{
+						Latency:            core.Duration{Duration: 100 * time.Millisecond},
+						ErrorBudgetPercent: 0.5,
+					},
 					Resources: []*ServiceResource{
 						{
 							Provider: "abc",
@@ -116,13 +129,8 @@ func TestLoad(t *testing.T) {
 				return
 			}
 
-			if tt.want.Service.ErrorBudgetPercent != got.Service.ErrorBudgetPercent {
-				t.Errorf("Wanted Service.ErrorBudgetPercent to be %v but was %v", tt.want.Service.ErrorBudgetPercent, got.Service.ErrorBudgetPercent)
-				return
-			}
-
-			if tt.want.Service.Latency != got.Service.Latency {
-				t.Errorf("Wanted Service.Latency to be %v but was %v", tt.want.Service.Latency, got.Service.Latency)
+			if !reflect.DeepEqual(tt.want.Service.Objective, got.Service.Objective) {
+				t.Errorf("Wanted Service.Objective to be %v but was %v", tt.want.Service.Objective, got.Service.Objective)
 				return
 			}
 
