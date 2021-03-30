@@ -39,12 +39,11 @@ func run(_ *cobra.Command, args []string) {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	m := &manifest.Manifest{
-		App: &manifest.AppInfo{
+		App: manifest.AppInfo{
 			Name:       getDefaultAppName(),
 			Owner:      getDefaultAppOwner(),
 			Repository: getDefaultRepository(),
 		},
-		Service:      &manifest.Service{},
 		Dependencies: []string{},
 		Tags:         map[string]string{},
 	}
@@ -92,25 +91,23 @@ func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner)
 	m.App.Repository = question.WithStringAnswer(scanner, "What is the URL to the repository for this app?")
 
 	if question.WithBoolAnswer(scanner, "Are you building something that will be provided to customers 'as a service'? (y/n)") {
-		m.Service.Objective = &manifest.ServiceLevelObjective{
+		m.Service.Objective = manifest.ServiceLevelObjective{
 			ErrorBudgetPercent: question.WithFloat64Answer(scanner, "What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
 			Latency:            question.WithDurationAnswer(scanner, "What is the maximum request-response latency you want from this service"),
 		}
-		m.Service.Resources = []*manifest.ServiceResource{}
+		m.Service.Resources = []manifest.ServiceResource{}
 
 		do := question.WithBoolAnswer(scanner, "Do you want to add a service resource?")
 		for do {
 			provider := question.WithStringAnswer(scanner, "What is the name of the resource provider (e.g. aws, gcp, azure, etc)?")
 			resourceID := question.WithStringAnswer(scanner, "What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.")
 
-			m.Service.Resources = append(m.Service.Resources, &manifest.ServiceResource{
+			m.Service.Resources = append(m.Service.Resources, manifest.ServiceResource{
 				ID: fmt.Sprintf("%s/%s", provider, resourceID),
 			})
 
 			do = question.WithBoolAnswer(scanner, "Do you want to add another dependency?")
 		}
-	} else {
-		m.Service = nil
 	}
 
 	if question.WithBoolAnswer(scanner, "Does your application have 'service level' dependencies? (y/n)") {

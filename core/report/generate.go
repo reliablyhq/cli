@@ -38,53 +38,51 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	r.Timestamp = timestampFn()
 	r.Dependencies = []string{}
 
-	if m.Service != nil {
-		allLatency := []float64{}
-		allErrorPercentages := []float64{}
+	allLatency := []float64{}
+	allErrorPercentages := []float64{}
 
-		if len(m.Service.Resources) == 0 {
-			return nil, go_errors.New("you haven't told us about any resources, so we won't be able to give you a report. Sorry :(")
-		}
-
-		for _, resource := range m.Service.Resources {
-			provider, err := getProviderForResource(resource.Provider)
-			if err != nil {
-				log.Warnf("an error occured while getting a provider for resource: %s", resource.Provider)
-				continue
-			}
-
-			to := time.Now()
-			from := to.Add(-oneDay)
-
-			if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
-				allLatency = append(allLatency, l)
-			} else {
-				log.Warnf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
-			}
-
-			if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
-				allErrorPercentages = append(allErrorPercentages, e)
-			} else {
-				log.Warnf("an error occured while getting error percentage data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
-			}
-
-		}
-
-		r.ServiceLevel = &ServiceLevel{
-			Target: &ServiceLevelIndicators{
-				ErrorPercent: m.Service.Objective.ErrorBudgetPercent,
-				LatencyMs:    m.Service.Objective.Latency.Milliseconds(),
-			},
-			Actual: &ServiceLevelIndicators{
-				ErrorPercent: average(allErrorPercentages),
-				LatencyMs:    int64(average(allLatency)),
-			},
-			Delta: &ServiceLevelIndicators{},
-		}
-
-		r.ServiceLevel.Delta.ErrorPercent = r.ServiceLevel.Actual.ErrorPercent - r.ServiceLevel.Target.ErrorPercent
-		r.ServiceLevel.Delta.LatencyMs = r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs
+	if len(m.Service.Resources) == 0 {
+		return nil, go_errors.New("you haven't told us about any resources, so we won't be able to give you a report. Sorry :(")
 	}
+
+	for _, resource := range m.Service.Resources {
+		provider, err := getProviderForResource(resource.Provider)
+		if err != nil {
+			log.Warnf("an error occured while getting a provider for resource: %s", resource.Provider)
+			continue
+		}
+
+		to := time.Now()
+		from := to.Add(-oneDay)
+
+		if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
+			allLatency = append(allLatency, l)
+		} else {
+			log.Warnf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
+		}
+
+		if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
+			allErrorPercentages = append(allErrorPercentages, e)
+		} else {
+			log.Warnf("an error occured while getting error percentage data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
+		}
+
+	}
+
+	r.ServiceLevel = &ServiceLevel{
+		Target: &ServiceLevelIndicators{
+			ErrorPercent: m.Service.Objective.ErrorBudgetPercent,
+			LatencyMs:    m.Service.Objective.Latency.Milliseconds(),
+		},
+		Actual: &ServiceLevelIndicators{
+			ErrorPercent: average(allErrorPercentages),
+			LatencyMs:    int64(average(allLatency)),
+		},
+		Delta: &ServiceLevelIndicators{},
+	}
+
+	r.ServiceLevel.Delta.ErrorPercent = r.ServiceLevel.Actual.ErrorPercent - r.ServiceLevel.Target.ErrorPercent
+	r.ServiceLevel.Delta.LatencyMs = r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs
 
 	if m.Dependencies != nil {
 		r.Dependencies = m.Dependencies

@@ -6,8 +6,8 @@ import (
 
 type (
 	Manifest struct {
-		App          *AppInfo          `yaml:"app" json:"app"`
-		Service      *Service          `yaml:"service" json:"service"`
+		App          AppInfo           `yaml:"app" json:"app"`
+		Service      Service           `yaml:"service" json:"service"`
 		Dependencies []string          `yaml:"dependencies" json:"dependencies"`
 		Tags         map[string]string `yaml:"tags,omitempty" json:"tags,omitempty"`
 		// ServiceLevel *ServiceLevel     `yaml:"service_level,omitempty" json:"service_level,omitempty"`
@@ -23,8 +23,8 @@ type (
 	}
 
 	Service struct {
-		Objective *ServiceLevelObjective `yaml:"objective" json:"objective"`
-		Resources []*ServiceResource     `yaml:"resources" json:"resources"`
+		Objective ServiceLevelObjective `yaml:"objective" json:"objective"`
+		Resources []ServiceResource     `yaml:"resources" json:"resources"`
 	}
 
 	ServiceLevelObjective struct {
