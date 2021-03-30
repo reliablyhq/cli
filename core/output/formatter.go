@@ -363,10 +363,7 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 			"printLevel": func(l core.Level) string {
 				return l.ColoredString()
 			},
-			"printLiveFileLocation": func(s string, kind string) string {
-				r := kind + ":"
-				return strings.Replace(s, r, "", 1)
-			},
+			"printLiveFileLocation": printLiveFileLocation,
 			"levelSymbol": func(l core.Level) string {
 				return l.ColoredSquare()
 			},
@@ -400,10 +397,7 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 		"printLevel": func(l core.Level) string {
 			return l.String()
 		},
-		"printLiveFileLocation": func(s string, kind string) string {
-			r := kind + ":"
-			return strings.Replace(s, r, "", 1)
-		},
+		"printLiveFileLocation": printLiveFileLocation,
 		"levelSymbol": func(l core.Level) string {
 			return l.String()[0:1]
 		},
@@ -457,4 +451,16 @@ func convertToCcReport(data *reportInfo) (*ccReport, error) {
 	}
 
 	return &issues, nil
+}
+
+func printLiveFileLocation(location string, kind string) string {
+	oldLocation := location
+
+	// Trim away the default location
+	if strings.HasSuffix(oldLocation, ":1:1") {
+		oldLocation = oldLocation[:len(oldLocation)-4]
+	}
+
+	r := kind + ":"
+	return strings.Replace(oldLocation, r, "", 1)
 }

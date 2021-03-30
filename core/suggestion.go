@@ -113,8 +113,8 @@ func NewSuggestion(result Result, live bool) *Suggestion {
 
 	if live {
 		filePath = result.Resource.Kind + ":" + result.Resource.Name
-		row = 0
-		col = 0
+		row = -1
+		col = -1
 	} else {
 		filePath = result.Resource.File.Filepath
 		row = result.Location.Row
