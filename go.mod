@@ -18,7 +18,6 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gookit/color v1.3.2
 	github.com/hashicorp/go-version v1.2.1
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0
 	github.com/icza/dyno v0.0.0-20200205103839-49cb13720835
 	github.com/imdario/mergo v0.3.11 // indirect

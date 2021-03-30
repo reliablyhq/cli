@@ -9,6 +9,7 @@ import (
 	monitoring "cloud.google.com/go/monitoring/apiv3"
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/timestamp"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
 )
@@ -18,7 +19,7 @@ type GCP struct {
 	client *monitoring.MetricClient
 }
 
-// Currently needs a service account configured or gcloud auth within same session
+// NewGCP currently needs a service account configured or gcloud auth within same session to function
 func NewGCP() (*GCP, error) {
 
 	ctx := context.Background()
@@ -33,7 +34,15 @@ func NewGCP() (*GCP, error) {
 	}, nil
 }
 
+// Get99PercentLatencyMetricForResource retrieves latency data for a resource on GCP
+// and returns the mean of the 99th Percentile latencies across regions of the given resource
 func (p *GCP) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
+
+	if !isValidResourceID(resourceID) {
+		return -1, fmt.Errorf("Resource ID not valid: %s", resourceID)
+	}
+	log.Debugf("Resource Id: %#v", resourceID)
+	log.Debugf("Retrieve latency metrics From %s To %s", from, to)
 
 	projectID := strings.SplitN(resourceID, "/", -1)[0]
 
@@ -69,15 +78,25 @@ func (p *GCP) Get99PercentLatencyMetricForResource(resourceID string, from, to t
 		return -1, err
 	}
 
-	latency, err := parseLatency(timeSeries[0])
+	latency, err := parseLatency(timeSeries)
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("%s: %s", err, resourceID)
 	}
+
+	log.Debugf("99 percentile latency is %.3fms\n", latency)
 
 	return latency, nil
 }
 
+// GetErrorPercentageMetricForResource retrieves the error status code data for a resource on
+// GCP and calculates percentage of 500 status code
 func (p *GCP) GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error) {
+
+	if !isValidResourceID(resourceID) {
+		return -1, fmt.Errorf("Resource ID not valid: %s", resourceID)
+	}
+	log.Debugf("Resource Id: %#v", resourceID)
+	log.Debugf("Retrieve error rate metrics From %s To %s", from, to)
 
 	projectID := strings.SplitN(resourceID, "/", -1)[0]
 
@@ -117,20 +136,30 @@ func (p *GCP) GetErrorPercentageMetricForResource(resourceID string, from, to ti
 
 	errorPercentage, err := parseStatusErrors(timeSeries)
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("%s: %s", err, resourceID)
 	}
+
+	log.Debugf("error rate is %.2f%%\n", errorPercentage)
 
 	return errorPercentage, nil
 }
 
-func parseLatency(resp *monitoringpb.TimeSeries) (float64, error) {
+func parseLatency(it []*monitoringpb.TimeSeries) (float64, error) {
 
-	latency := resp.GetPoints()[0].GetValue().GetDoubleValue()
+	if len(it) < 1 {
+		return -1, fmt.Errorf("No data found for resource")
+	}
+
+	latency := it[0].GetPoints()[0].GetValue().GetDoubleValue()
 
 	return latency, nil
 }
 
 func parseStatusErrors(it []*monitoringpb.TimeSeries) (float64, error) {
+
+	if len(it) < 1 {
+		return -1, fmt.Errorf("No data found for resource")
+	}
 
 	responseTotal := 0
 	errorCount := 0
@@ -168,4 +197,12 @@ func collectIterations(it *monitoring.TimeSeriesIterator) ([]*monitoringpb.TimeS
 	}
 
 	return result, nil
+}
+
+func isValidResourceID(resourceID string) bool {
+	if len(strings.SplitN(resourceID, "/", -1)) < 3 {
+		return false
+	}
+	return true
+
 }
