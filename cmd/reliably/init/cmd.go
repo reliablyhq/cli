@@ -92,8 +92,10 @@ func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner)
 	m.App.Repository = question.WithStringAnswer(scanner, "What is the URL to the repository for this app?")
 
 	if question.WithBoolAnswer(scanner, "Are you building something that will be provided to customers 'as a service'? (y/n)") {
-		m.Service.ErrorBudgetPercent = question.WithFloat64Answer(scanner, "What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100)
-		m.Service.Latency = question.WithDurationAnswer(scanner, "What is the maximum request-response latency you want from this service")
+		m.Service.Objective = &manifest.ServiceLevelObjective{
+			ErrorBudgetPercent: question.WithFloat64Answer(scanner, "What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
+			Latency:            question.WithDurationAnswer(scanner, "What is the maximum request-response latency you want from this service"),
+		}
 		m.Service.Resources = []*manifest.ServiceResource{}
 
 		do := question.WithBoolAnswer(scanner, "Do you want to add a service resource?")

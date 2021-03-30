@@ -5,8 +5,10 @@
     "repo": "github.com/reliablyhq/cli"
   },
   "service": {
-    "latency": "100ms",
-    "error_budget_percent": 0.5,
+    "objective": {
+      "latency": "100ms",
+      "error_budget_percent": 0.5
+    },
     "resources": [
       {
         "provider": "abc",

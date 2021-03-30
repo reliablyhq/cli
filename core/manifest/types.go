@@ -23,9 +23,13 @@ type (
 	}
 
 	Service struct {
-		Latency            core.Duration      `yaml:"latency" json:"latency"`
-		ErrorBudgetPercent float64            `yaml:"error_budget_percent" json:"error_budget_percent"`
-		Resources          []*ServiceResource `yaml:"resources" json:"resources"`
+		Objective *ServiceLevelObjective `yaml:"objective" json:"objective"`
+		Resources []*ServiceResource     `yaml:"resources" json:"resources"`
+	}
+
+	ServiceLevelObjective struct {
+		Latency            core.Duration `yaml:"latency" json:"latency"`
+		ErrorBudgetPercent float64       `yaml:"error_budget_percent" json:"error_budget_percent"`
 	}
 
 	ServiceResource struct {

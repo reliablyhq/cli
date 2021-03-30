@@ -49,7 +49,7 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 		for _, resource := range m.Service.Resources {
 			provider, err := getProviderForResource(resource.Provider)
 			if err != nil {
-				log.Warn("an error occured while getting a provider for resource: %s", resource.Provider)
+				log.Warnf("an error occured while getting a provider for resource: %s", resource.Provider)
 				continue
 			}
 
@@ -72,8 +72,8 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 
 		r.ServiceLevel = &ServiceLevel{
 			Target: &ServiceLevelIndicators{
-				ErrorPercent: m.Service.ErrorBudgetPercent,
-				LatencyMs:    m.Service.Latency.Milliseconds(),
+				ErrorPercent: m.Service.Objective.ErrorBudgetPercent,
+				LatencyMs:    m.Service.Objective.Latency.Milliseconds(),
 			},
 			Actual: &ServiceLevelIndicators{
 				ErrorPercent: average(allErrorPercentages),
