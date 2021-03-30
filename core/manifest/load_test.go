@@ -27,17 +27,17 @@ func TestLoad(t *testing.T) {
 				path: dummyReliablyYamlManifestPath,
 			},
 			want: &Manifest{
-				App: &AppInfo{
+				App: AppInfo{
 					Name:       "unit test app",
 					Owner:      "unit test owner",
 					Repository: "github.com/reliablyhq/cli",
 				},
-				Service: &Service{
-					Objective: &ServiceLevelObjective{
+				Service: Service{
+					Objective: ServiceLevelObjective{
 						Latency:            core.Duration{Duration: 100 * time.Millisecond},
 						ErrorBudgetPercent: 0.5,
 					},
-					Resources: []*ServiceResource{
+					Resources: []ServiceResource{
 						{
 							Provider: "abc",
 							ID:       "123",
@@ -65,17 +65,17 @@ func TestLoad(t *testing.T) {
 				path: dummyReliablyJsonManifestPath,
 			},
 			want: &Manifest{
-				App: &AppInfo{
+				App: AppInfo{
 					Name:       "unit test app",
 					Owner:      "unit test owner",
 					Repository: "github.com/reliablyhq/cli",
 				},
-				Service: &Service{
-					Objective: &ServiceLevelObjective{
+				Service: Service{
+					Objective: ServiceLevelObjective{
 						Latency:            core.Duration{Duration: 100 * time.Millisecond},
 						ErrorBudgetPercent: 0.5,
 					},
-					Resources: []*ServiceResource{
+					Resources: []ServiceResource{
 						{
 							Provider: "abc",
 							ID:       "123",
