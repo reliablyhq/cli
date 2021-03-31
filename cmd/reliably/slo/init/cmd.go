@@ -21,7 +21,7 @@ var (
 func NewCommand() *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "init",
-		Short: "initialise reliably",
+		Short: "initialise the slo portion of the manifest",
 		Long:  longCommandDescription(),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return validateFilePath()
@@ -92,20 +92,6 @@ func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner)
 
 			do = question.WithBoolAnswer(scanner, "Do you want to add another dependency?")
 		}
-	}
-
-	if question.WithBoolAnswer(scanner, "Does your application have 'service level' dependencies? (y/n)") {
-		deps := make([]string, 0)
-
-		addMore := true
-		for addMore {
-			deps = append(deps, question.WithStringAnswer(scanner, "what is the name of the dependency?"))
-			addMore = question.WithBoolAnswer(scanner, "Do you want to add another dependency? (y/n)")
-		}
-
-		m.Dependencies = deps
-	} else {
-		m.Dependencies = nil
 	}
 }
 
