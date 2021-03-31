@@ -9,7 +9,6 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/manifest"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -25,7 +24,10 @@ func NewCommand() *cobra.Command {
 		Use:   "init",
 		Short: "initialise reliably",
 		Long:  longCommandDescription(),
-		Run:   run,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return validateFilePath()
+		},
+		RunE: runE,
 	}
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", "reliably.yaml", "the location of the manifest file")
@@ -34,13 +36,12 @@ func NewCommand() *cobra.Command {
 	return &cmd
 }
 
-func run(_ *cobra.Command, args []string) {
-	validateFilePath()
+func runE(_ *cobra.Command, args []string) error {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	if _, err := os.Stat(manifestPath); err == nil {
 		if !question.WithBoolAnswer(scanner, fmt.Sprintf("File '%s' already exists. Do you want to replace it (y/n)?", manifestPath)) {
-			return
+			return nil
 		}
 	}
 
@@ -60,29 +61,25 @@ func run(_ *cobra.Command, args []string) {
 
 	f, err := os.Create(manifestPath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer f.Close()
 
 	if err := yaml.NewEncoder(f).Encode(&m); err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
-func validateFilePath() {
-	if file, err := os.Stat(manifestPath); file != nil {
-		log.Fatalf("File '%s' already exists. You must delete it before continuing.", manifestPath)
-	} else if err != os.ErrNotExist {
-		log.Fatal(err)
-	}
-
+func validateFilePath() error {
 	for _, ext := range supportedExtensions {
 		if strings.HasSuffix(manifestPath, ext) {
-			return
+			return nil
 		}
 	}
 
-	log.Fatalf("manifest file must have one of the these extensions: %v", supportedExtensions)
+	return fmt.Errorf("manifest file must have one of the these extensions: %v", supportedExtensions)
 }
 
 func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner) {
