@@ -1,0 +1,45 @@
+name: Generate CLI documentation [Manual]
+
+on:
+  workflow_dispatch:
+
+jobs:
+  gen-cli-doc:
+    name: Generate CLI documentation
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
+      - name: Checkout CLI source code
+        uses: actions/checkout@v2
+        with:
+          ref: main
+      - name: Checkout documentation repo
+        uses: actions/checkout@v2
+        with:
+          repository: 'reliablyhq/documentation'
+          ref: 'main'
+          token: ${{ secrets.DOC_PAT }}
+          path: doc
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.15.x'
+      - name: Download Go dependencies
+        run: go mod download
+      - name: Removes old CLI doc
+        run: |
+          git -C doc rm 'cobra-md/*.md' 2>/dev/null || true
+          # Make sure the folder exists after deletion by git (empty folder)
+          mkdir -p ./doc/cobra-md
+      - name: Generate the documentation
+        run:
+          go run ./cmd/doc markdown --output-dir ./doc/cobra-md
+      - name: Commit Documentation
+        run: |
+          cd ./doc
+          git config user.email "74009226+reliably-ci@users.noreply.github.com"
+          git config user.name "CI at Reliably"
+
+          git add 'cobra-md/*.md'
+          git commit -s -m "Generate documentation for Reliably CLI ${RELEASE_VERSION}" || true
+          git push || true

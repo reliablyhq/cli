@@ -139,9 +139,6 @@ func buildSarifRule(suggestion *core.Suggestion) *sarifRule {
 func buildSarifLocation(suggestion *core.Suggestion, rootPath string) (*sarifLocation, error) {
 	var filePath string = suggestion.File
 
-	line := uint64(suggestion.Line)
-	col := uint64(suggestion.Col)
-
 	if rootPath != "" && strings.HasPrefix(suggestion.File, rootPath) {
 		filePath = strings.Replace(suggestion.File, rootPath+"/", "", 1)
 	}
@@ -151,12 +148,19 @@ func buildSarifLocation(suggestion *core.Suggestion, rootPath string) (*sarifLoc
 			ArtifactLocation: &sarifArtifactLocation{
 				URI: filePath,
 			},
-			Region: &sarifRegion{
-				StartLine:   line,
-				StartColumn: col,
-				//EndColumn:   col,
-			},
+			Region: &sarifRegion{},
 		},
+	}
+
+	if suggestion.Line > -1 && suggestion.Col > -1 {
+		line := uint64(suggestion.Line)
+		col := uint64(suggestion.Col)
+
+		location.PhysicalLocation.Region = &sarifRegion{
+			StartLine:   line,
+			StartColumn: col,
+			//EndColumn:   col,
+		}
 	}
 
 	return location, nil
