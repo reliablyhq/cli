@@ -98,7 +98,7 @@ func (cw *AwsCloudWatch) Get99PercentLatencyMetricForResource(resourceID string,
 		}
 	}
 	if latencyPercentile == -1 {
-		return latencyPercentile, errors.New("No error rate percent value retrieved from cloud watch")
+		return latencyPercentile, errors.New("No latency value retrieved from cloud watch")
 	}
 
 	log.Debugf("99 percentile latency is %.3fms\n", latencyPercentile)
