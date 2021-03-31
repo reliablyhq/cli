@@ -79,7 +79,7 @@ func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner)
 	if question.WithBoolAnswer(scanner, "Are you building something that will be provided to customers 'as a service'?") {
 		m.ServiceLevel.Objective = manifest.ServiceLevelObjective{
 			ErrorBudgetPercent: question.WithFloat64Answer(scanner, "What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
-			Latency:            question.WithDurationAnswer(scanner, "What is the maximum request-response latency you want from this service?"),
+			Latency:            question.WithDurationAnswer(scanner, "What is the maximum request-response latency you want from this service (in milliseconds)?"),
 		}
 
 		m.ServiceLevel.Resources = []manifest.ServiceResource{}
