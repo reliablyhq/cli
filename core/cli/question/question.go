@@ -3,10 +3,12 @@ package question
 import (
 	"bufio"
 	"fmt"
+	"os"
 	"strconv"
-	"strings"
 	"time"
 
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/AlecAivazis/survey/v2/terminal"
 	"github.com/reliablyhq/cli/core"
 )
 
@@ -14,9 +16,12 @@ func WithStringAnswer(scanner *bufio.Scanner, questionText string) string {
 	var text string
 
 	for len(text) == 0 {
-		fmt.Println(questionText)
-		scanner.Scan()
-		text = scanner.Text()
+		err := survey.AskOne(&survey.Input{
+			Message: questionText,
+		}, &text, survey.WithValidator(survey.Required))
+		if err == terminal.InterruptErr {
+			os.Exit(0)
+		}
 	}
 
 	return text
@@ -41,7 +46,7 @@ func WithDurationAnswer(scanner *bufio.Scanner, question string) core.Duration {
 	for {
 		answer := WithStringAnswer(scanner, question)
 		if d, err := time.ParseDuration(answer); err != nil {
-			fmt.Println("The value you entered could not be parsed to a duration.")
+			fmt.Printf("The value you entered could not be parsed to a duration: %v\n", err)
 		} else {
 			return core.Duration{Duration: d}
 		}
@@ -49,20 +54,13 @@ func WithDurationAnswer(scanner *bufio.Scanner, question string) core.Duration {
 }
 
 func WithBoolAnswer(scanner *bufio.Scanner, question string) bool {
-	for {
-		answer := WithStringAnswer(scanner, question)
-		if b, err := strconv.ParseBool(answer); err == nil {
-			return b
-		} else {
-			// do some noddy-level parsing
-			lAnswer := strings.ToLower(answer)
-			if lAnswer == "y" || lAnswer == "yes" {
-				return true
-			} else if lAnswer == "n" || lAnswer == "no" {
-				return false
-			}
-
-			fmt.Println("the answer you gave could not be parsed to a boolean")
-		}
+	var b bool
+	err := survey.AskOne(&survey.Confirm{
+		Message: question,
+		Default: true,
+	}, &b)
+	if err == terminal.InterruptErr {
+		os.Exit(0)
 	}
+	return b
 }
