@@ -25,7 +25,10 @@ func NewCommand() *cobra.Command {
 		Use:   "init",
 		Short: "initialise reliably",
 		Long:  longCommandDescription(),
-		Run:   run,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return validateFilePath()
+		},
+		Run: run,
 	}
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", "reliably.yaml", "the location of the manifest file")
@@ -35,7 +38,6 @@ func NewCommand() *cobra.Command {
 }
 
 func run(_ *cobra.Command, args []string) {
-	validateFilePath()
 	scanner := bufio.NewScanner(os.Stdin)
 
 	if _, err := os.Stat(manifestPath); err == nil {
@@ -69,20 +71,14 @@ func run(_ *cobra.Command, args []string) {
 	}
 }
 
-func validateFilePath() {
-	if file, err := os.Stat(manifestPath); file != nil {
-		log.Fatalf("File '%s' already exists. You must delete it before continuing.", manifestPath)
-	} else if err != os.ErrNotExist {
-		log.Fatal(err)
-	}
-
+func validateFilePath() error {
 	for _, ext := range supportedExtensions {
 		if strings.HasSuffix(manifestPath, ext) {
-			return
+			return nil
 		}
 	}
 
-	log.Fatalf("manifest file must have one of the these extensions: %v", supportedExtensions)
+	return fmt.Errorf("manifest file must have one of the these extensions: %v", supportedExtensions)
 }
 
 func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner) {
