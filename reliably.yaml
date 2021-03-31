@@ -1,8 +1,0 @@
-slo:
-  objective:
-    latency: 200ms
-    error_budget_percent: 1
-  resources:
-  - provider: aws
-    id: arn:912823331559:apigateway:eu-west-3::/apis/8vdt1fhj3f
-dependencies: []
