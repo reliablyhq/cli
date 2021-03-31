@@ -42,14 +42,22 @@ func WithFloat64Answer(scanner *bufio.Scanner, question string, min, max float64
 	}
 }
 
-func WithDurationAnswer(scanner *bufio.Scanner, question string) core.Duration {
+func WithInt64Answer(scanner *bufio.Scanner, question string) int64 {
 	for {
 		answer := WithStringAnswer(scanner, question)
-		if d, err := time.ParseDuration(answer); err != nil {
-			fmt.Printf("The value you entered could not be parsed to a duration: %v\n", err)
+		if i, err := strconv.ParseInt(answer, 10, 64); err != nil {
+			fmt.Println("Please make sure you type a number")
 		} else {
-			return core.Duration{Duration: d}
+			return i
 		}
+	}
+}
+
+func WithDurationAnswer(scanner *bufio.Scanner, question string) core.Duration {
+	for {
+		answer := WithInt64Answer(scanner, question)
+		ms := answer * 1000000
+		return core.Duration{Duration: time.Duration(ms)}
 	}
 }
 
