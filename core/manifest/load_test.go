@@ -27,7 +27,7 @@ func TestLoad(t *testing.T) {
 				path: dummyReliablyYamlManifestPath,
 			},
 			want: &Manifest{
-				Service: &Service{
+				ServiceLevel: &Service{
 					Objective: ServiceLevelObjective{
 						Latency:            core.Duration{Duration: 100 * time.Millisecond},
 						ErrorBudgetPercent: 0.5,
@@ -60,7 +60,7 @@ func TestLoad(t *testing.T) {
 				path: dummyReliablyJsonManifestPath,
 			},
 			want: &Manifest{
-				Service: &Service{
+				ServiceLevel: &Service{
 					Objective: ServiceLevelObjective{
 						Latency:            core.Duration{Duration: 100 * time.Millisecond},
 						ErrorBudgetPercent: 0.5,
@@ -114,25 +114,25 @@ func TestLoad(t *testing.T) {
 				return
 			}
 
-			if !reflect.DeepEqual(tt.want.Service.Objective, got.Service.Objective) {
-				t.Errorf("Wanted Service.Objective to be %v but was %v", tt.want.Service.Objective, got.Service.Objective)
+			if !reflect.DeepEqual(tt.want.ServiceLevel.Objective, got.ServiceLevel.Objective) {
+				t.Errorf("Wanted Service.Objective to be %v but was %v", tt.want.ServiceLevel.Objective, got.ServiceLevel.Objective)
 				return
 			}
 
-			if len(tt.want.Service.Resources) == len(got.Service.Resources) {
-				for i, r := range tt.want.Service.Resources {
-					if r.ID != got.Service.Resources[i].ID {
-						t.Errorf("%v != %v", r.ID, got.Service.Resources[i].ID)
+			if len(tt.want.ServiceLevel.Resources) == len(got.ServiceLevel.Resources) {
+				for i, r := range tt.want.ServiceLevel.Resources {
+					if r.ID != got.ServiceLevel.Resources[i].ID {
+						t.Errorf("%v != %v", r.ID, got.ServiceLevel.Resources[i].ID)
 						return
 					}
 
-					if r.Provider != got.Service.Resources[i].Provider {
-						t.Errorf("%v != %v", r.Provider, got.Service.Resources[i].Provider)
+					if r.Provider != got.ServiceLevel.Resources[i].Provider {
+						t.Errorf("%v != %v", r.Provider, got.ServiceLevel.Resources[i].Provider)
 						return
 					}
 				}
 			} else {
-				t.Errorf("Wanted Service.Resources to be %v but was %v", len(tt.want.Service.Resources), len(got.Service.Resources))
+				t.Errorf("Wanted Service.Resources to be %v but was %v", len(tt.want.ServiceLevel.Resources), len(got.ServiceLevel.Resources))
 				return
 			}
 

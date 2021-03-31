@@ -40,15 +40,15 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	allLatency := []float64{}
 	allErrorPercentages := []float64{}
 
-	if m.Service == nil {
+	if m.ServiceLevel == nil {
 		return nil, go_errors.New("I don't know anything about your service objectives. Run `reliably slo init` to tell me.")
 	}
 
-	if len(m.Service.Resources) == 0 {
+	if len(m.ServiceLevel.Resources) == 0 {
 		return nil, go_errors.New("you haven't told us about any resources, so we won't be able to give you a report. Sorry :(")
 	}
 
-	for _, resource := range m.Service.Resources {
+	for _, resource := range m.ServiceLevel.Resources {
 		provider, err := getProviderForResource(resource.Provider)
 		if err != nil {
 			log.Warnf("an error occured while getting a provider for resource: %s", resource.Provider)
@@ -74,8 +74,8 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 
 	r.ServiceLevel = &ServiceLevel{
 		Target: &ServiceLevelIndicators{
-			ErrorPercent: m.Service.Objective.ErrorBudgetPercent,
-			LatencyMs:    m.Service.Objective.Latency.Milliseconds(),
+			ErrorPercent: m.ServiceLevel.Objective.ErrorBudgetPercent,
+			LatencyMs:    m.ServiceLevel.Objective.Latency.Milliseconds(),
 		},
 		Actual: &ServiceLevelIndicators{
 			ErrorPercent: average(allErrorPercentages),
