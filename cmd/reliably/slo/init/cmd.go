@@ -30,7 +30,7 @@ func NewCommand() *cobra.Command {
 		RunE: runE,
 	}
 
-	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", "reliably.yaml", "the location of the manifest file")
+	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", manifest.DefaultManifestPath, "the location of the manifest file")
 
 	return &cmd
 }
