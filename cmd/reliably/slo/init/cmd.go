@@ -20,9 +20,10 @@ var (
 
 func NewCommand() *cobra.Command {
 	cmd := cobra.Command{
-		Use:   "init",
-		Short: "initialise the slo portion of the manifest",
-		Long:  longCommandDescription(),
+		Use:     "init",
+		Short:   "initialise the slo portion of the manifest",
+		Long:    longCommandDescription(),
+		Example: examples(),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return validateFilePath()
 		},
@@ -102,9 +103,22 @@ func longCommandDescription() string {
 		The manifest describes the operational contraints of the application, as well as some metadata about the app that allows users to reach out and communicate with the maintainer.
 
 		Usage:
-		1. reliably init: this method interactively creates a manifest file, asking you questions on the command line and adding your answers to the manifest file.
-		2. reliably init -y: this method automatically creates an empty manifest file that you can manually complete later.
-		3. realibly init -f <path>: this method works the same as reliably init, but allows you to specify the location of the file. This is useful if you use a multi-repo approach to source control.
-		4. reliably init -f <path> -y: this method works the same as reliably init -y, but allows you to specify the location of the file. This is useful if you use a multi-repo approach to source control.
+		1. reliably slo init: this method interactively creates a manifest file, asking you questions on the command line and adding your answers to the manifest file.
+		2. realibly slo init -f <path>: this method works the same as reliably init, but allows you to specify the location of the file. This is useful if you use a multi-repo approach to source control.
+		The manifest describes the operational contraints of the application,
+		as well as some metadata about the app that allows users to reach out
+		and communicate with the maintainer.`)
+}
+
+func examples() string {
+	return heredoc.Doc(`
+$ reliably init:
+  this method interactively creates a manifest file, asking you questions
+  on the command line and adding your answers to the manifest file.
+
+$ realibly init -f <path>:
+  this method works the same as reliably init, but allows you to specify
+  the location of the file. This is useful if you use a multi-repo approach
+  to source control.
 	`)
 }

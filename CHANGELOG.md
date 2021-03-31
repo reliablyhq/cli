@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2021-03-24
+
 ### Added
 - Kubernetes live scan now provides suggestions for nodes
 - Scan has new `tabbed` format that provides tabbed formatted output
@@ -14,6 +16,7 @@
 
 ### Changed
 - policy retrieval logic has been changed to incorporate the API Version into the path to the remote policy. Locally cached policy also includes the API Version.
+- changed suggestion printing to exclude line numbers when they are ':1:1' - this indicates that we couldn't extract a line number and so are using defaults.
 
 ## [0.5.0] - 2021-03-03
 
@@ -60,7 +63,8 @@
 
 - Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/reliablyhq/cli/releases/tag/v0.6.0
 [0.5.0]: https://github.com/reliablyhq/cli/releases/tag/v0.5.0
 [0.4.0]: https://github.com/reliablyhq/cli/releases/tag/v0.4.0
 [0.3.0]: https://github.com/reliablyhq/cli/releases/tag/v0.3.0
