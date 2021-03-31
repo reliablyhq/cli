@@ -1,0 +1,26 @@
+package metrics
+
+import (
+	"math/rand"
+	"time"
+
+	"github.com/reliablyhq/cli/core/metrics/aws"
+	"github.com/reliablyhq/cli/core/metrics/gcp"
+)
+
+var r = rand.New(rand.NewSource(time.Now().Unix()))
+
+var ProviderFactories = map[string]ProviderFactory{
+	"dummy": func() (Provider, error) { return &DummyProvider{}, nil },
+	"aws":   func() (Provider, error) { return aws.NewAwsCloudWatch() },
+	"gcp":   func() (Provider, error) { return gcp.NewGCP() },
+}
+
+type (
+	ProviderFactory func() (Provider, error)
+
+	Provider interface {
+		Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error)
+		GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error)
+	}
+)

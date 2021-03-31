@@ -9,6 +9,10 @@
 - Scan has new `tabbed` format that provides tabbed formatted output
 - Scan has new `extended` format for having more verbose output
 - Suggestion examples are added to `sarif` and `extended` output formats
+- added `reliably slo init` command that allows a user to describe a service level objective
+- added `reliably slo report` command that allows a user to generate a report about their current slo
+- added an AWS Cloudwatch provider that retrieves service level indicators for `Api Gateway` resources
+- added an GCP Monitoring provider that retrieved service level indicators for `Load Balancer` resources
 
 ### Changed
 - policy retrieval logic has been changed to incorporate the API Version into the path to the remote policy. Locally cached policy also includes the API Version.

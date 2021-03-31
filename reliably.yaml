@@ -1,0 +1,6 @@
+slo:
+  objective:
+    latency: 250ms
+    error_budget_percent: 1
+  resources: []
+dependencies: []
