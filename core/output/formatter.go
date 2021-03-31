@@ -24,13 +24,15 @@ import (
 
 const sortFlag = true
 
-var text = `{{ notice "Results:" }} {{ range $index, $issue := .Suggestions }}
-{{ prompt ">" }} {{ $issue.FileLocation }} [{{ printLevel $issue.Level }}] {{ $issue.Message }}
+var text = `{{ notice "Results:" }}
+{{ range $index, $issue := .Suggestions }}
+{{ prompt ">" }} {{ bold $issue.FileLocation }} [{{ printLevel $issue.Level }}] {{ bold $issue.Message }}
 Rule: {{ $issue.RuleID }}, Platform: {{ $issue.Platform}}, Kind: {{ $issue.Kind }}
 {{if $issue.Example }}
 # Example:
 {{ $issue.Example}}
-{{ end }}{{ end }}
+{{ end }}
+{{ end }}
 {{ notice "Summary:" }}
 	{{ $count := len .Suggestions }}{{ if eq $count 0 }}
 	{{- success "No suggestion found" }}
@@ -355,13 +357,16 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 	if enableColor {
 		return plainTemplate.FuncMap{
 			"highlight": highlight,
+			"bold":      gColor.Bold.Render,
 			"danger":    gColor.Danger.Render,
 			"notice":    gColor.Notice.Render,
 			"success":   gColor.Success.Render,
-			"prompt":    gColor.Yellow.Render,
+			"prompt": func(s string) string {
+				return gColor.Bold.Render(gColor.Yellow.Render(s))
+			},
 			"printCode": fmt.Sprint,
 			"printLevel": func(l core.Level) string {
-				return l.ColoredString()
+				return gColor.Bold.Render(l.ColoredString())
 			},
 			"printLiveFileLocation": printLiveFileLocation,
 			"levelSymbol": func(l core.Level) string {
@@ -389,6 +394,7 @@ func plainTextFuncMap(enableColor bool) plainTemplate.FuncMap {
 		"highlight": func(t string, i int) string {
 			return t
 		},
+		"bold":      fmt.Sprint,
 		"danger":    fmt.Sprint,
 		"notice":    fmt.Sprint,
 		"success":   fmt.Sprint,
