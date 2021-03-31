@@ -120,20 +120,3 @@ $ realibly init -f <path>:
   the location of the file. This is useful if you use a multi-repo approach
   to source control.`)
 }
-
-func isInRange(min, max float64) survey.Validator {
-	return func(answer interface{}) error {
-		f, ok := answer.(float64)
-		if !ok {
-			return errors.New("answer is not a float64")
-		}
-
-		ok = f >= min && f < max
-
-		if !ok {
-			return fmt.Errorf("value %.2f must be between %.2f and %.2f", f, min, max)
-		}
-
-		return nil
-	}
-}
