@@ -30,7 +30,7 @@ func NewCommand() *cobra.Command {
 		RunE: runE,
 	}
 
-	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", "reliably.yaml", "the location of the manifest file")
+	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", manifest.DefaultManifestPath, "the location of the manifest file")
 
 	return &cmd
 }
@@ -86,11 +86,9 @@ func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner)
 
 		do := question.WithBoolAnswer(scanner, "Do you want to add a service resource?")
 		for do {
-			provider := question.WithStringAnswer(scanner, "What is the name of the resource provider (e.g. aws, gcp, azure, etc)?")
-			resourceID := question.WithStringAnswer(scanner, "What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.")
-
 			m.ServiceLevel.Resources = append(m.ServiceLevel.Resources, manifest.ServiceResource{
-				ID: fmt.Sprintf("%s/%s", provider, resourceID),
+				Provider: question.WithStringAnswer(scanner, "What is the name of the resource provider (e.g. aws, gcp, azure, etc)?"),
+				ID:       question.WithStringAnswer(scanner, "What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc."),
 			})
 
 			do = question.WithBoolAnswer(scanner, "Do you want to add another dependency?")
