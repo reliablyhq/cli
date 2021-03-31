@@ -27,12 +27,7 @@ func TestLoad(t *testing.T) {
 				path: dummyReliablyYamlManifestPath,
 			},
 			want: &Manifest{
-				App: AppInfo{
-					Name:       "unit test app",
-					Owner:      "unit test owner",
-					Repository: "github.com/reliablyhq/cli",
-				},
-				Service: Service{
+				Service: &Service{
 					Objective: ServiceLevelObjective{
 						Latency:            core.Duration{Duration: 100 * time.Millisecond},
 						ErrorBudgetPercent: 0.5,
@@ -65,12 +60,7 @@ func TestLoad(t *testing.T) {
 				path: dummyReliablyJsonManifestPath,
 			},
 			want: &Manifest{
-				App: AppInfo{
-					Name:       "unit test app",
-					Owner:      "unit test owner",
-					Repository: "github.com/reliablyhq/cli",
-				},
-				Service: Service{
+				Service: &Service{
 					Objective: ServiceLevelObjective{
 						Latency:            core.Duration{Duration: 100 * time.Millisecond},
 						ErrorBudgetPercent: 0.5,
@@ -121,11 +111,6 @@ func TestLoad(t *testing.T) {
 			}
 
 			if tt.wantErr == true {
-				return
-			}
-
-			if !reflect.DeepEqual(tt.want.App, got.App) {
-				t.Errorf("Wanted App to be %v but got %v", tt.want.App, got.App)
 				return
 			}
 
