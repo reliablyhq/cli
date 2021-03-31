@@ -9,7 +9,6 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/manifest"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -28,7 +27,7 @@ func NewCommand() *cobra.Command {
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return validateFilePath()
 		},
-		Run: run,
+		RunE: runE,
 	}
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", "reliably.yaml", "the location of the manifest file")
@@ -37,12 +36,12 @@ func NewCommand() *cobra.Command {
 	return &cmd
 }
 
-func run(_ *cobra.Command, args []string) {
+func runE(_ *cobra.Command, args []string) error {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	if _, err := os.Stat(manifestPath); err == nil {
 		if !question.WithBoolAnswer(scanner, fmt.Sprintf("File '%s' already exists. Do you want to replace it (y/n)?", manifestPath)) {
-			return
+			return nil
 		}
 	}
 
@@ -62,13 +61,15 @@ func run(_ *cobra.Command, args []string) {
 
 	f, err := os.Create(manifestPath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer f.Close()
 
 	if err := yaml.NewEncoder(f).Encode(&m); err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
 func validateFilePath() error {
