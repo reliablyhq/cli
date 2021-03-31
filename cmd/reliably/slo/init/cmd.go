@@ -44,7 +44,7 @@ func runE(_ *cobra.Command, args []string) error {
 		}
 	} else {
 		m = &manifest.Manifest{
-			Service: &manifest.Service{},
+			ServiceLevel: &manifest.Service{},
 		}
 	}
 
@@ -75,18 +75,18 @@ func validateFilePath() error {
 
 func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner) {
 	if question.WithBoolAnswer(scanner, "Are you building something that will be provided to customers 'as a service'? (y/n)") {
-		m.Service.Objective = manifest.ServiceLevelObjective{
+		m.ServiceLevel.Objective = manifest.ServiceLevelObjective{
 			ErrorBudgetPercent: question.WithFloat64Answer(scanner, "What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
 			Latency:            question.WithDurationAnswer(scanner, "What is the maximum request-response latency you want from this service"),
 		}
-		m.Service.Resources = []manifest.ServiceResource{}
+		m.ServiceLevel.Resources = []manifest.ServiceResource{}
 
 		do := question.WithBoolAnswer(scanner, "Do you want to add a service resource?")
 		for do {
 			provider := question.WithStringAnswer(scanner, "What is the name of the resource provider (e.g. aws, gcp, azure, etc)?")
 			resourceID := question.WithStringAnswer(scanner, "What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.")
 
-			m.Service.Resources = append(m.Service.Resources, manifest.ServiceResource{
+			m.ServiceLevel.Resources = append(m.ServiceLevel.Resources, manifest.ServiceResource{
 				ID: fmt.Sprintf("%s/%s", provider, resourceID),
 			})
 

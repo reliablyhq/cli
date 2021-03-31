@@ -97,7 +97,7 @@ func TestFromManifest(t *testing.T) {
 			name: "returns report with correct info",
 			args: args{
 				m: &manifest.Manifest{
-					Service: &manifest.Service{
+					ServiceLevel: &manifest.Service{
 						Objective: manifest.ServiceLevelObjective{
 							Latency:            core.Duration{Duration: time.Millisecond * 250},
 							ErrorBudgetPercent: 2.5,
