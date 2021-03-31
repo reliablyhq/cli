@@ -36,7 +36,7 @@ func run(_ *cobra.Command, _ []string) {
 	if err != nil {
 		log.Debug(err)
 
-		if err == os.ErrExist {
+		if os.IsNotExist(err) {
 			log.Fatal("A manifest was not found. Please run `reliably init` to create one.")
 			return
 		}
