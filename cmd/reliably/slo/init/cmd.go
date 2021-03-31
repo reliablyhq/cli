@@ -118,8 +118,7 @@ $ reliably init:
 $ realibly init -f <path>:
   this method works the same as reliably init, but allows you to specify
   the location of the file. This is useful if you use a multi-repo approach
-  to source control.
-	`)
+  to source control.`)
 }
 
 func isInRange(min, max float64) survey.Validator {
