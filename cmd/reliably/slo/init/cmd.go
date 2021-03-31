@@ -2,11 +2,16 @@ package init
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/spf13/cobra"
@@ -75,11 +80,37 @@ func validateFilePath() error {
 }
 
 func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner) {
-	if question.WithBoolAnswer(scanner, "Are you building something that will be provided to customers 'as a service'? (y/n)") {
-		m.ServiceLevel.Objective = manifest.ServiceLevelObjective{
-			ErrorBudgetPercent: question.WithFloat64Answer(scanner, "What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
-			Latency:            question.WithDurationAnswer(scanner, "What is the maximum request-response latency you want from this service"),
+	var ok bool
+	survey.AskOne(&survey.Input{Message: "Are you building something that will be provided to customers 'as a service'? (y/n)"}, &ok)
+
+	if ok {
+		answers := struct {
+			ErrorBudgetPercent float64
+			Latency            string
+		}{}
+
+		questions := []*survey.Question{
+			{
+				Name:     "ErrorBudgetPercent",
+				Prompt:   &survey.Input{Message: "What do you want your error budget to be?"},
+				Validate: survey.ComposeValidators(),
+			},
 		}
+
+		if err := survey.Ask(questions, answers); err != nil {
+			log.Fatal(err)
+		}
+
+		d, err := time.ParseDuration(answers.Latency)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		m.ServiceLevel.Objective = manifest.ServiceLevelObjective{
+			ErrorBudgetPercent: answers.ErrorBudgetPercent,
+			Latency:            core.Duration{Duration: d},
+		}
+
 		m.ServiceLevel.Resources = []manifest.ServiceResource{}
 
 		do := question.WithBoolAnswer(scanner, "Do you want to add a service resource?")
@@ -121,4 +152,21 @@ $ realibly init -f <path>:
   the location of the file. This is useful if you use a multi-repo approach
   to source control.
 	`)
+}
+
+func isInRange(min, max float64) survey.Validator {
+	return func(answer interface{}) error {
+		f, ok := answer.(float64)
+		if !ok {
+			return errors.New("answer is not a float64")
+		}
+
+		ok = f >= min && f < max
+
+		if !ok {
+			return fmt.Errorf("value %.2f must be between %.2f and %.2f", f, min, max)
+		}
+
+		return nil
+	}
 }
