@@ -1,4 +1,4 @@
-service:
+slo:
   objective:
     latency: 200ms
     error_budget_percent: 1
