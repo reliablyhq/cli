@@ -1,6 +1,7 @@
 package slo
 
 import (
+	"github.com/MakeNowJust/heredoc/v2"
 	init_cmd "github.com/reliablyhq/cli/cmd/reliably/slo/init"
 	"github.com/reliablyhq/cli/cmd/reliably/slo/report"
 	"github.com/spf13/cobra"
@@ -9,7 +10,7 @@ import (
 func NewCommand() *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "slo",
-		Short: "service level objective",
+		Short: "service level objective commands",
 		Long:  longDescription(),
 	}
 
@@ -20,5 +21,5 @@ func NewCommand() *cobra.Command {
 }
 
 func longDescription() string {
-	return "todo: write something here"
+	return heredoc.Doc(`A collection of functions to configure and use an SLO`)
 }
