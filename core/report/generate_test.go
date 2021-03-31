@@ -97,12 +97,7 @@ func TestFromManifest(t *testing.T) {
 			name: "returns report with correct info",
 			args: args{
 				m: &manifest.Manifest{
-					App: manifest.AppInfo{
-						Name:       "test app",
-						Owner:      "test owner",
-						Repository: "test repo",
-					},
-					Service: manifest.Service{
+					Service: &manifest.Service{
 						Objective: manifest.ServiceLevelObjective{
 							Latency:            core.Duration{Duration: time.Millisecond * 250},
 							ErrorBudgetPercent: 2.5,
@@ -118,8 +113,7 @@ func TestFromManifest(t *testing.T) {
 				},
 			},
 			want: &Report{
-				ApplicationName: "test app",
-				Timestamp:       tVal,
+				Timestamp: tVal,
 				ServiceLevel: &ServiceLevel{
 					Target: &ServiceLevelIndicators{
 						ErrorPercent: 2.5,
@@ -154,11 +148,6 @@ func TestFromManifest(t *testing.T) {
 				t.Errorf("FromManifest() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			} else if err != nil && tt.wantErr {
-				return
-			}
-
-			if tt.want.ApplicationName != got.ApplicationName {
-				t.Errorf("wanted ApplicationName to be %s but was %s", tt.want.ApplicationName, got.ApplicationName)
 				return
 			}
 

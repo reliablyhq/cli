@@ -5,11 +5,10 @@ import (
 )
 
 type Report struct {
-	APIVersion      string        `json:"api_version"`
-	ApplicationName string        `json:"application_name"`
-	Timestamp       time.Time     `json:"timestamp"`
-	Dependencies    []string      `json:"dependencies"`
-	ServiceLevel    *ServiceLevel `json:"service_level"`
+	APIVersion   string        `json:"api_version"`
+	Timestamp    time.Time     `json:"timestamp"`
+	Dependencies []string      `json:"dependencies"`
+	ServiceLevel *ServiceLevel `json:"service_level"`
 }
 
 type ServiceLevel struct {

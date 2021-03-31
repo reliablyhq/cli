@@ -3,12 +3,10 @@ package report
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 
-	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
 	log "github.com/sirupsen/logrus"
@@ -23,7 +21,7 @@ var (
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "report",
-		Short: "Report my resiliency metrics",
+		Short: "Report my slo metrics",
 		Run:   run,
 	}
 
@@ -75,9 +73,5 @@ func run(_ *cobra.Command, _ []string) {
 }
 
 func sendReportToReliably(r *report.Report) error {
-	url := fmt.Sprintf("%s/%s/%s/reports", api.GetReliablyApiServerHostURL(), r.APIVersion, r.ApplicationName)
-
-	log.Debug("POST ", url)
-
 	return errors.New("Sending reports to Reliably is not available yet. Check back later :D")
 }

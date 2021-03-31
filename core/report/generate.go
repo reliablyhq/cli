@@ -33,13 +33,16 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	r := Report{}
 	allErrors := make([]error, 0)
 
-	r.ApplicationName = m.App.Name
 	r.APIVersion = apiVersion
 	r.Timestamp = timestampFn()
 	r.Dependencies = []string{}
 
 	allLatency := []float64{}
 	allErrorPercentages := []float64{}
+
+	if m.Service == nil {
+		return nil, go_errors.New("I don't know anything about your service objectives. Run `reliably slo init` to tell me.")
+	}
 
 	if len(m.Service.Resources) == 0 {
 		return nil, go_errors.New("you haven't told us about any resources, so we won't be able to give you a report. Sorry :(")

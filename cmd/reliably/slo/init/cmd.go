@@ -16,7 +16,6 @@ import (
 var (
 	manifestPath        string
 	supportedExtensions = []string{".yaml", ".json"}
-	autoInitialise      bool
 )
 
 func NewCommand() *cobra.Command {
@@ -31,7 +30,6 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", "reliably.yaml", "the location of the manifest file")
-	cmd.Flags().BoolVarP(&autoInitialise, "auto-init", "y", false, "Auto-initialise the manifest")
 
 	return &cmd
 }
@@ -39,25 +37,18 @@ func NewCommand() *cobra.Command {
 func runE(_ *cobra.Command, args []string) error {
 	scanner := bufio.NewScanner(os.Stdin)
 
+	var m *manifest.Manifest
 	if _, err := os.Stat(manifestPath); err == nil {
-		if !question.WithBoolAnswer(scanner, fmt.Sprintf("File '%s' already exists. Do you want to replace it (y/n)?", manifestPath)) {
-			return nil
+		if m, err = manifest.Load(manifestPath); err != nil {
+			return err
+		}
+	} else {
+		m = &manifest.Manifest{
+			Service: &manifest.Service{},
 		}
 	}
 
-	m := &manifest.Manifest{
-		App: manifest.AppInfo{
-			Name:       getDefaultAppName(),
-			Owner:      getDefaultAppOwner(),
-			Repository: getDefaultRepository(),
-		},
-		Dependencies: []string{},
-		Tags:         map[string]string{},
-	}
-
-	if !autoInitialise {
-		populateManifestInteractively(m, scanner)
-	}
+	populateManifestInteractively(m, scanner)
 
 	f, err := os.Create(manifestPath)
 	if err != nil {
@@ -83,10 +74,6 @@ func validateFilePath() error {
 }
 
 func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner) {
-	m.App.Name = question.WithStringAnswer(scanner, "What is the name of your application?")
-	m.App.Owner = question.WithStringAnswer(scanner, "Who owns this app? Its a good idea to put an email address in here!")
-	m.App.Repository = question.WithStringAnswer(scanner, "What is the URL to the repository for this app?")
-
 	if question.WithBoolAnswer(scanner, "Are you building something that will be provided to customers 'as a service'? (y/n)") {
 		m.Service.Objective = manifest.ServiceLevelObjective{
 			ErrorBudgetPercent: question.WithFloat64Answer(scanner, "What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),

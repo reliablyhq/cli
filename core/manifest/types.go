@@ -6,14 +6,14 @@ import (
 
 type (
 	Manifest struct {
-		App          AppInfo           `yaml:"app" json:"app"`
-		Service      Service           `yaml:"service" json:"service"`
-		Dependencies []string          `yaml:"dependencies" json:"dependencies"`
-		Tags         map[string]string `yaml:"tags,omitempty" json:"tags,omitempty"`
+		// App          *AppInfo          `yaml:"app" json:"app"`
+		Service      *Service `yaml:"service" json:"service"`
+		Dependencies []string `yaml:"dependencies" json:"dependencies"`
 		// ServiceLevel *ServiceLevel     `yaml:"service_level,omitempty" json:"service_level,omitempty"`
 		// CI           *ContinuousIntegrationInfo `yaml:"ci,omitempty" json:"ci,omitempty"`
 		// Hosting      *Hosting          `yaml:"hosting,omitempty" json:"hosting,omitempty"`
 		// IAC          *IAC              `yaml:"infrastructure_as_code,omitempty" json:"infrastructure_as_code,omitempty"`
+		Tags map[string]string `yaml:"tags,omitempty" json:"tags,omitempty"`
 	}
 
 	AppInfo struct {
