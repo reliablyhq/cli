@@ -50,10 +50,19 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 
 	switch format {
 	case JSON:
-		jsonOutput(r, w)
+		b, _ := json.MarshalIndent(r, "", "  ")
+		fmt.Fprintln(w, string(b))
 
 	case SimpleText:
-		simpleTextOutput(r, l)
+		if r.ServiceLevel.Delta.ErrorPercent < threshold {
+			l.Warnf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)
+		} else if r.ServiceLevel.Delta.ErrorPercent > threshold {
+			l.Warnf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)
+		}
+
+		if r.ServiceLevel.Delta.LatencyMs > threshold {
+			l.Warnf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)
+		}
 
 	default:
 		tabbedoutput(r, w)
@@ -62,7 +71,9 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 }
 
 func tabbedoutput(r *Report, w io.Writer) {
-	fmt.Fprintf(w, "\nYour SLO report for the last 24 hours:\n----\n")
+	fmt.Fprintf(w, "\n-----------\nSLO report: (%s) \n-----------\n",
+		r.ObservationWindow.To.Sub(r.ObservationWindow.From))
+
 	table := tablewriter.NewWriter(w)
 	table.SetAutoFormatHeaders(false)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
@@ -74,7 +85,7 @@ func tabbedoutput(r *Report, w io.Writer) {
 	table.SetColWidth(100)
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetHeader([]string{"",
-		color.Bold(color.Magenta("Value")),
+		color.Bold(color.Magenta("Actual")),
 		color.Bold(color.Magenta("Target")),
 		color.Bold(color.Magenta("Delta")), ""})
 
@@ -122,21 +133,4 @@ func tabbedoutput(r *Report, w io.Writer) {
 
 	// render table
 	table.Render()
-}
-
-func jsonOutput(r *Report, w io.Writer) {
-	b, _ := json.MarshalIndent(r, "", "  ")
-	fmt.Fprintln(w, string(b))
-}
-
-func simpleTextOutput(r *Report, l *logrus.Logger) {
-	if r.ServiceLevel.Delta.ErrorPercent < threshold {
-		l.Warnf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)
-	} else if r.ServiceLevel.Delta.ErrorPercent > threshold {
-		l.Warnf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)
-	}
-
-	if r.ServiceLevel.Delta.LatencyMs > threshold {
-		l.Warnf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)
-	}
 }
