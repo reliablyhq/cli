@@ -1,7 +1,6 @@
 package init
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -37,8 +36,6 @@ func NewCommand() *cobra.Command {
 }
 
 func runE(_ *cobra.Command, args []string) error {
-	scanner := bufio.NewScanner(os.Stdin)
-
 	var m *manifest.Manifest
 	if _, err := os.Stat(manifestPath); err == nil {
 		if m, err = manifest.Load(manifestPath); err != nil {
@@ -50,7 +47,7 @@ func runE(_ *cobra.Command, args []string) error {
 		}
 	}
 
-	populateManifestInteractively(m, scanner)
+	populateManifestInteractively(m)
 
 	f, err := os.Create(manifestPath)
 	if err != nil {
@@ -75,17 +72,17 @@ func validateFilePath() error {
 	return fmt.Errorf("manifest file must have one of the these extensions: %v", supportedExtensions)
 }
 
-func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner) {
+func populateManifestInteractively(m *manifest.Manifest) {
 	m.ServiceLevel = &manifest.Service{}
-	if question.WithBoolAnswer(scanner, "Are you building something that will be provided to customers 'as a service'?") {
+	if question.WithBoolAnswer("Are you building something that will be provided to customers 'as a service'?") {
 		m.ServiceLevel.Objective = manifest.ServiceLevelObjective{
-			ErrorBudgetPercent: question.WithFloat64Answer(scanner, "What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
-			Latency:            question.WithDurationAnswer(scanner, "What is the maximum request-response latency you want from this service (in milliseconds)?"),
+			ErrorBudgetPercent: question.WithFloat64Answer("What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
+			Latency:            question.WithDurationAnswer("What is the maximum request-response latency you want from this service (in milliseconds)?"),
 		}
 
 		m.ServiceLevel.Resources = []manifest.ServiceResource{}
 
-		do := question.WithBoolAnswer(scanner, "Do you want to add a service resource?")
+		do := question.WithBoolAnswer("Do you want to add a service resource?")
 		if do {
 			providers := []string{}
 			for key := range metrics.ProviderFactories {
@@ -93,34 +90,34 @@ func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner)
 			}
 
 			for do {
-				provider := question.WithMultipleChoiceAnswer("What is the name of the resource provider?", providers...)
-				id := getResourceIDForProvider(scanner, provider)
+				provider := question.WithSingleChoiceAnswer("What is the name of the resource provider?", providers...)
+				id := getResourceIDForProvider(provider)
 
 				m.ServiceLevel.Resources = append(m.ServiceLevel.Resources, manifest.ServiceResource{
 					Provider: provider,
 					ID:       id,
 				})
 
-				do = question.WithBoolAnswer(scanner, "Do you want to add another dependency?")
+				do = question.WithBoolAnswer("Do you want to add another dependency?")
 			}
 		}
 	}
 }
 
-func getResourceIDForProvider(scanner *bufio.Scanner, provider string) string {
+func getResourceIDForProvider(provider string) string {
 	log.Print(provider)
 
 	switch provider {
 	case "aws":
-		return question.WithStringAnswer(scanner, "What the ARN of the resource?")
+		return question.WithStringAnswer("What the ARN of the resource?")
 	case "gcp":
 		{
-			projectID := question.WithStringAnswer(scanner, "What is the GCP project ID?")
-			resourceType := "TODO: do this properly!"
-			resourceName := question.WithStringAnswer(scanner, "What is the name of resource?")
+			projectID := question.WithStringAnswer("What is the GCP project ID?")
+			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", "Google Cloud Load Balancers")
+			resourceName := question.WithStringAnswer("What is the name of resource?")
 			return fmt.Sprintf("%s/%s/%s", projectID, resourceType, resourceName)
 		}
 	default:
-		return question.WithStringAnswer(scanner, "What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.")
+		return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.")
 	}
 }
