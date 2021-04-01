@@ -3,12 +3,13 @@ package init
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
-	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/manifest"
+	"github.com/reliablyhq/cli/core/metrics"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -85,34 +86,41 @@ func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner)
 		m.ServiceLevel.Resources = []manifest.ServiceResource{}
 
 		do := question.WithBoolAnswer(scanner, "Do you want to add a service resource?")
-		for do {
-			m.ServiceLevel.Resources = append(m.ServiceLevel.Resources, manifest.ServiceResource{
-				Provider: question.WithStringAnswer(scanner, "What is the name of the resource provider (e.g. aws, gcp, azure, etc)?"),
-				ID:       question.WithStringAnswer(scanner, "What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc."),
-			})
+		if do {
+			providers := []string{}
+			for key := range metrics.ProviderFactories {
+				providers = append(providers, key)
+			}
 
-			do = question.WithBoolAnswer(scanner, "Do you want to add another dependency?")
+			for do {
+				provider := question.WithMultipleChoiceAnswer("What is the name of the resource provider?", providers...)
+				id := getResourceIDForProvider(scanner, provider)
+
+				m.ServiceLevel.Resources = append(m.ServiceLevel.Resources, manifest.ServiceResource{
+					Provider: provider,
+					ID:       id,
+				})
+
+				do = question.WithBoolAnswer(scanner, "Do you want to add another dependency?")
+			}
 		}
 	}
 }
 
-func longCommandDescription() string {
-	return heredoc.Doc(`
-Initialise the reliably manifest.
+func getResourceIDForProvider(scanner *bufio.Scanner, provider string) string {
+	log.Print(provider)
 
-The manifest describes the operational contraints of the application,
-as well as some metadata about the app that allows users to reach out
-and communicate with the maintainer.`)
-}
-
-func examples() string {
-	return heredoc.Doc(`
-$ reliably init:
-  this method interactively creates a manifest file, asking you questions
-  on the command line and adding your answers to the manifest file.
-
-$ realibly init -f <path>:
-  this method works the same as reliably init, but allows you to specify
-  the location of the file. This is useful if you use a multi-repo approach
-  to source control.`)
+	switch provider {
+	case "aws":
+		return question.WithStringAnswer(scanner, "What the ARN of the resource?")
+	case "gcp":
+		{
+			projectID := question.WithStringAnswer(scanner, "What is the GCP project ID?")
+			resourceType := "TODO: do this properly!"
+			resourceName := question.WithStringAnswer(scanner, "What is the name of resource?")
+			return fmt.Sprintf("%s/%s/%s", projectID, resourceType, resourceName)
+		}
+	default:
+		return question.WithStringAnswer(scanner, "What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.")
+	}
 }

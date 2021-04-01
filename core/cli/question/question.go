@@ -72,3 +72,17 @@ func WithBoolAnswer(scanner *bufio.Scanner, question string) bool {
 	}
 	return b
 }
+
+func WithMultipleChoiceAnswer(question string, choices ...string) string {
+	var answer string
+	prompt := survey.Select{
+		Options: choices,
+		Message: question,
+	}
+
+	if err := survey.AskOne(&prompt, &answer); err == terminal.InterruptErr {
+		os.Exit(0)
+	}
+
+	return answer
+}
