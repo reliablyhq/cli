@@ -6,7 +6,6 @@ import (
 
 	"github.com/reliablyhq/cli/core/metrics/aws"
 	"github.com/reliablyhq/cli/core/metrics/gcp"
-	"github.com/reliablyhq/cli/version"
 )
 
 var r = rand.New(rand.NewSource(time.Now().Unix()))
@@ -24,9 +23,3 @@ type (
 		GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error)
 	}
 )
-
-func init() {
-	if version.IsDevVersion() {
-		ProviderFactories["dummy"] = func() (Provider, error) { return &DummyProvider{}, nil }
-	}
-}
