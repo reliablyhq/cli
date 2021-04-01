@@ -1,6 +1,12 @@
 package report
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
+
+	"github.com/olekukonko/tablewriter"
+	"github.com/reliablyhq/cli/core/color"
 	"github.com/sirupsen/logrus"
 )
 
@@ -12,7 +18,23 @@ const (
 	latencyExceeded                 = "The average latency threshold has been exceeeded by %vms"
 )
 
-func Write(r *Report, l *logrus.Logger) {
+const (
+	iconTick = "✅"
+	iconEx   = "❌"
+)
+
+// Format - type used to set supported report formats
+type Format string
+
+// Define supported formats
+const (
+	JSON       Format = "json"
+	TABBED     Format = "tabbed"
+	SimpleText Format = "simple"
+)
+
+// Write - write report based on given format
+func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 	if r == nil {
 		return
 	}
@@ -26,6 +48,88 @@ func Write(r *Report, l *logrus.Logger) {
 		return
 	}
 
+	switch format {
+	case JSON:
+		jsonOutput(r, w)
+
+	case SimpleText:
+		simpleTextOutput(r, l)
+
+	default:
+		tabbedoutput(r, w)
+	}
+	return
+}
+
+func tabbedoutput(r *Report, w io.Writer) {
+	fmt.Fprintf(w, "\nYour SLO report for the last 24 hours:\n----\n")
+	table := tablewriter.NewWriter(w)
+	table.SetAutoFormatHeaders(false)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorder(false)
+	table.SetRowLine(false)
+	// table.SetRowSeparator("--")
+	table.SetColumnSeparator("")
+	table.SetHeaderLine(false)
+	table.SetColWidth(100)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetHeader([]string{"",
+		color.Bold(color.Magenta("Value")),
+		color.Bold(color.Magenta("Target")),
+		color.Bold(color.Magenta("Delta")), ""})
+
+	var data [][]string
+
+	// set error budget data
+	if r.ServiceLevel.Delta.ErrorPercent < threshold {
+		data = append(data, []string{
+			fmt.Sprintf("%s Error Budget", iconTick),
+			fmt.Sprintf("%.2f", r.ServiceLevel.Actual.ErrorPercent),
+			fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
+			fmt.Sprintf("%.2f%%", -r.ServiceLevel.Delta.ErrorPercent),
+			fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent),
+		})
+	}
+
+	if r.ServiceLevel.Delta.ErrorPercent > threshold {
+		// l.Warnf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)
+		data = append(data, []string{
+			fmt.Sprintf("%s Error Budget", iconEx),
+			color.Bold(color.Red(fmt.Sprintf("%.2f", r.ServiceLevel.Actual.ErrorPercent))),
+			fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
+			fmt.Sprintf("%.2f%%", r.ServiceLevel.Delta.ErrorPercent),
+			fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent),
+		})
+	}
+
+	// set latency
+	if r.ServiceLevel.Delta.LatencyMs > threshold {
+		// l.Warnf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)
+		data = append(data, []string{
+			fmt.Sprintf("%s Latency", iconEx),
+			color.Bold(color.Red(fmt.Sprintf("%dms", r.ServiceLevel.Actual.LatencyMs))),
+			fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
+			fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs),
+			fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs),
+		})
+	}
+
+	for _, row := range data {
+		table.Append(row)
+		// add black row for spacing
+		table.Append([]string{"", "", "", ""})
+	}
+
+	// render table
+	table.Render()
+}
+
+func jsonOutput(r *Report, w io.Writer) {
+	b, _ := json.MarshalIndent(r, "", "  ")
+	fmt.Fprintln(w, string(b))
+}
+
+func simpleTextOutput(r *Report, l *logrus.Logger) {
 	if r.ServiceLevel.Delta.ErrorPercent < threshold {
 		l.Warnf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)
 	} else if r.ServiceLevel.Delta.ErrorPercent > threshold {
