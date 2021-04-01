@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/cmd/reliably/slo"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
@@ -26,17 +27,11 @@ import (
 	v "github.com/reliablyhq/cli/version"
 )
 
-// Choice is a list of string
-type Choice []string
-
-// Has indicates whether the string slice contains the value
-func (list Choice) Has(a string) bool {
-	return utils.StringInArray(a, list)
-}
-
 const (
 	workspace = ".reliably"
 )
+
+type Choice = cmdutil.Choice
 
 var (
 	verbose     bool
