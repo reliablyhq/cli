@@ -2,7 +2,6 @@ package init
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -105,8 +104,6 @@ func populateManifestInteractively(m *manifest.Manifest) {
 }
 
 func getResourceIDForProvider(provider string) string {
-	log.Print(provider)
-
 	switch provider {
 	case "aws":
 		return question.WithStringAnswer("What the ARN of the resource?")
