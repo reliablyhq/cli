@@ -1,14 +1,11 @@
 package metrics
 
 import (
-	"math/rand"
 	"time"
 
 	"github.com/reliablyhq/cli/core/metrics/aws"
 	"github.com/reliablyhq/cli/core/metrics/gcp"
 )
-
-var r = rand.New(rand.NewSource(time.Now().Unix()))
 
 var ProviderFactories = map[string]ProviderFactory{
 	"aws": func() (Provider, error) { return aws.NewAwsCloudWatch() },
