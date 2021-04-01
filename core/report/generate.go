@@ -57,6 +57,8 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 
 		to := time.Now()
 		from := to.Add(-oneDay)
+		r.ObservationWindow.To = to
+		r.ObservationWindow.From = from
 
 		if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
 			allLatency = append(allLatency, l)
