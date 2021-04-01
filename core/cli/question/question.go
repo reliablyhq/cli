@@ -1,7 +1,6 @@
 package question
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"strconv"
@@ -12,7 +11,7 @@ import (
 	"github.com/reliablyhq/cli/core"
 )
 
-func WithStringAnswer(scanner *bufio.Scanner, questionText string) string {
+func WithStringAnswer(questionText string) string {
 	var text string
 
 	for len(text) == 0 {
@@ -27,9 +26,9 @@ func WithStringAnswer(scanner *bufio.Scanner, questionText string) string {
 	return text
 }
 
-func WithFloat64Answer(scanner *bufio.Scanner, question string, min, max float64) float64 {
+func WithFloat64Answer(question string, min, max float64) float64 {
 	for {
-		answer := WithStringAnswer(scanner, question)
+		answer := WithStringAnswer(question)
 		if f, err := strconv.ParseFloat(answer, 32); err != nil {
 			fmt.Println("Please make sure you type a number")
 		} else {
@@ -42,9 +41,9 @@ func WithFloat64Answer(scanner *bufio.Scanner, question string, min, max float64
 	}
 }
 
-func WithInt64Answer(scanner *bufio.Scanner, question string) int64 {
+func WithInt64Answer(question string) int64 {
 	for {
-		answer := WithStringAnswer(scanner, question)
+		answer := WithStringAnswer(question)
 		if i, err := strconv.ParseInt(answer, 10, 64); err != nil {
 			fmt.Println("Please make sure you type a number")
 		} else {
@@ -53,15 +52,15 @@ func WithInt64Answer(scanner *bufio.Scanner, question string) int64 {
 	}
 }
 
-func WithDurationAnswer(scanner *bufio.Scanner, question string) core.Duration {
+func WithDurationAnswer(question string) core.Duration {
 	for {
-		answer := WithInt64Answer(scanner, question)
+		answer := WithInt64Answer(question)
 		ms := answer * 1000000
 		return core.Duration{Duration: time.Duration(ms)}
 	}
 }
 
-func WithBoolAnswer(scanner *bufio.Scanner, question string) bool {
+func WithBoolAnswer(question string) bool {
 	var b bool
 	err := survey.AskOne(&survey.Confirm{
 		Message: question,
@@ -71,4 +70,18 @@ func WithBoolAnswer(scanner *bufio.Scanner, question string) bool {
 		os.Exit(0)
 	}
 	return b
+}
+
+func WithSingleChoiceAnswer(question string, choices ...string) string {
+	var answer string
+	prompt := survey.Select{
+		Options: choices,
+		Message: question,
+	}
+
+	if err := survey.AskOne(&prompt, &answer); err == terminal.InterruptErr {
+		os.Exit(0)
+	}
+
+	return answer
 }

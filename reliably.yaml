@@ -1,0 +1,10 @@
+slo:
+  objective:
+    latency: 500ms
+    error_budget_percent: 1
+  resources:
+  - id: alpha1-e3d83fa0/Google Cloud Load Balancers/reliablyadvicealpha1
+    provider: gcp
+  - id: arn:912823331559:apigateway:eu-west-3::/apis/8vdt1fhj3f
+    provider: aws
+dependencies: []

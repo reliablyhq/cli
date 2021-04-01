@@ -1,14 +1,13 @@
 package init
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"strings"
 
-	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/manifest"
+	"github.com/reliablyhq/cli/core/metrics"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -36,8 +35,6 @@ func NewCommand() *cobra.Command {
 }
 
 func runE(_ *cobra.Command, args []string) error {
-	scanner := bufio.NewScanner(os.Stdin)
-
 	var m *manifest.Manifest
 	if _, err := os.Stat(manifestPath); err == nil {
 		if m, err = manifest.Load(manifestPath); err != nil {
@@ -49,7 +46,7 @@ func runE(_ *cobra.Command, args []string) error {
 		}
 	}
 
-	populateManifestInteractively(m, scanner)
+	populateManifestInteractively(m)
 
 	f, err := os.Create(manifestPath)
 	if err != nil {
@@ -74,45 +71,50 @@ func validateFilePath() error {
 	return fmt.Errorf("manifest file must have one of the these extensions: %v", supportedExtensions)
 }
 
-func populateManifestInteractively(m *manifest.Manifest, scanner *bufio.Scanner) {
+func populateManifestInteractively(m *manifest.Manifest) {
 	m.ServiceLevel = &manifest.Service{}
-	if question.WithBoolAnswer(scanner, "Are you building something that will be provided to customers 'as a service'?") {
+	if question.WithBoolAnswer("Are you building something that will be provided to customers 'as a service'?") {
 		m.ServiceLevel.Objective = manifest.ServiceLevelObjective{
-			ErrorBudgetPercent: question.WithFloat64Answer(scanner, "What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
-			Latency:            question.WithDurationAnswer(scanner, "What is the maximum request-response latency you want from this service (in milliseconds)?"),
+			ErrorBudgetPercent: question.WithFloat64Answer("What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
+			Latency:            question.WithDurationAnswer("What is the maximum request-response latency you want from this service (in milliseconds)?"),
 		}
 
 		m.ServiceLevel.Resources = []manifest.ServiceResource{}
 
-		do := question.WithBoolAnswer(scanner, "Do you want to add a service resource?")
-		for do {
-			m.ServiceLevel.Resources = append(m.ServiceLevel.Resources, manifest.ServiceResource{
-				Provider: question.WithStringAnswer(scanner, "What is the name of the resource provider (e.g. aws, gcp, azure, etc)?"),
-				ID:       question.WithStringAnswer(scanner, "What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc."),
-			})
+		do := question.WithBoolAnswer("Do you want to add a service resource?")
+		if do {
+			providers := []string{}
+			for key := range metrics.ProviderFactories {
+				providers = append(providers, key)
+			}
 
-			do = question.WithBoolAnswer(scanner, "Do you want to add another dependency?")
+			for do {
+				provider := question.WithSingleChoiceAnswer("What is the name of the resource provider?", providers...)
+				id := getResourceIDForProvider(provider)
+
+				m.ServiceLevel.Resources = append(m.ServiceLevel.Resources, manifest.ServiceResource{
+					Provider: provider,
+					ID:       id,
+				})
+
+				do = question.WithBoolAnswer("Do you want to add another dependency?")
+			}
 		}
 	}
 }
 
-func longCommandDescription() string {
-	return heredoc.Doc(`
-Initialise the reliably manifest.
-
-The manifest describes the operational contraints of the application,
-as well as some metadata about the app that allows users to reach out
-and communicate with the maintainer.`)
-}
-
-func examples() string {
-	return heredoc.Doc(`
-$ reliably init:
-  this method interactively creates a manifest file, asking you questions
-  on the command line and adding your answers to the manifest file.
-
-$ realibly init -f <path>:
-  this method works the same as reliably init, but allows you to specify
-  the location of the file. This is useful if you use a multi-repo approach
-  to source control.`)
+func getResourceIDForProvider(provider string) string {
+	switch provider {
+	case "aws":
+		return question.WithStringAnswer("What the ARN of the resource?")
+	case "gcp":
+		{
+			projectID := question.WithStringAnswer("What is the GCP project ID?")
+			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", "Google Cloud Load Balancers")
+			resourceName := question.WithStringAnswer("What is the name of resource?")
+			return fmt.Sprintf("%s/%s/%s", projectID, resourceType, resourceName)
+		}
+	default:
+		return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.")
+	}
 }
