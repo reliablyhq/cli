@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	oneDay     = 24 * time.Hour
+	oneHour    = 1 * time.Hour
+	oneDay     = 24 * oneHour
 	oneWeek    = 7 * oneDay
 	apiVersion = "1.0rc"
 )
