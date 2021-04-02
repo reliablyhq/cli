@@ -29,7 +29,7 @@ func NewCommand() *cobra.Command {
 		RunE: runE,
 	}
 
-	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", manifest.DefaultManifestPath, "the location of the manifest file")
+	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
 
 	return &cmd
 }
