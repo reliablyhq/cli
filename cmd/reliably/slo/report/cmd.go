@@ -16,6 +16,7 @@ import (
 var (
 	manifestPath string
 	outputPath   string
+	outputFormat string
 )
 
 func NewCommand() *cobra.Command {
@@ -27,6 +28,7 @@ func NewCommand() *cobra.Command {
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", manifest.DefaultManifestPath, "the path to the manifest file")
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
+	cmd.Flags().StringVarP(&outputFormat, "format", "", "tabbed", "specify report output format. Allowed Values: [json, simple, tabbed]")
 
 	return cmd
 }
@@ -49,11 +51,20 @@ func run(_ *cobra.Command, _ []string) {
 		log.Fatal(err)
 	}
 
-	if err := sendReportToReliably(r); err != nil {
-		log.Warn(err)
+	// if err := sendReportToReliably(r); err != nil {
+	// 	log.Warn(err)
+	// }
+
+	// set format
+	var format = report.TABBED
+	switch strings.ToLower(outputFormat) {
+	case "json":
+		format = report.JSON
+	case "simple":
+		format = report.SimpleText
 	}
 
-	report.Write(r, log.StandardLogger())
+	report.Write(format, r, os.Stdout, log.StandardLogger())
 
 	if outputPath != "" {
 		if !strings.HasSuffix(outputPath, ".json") {

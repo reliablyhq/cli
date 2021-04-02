@@ -51,23 +51,25 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	for _, resource := range m.ServiceLevel.Resources {
 		provider, err := getProviderForResource(resource.Provider)
 		if err != nil {
-			log.Warnf("an error occured while getting a provider for resource: %s", resource.Provider)
+			log.Errorf("an error occured while getting a provider for resource: %s => %s", resource.Provider, err)
 			continue
 		}
 
 		to := time.Now()
 		from := to.Add(-oneDay)
+		r.ObservationWindow.To = to
+		r.ObservationWindow.From = from
 
 		if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
 			allLatency = append(allLatency, l)
 		} else {
-			log.Warnf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
+			log.Errorf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
 		}
 
 		if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
 			allErrorPercentages = append(allErrorPercentages, e)
 		} else {
-			log.Warnf("an error occured while getting error percentage data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
+			log.Errorf("an error occured while getting error percentage data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
 		}
 
 	}
