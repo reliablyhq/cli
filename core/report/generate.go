@@ -51,7 +51,7 @@ func FromManifest(m *manifest.Manifest) (*Report, error) {
 	for _, resource := range m.ServiceLevel.Resources {
 		provider, err := getProviderForResource(resource.Provider)
 		if err != nil {
-			log.Errorf("an error occured while getting a provider for resource: %s", resource.Provider)
+			log.Errorf("an error occured while getting a provider for resource: %s => %s", resource.Provider, err)
 			continue
 		}
 
