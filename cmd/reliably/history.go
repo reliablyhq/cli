@@ -198,12 +198,12 @@ func printExecFooter(opts *HistoryOptions, exec *api.Execution, nbSuggestions in
 	if nbSuggestions > 0 {
 		plural := utils.IfThenElse(nbSuggestions > 1, "s", "")
 		msg := color.Red(fmt.Sprintf("%v suggestion%s found", nbSuggestions, plural))
-		fmt.Fprintf(opts.IO.ErrOut, "%s %s\n", iostreams.FailureIcon(), msg)
+		fmt.Fprintf(opts.IO.Out, "%s %s\n", iostreams.FailureIcon(), msg)
 	} else {
 		msg := color.Green("No suggestion found!")
-		fmt.Fprintf(opts.IO.ErrOut, "%s %s\n", iostreams.SuccessIcon(), msg)
+		fmt.Fprintf(opts.IO.Out, "%s %s\n", iostreams.SuccessIcon(), msg)
 	}
-	fmt.Fprintln(opts.IO.ErrOut)
+	fmt.Fprintln(opts.IO.Out)
 }
 
 func promptToLoadMore(opts *HistoryOptions) error {
@@ -218,7 +218,8 @@ func promptToLoadMore(opts *HistoryOptions) error {
 	err := survey.AskOne(prompt, &null, survey.WithIcons(func(icons *survey.IconSet) {
 		icons.Question.Text = ">"
 		icons.Question.Format = "green"
-	}))
+	}), survey.WithStdio(os.Stdin, os.Stderr, os.Stderr)) // we redirect prompt to stderr only !
+	// i wanted to be able to use opts.IO.x but not same type for survey IO :(
 
 	if err == nil {
 		// clear prompted message, to continue printing next to latest history line
