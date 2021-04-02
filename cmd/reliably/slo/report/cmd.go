@@ -26,9 +26,9 @@ func NewCommand() *cobra.Command {
 		Run:   run,
 	}
 
-	cmd.Flags().StringVarP(&manifestPath, "manifest-file", "f", manifest.DefaultManifestPath, "the path to the manifest file")
+	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
-	cmd.Flags().StringVarP(&outputFormat, "format", "", "tabbed", "specify report output format. Allowed Values: [json, simple, tabbed]")
+	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", "specify the report format. Allowed Values: [json, simple, tabbed]")
 
 	return cmd
 }
