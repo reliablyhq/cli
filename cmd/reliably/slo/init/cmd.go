@@ -106,7 +106,7 @@ func populateManifestInteractively(m *manifest.Manifest) {
 func getResourceIDForProvider(provider string) string {
 	switch provider {
 	case "aws":
-		return question.WithStringAnswer("What the ARN of the resource?")
+		return question.WithStringAnswer("What is the ARN of the resource?")
 	case "gcp":
 		{
 			projectID := question.WithStringAnswer("What is the GCP project ID?")
