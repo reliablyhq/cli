@@ -40,10 +40,6 @@ func runE(_ *cobra.Command, args []string) error {
 		if m, err = manifest.Load(manifestPath); err != nil {
 			return err
 		}
-	} else {
-		m = &manifest.Manifest{
-			ServiceLevel: &manifest.Service{},
-		}
 	}
 
 	populateManifestInteractively(m)
@@ -72,14 +68,14 @@ func validateFilePath() error {
 }
 
 func populateManifestInteractively(m *manifest.Manifest) {
-	m.ServiceLevel = &manifest.Service{}
+	var s manifest.Service
 	if question.WithBoolAnswer("Are you building something that will be provided to customers 'as a service'?") {
-		m.ServiceLevel.Objective = manifest.ServiceLevelObjective{
+		s.Objective = manifest.ServiceLevelObjective{
 			ErrorBudgetPercent: question.WithFloat64Answer("What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
 			Latency:            question.WithDurationAnswer("What is the maximum request-response latency you want from this service (in milliseconds)?"),
 		}
 
-		m.ServiceLevel.Resources = []manifest.ServiceResource{}
+		s.Resources = []manifest.ServiceResource{}
 
 		do := question.WithBoolAnswer("Do you want to add a service resource?")
 		if do {
@@ -92,7 +88,7 @@ func populateManifestInteractively(m *manifest.Manifest) {
 				provider := question.WithSingleChoiceAnswer("What is the name of the resource provider?", providers...)
 				id := getResourceIDForProvider(provider)
 
-				m.ServiceLevel.Resources = append(m.ServiceLevel.Resources, manifest.ServiceResource{
+				s.Resources = append(s.Resources, manifest.ServiceResource{
 					Provider: provider,
 					ID:       id,
 				})
@@ -100,7 +96,10 @@ func populateManifestInteractively(m *manifest.Manifest) {
 				do = question.WithBoolAnswer("Do you want to add another dependency?")
 			}
 		}
+
+		s.Name = question.WithStringAnswer("SLO/Service name?")
 	}
+	m.ServiceLevel = append(m.ServiceLevel, &s)
 }
 
 func getResourceIDForProvider(provider string) string {
