@@ -15,6 +15,9 @@ import (
 var (
 	manifestPath        string
 	supportedExtensions = []string{".yaml", ".json"}
+	googleResourceTypes = []string{
+													"Google Cloud Load Balancers",
+												}
 )
 
 func NewCommand() *cobra.Command {
@@ -110,11 +113,16 @@ func getResourceIDForProvider(provider string) string {
 	case "gcp":
 		{
 			projectID := question.WithStringAnswer("What is the GCP project ID?")
-			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", "Google Cloud Load Balancers")
+			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", googleResourceTypes...)
+			sanitizedResourceType := sanitizeResourceType(resourceType)
 			resourceName := question.WithStringAnswer("What is the name of resource?")
-			return fmt.Sprintf("%s/%s/%s", projectID, resourceType, resourceName)
+			return fmt.Sprintf("%s/%s/%s", projectID, sanitizedResourceType, resourceName)
 		}
 	default:
 		return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.")
 	}
+}
+
+func sanitizeResourceType(s string) string {
+	return strings.ToLower(strings.ReplaceAll(s, " ", "-"))
 }
