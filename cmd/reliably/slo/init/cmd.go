@@ -114,7 +114,7 @@ func getResourceIDForProvider(provider string) string {
 		{
 			projectID := question.WithStringAnswer("What is the GCP project ID?")
 			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", googleResourceTypes...)
-			sanitizedResourceType := sanitizeGoogleResourceType(resourceType)
+			sanitizedResourceType := sanitizeResourceType(resourceType)
 			resourceName := question.WithStringAnswer("What is the name of resource?")
 			return fmt.Sprintf("%s/%s/%s", projectID, sanitizedResourceType, resourceName)
 		}
@@ -123,11 +123,6 @@ func getResourceIDForProvider(provider string) string {
 	}
 }
 
-func sanitizeGoogleResourceType(s string) string {
-	switch s {
-	case "Google Cloud Load Balancers":
-		return "google-cloud-load-balancers"
-	default:
-		return s
-	}
+func sanitizeResourceType(s string) string {
+	return strings.ToLower(strings.ReplaceAll(s, " ", "-"))
 }
