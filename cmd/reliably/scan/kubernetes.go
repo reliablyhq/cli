@@ -14,7 +14,6 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/reliablyhq/cli/api"
-
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/core"
 	ctx "github.com/reliablyhq/cli/core/context"
@@ -243,12 +242,6 @@ Reliably can also scan for your live kubernetes cluster.`,
 	cmd.Flags().StringVarP(
 		&opts.KubeConfigPath, "kubeconfig", "k", configPath, "Specifies the path and file to use for kubeconfig for live scan")
 
-	// create the subcommand and pass the root usage template
-	// TODO: re-add this later!
-	// tfScanCmd := terraform.New()
-	// tfScanCmd.SetUsageTemplate(customUsageTemplate(rootCmd))
-	// cmd.AddCommand(tfScanCmd)
-
 	// reformat the flags usage to be able to group them into sub sections
 	flagsUsages := strings.Split(cmd.Flags().FlagUsages(), "\n")
 	var groupedFlags map[string][]string = map[string][]string{
@@ -271,16 +264,15 @@ Reliably can also scan for your live kubernetes cluster.`,
 	}
 
 	// we get custom template from root command to have root annotations
-	/*
-		template := customUsageTemplate(rootCmd)
-		template = strings.Replace(template,
-			"{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}",
-			fmt.Sprintf("%s\n\n{{StyleHeading \"Kubernetes live Cluster Flags:\"}}\n%s",
-				strings.TrimSuffix(groupedFlagsUsages[""], "\n"),
-				strings.TrimSuffix(groupedFlagsUsages["live"], "\n")),
-			1)
-		cmd.SetUsageTemplate(template)
-	*/
+	template := cmdutil.CustomUsageTemplate(rootCmd)
+	template = strings.Replace(template,
+		"{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}",
+		fmt.Sprintf("%s\n\n{{StyleHeading \"Kubernetes live Cluster Flags:\"}}\n%s",
+			strings.TrimSuffix(groupedFlagsUsages[""], "\n"),
+			strings.TrimSuffix(groupedFlagsUsages["live"], "\n")),
+		1)
+	cmd.SetUsageTemplate(template)
+
 	// end custom overridden template for grouped flags
 
 	return cmd

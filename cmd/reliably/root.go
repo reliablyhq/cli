@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	fColor "github.com/fatih/color"
@@ -97,7 +96,7 @@ Environment variables:
 	cmd.AddCommand(NewHelpTopic("environment"))
 
 	// Uses a custom usage template - for adding feedback section to help -
-	template := customUsageTemplate(cmd)
+	template := cmdutil.CustomUsageTemplate(cmd)
 	cmd.SetUsageTemplate(template)
 
 	return cmd
@@ -240,6 +239,7 @@ func createReliablyWorkspace() error {
 // CustomUsageTemplate returns usage template for the command.
 // This is the default usage template from the command,
 // with the additional help:feedback annotations, if specified
+/*
 func customUsageTemplate(c *cobra.Command) string {
 
 	tpl := c.UsageTemplate()
@@ -271,6 +271,7 @@ func customUsageTemplate(c *cobra.Command) string {
 
 	return tpl
 }
+*/
 
 func shouldCheckForUpdate() bool {
 	if os.Getenv("RELIABLY_NO_UPDATE_NOTIFIER") != "" {
