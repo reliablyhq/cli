@@ -15,9 +15,7 @@ import (
 var (
 	manifestPath        string
 	supportedExtensions = []string{".yaml", ".json"}
-	googleResourceTypes = []string{
-													"Google Cloud Load Balancers",
-												}
+	googleResourceTypes = []string{"Google Cloud Load Balancers"}
 )
 
 func NewCommand() *cobra.Command {
