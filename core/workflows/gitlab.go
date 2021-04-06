@@ -23,7 +23,7 @@ code_quality:
     name: ghcr.io/reliablyhq/cli/cli:latest
     entrypoint: ["/bin/sh", "-c"]
   script:
-    - reliably scan . --format codeclimate --output gl-code-quality-report.json || true
+    - reliably scan kubernetes . --format codeclimate --output gl-code-quality-report.json || true
   stage: test
   allow_failure: true
   artifacts:
