@@ -3,6 +3,7 @@ package init
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/reliablyhq/cli/core/cli/question"
@@ -88,6 +89,7 @@ func populateManifestInteractively(m *manifest.Manifest) {
 			for key := range metrics.ProviderFactories {
 				providers = append(providers, key)
 			}
+			providers = sort.StringSlice(providers)
 
 			for do {
 				provider := question.WithSingleChoiceAnswer("What is the name of the resource provider?", providers...)
