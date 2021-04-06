@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- `scan` command now works only with sub-command for scanning a specific type of resource;
+  To scan for kubernetes, you should now use `scan kubernetes` command instead.
+
 ## [0.7.0] - 2021-04-02
 
 ### Added
