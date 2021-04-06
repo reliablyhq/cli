@@ -75,35 +75,35 @@ func validateFilePath() error {
 
 func populateManifestInteractively(m *manifest.Manifest) {
 	m.ServiceLevel = &manifest.Service{}
-	if question.WithBoolAnswer("Are you building something that will be provided to customers 'as a service'?") {
-		m.ServiceLevel.Objective = manifest.ServiceLevelObjective{
-			ErrorBudgetPercent: question.WithFloat64Answer("What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
-			Latency:            question.WithDurationAnswer("What is the maximum request-response latency you want from this service (in milliseconds)?"),
+
+	m.ServiceLevel.Objective = manifest.ServiceLevelObjective{
+		ErrorBudgetPercent: question.WithFloat64Answer("What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
+		Latency:            question.WithDurationAnswer("What is the maximum request-response latency you want from this service (in milliseconds)?"),
+	}
+
+	m.ServiceLevel.Resources = []manifest.ServiceResource{}
+
+	do := question.WithBoolAnswer("Do you want to add a service resource?")
+	if do {
+		providers := []string{}
+		for key := range metrics.ProviderFactories {
+			providers = append(providers, key)
 		}
+		providers = sort.StringSlice(providers)
 
-		m.ServiceLevel.Resources = []manifest.ServiceResource{}
+		for do {
+			provider := question.WithSingleChoiceAnswer("What is the name of the resource provider?", providers...)
+			id := getResourceIDForProvider(provider)
 
-		do := question.WithBoolAnswer("Do you want to add a service resource?")
-		if do {
-			providers := []string{}
-			for key := range metrics.ProviderFactories {
-				providers = append(providers, key)
-			}
-			providers = sort.StringSlice(providers)
+			m.ServiceLevel.Resources = append(m.ServiceLevel.Resources, manifest.ServiceResource{
+				Provider: provider,
+				ID:       id,
+			})
 
-			for do {
-				provider := question.WithSingleChoiceAnswer("What is the name of the resource provider?", providers...)
-				id := getResourceIDForProvider(provider)
-
-				m.ServiceLevel.Resources = append(m.ServiceLevel.Resources, manifest.ServiceResource{
-					Provider: provider,
-					ID:       id,
-				})
-
-				do = question.WithBoolAnswer("Do you want to add another dependency?")
-			}
+			do = question.WithBoolAnswer("Do you want to add another dependency?")
 		}
 	}
+
 }
 
 func getResourceIDForProvider(provider string) string {
