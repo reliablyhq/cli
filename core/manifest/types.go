@@ -7,8 +7,8 @@ import (
 type (
 	Manifest struct {
 		// App          *AppInfo          `yaml:"app" json:"app"`
-		ServiceLevel *Service `yaml:"slo" json:"slo"`
-		Dependencies []string `yaml:"dependencies" json:"dependencies"`
+		ServiceLevel []*Service `yaml:"slo" json:"slo"`
+		Dependencies []string   `yaml:"dependencies" json:"dependencies"`
 		// ServiceLevel *ServiceLevel     `yaml:"service_level,omitempty" json:"service_level,omitempty"`
 		// CI           *ContinuousIntegrationInfo `yaml:"ci,omitempty" json:"ci,omitempty"`
 		// Hosting      *Hosting          `yaml:"hosting,omitempty" json:"hosting,omitempty"`
@@ -23,6 +23,7 @@ type (
 	}
 
 	Service struct {
+		Name      string                `yaml:"name" json:"name"`
 		Objective ServiceLevelObjective `yaml:"objective" json:"objective"`
 		Resources []ServiceResource     `yaml:"resources" json:"resources"`
 	}
