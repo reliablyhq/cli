@@ -17,8 +17,8 @@ var (
 	manifestPath        string
 	supportedExtensions = []string{".yaml", ".json"}
 	googleResourceTypes = []string{"Google Cloud Load Balancers"}
-	providersMap  = map[string]string{
-		"Amazon Web Services": "aws",
+	providersMap        = map[string]string{
+		"Amazon Web Services":   "aws",
 		"Google Cloud Platform": "gcp",
 	}
 )
@@ -83,6 +83,7 @@ func populateManifestInteractively(m *manifest.Manifest) {
 		}
 
 		s.Resources = []manifest.ServiceResource{}
+	}
 
 	do := question.WithBoolAnswer("Do you want to add a service resource?")
 	if do {
@@ -97,10 +98,10 @@ func populateManifestInteractively(m *manifest.Manifest) {
 			provider := providersMap[providerFullName]
 			id := getResourceIDForProvider(provider)
 
-      s.Resources = append(s.Resources, manifest.ServiceResource{
-        Provider: provider,
-        ID:       id,
-      })
+			s.Resources = append(s.Resources, manifest.ServiceResource{
+				Provider: provider,
+				ID:       id,
+			})
 
 			do = question.WithBoolAnswer("Do you want to add another dependency?")
 		}
@@ -109,6 +110,7 @@ func populateManifestInteractively(m *manifest.Manifest) {
 	}
 	m.ServiceLevel = append(m.ServiceLevel, &s)
 	fmt.Println(color.Green(fmt.Sprintf("SLO/Service (%s) added", s.Name)))
+
 	if question.WithBoolAnswer("Do you want to add another SLO?") {
 		populateManifestInteractively(m)
 	}
