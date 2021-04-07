@@ -38,7 +38,7 @@ func NewCommand() *cobra.Command {
 func runE(_ *cobra.Command, args []string) error {
 	var m manifest.Manifest
 	if _, err := os.Stat(manifestPath); err == nil {
-		if !question.WithBoolAnswer(fmt.Sprintf("Existing manifest detected (%s); Do you want to override it?", manifestPath)) {
+		if !question.WithBoolAnswer(fmt.Sprintf("Existing manifest detected (%s); Do you want to overwrite it?", manifestPath)) {
 			return nil
 		}
 	}
