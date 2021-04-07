@@ -4,7 +4,8 @@
     "owner": "unit test owner",
     "repo": "github.com/reliablyhq/cli"
   },
-  "slo": {
+  "slo": [{
+    "name": "test",
     "objective": {
       "latency": "100ms",
       "error_budget_percent": 0.5
@@ -19,7 +20,7 @@
         "id": "456"
       }
     ]
-  },
+  }],
   "dependencies": [
     "some service",
     "some other service"
