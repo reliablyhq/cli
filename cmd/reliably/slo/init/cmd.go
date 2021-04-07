@@ -89,7 +89,7 @@ func populateManifestInteractively(m *manifest.Manifest) {
 		for key := range metrics.ProviderFactories {
 			providers = append(providers, key)
 		}
-		providers = sort.StringSlice(providers)
+		sort.Strings(providers) // sorts slice in-place
 
 		for do {
 			provider := question.WithSingleChoiceAnswer("What is the name of the resource provider?", providers...)
