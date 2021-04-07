@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/reliablyhq/cli/core/cli/question"
+	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/metrics"
 	"github.com/spf13/cobra"
@@ -35,14 +36,14 @@ func NewCommand() *cobra.Command {
 }
 
 func runE(_ *cobra.Command, args []string) error {
-	var m *manifest.Manifest
+	var m manifest.Manifest
 	if _, err := os.Stat(manifestPath); err == nil {
-		if m, err = manifest.Load(manifestPath); err != nil {
-			return err
+		if !question.WithBoolAnswer(fmt.Sprintf("Existing manifest detected (%s); Do you want to override it?", manifestPath)) {
+			return nil
 		}
 	}
 
-	populateManifestInteractively(m)
+	populateManifestInteractively(&m)
 
 	f, err := os.Create(manifestPath)
 	if err != nil {
@@ -100,6 +101,10 @@ func populateManifestInteractively(m *manifest.Manifest) {
 		s.Name = question.WithStringAnswer("SLO/Service name?")
 	}
 	m.ServiceLevel = append(m.ServiceLevel, &s)
+	fmt.Println(color.Green(fmt.Sprintf("SLO/Service (%s) added", s.Name)))
+	if question.WithBoolAnswer("Do you want to add another SLO?") {
+		populateManifestInteractively(m)
+	}
 }
 
 func getResourceIDForProvider(provider string) string {
