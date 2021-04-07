@@ -8,7 +8,7 @@ import (
 
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/manifest"
-	"github.com/reliablyhq/cli/core/metrics"
+	// "github.com/reliablyhq/cli/core/metrics"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -17,6 +17,10 @@ var (
 	manifestPath        string
 	supportedExtensions = []string{".yaml", ".json"}
 	googleResourceTypes = []string{"Google Cloud Load Balancers"}
+	providersMap  = map[string]string{
+		"Amazon Web Services": "aws",
+		"Google Cloud Platform": "gcp",
+	}
 )
 
 func NewCommand() *cobra.Command {
@@ -86,13 +90,17 @@ func populateManifestInteractively(m *manifest.Manifest) {
 	do := question.WithBoolAnswer("Do you want to add a service resource?")
 	if do {
 		providers := []string{}
-		for key := range metrics.ProviderFactories {
+		// for key := range metrics.ProviderFactories {
+		// 	providers = append(providers, key)
+		// }
+		for key := range providersMap {
 			providers = append(providers, key)
 		}
 		sort.Strings(providers) // sorts slice in-place
 
 		for do {
-			provider := question.WithSingleChoiceAnswer("What is the name of the resource provider?", providers...)
+			providerFullName := question.WithSingleChoiceAnswer("What is the name of the resource provider?", providers...)
+			provider := providersMap[providerFullName]
 			id := getResourceIDForProvider(provider)
 
 			m.ServiceLevel.Resources = append(m.ServiceLevel.Resources, manifest.ServiceResource{
