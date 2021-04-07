@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Fixes sorting metrics providers in `slo init` ; [#161](https://github.com/reliablyhq/cli/issues/161)
+
 ## [0.8.0] - 2021-04-06
 
 ### Changed
