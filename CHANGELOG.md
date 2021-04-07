@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Fixed
+- Fixes sorting metrics providers in `slo init` ; [#161](https://github.com/reliablyhq/cli/issues/161)
+
+## [0.8.0] - 2021-04-06
+
+### Changed
+
+- `scan` command now works only with sub-command for scanning a specific type of resource;
+  To scan for kubernetes, you should now use `scan kubernetes` command instead.
+
 ## [0.7.0] - 2021-04-02
 
 ### Added
@@ -70,7 +80,8 @@
 
 - Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/reliablyhq/cli/releases/tag/v0.8.0
 [0.7.0]: https://github.com/reliablyhq/cli/releases/tag/v0.7.0
 [0.6.0]: https://github.com/reliablyhq/cli/releases/tag/v0.6.0
 [0.5.0]: https://github.com/reliablyhq/cli/releases/tag/v0.5.0

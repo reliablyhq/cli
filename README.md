@@ -47,7 +47,7 @@ using `RELIABLY_TOKEN`.
 To check your Kubernetes manifests for Reliably Advice and Suggestions, simply run:
 
 ```
-$ reliably scan
+$ reliably scan kubernetes .
 ```
 
 It will scan for manifests recursively in your current working directory.
@@ -55,21 +55,21 @@ It will scan for manifests recursively in your current working directory.
 To indicate a specific file or folder, give it as a command argument:
 
 ```
-$ reliably scan manifest.yaml
-$ reliably scan ./manifests
+$ reliably scan kubernetes manifest.yaml
+$ reliably scan kubernetes ./manifests
 ```
 
 To run Reliably for suggestions against a Kubernetes cluster, run
 
 ```
-$ reliably scan --live
+$ reliably scan kubernetes --live
 ```
 
 You can also pipe into `scan` command, as it can read from stdin using
 '-' as argument:
 
 ```
-$ cat manifest.yaml | reliably scan -
+$ cat manifest.yaml | reliably scan kubernetes -
 ```
 
 The CLI supports multiple output formats, such as `simple` *(default)*,
@@ -77,7 +77,7 @@ The CLI supports multiple output formats, such as `simple` *(default)*,
 you can use the `--format` or `-f` flag, as follow:
 
 ```
-$ reliably scan --format sarif
+$ reliably scan kubernetes --format sarif .
 ```
 
 The CLI prints out the report to the standard output, by default, but it can
@@ -85,7 +85,7 @@ write the report to a local file. You can indicate the path of the report
 with the `--output` or `-o` flag, as follow:
 
 ```
-$ reliably scan --output ./report.txt
+$ reliably scan kubernetes --output ./report.txt .
 ```
 
 Please read the [documentation][docs] for more information.

@@ -24,3 +24,6 @@ output2.txt
 
 # this is the default output of the `reliably report` command
 report.json
+
+# prevent reliably.yaml files being committed
+reliably.yaml

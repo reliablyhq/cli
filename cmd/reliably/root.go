@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	fColor "github.com/fatih/color"
@@ -16,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/cmd/reliably/slo"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
@@ -26,17 +26,11 @@ import (
 	v "github.com/reliablyhq/cli/version"
 )
 
-// Choice is a list of string
-type Choice []string
-
-// Has indicates whether the string slice contains the value
-func (list Choice) Has(a string) bool {
-	return utils.StringInArray(a, list)
-}
-
 const (
 	workspace = ".reliably"
 )
+
+type Choice = cmdutil.Choice
 
 var (
 	verbose     bool
@@ -102,7 +96,7 @@ Environment variables:
 	cmd.AddCommand(NewHelpTopic("environment"))
 
 	// Uses a custom usage template - for adding feedback section to help -
-	template := customUsageTemplate(cmd)
+	template := cmdutil.CustomUsageTemplate(cmd)
 	cmd.SetUsageTemplate(template)
 
 	return cmd
@@ -245,6 +239,7 @@ func createReliablyWorkspace() error {
 // CustomUsageTemplate returns usage template for the command.
 // This is the default usage template from the command,
 // with the additional help:feedback annotations, if specified
+/*
 func customUsageTemplate(c *cobra.Command) string {
 
 	tpl := c.UsageTemplate()
@@ -276,6 +271,7 @@ func customUsageTemplate(c *cobra.Command) string {
 
 	return tpl
 }
+*/
 
 func shouldCheckForUpdate() bool {
 	if os.Getenv("RELIABLY_NO_UPDATE_NOTIFIER") != "" {
