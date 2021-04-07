@@ -20,7 +20,7 @@ jobs:
     working_directory: /home
     steps:
       - checkout # check out the code in the project directory
-      - run: reliably scan .
+      - run: reliably scan kubernetes .
 
 workflows:
   reliably:

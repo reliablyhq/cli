@@ -29,7 +29,7 @@ func WithStringAnswer(questionText string) string {
 func WithFloat64Answer(question string, min, max float64) float64 {
 	for {
 		answer := WithStringAnswer(question)
-		if f, err := strconv.ParseFloat(answer, 32); err != nil {
+		if f, err := strconv.ParseFloat(answer, 64); err != nil {
 			fmt.Println("Please make sure you type a number")
 		} else {
 			if f < min || f > max {

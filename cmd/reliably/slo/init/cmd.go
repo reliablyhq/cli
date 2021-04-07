@@ -3,12 +3,12 @@ package init
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
-	"github.com/reliablyhq/cli/core/metrics"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -16,6 +16,11 @@ import (
 var (
 	manifestPath        string
 	supportedExtensions = []string{".yaml", ".json"}
+	googleResourceTypes = []string{"Google Cloud Load Balancers"}
+	providersMap  = map[string]string{
+		"Amazon Web Services": "aws",
+		"Google Cloud Platform": "gcp",
+	}
 )
 
 func NewCommand() *cobra.Command {
@@ -69,6 +74,7 @@ func validateFilePath() error {
 }
 
 func populateManifestInteractively(m *manifest.Manifest) {
+
 	var s manifest.Service
 	if question.WithBoolAnswer("Are you building something that will be provided to customers 'as a service'?") {
 		s.Objective = manifest.ServiceLevelObjective{
@@ -78,24 +84,25 @@ func populateManifestInteractively(m *manifest.Manifest) {
 
 		s.Resources = []manifest.ServiceResource{}
 
-		do := question.WithBoolAnswer("Do you want to add a service resource?")
-		if do {
-			providers := []string{}
-			for key := range metrics.ProviderFactories {
-				providers = append(providers, key)
-			}
+	do := question.WithBoolAnswer("Do you want to add a service resource?")
+	if do {
+		providers := []string{}
+		for key := range providersMap {
+			providers = append(providers, key)
+		}
+		sort.Strings(providers) // sorts slice in-place
 
-			for do {
-				provider := question.WithSingleChoiceAnswer("What is the name of the resource provider?", providers...)
-				id := getResourceIDForProvider(provider)
+		for do {
+			providerFullName := question.WithSingleChoiceAnswer("What is the name of the resource provider?", providers...)
+			provider := providersMap[providerFullName]
+			id := getResourceIDForProvider(provider)
 
-				s.Resources = append(s.Resources, manifest.ServiceResource{
-					Provider: provider,
-					ID:       id,
-				})
+      s.Resources = append(s.Resources, manifest.ServiceResource{
+        Provider: provider,
+        ID:       id,
+      })
 
-				do = question.WithBoolAnswer("Do you want to add another dependency?")
-			}
+			do = question.WithBoolAnswer("Do you want to add another dependency?")
 		}
 
 		s.Name = question.WithStringAnswer("SLO/Service name?")
@@ -105,6 +112,7 @@ func populateManifestInteractively(m *manifest.Manifest) {
 	if question.WithBoolAnswer("Do you want to add another SLO?") {
 		populateManifestInteractively(m)
 	}
+
 }
 
 func getResourceIDForProvider(provider string) string {
@@ -114,11 +122,16 @@ func getResourceIDForProvider(provider string) string {
 	case "gcp":
 		{
 			projectID := question.WithStringAnswer("What is the GCP project ID?")
-			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", "Google Cloud Load Balancers")
+			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", googleResourceTypes...)
+			sanitizedResourceType := sanitizeResourceType(resourceType)
 			resourceName := question.WithStringAnswer("What is the name of resource?")
-			return fmt.Sprintf("%s/%s/%s", projectID, resourceType, resourceName)
+			return fmt.Sprintf("%s/%s/%s", projectID, sanitizedResourceType, resourceName)
 		}
 	default:
 		return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.")
 	}
+}
+
+func sanitizeResourceType(s string) string {
+	return strings.ToLower(strings.ReplaceAll(s, " ", "-"))
 }
