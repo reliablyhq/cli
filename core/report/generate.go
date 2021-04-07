@@ -27,6 +27,11 @@ var notSuportedErrorBuilder = func(thingType, thingName string) error {
 }
 
 func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
+	// check for nil manifest
+	if m == nil {
+		return reports, fmt.Errorf("nil manifest.Manifest received")
+	}
+
 	for _, s := range m.ServiceLevel {
 		if s == nil {
 			return nil, go_errors.New("I don't know anything about your service objectives. Run `reliably slo init` to tell me.")
