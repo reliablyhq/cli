@@ -8,6 +8,7 @@ import (
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/metrics"
+	"github.com/stretchr/testify/assert"
 )
 
 type dummyProvider struct {
@@ -79,14 +80,24 @@ func TestFromManifest(t *testing.T) {
 		latencyMetricValue: 100,
 		errorPercentValue:  1,
 	}
+
 	metrics.ProviderFactories["test_from_manifest"] = func() (metrics.Provider, error) { return p, nil }
 
 	tVal := time.Now()
 	timestampFn = func() time.Time { return tVal }
 
-	type args struct {
-		m *manifest.Manifest
-	}
+	type (
+		args struct {
+			m *manifest.Manifest
+		}
+
+		subtest struct {
+			name    string
+			args    args
+			want    *Report
+			wantErr bool
+		}
+	)
 
 	srv := &manifest.Service{
 		Objective: manifest.ServiceLevelObjective{
@@ -101,12 +112,7 @@ func TestFromManifest(t *testing.T) {
 		},
 	}
 
-	tests := []struct {
-		name    string
-		args    args
-		want    *Report
-		wantErr bool
-	}{
+	tests := []subtest{
 		{
 			name: "returns report with correct info",
 			args: args{
@@ -144,32 +150,26 @@ func TestFromManifest(t *testing.T) {
 			wantErr: true,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reports, err := FromManifest(tt.args.m)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("FromManifest() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			} else if err != nil && tt.wantErr {
+			got, err := FromManifest(tt.args.m)
+			if (err != nil) && tt.wantErr {
+				assert.Error(t, err, "FromManifest() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			for _, got := range reports {
-				if !reflect.DeepEqual(got.Timestamp, tt.want.Timestamp) {
-					t.Errorf("FromManifest().Timestamp = %v, want %v", got.Timestamp, tt.want.Timestamp)
-					return
-				}
+			// else just assert error
+			assert.NoError(t, err)
 
-				if !reflect.DeepEqual(got.ServiceLevel, tt.want.ServiceLevel) {
-					t.Errorf("FromManifest().ServiceLevel = %v, want %v", got.ServiceLevel, tt.want.ServiceLevel)
-					return
-				}
+			assert.Equal(t, got[0].Timestamp, tt.want.Timestamp,
+				"FromManifest().Timestamp = %v, want %v", got[0].Timestamp, tt.want.Timestamp)
 
-				if !reflect.DeepEqual(got.Dependencies, tt.want.Dependencies) {
-					t.Errorf("FromManifest().Dependencies = %v, want %v", got.Dependencies, tt.want.Dependencies)
-					return
-				}
-			}
+			assert.Equal(t, got[0].ServiceLevel, tt.want.ServiceLevel,
+				"FromManifest().ServiceLevel = %v, want %v", got[0].ServiceLevel, tt.want.ServiceLevel)
+
+			assert.Equal(t, got[0].Dependencies, tt.want.Dependencies,
+				"FromManifest().Dependencies = %v, want %v", got[0].Dependencies, tt.want.Dependencies)
 
 		})
 	}
