@@ -8,7 +8,6 @@ import (
 
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/manifest"
-	// "github.com/reliablyhq/cli/core/metrics"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -90,9 +89,6 @@ func populateManifestInteractively(m *manifest.Manifest) {
 	do := question.WithBoolAnswer("Do you want to add a service resource?")
 	if do {
 		providers := []string{}
-		// for key := range metrics.ProviderFactories {
-		// 	providers = append(providers, key)
-		// }
 		for key := range providersMap {
 			providers = append(providers, key)
 		}
