@@ -87,6 +87,20 @@ func TestFromManifest(t *testing.T) {
 	type args struct {
 		m *manifest.Manifest
 	}
+
+	srv := &manifest.Service{
+		Objective: manifest.ServiceLevelObjective{
+			Latency:            core.Duration{Duration: time.Millisecond * 250},
+			ErrorBudgetPercent: 2.5,
+		},
+		Resources: []manifest.ServiceResource{
+			{
+				Provider: "test_from_manifest",
+				ID:       "abc13",
+			},
+		},
+	}
+
 	tests := []struct {
 		name    string
 		args    args
@@ -97,18 +111,7 @@ func TestFromManifest(t *testing.T) {
 			name: "returns report with correct info",
 			args: args{
 				m: &manifest.Manifest{
-					ServiceLevel: &manifest.Service{
-						Objective: manifest.ServiceLevelObjective{
-							Latency:            core.Duration{Duration: time.Millisecond * 250},
-							ErrorBudgetPercent: 2.5,
-						},
-						Resources: []manifest.ServiceResource{
-							{
-								Provider: "test_from_manifest",
-								ID:       "abc13",
-							},
-						},
-					},
+					ServiceLevel: []*manifest.Service{srv},
 					Dependencies: []string{"abc"},
 				},
 			},
@@ -143,7 +146,7 @@ func TestFromManifest(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := FromManifest(tt.args.m)
+			reports, err := FromManifest(tt.args.m)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FromManifest() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -151,20 +154,23 @@ func TestFromManifest(t *testing.T) {
 				return
 			}
 
-			if !reflect.DeepEqual(got.Timestamp, tt.want.Timestamp) {
-				t.Errorf("FromManifest().Timestamp = %v, want %v", got.Timestamp, tt.want.Timestamp)
-				return
+			for _, got := range reports {
+				if !reflect.DeepEqual(got.Timestamp, tt.want.Timestamp) {
+					t.Errorf("FromManifest().Timestamp = %v, want %v", got.Timestamp, tt.want.Timestamp)
+					return
+				}
+
+				if !reflect.DeepEqual(got.ServiceLevel, tt.want.ServiceLevel) {
+					t.Errorf("FromManifest().ServiceLevel = %v, want %v", got.ServiceLevel, tt.want.ServiceLevel)
+					return
+				}
+
+				if !reflect.DeepEqual(got.Dependencies, tt.want.Dependencies) {
+					t.Errorf("FromManifest().Dependencies = %v, want %v", got.Dependencies, tt.want.Dependencies)
+					return
+				}
 			}
 
-			if !reflect.DeepEqual(got.ServiceLevel, tt.want.ServiceLevel) {
-				t.Errorf("FromManifest().ServiceLevel = %v, want %v", got.ServiceLevel, tt.want.ServiceLevel)
-				return
-			}
-
-			if !reflect.DeepEqual(got.Dependencies, tt.want.Dependencies) {
-				t.Errorf("FromManifest().Dependencies = %v, want %v", got.Dependencies, tt.want.Dependencies)
-				return
-			}
 		})
 	}
 }
