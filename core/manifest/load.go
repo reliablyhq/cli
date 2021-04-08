@@ -30,6 +30,11 @@ func Load(path string) (*Manifest, error) {
 		return nil, err
 	}
 
+	// validate manifest
+	if err := m.Validate(); err != nil {
+		return nil, err
+	}
+
 	return &m, nil
 }
 

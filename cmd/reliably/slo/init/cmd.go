@@ -50,6 +50,11 @@ func runE(_ *cobra.Command, args []string) error {
 
 	populateManifestInteractively(&m)
 
+	// validate
+	if err := m.Validate(); err != nil {
+		return err
+	}
+
 	f, err := os.Create(manifestPath)
 	if err != nil {
 		return err

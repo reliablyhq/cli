@@ -1,6 +1,8 @@
 package manifest
 
 import (
+	"fmt"
+
 	"github.com/reliablyhq/cli/core"
 )
 
@@ -57,3 +59,17 @@ type (
 		Root string `yaml:"root" json:"root"`
 	}
 )
+
+// Validate - validate manifest
+func (m *Manifest) Validate() error {
+	// check slo names are duplicated
+	names := make(map[string]struct{}, len(m.ServiceLevel))
+	for _, s := range m.ServiceLevel {
+		if _, exists := names[s.Name]; exists {
+			return fmt.Errorf("duplicate SLO Name detected: [%s]", s.Name)
+		}
+		names[s.Name] = struct{}{}
+	}
+
+	return nil
+}
