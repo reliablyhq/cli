@@ -81,14 +81,13 @@ func validateFilePath() error {
 func populateManifestInteractively(m *manifest.Manifest) {
 
 	var s manifest.Service
-	if question.WithBoolAnswer("Are you building something that will be provided to customers 'as a service'?") {
-		s.Objective = manifest.ServiceLevelObjective{
-			ErrorBudgetPercent: question.WithFloat64Answer("What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
-			Latency:            question.WithDurationAnswer("What is the maximum request-response latency you want from this service (in milliseconds)?"),
-		}
 
-		s.Resources = []manifest.ServiceResource{}
+	s.Objective = manifest.ServiceLevelObjective{
+		ErrorBudgetPercent: question.WithFloat64Answer("What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
+		Latency:            question.WithDurationAnswer("What is the maximum request-response latency you want from this service (in milliseconds)?"),
 	}
+
+	s.Resources = []manifest.ServiceResource{}
 
 	do := question.WithBoolAnswer("Do you want to add a service resource?")
 	if do {
