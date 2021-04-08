@@ -9,6 +9,7 @@ type Report struct {
 	Timestamp    time.Time     `json:"timestamp"`
 	Dependencies []string      `json:"dependencies"`
 	ServiceLevel *ServiceLevel `json:"service_level"`
+	Name         string        `json:"name"`
 
 	// TODO: decide whether this should be implemented as
 	// Observation Windor or Boundary

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/reliablyhq/cli/core/cli/question"
+	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -16,8 +17,8 @@ var (
 	manifestPath        string
 	supportedExtensions = []string{".yaml", ".json"}
 	googleResourceTypes = []string{"Google Cloud Load Balancers"}
-	providersMap  = map[string]string{
-		"Amazon Web Services": "aws",
+	providersMap        = map[string]string{
+		"Amazon Web Services":   "aws",
 		"Google Cloud Platform": "gcp",
 	}
 )
@@ -40,18 +41,19 @@ func NewCommand() *cobra.Command {
 }
 
 func runE(_ *cobra.Command, args []string) error {
-	var m *manifest.Manifest
+	var m manifest.Manifest
 	if _, err := os.Stat(manifestPath); err == nil {
-		if m, err = manifest.Load(manifestPath); err != nil {
-			return err
-		}
-	} else {
-		m = &manifest.Manifest{
-			ServiceLevel: &manifest.Service{},
+		if !question.WithBoolAnswer(fmt.Sprintf("Existing manifest detected (%s); Do you want to overwrite it?", manifestPath)) {
+			return nil
 		}
 	}
 
-	populateManifestInteractively(m)
+	populateManifestInteractively(&m)
+
+	// validate
+	if err := m.Validate(); err != nil {
+		return err
+	}
 
 	f, err := os.Create(manifestPath)
 	if err != nil {
@@ -77,14 +79,15 @@ func validateFilePath() error {
 }
 
 func populateManifestInteractively(m *manifest.Manifest) {
-	m.ServiceLevel = &manifest.Service{}
 
-	m.ServiceLevel.Objective = manifest.ServiceLevelObjective{
+	var s manifest.Service
+
+	s.Objective = manifest.ServiceLevelObjective{
 		ErrorBudgetPercent: question.WithFloat64Answer("What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
 		Latency:            question.WithDurationAnswer("What is the maximum request-response latency you want from this service (in milliseconds)?"),
 	}
 
-	m.ServiceLevel.Resources = []manifest.ServiceResource{}
+	s.Resources = []manifest.ServiceResource{}
 
 	do := question.WithBoolAnswer("Do you want to add a service resource?")
 	if do {
@@ -99,13 +102,21 @@ func populateManifestInteractively(m *manifest.Manifest) {
 			provider := providersMap[providerFullName]
 			id := getResourceIDForProvider(provider)
 
-			m.ServiceLevel.Resources = append(m.ServiceLevel.Resources, manifest.ServiceResource{
+			s.Resources = append(s.Resources, manifest.ServiceResource{
 				Provider: provider,
 				ID:       id,
 			})
 
 			do = question.WithBoolAnswer("Do you want to add another dependency?")
 		}
+
+		s.Name = question.WithStringAnswer("SLO/Service name?")
+	}
+	m.ServiceLevel = append(m.ServiceLevel, &s)
+	fmt.Println(color.Green(fmt.Sprintf("SLO/Service (%s) added", s.Name)))
+
+	if question.WithBoolAnswer("Do you want to add another SLO?") {
+		populateManifestInteractively(m)
 	}
 
 }

@@ -1,14 +1,16 @@
 package manifest
 
 import (
+	"fmt"
+
 	"github.com/reliablyhq/cli/core"
 )
 
 type (
 	Manifest struct {
 		// App          *AppInfo          `yaml:"app" json:"app"`
-		ServiceLevel *Service `yaml:"slo" json:"slo"`
-		Dependencies []string `yaml:"dependencies" json:"dependencies"`
+		ServiceLevel []*Service `yaml:"slo" json:"slo"`
+		Dependencies []string   `yaml:"dependencies" json:"dependencies"`
 		// ServiceLevel *ServiceLevel     `yaml:"service_level,omitempty" json:"service_level,omitempty"`
 		// CI           *ContinuousIntegrationInfo `yaml:"ci,omitempty" json:"ci,omitempty"`
 		// Hosting      *Hosting          `yaml:"hosting,omitempty" json:"hosting,omitempty"`
@@ -23,6 +25,7 @@ type (
 	}
 
 	Service struct {
+		Name      string                `yaml:"name" json:"name"`
 		Objective ServiceLevelObjective `yaml:"objective" json:"objective"`
 		Resources []ServiceResource     `yaml:"resources" json:"resources"`
 	}
@@ -56,3 +59,17 @@ type (
 		Root string `yaml:"root" json:"root"`
 	}
 )
+
+// Validate - validate manifest
+func (m *Manifest) Validate() error {
+	// check slo names are duplicated
+	names := make(map[string]struct{}, len(m.ServiceLevel))
+	for _, s := range m.ServiceLevel {
+		if _, exists := names[s.Name]; exists {
+			return fmt.Errorf("duplicate SLO Name detected: [%s]", s.Name)
+		}
+		names[s.Name] = struct{}{}
+	}
+
+	return nil
+}

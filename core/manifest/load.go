@@ -1,9 +1,7 @@
 package manifest
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 
@@ -28,25 +26,12 @@ func Load(path string) (*Manifest, error) {
 	defer file.Close()
 
 	var m Manifest
-	var decoder interface{ Decode(interface{}) error }
-
-	ext := getExtensionFromPath(path)
-	switch ext {
-	case ".yaml":
-		{
-			decoder = yaml.NewDecoder(file)
-		}
-	case ".json":
-		{
-			decoder = json.NewDecoder(file)
-		}
-	default:
-		{
-			return nil, fmt.Errorf("file type '%s' is not a supported manifest type", ext)
-		}
+	if err := yaml.NewDecoder(file).Decode(&m); err != nil {
+		return nil, err
 	}
 
-	if err := decoder.Decode(&m); err != nil {
+	// validate manifest
+	if err := m.Validate(); err != nil {
 		return nil, err
 	}
 

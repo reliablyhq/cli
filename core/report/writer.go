@@ -80,7 +80,8 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 }
 
 func tabbedoutput(r *Report, w io.Writer) {
-	fmt.Fprintf(w, "\n-----------\nSLO report: (last %s) \n-----------\n",
+	fmt.Fprintf(w, "\n-----------\n[%s] SLO report: (last %s) \n-----------\n",
+		color.Cyan(r.Name),
 		r.ObservationWindow.To.Sub(r.ObservationWindow.From))
 
 	table := tablewriter.NewWriter(w)
