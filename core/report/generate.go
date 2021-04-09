@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/reliablyhq/cli/core/errors"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/metrics"
 	log "github.com/sirupsen/logrus"
@@ -42,7 +41,6 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 		}
 
 		r := Report{Name: s.Name}
-		allErrors := make([]error, 0)
 
 		r.APIVersion = apiVersion
 		r.Timestamp = timestampFn()
@@ -66,13 +64,13 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 			if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
 				allLatency = append(allLatency, l)
 			} else {
-				log.Errorf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
+				return nil, fmt.Errorf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
 			}
 
 			if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
 				allErrorPercentages = append(allErrorPercentages, e)
 			} else {
-				log.Errorf("an error occured while getting error percentage data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
+				return nil, fmt.Errorf("an error occured while getting error percentage data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
 			}
 
 		}
@@ -94,10 +92,6 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 
 		if m.Dependencies != nil {
 			r.Dependencies = m.Dependencies
-		}
-
-		if len(allErrors) > 0 {
-			return reports, errors.NewCompoundError("multiple errors occured", allErrors)
 		}
 
 		reports = append(reports, &r)
