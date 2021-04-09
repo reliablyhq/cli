@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	consolesize "github.com/nathan-fiscaletti/consolesize-go"
 	"github.com/olekukonko/tablewriter"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
@@ -84,15 +85,24 @@ func tabbedoutput(r *Report, w io.Writer) {
 		color.Cyan(r.Name),
 		r.ObservationWindow.To.Sub(r.ObservationWindow.From))
 
+	cols, _ := consolesize.GetConsoleSize()
+
+	// compute max with for latest column that contains text on wrapped multi lines
+	maxColWidth := cols - 44 // arbitrary based on error rate line length for first 3 cols
+	if maxColWidth < 30 {
+		maxColWidth = 30 // make it a default decent size
+	}
+
 	table := tablewriter.NewWriter(w)
 	table.SetAutoFormatHeaders(false)
+	table.SetAutoWrapText(true)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	table.SetBorder(false)
 	table.SetRowLine(false)
 	// table.SetRowSeparator("--")
 	table.SetColumnSeparator("")
 	table.SetHeaderLine(false)
-	table.SetColWidth(100)
+	table.SetColWidth(maxColWidth)
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetHeader([]string{"",
 		color.Bold(color.Magenta("Actual")),
