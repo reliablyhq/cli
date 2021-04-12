@@ -49,42 +49,50 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 		allLatency := []float64{}
 		allErrorPercentages := []float64{}
 
+		var latencyHasErrors = false
+		var errorPercentHasErrors = false
+
 		for _, resource := range s.Resources {
 			provider, err := getProviderForResource(resource.Provider)
 			if err != nil {
-				log.Errorf("an error occured while getting a provider for resource: %s => %s", resource.Provider, err)
-				continue
+				return nil, fmt.Errorf("an error occured while getting a provider for resource: %s => %s", resource.Provider, err)
 			}
 
 			to := time.Now()
-			from := to.Add(-oneDay)
+			from := to.Add(-oneHour)
 			r.ObservationWindow.To = to
 			r.ObservationWindow.From = from
 
 			if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
 				allLatency = append(allLatency, l)
 			} else {
-				return nil, fmt.Errorf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
+				log.Error(fmt.Errorf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err))
+				latencyHasErrors = true
 			}
 
 			if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
 				allErrorPercentages = append(allErrorPercentages, e)
 			} else {
-				return nil, fmt.Errorf("an error occured while getting error percentage data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
-			}
 
+				log.Error(fmt.Errorf("an error occured while getting error percentage data for resource: %s-%s => %v ", resource.Provider, resource.ID, err))
+				errorPercentHasErrors = true
+			}
 		}
+
+		// define actual indicator data received and errors
+		actual := (&ServiceLevelIndicators{
+			ErrorPercent: average(allErrorPercentages),
+			LatencyMs:    int64(average(allLatency)),
+		}).setErrorState(latencyErr, latencyHasErrors).
+			setErrorState(errPercentErr, errorPercentHasErrors)
 
 		r.ServiceLevel = &ServiceLevel{
 			Target: &ServiceLevelIndicators{
 				ErrorPercent: s.Objective.ErrorBudgetPercent,
 				LatencyMs:    s.Objective.Latency.Milliseconds(),
 			},
-			Actual: &ServiceLevelIndicators{
-				ErrorPercent: average(allErrorPercentages),
-				LatencyMs:    int64(average(allLatency)),
-			},
-			Delta: &ServiceLevelIndicators{},
+			Actual: actual,
+			Delta:  &ServiceLevelIndicators{},
 		}
 
 		r.ServiceLevel.Delta.ErrorPercent = r.ServiceLevel.Actual.ErrorPercent - r.ServiceLevel.Target.ErrorPercent
