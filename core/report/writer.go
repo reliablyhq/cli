@@ -100,41 +100,50 @@ func tabbedoutput(r *Report, w io.Writer) {
 		color.Bold(color.Magenta("Delta")), ""})
 
 	var data [][]string
+	var actual string
+	var delta = func(actual, d string) string {
+		if actual != "---" {
+			return d
+		}
+		return actual
+	}
 
 	// set error budget data
+	actual = r.ServiceLevel.Actual.errorPerentString()
 	if r.ServiceLevel.Delta.ErrorPercent > threshold {
 		data = append(data, []string{
 			fmt.Sprintf("%s Error Rate", iconEx),
-			color.Bold(color.Red(fmt.Sprintf("%.2f", r.ServiceLevel.Actual.ErrorPercent))),
+			color.Bold(color.IfTrueRed(actual != "---", actual)),
 			fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
-			fmt.Sprintf("%.2f%%", r.ServiceLevel.Delta.ErrorPercent),
+			delta(actual, fmt.Sprintf("%.2f%%", r.ServiceLevel.Delta.ErrorPercent)),
 			fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent),
 		})
 	} else {
 		data = append(data, []string{
 			fmt.Sprintf("%s Error Rate", iconTick),
-			color.Bold(color.Green(fmt.Sprintf("%.2f", r.ServiceLevel.Actual.ErrorPercent))),
+			color.Bold(color.IfTrueGreen(actual != "---", actual)),
 			fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
-			fmt.Sprintf("%.2f%%", -r.ServiceLevel.Delta.ErrorPercent),
+			delta(actual, fmt.Sprintf("%.2f%%", -r.ServiceLevel.Delta.ErrorPercent)),
 			fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent),
 		})
 	}
 
 	// set latency
+	actual = r.ServiceLevel.Actual.latencyMsString()
 	if r.ServiceLevel.Delta.LatencyMs > threshold {
 		data = append(data, []string{
 			fmt.Sprintf("%s Latency", iconEx),
-			color.Bold(color.Red(fmt.Sprintf("%dms", r.ServiceLevel.Actual.LatencyMs))),
+			color.Bold(color.IfTrueRed(actual != "---", actual)),
 			fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
-			fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs),
+			delta(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
 			fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs),
 		})
 	} else {
 		data = append(data, []string{
 			fmt.Sprintf("%s Latency", iconTick),
-			color.Bold(color.Green(fmt.Sprintf("%dms", r.ServiceLevel.Actual.LatencyMs))),
+			color.Bold(color.IfTrueGreen(actual != "---", actual)),
 			fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
-			fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs),
+			delta(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
 			latencyValid,
 		})
 	}
@@ -147,4 +156,11 @@ func tabbedoutput(r *Report, w io.Writer) {
 
 	// render table
 	table.Render()
+}
+
+// evaluate the Actual field in ServiceIndicator to check for
+// errors and return blank if any
+func evaluateActual() string {
+
+	return "---"
 }
