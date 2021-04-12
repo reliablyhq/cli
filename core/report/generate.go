@@ -59,7 +59,7 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 			}
 
 			to := time.Now()
-			from := to.Add(-oneHour)
+			from := to.Add(-oneDay)
 			r.ObservationWindow.To = to
 			r.ObservationWindow.From = from
 
