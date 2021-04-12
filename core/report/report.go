@@ -47,17 +47,17 @@ func (s *ServiceLevelIndicators) hasErrors(i indicatorErrType) bool {
 }
 
 func (s *ServiceLevelIndicators) errorPerentString() string {
-	if s.errored[errPercentErr] {
-		return fmt.Sprintf("%.2f", s.ErrorPercent)
+	if s.hasErrors(errPercentErr) {
+		return "---"
 	}
-	return "---"
+	return fmt.Sprintf("%.2f", s.ErrorPercent)
 }
 
 func (s *ServiceLevelIndicators) latencyMsString() string {
-	if s.errored[latencyErr] {
-		return fmt.Sprintf("%dms", s.LatencyMs)
+	if s.hasErrors(latencyErr) {
+		return "---"
 	}
-	return "---"
+	return fmt.Sprintf("%dms", s.LatencyMs)
 }
 
 // indicatorErrType - used to define indicator error types
