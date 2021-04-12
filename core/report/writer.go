@@ -157,10 +157,3 @@ func tabbedoutput(r *Report, w io.Writer) {
 	// render table
 	table.Render()
 }
-
-// evaluate the Actual field in ServiceIndicator to check for
-// errors and return blank if any
-func evaluateActual() string {
-
-	return "---"
-}
