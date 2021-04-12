@@ -2,8 +2,15 @@
 
 ## [Unreleased]
 
+## [0.9.0] - 2021-04-12
+
+### Changed
+
+- `slo init` command now allows the initialization of multiple SLOs;
+
 ### Fixed
-- Fixes sorting metrics providers in `slo init` ; [#161](https://github.com/reliablyhq/cli/issues/161)
+- Fixes sorting metrics providers in `slo init`; [#161](https://github.com/reliablyhq/cli/issues/161)
+- Fixes the output not wrapping correctly in `slo report`.
 
 ## [0.8.0] - 2021-04-06
 
@@ -80,7 +87,8 @@
 
 - Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/reliablyhq/cli/releases/tag/v0.9.0
 [0.8.0]: https://github.com/reliablyhq/cli/releases/tag/v0.8.0
 [0.7.0]: https://github.com/reliablyhq/cli/releases/tag/v0.7.0
 [0.6.0]: https://github.com/reliablyhq/cli/releases/tag/v0.6.0
