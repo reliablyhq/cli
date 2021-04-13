@@ -82,14 +82,26 @@ func populateManifestInteractively(m *manifest.Manifest) {
 
 	var s manifest.Service
 
-	s.Objective = manifest.ServiceLevelObjective{
-		ErrorBudgetPercent: question.WithFloat64Answer("What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
-		Latency:            question.WithDurationAnswer("What is the maximum request-response latency you want from this service (in milliseconds)?"),
+	// s.Type = manifest.Service.Type{}
+
+	sloType := question.WithSingleChoiceAnswer("What type of SLO do you want to declare?", "Availability", "Latency")
+	s.Type = sanitizeString(sloType)
+
+	if s.Type == "latency" {
+		s.Threshold = question.WithDurationAnswer("What is your latency threshold (in milliseconds)?")
 	}
 
-	s.Resources = []manifest.ServiceResource{}
+	s.Objective = question.WithFloat64Answer("What is your target for this SLO?'.", 0, 100)
 
-	do := question.WithBoolAnswer("Do you want to add a service resource?")
+
+	// s.Objective = manifest.ServiceLevelObjective{
+	// 	ErrorBudgetPercent: question.WithFloat64Answer("What percentage of requests to your service is it ok to have fail? This will be your 'error budget'.", 0, 100),
+	// 	Latency:            question.WithDurationAnswer("What is the maximum request-response latency you want from this service (in milliseconds)?"),
+	// }
+
+	// s.Resources = []manifest.ServiceResource{}
+
+	do := question.WithBoolAnswer("Do you want to add an SLI to measure this SLO?")
 	if do {
 		providers := []string{}
 		for key := range providersMap {
@@ -98,7 +110,7 @@ func populateManifestInteractively(m *manifest.Manifest) {
 		sort.Strings(providers) // sorts slice in-place
 
 		for do {
-			providerFullName := question.WithSingleChoiceAnswer("What is the name of the resource provider?", providers...)
+			providerFullName := question.WithSingleChoiceAnswer("On which cloud provider?", providers...)
 			provider := providersMap[providerFullName]
 			id := getResourceIDForProvider(provider)
 
@@ -107,10 +119,10 @@ func populateManifestInteractively(m *manifest.Manifest) {
 				ID:       id,
 			})
 
-			do = question.WithBoolAnswer("Do you want to add another dependency?")
+			do = question.WithBoolAnswer("Do you want to add another SLI?")
 		}
 
-		s.Name = question.WithStringAnswer("SLO/Service name?")
+		s.Name = question.WithStringAnswer("What is the name of this SLO?")
 	}
 	m.ServiceLevel = append(m.ServiceLevel, &s)
 	fmt.Println(color.Green(fmt.Sprintf("SLO/Service (%s) added", s.Name)))
@@ -129,7 +141,7 @@ func getResourceIDForProvider(provider string) string {
 		{
 			projectID := question.WithStringAnswer("What is the GCP project ID?")
 			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", googleResourceTypes...)
-			sanitizedResourceType := sanitizeResourceType(resourceType)
+			sanitizedResourceType := sanitizeString(resourceType)
 			resourceName := question.WithStringAnswer("What is the name of resource?")
 			return fmt.Sprintf("%s/%s/%s", projectID, sanitizedResourceType, resourceName)
 		}
@@ -138,6 +150,6 @@ func getResourceIDForProvider(provider string) string {
 	}
 }
 
-func sanitizeResourceType(s string) string {
+func sanitizeString(s string) string {
 	return strings.ToLower(strings.ReplaceAll(s, " ", "-"))
 }
