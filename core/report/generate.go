@@ -88,8 +88,8 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 
 		r.ServiceLevel = &ServiceLevel{
 			Target: &ServiceLevelIndicators{
-				ErrorPercent: s.Objective.ErrorBudgetPercent,
-				LatencyMs:    s.Objective.Latency.Milliseconds(),
+				ErrorPercent: s.Objective,
+				LatencyMs:    s.Threshold.Milliseconds(),
 			},
 			Actual: actual,
 			Delta:  &ServiceLevelIndicators{},
@@ -98,8 +98,8 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 		r.ServiceLevel.Delta.ErrorPercent = r.ServiceLevel.Actual.ErrorPercent - r.ServiceLevel.Target.ErrorPercent
 		r.ServiceLevel.Delta.LatencyMs = r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs
 
-		if m.Dependencies != nil {
-			r.Dependencies = m.Dependencies
+		if s.Dependencies != nil {
+			r.Dependencies = s.Dependencies
 		}
 
 		reports = append(reports, &r)
