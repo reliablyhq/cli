@@ -121,7 +121,6 @@ func tabbedoutput(r *Report, w io.Writer) {
 			color.Bold(color.IfTrueRed(actual != "---", actual)),
 			fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
 			delta(actual, fmt.Sprintf("%.2f%%", r.ServiceLevel.Delta.ErrorPercent)),
-			delta(actual, fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)),
 		})
 	} else {
 		data = append(data, []string{
@@ -129,7 +128,6 @@ func tabbedoutput(r *Report, w io.Writer) {
 			color.Bold(color.IfTrueGreen(actual != "---", actual)),
 			fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
 			delta(actual, fmt.Sprintf("%.2f%%", -r.ServiceLevel.Delta.ErrorPercent)),
-			delta(actual, fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)),
 		})
 	}
 
@@ -141,7 +139,6 @@ func tabbedoutput(r *Report, w io.Writer) {
 			color.Bold(color.IfTrueRed(actual != "---", actual)),
 			fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
 			delta(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
-			delta(actual, fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)),
 		})
 	} else {
 		data = append(data, []string{
@@ -149,7 +146,6 @@ func tabbedoutput(r *Report, w io.Writer) {
 			color.Bold(color.IfTrueGreen(actual != "---", actual)),
 			fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
 			delta(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
-			delta(actual, fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)),
 		})
 	}
 
