@@ -16,6 +16,7 @@ const (
 	oneDay            = 24 * time.Hour
 	arnInvalidService = "arn:partition:service:region:account-id:resource-type:resource-id"
 	arnApiGateway     = "arn:aws:apigateway:eu-west-1::/apis/abcdef1234"
+	arnELB            = "arn:aws:elasticloadbalancing:eu-west-1:123456789:loadbalancer/app/dummy/12az34er56"
 )
 
 var (
@@ -98,6 +99,11 @@ func TestGetAwsResourceErrorRateInput(t *testing.T) {
 			arn:     arnApiGateway,
 			wantErr: false,
 		},
+		{
+			name:    "Application Load Balancer",
+			arn:     arnELB,
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -106,14 +112,16 @@ func TestGetAwsResourceErrorRateInput(t *testing.T) {
 			arn, _ := arn.Parse(tt.arn)
 			r := AwsResource{arn: arn}
 
-			data, err := r.GetErrorRateMetricDataInput(from, to)
-
+			provider, err := r.MetricProvider()
 			if tt.wantErr {
 				assert.NotEqual(t, nil, err, "Expected error not returned in result")
 				t.Log(err)
 				return
 			}
 
+			t.Log("provider", provider, "error", err)
+
+			data, err := provider.GetErrorRateMetricDataInput(arn, from, to)
 			assert.NoError(t, err, "Unexpected error")
 			assert.NotEqual(t, nil, data, "metric data input is missing")
 		})
@@ -141,6 +149,11 @@ func TestGetAwsResourceLatencyInput(t *testing.T) {
 			arn:     arnApiGateway,
 			wantErr: false,
 		},
+		{
+			name:    "Application Load Balancer",
+			arn:     arnELB,
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -149,17 +162,14 @@ func TestGetAwsResourceLatencyInput(t *testing.T) {
 			arn, _ := arn.Parse(tt.arn)
 			r := AwsResource{arn: arn}
 
-			t.Log(arn)
-			t.Log(r)
-
-			data, err := r.GetLatencyMetricDataInput(from, to)
-
+			provider, err := r.MetricProvider()
 			if tt.wantErr {
 				assert.NotEqual(t, nil, err, "Expected error not returned in result")
 				t.Log(err)
 				return
 			}
 
+			data, err := provider.GetLatencyMetricDataInput(arn, from, to)
 			assert.NoError(t, err, "Unexpected error")
 			assert.NotEqual(t, nil, data, "metric data input is missing")
 		})
