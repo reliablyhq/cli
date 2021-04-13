@@ -52,25 +52,30 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 
 	switch format {
 	case JSON:
-		b, _ := json.MarshalIndent(r, "", "  ")
-		fmt.Fprintln(w, string(b))
+		if !r.ServiceLevel.Actual.hasErrors(errPercentErr) && !r.ServiceLevel.Actual.hasErrors(latencyErr) {
+			b, _ := json.MarshalIndent(r, "", "  ")
+			fmt.Fprintln(w, string(b))
+		}
 
 	case SimpleText:
 		fmt.Printf("SLO report: (last %s)\n", r.ObservationWindow.To.Sub(r.ObservationWindow.From))
-
-		if r.ServiceLevel.Delta.ErrorPercent > threshold {
-			msg := fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)
-			fmt.Printf("%s Error Rate: %.2f%%. %s\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.ErrorPercent, msg)
-		} else {
-			msg := fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)
-			fmt.Printf("%s Error Rate: %.2f%%. %s\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.ErrorPercent, msg)
+		if !r.ServiceLevel.Actual.hasErrors(errPercentErr) {
+			if r.ServiceLevel.Delta.ErrorPercent > threshold {
+				msg := fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)
+				fmt.Printf("%s Error Rate: %.2f%%. %s\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.ErrorPercent, msg)
+			} else {
+				msg := fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)
+				fmt.Printf("%s Error Rate: %.2f%%. %s\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.ErrorPercent, msg)
+			}
 		}
 
-		if r.ServiceLevel.Delta.LatencyMs > threshold {
-			msg := fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)
-			fmt.Printf("%s Latency: %vms. %s\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.LatencyMs, msg)
-		} else {
-			fmt.Printf("%s Latency: %vms. %s\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.LatencyMs, latencyValid)
+		if !r.ServiceLevel.Actual.hasErrors(latencyErr) {
+			if r.ServiceLevel.Delta.LatencyMs > threshold {
+				msg := fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)
+				fmt.Printf("%s Latency: %vms. %s\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.LatencyMs, msg)
+			} else {
+				fmt.Printf("%s Latency: %vms. %s\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.LatencyMs, latencyValid)
+			}
 		}
 
 	default:
@@ -101,9 +106,9 @@ func tabbedoutput(r *Report, w io.Writer) {
 
 	var data [][]string
 	var actual string
-	var delta = func(actual, d string) string {
+	var valueFromActual = func(actual, s string) string {
 		if actual != "---" {
-			return d
+			return s
 		}
 		return actual
 	}
@@ -115,16 +120,16 @@ func tabbedoutput(r *Report, w io.Writer) {
 			fmt.Sprintf("%s Error Rate", iconEx),
 			color.Bold(color.IfTrueRed(actual != "---", actual)),
 			fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
-			delta(actual, fmt.Sprintf("%.2f%%", r.ServiceLevel.Delta.ErrorPercent)),
-			fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent),
+			valueFromActual(actual, fmt.Sprintf("%.2f%%", r.ServiceLevel.Delta.ErrorPercent)),
+			valueFromActual(actual, fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)),
 		})
 	} else {
 		data = append(data, []string{
 			fmt.Sprintf("%s Error Rate", iconTick),
 			color.Bold(color.IfTrueGreen(actual != "---", actual)),
 			fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
-			delta(actual, fmt.Sprintf("%.2f%%", -r.ServiceLevel.Delta.ErrorPercent)),
-			fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent),
+			valueFromActual(actual, fmt.Sprintf("%.2f%%", -r.ServiceLevel.Delta.ErrorPercent)),
+			valueFromActual(actual, fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)),
 		})
 	}
 
@@ -135,16 +140,16 @@ func tabbedoutput(r *Report, w io.Writer) {
 			fmt.Sprintf("%s Latency", iconEx),
 			color.Bold(color.IfTrueRed(actual != "---", actual)),
 			fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
-			delta(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
-			fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs),
+			valueFromActual(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
+			valueFromActual(actual, fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)),
 		})
 	} else {
 		data = append(data, []string{
 			fmt.Sprintf("%s Latency", iconTick),
 			color.Bold(color.IfTrueGreen(actual != "---", actual)),
 			fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
-			delta(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
-			latencyValid,
+			valueFromActual(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
+			valueFromActual(actual, fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)),
 		})
 	}
 
