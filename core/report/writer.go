@@ -106,30 +106,37 @@ func tabbedoutput(r *Report, w io.Writer) {
 
 	var data [][]string
 	var actual string
-	var valueFromActual = func(actual, s string) string {
+	var delta = func(actual, s string) string {
 		if actual != "---" {
 			return s
 		}
 		return actual
 	}
 
+	var msg = func(actual, s string) string {
+		if actual != "---" {
+			return s
+		}
+		return color.Red("SLO could not be retrieved due to errors")
+	}
+
 	// set error budget data
-	actual = r.ServiceLevel.Actual.errorPerentString()
+	actual = r.ServiceLevel.Actual.errorPercentString()
 	if r.ServiceLevel.Delta.ErrorPercent > threshold {
 		data = append(data, []string{
 			fmt.Sprintf("%s Error Rate", iconEx),
 			color.Bold(color.IfTrueRed(actual != "---", actual)),
 			fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
-			valueFromActual(actual, fmt.Sprintf("%.2f%%", r.ServiceLevel.Delta.ErrorPercent)),
-			valueFromActual(actual, fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)),
+			delta(actual, fmt.Sprintf("%.2f%%", r.ServiceLevel.Delta.ErrorPercent)),
+			msg(actual, fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)),
 		})
 	} else {
 		data = append(data, []string{
 			fmt.Sprintf("%s Error Rate", iconTick),
 			color.Bold(color.IfTrueGreen(actual != "---", actual)),
 			fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
-			valueFromActual(actual, fmt.Sprintf("%.2f%%", -r.ServiceLevel.Delta.ErrorPercent)),
-			valueFromActual(actual, fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)),
+			delta(actual, fmt.Sprintf("%.2f%%", -r.ServiceLevel.Delta.ErrorPercent)),
+			msg(actual, fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)),
 		})
 	}
 
@@ -140,16 +147,16 @@ func tabbedoutput(r *Report, w io.Writer) {
 			fmt.Sprintf("%s Latency", iconEx),
 			color.Bold(color.IfTrueRed(actual != "---", actual)),
 			fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
-			valueFromActual(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
-			valueFromActual(actual, fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)),
+			delta(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
+			msg(actual, fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)),
 		})
 	} else {
 		data = append(data, []string{
 			fmt.Sprintf("%s Latency", iconTick),
 			color.Bold(color.IfTrueGreen(actual != "---", actual)),
 			fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
-			valueFromActual(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
-			valueFromActual(actual, fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)),
+			delta(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
+			msg(actual, fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)),
 		})
 	}
 
