@@ -60,18 +60,15 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 		fmt.Printf("SLO report: (last %s)\n", r.ObservationWindow.To.Sub(r.ObservationWindow.From))
 
 		if r.ServiceLevel.Delta.ErrorPercent > threshold {
-			msg := fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)
-			fmt.Printf("%s Error Rate: %.2f%%. %s\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.ErrorPercent, msg)
+			fmt.Printf("%s Error Rate: %.2f%%.\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.ErrorPercent)
 		} else {
-			msg := fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)
-			fmt.Printf("%s Error Rate: %.2f%%. %s\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.ErrorPercent, msg)
+			fmt.Printf("%s Error Rate: %.2f%%.\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.ErrorPercent)
 		}
 
 		if r.ServiceLevel.Delta.LatencyMs > threshold {
-			msg := fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)
-			fmt.Printf("%s Latency: %vms. %s\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.LatencyMs, msg)
+			fmt.Printf("%s Latency: %vms.\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.LatencyMs)
 		} else {
-			fmt.Printf("%s Latency: %vms. %s\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.LatencyMs, latencyValid)
+			fmt.Printf("%s Latency: %vms.\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.LatencyMs)
 		}
 
 	default:
@@ -118,7 +115,6 @@ func tabbedoutput(r *Report, w io.Writer) {
 			color.Bold(color.Red(fmt.Sprintf("%.2f", r.ServiceLevel.Actual.ErrorPercent))),
 			fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
 			fmt.Sprintf("%.2f%%", r.ServiceLevel.Delta.ErrorPercent),
-			fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent),
 		})
 	} else {
 		data = append(data, []string{
@@ -126,7 +122,6 @@ func tabbedoutput(r *Report, w io.Writer) {
 			color.Bold(color.Green(fmt.Sprintf("%.2f", r.ServiceLevel.Actual.ErrorPercent))),
 			fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
 			fmt.Sprintf("%.2f%%", -r.ServiceLevel.Delta.ErrorPercent),
-			fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent),
 		})
 	}
 
@@ -137,7 +132,6 @@ func tabbedoutput(r *Report, w io.Writer) {
 			color.Bold(color.Red(fmt.Sprintf("%dms", r.ServiceLevel.Actual.LatencyMs))),
 			fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
 			fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs),
-			fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs),
 		})
 	} else {
 		data = append(data, []string{
@@ -145,7 +139,6 @@ func tabbedoutput(r *Report, w io.Writer) {
 			color.Bold(color.Green(fmt.Sprintf("%dms", r.ServiceLevel.Actual.LatencyMs))),
 			fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
 			fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs),
-			latencyValid,
 		})
 	}
 
