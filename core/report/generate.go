@@ -66,7 +66,7 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 			if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
 				allLatency = append(allLatency, l)
 			} else {
-				log.Errorf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
+				log.Debugf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
 				latencyHasErrors = true
 			}
 
@@ -74,7 +74,7 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 				allErrorPercentages = append(allErrorPercentages, e)
 			} else {
 
-				log.Errorf("an error occured while getting error percentage data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
+				log.Debugf("an error occured while getting error percentage data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
 				errorPercentHasErrors = true
 			}
 		}
