@@ -46,7 +46,7 @@ func (s *ServiceLevelIndicators) hasErrors(i indicatorErrType) bool {
 	return s.errored[i]
 }
 
-func (s *ServiceLevelIndicators) errorPerentString() string {
+func (s *ServiceLevelIndicators) errorPercentString() string {
 	if s.hasErrors(errPercentErr) {
 		return "---"
 	}
