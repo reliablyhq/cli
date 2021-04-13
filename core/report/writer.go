@@ -113,13 +113,6 @@ func tabbedoutput(r *Report, w io.Writer) {
 		return actual
 	}
 
-	var msg = func(actual, s string) string {
-		if actual != "---" {
-			return s
-		}
-		return color.Red("SLO could not be retrieved due to errors")
-	}
-
 	// set error budget data
 	actual = r.ServiceLevel.Actual.errorPercentString()
 	if r.ServiceLevel.Delta.ErrorPercent > threshold {
@@ -128,7 +121,7 @@ func tabbedoutput(r *Report, w io.Writer) {
 			color.Bold(color.IfTrueRed(actual != "---", actual)),
 			fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
 			delta(actual, fmt.Sprintf("%.2f%%", r.ServiceLevel.Delta.ErrorPercent)),
-			msg(actual, fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)),
+			delta(actual, fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)),
 		})
 	} else {
 		data = append(data, []string{
@@ -136,7 +129,7 @@ func tabbedoutput(r *Report, w io.Writer) {
 			color.Bold(color.IfTrueGreen(actual != "---", actual)),
 			fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
 			delta(actual, fmt.Sprintf("%.2f%%", -r.ServiceLevel.Delta.ErrorPercent)),
-			msg(actual, fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)),
+			delta(actual, fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)),
 		})
 	}
 
@@ -148,7 +141,7 @@ func tabbedoutput(r *Report, w io.Writer) {
 			color.Bold(color.IfTrueRed(actual != "---", actual)),
 			fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
 			delta(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
-			msg(actual, fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)),
+			delta(actual, fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)),
 		})
 	} else {
 		data = append(data, []string{
@@ -156,7 +149,7 @@ func tabbedoutput(r *Report, w io.Writer) {
 			color.Bold(color.IfTrueGreen(actual != "---", actual)),
 			fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
 			delta(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
-			msg(actual, fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)),
+			delta(actual, fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)),
 		})
 	}
 
