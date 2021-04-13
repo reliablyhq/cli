@@ -91,7 +91,7 @@ func populateManifestInteractively(m *manifest.Manifest) {
 		s.Threshold = question.WithDurationAnswer("What is your latency threshold (in milliseconds)?")
 	}
 
-	s.Objective = question.WithFloat64Answer("What is your target for this SLO?'.", 0, 100)
+	s.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?'.", 0, 100)
 
 
 	// s.Objective = manifest.ServiceLevelObjective{
