@@ -1,6 +1,8 @@
 package color
 
 import (
+	"fmt"
+
 	"github.com/fatih/color"
 )
 
@@ -25,3 +27,45 @@ var (
 	BgMagenta = color.New(color.BgMagenta).SprintFunc()
 	BgRed     = color.New(color.BgRed).SprintFunc()
 )
+
+// Conditianal coloring - if the condition is true, the color is applied
+
+func IfTrueRed(condition bool, a ...interface{}) string {
+	if condition {
+		return Red(a...)
+	}
+
+	return fmt.Sprint(a...)
+}
+
+func IfTrueGreen(condition bool, a ...interface{}) string {
+	if condition {
+		return Green(a...)
+	}
+
+	return fmt.Sprint(a...)
+}
+
+func IfTrueMagenta(condition bool, a ...interface{}) string {
+	if condition {
+		return Magenta(a...)
+	}
+
+	return fmt.Sprint(a...)
+}
+
+func IfTrueCyan(condition bool, a ...interface{}) string {
+	if condition {
+		return Cyan(a...)
+	}
+
+	return fmt.Sprint(a...)
+}
+
+func IfTrueYellow(condition bool, a ...interface{}) string {
+	if condition {
+		return Yellow(a...)
+	}
+
+	return fmt.Sprint(a...)
+}
