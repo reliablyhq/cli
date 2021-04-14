@@ -211,7 +211,7 @@ func (r *AwsResource) MetricProvider() (provider AwsMetricsProvider, err error) 
 	case "elasticloadbalancing":
 		provider = &ElasticLoadBalancer{}
 	default:
-		err = fmt.Errorf("No metric provider found for AWS Service '%s'", r.arn.Service)
+		err = fmt.Errorf("Service %s is not currently supported", r.arn.Service)
 	}
 
 	return
