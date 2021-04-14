@@ -157,10 +157,6 @@ func watch(manifestPath string) {
 				report.Write(report.TABBED, r, os.Stdout, log.StandardLogger())
 			}
 
-			// hide cursor
-			if runtime.GOOS != "" {
-				fmt.Print("\033[?25l")
-			}
 		case <-done:
 			return
 		}
