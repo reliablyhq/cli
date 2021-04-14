@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- added retrieval of service level indicators for AWS `Application Load Balancer` resources
+
 ## [0.9.0] - 2021-04-12
 
 ### Changed

@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
@@ -16,6 +14,13 @@ import (
 )
 
 type AwsCloudWatch struct{}
+
+type AwsMetricsProvider interface {
+	Namespace() string
+	Dimension(arn.ARN) (types.Dimension, error)
+	GetErrorRateMetricDataInput(arn.ARN, time.Time, time.Time) (*cloudwatch.GetMetricDataInput, error)
+	GetLatencyMetricDataInput(arn.ARN, time.Time, time.Time) (*cloudwatch.GetMetricDataInput, error)
+}
 
 type AwsResource struct {
 	arn arn.ARN
@@ -73,7 +78,12 @@ func (cw *AwsCloudWatch) Get99PercentLatencyMetricForResource(resourceID string,
 		return -1, err
 	}
 
-	params, err := res.GetLatencyMetricDataInput(from, to)
+	provider, err := res.MetricProvider()
+	if err != nil {
+		return -1, err
+	}
+
+	params, err := provider.GetLatencyMetricDataInput(res.arn, from, to)
 	if err != nil {
 		return -1, err
 	}
@@ -101,6 +111,12 @@ func (cw *AwsCloudWatch) Get99PercentLatencyMetricForResource(resourceID string,
 		return latencyPercentile, errors.New("No latency value retrieved from cloud watch")
 	}
 
+	switch res.arn.Service {
+	case "elasticloadbalancing":
+		// TargetResponseTime is returned as seconds not ms
+		latencyPercentile = latencyPercentile * 1000
+	}
+
 	log.Debugf("99 percentile latency is %.3fms\n", latencyPercentile)
 	return latencyPercentile, nil
 }
@@ -117,7 +133,12 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 		return -1, err
 	}
 
-	params, err := res.GetErrorRateMetricDataInput(from, to)
+	provider, err := res.MetricProvider()
+	if err != nil {
+		return -1, err
+	}
+
+	params, err := provider.GetErrorRateMetricDataInput(res.arn, from, to)
 	if err != nil {
 		return -1, err
 	}
@@ -153,7 +174,7 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 // for metrics retrieval
 func (r *AwsResource) IsSupportedService() bool {
 	switch r.arn.Service {
-	case "apigateway":
+	case "apigateway", "elasticloadbalancing":
 		return true
 	default:
 		return false
@@ -182,150 +203,16 @@ func parseResourceID(resId string) (AwsResource, error) {
 	return resource, nil
 }
 
-func (r *AwsResource) MetricNamespace() string {
-
-	ns := ""
+func (r *AwsResource) MetricProvider() (provider AwsMetricsProvider, err error) {
 
 	switch r.arn.Service {
 	case "apigateway":
-		ns = "AWS/ApiGateway"
-	case "cloudfront":
-		ns = "AWS/CloudFront"
+		provider = &ApiGateway{}
 	case "elasticloadbalancing":
-		ns = "AWS/ApplicationELB"
-	}
-
-	return ns
-}
-
-// GetErrorRateMetricDataInput retuns the MetricDataInput struct for querying
-// with cloud watch API. It must ONLY return a single value for the
-// required 'error_rate_percent' metric ID
-// This function handles data input depending on different targeted AWS Service
-func (r *AwsResource) GetErrorRateMetricDataInput(from, to time.Time) (*cloudwatch.GetMetricDataInput, error) {
-
-	var params *cloudwatch.GetMetricDataInput
-
-	period := int32(to.Sub(from).Seconds())
-	ns := r.MetricNamespace()
-
-	switch r.arn.Service {
-	case "apigateway":
-
-		parts := strings.Split(r.arn.Resource, "/")
-		apiID := parts[len(parts)-1]
-
-		params = &cloudwatch.GetMetricDataInput{
-			StartTime: &from,
-			EndTime:   &to,
-			MetricDataQueries: []types.MetricDataQuery{
-
-				{
-					Id:         aws.String("error_rate_percent"),
-					Expression: aws.String("error_rate * 100"),
-				},
-
-				{
-					Id:         aws.String("error_rate"),
-					Expression: aws.String("errors / requests"),
-					ReturnData: aws.Bool(false),
-				},
-
-				{
-					Id:         aws.String("errors"),
-					Expression: aws.String("SUM([http_5xx_error_count])"),
-					ReturnData: aws.Bool(false),
-				},
-
-				{
-					Id: aws.String("requests"),
-					MetricStat: &types.MetricStat{
-						Metric: &types.Metric{
-							Namespace:  aws.String(ns),
-							MetricName: aws.String("Count"),
-							Dimensions: []types.Dimension{
-								{
-									Name:  aws.String("ApiId"),
-									Value: aws.String(apiID),
-								},
-							},
-						},
-						Period: aws.Int32(period),
-						Stat:   aws.String("SampleCount"),
-					},
-					ReturnData: aws.Bool(false),
-				},
-
-				{
-					Id: aws.String("http_5xx_error_count"),
-					MetricStat: &types.MetricStat{
-						Metric: &types.Metric{
-							Namespace:  aws.String(ns),
-							MetricName: aws.String("5xx"),
-							Dimensions: []types.Dimension{
-								{
-									Name:  aws.String("ApiId"),
-									Value: aws.String(apiID),
-								},
-							},
-						},
-						Period: aws.Int32(period),
-						Stat:   aws.String("Sum"),
-					},
-					ReturnData: aws.Bool(false),
-				},
-			},
-		}
-
+		provider = &ElasticLoadBalancer{}
 	default:
-		return nil, fmt.Errorf("Unable to construct Metric Query for AWS Service '%s'", r.arn.Service)
+		err = fmt.Errorf("Service %s is not currently supported", r.arn.Service)
 	}
 
-	return params, nil
-
-}
-
-func (r *AwsResource) GetLatencyMetricDataInput(from, to time.Time) (*cloudwatch.GetMetricDataInput, error) {
-
-	var params *cloudwatch.GetMetricDataInput
-
-	period := int32(to.Sub(from).Seconds())
-	ns := r.MetricNamespace()
-
-	switch r.arn.Service {
-	case "apigateway":
-
-		parts := strings.Split(r.arn.Resource, "/")
-		apiID := parts[len(parts)-1]
-
-		params = &cloudwatch.GetMetricDataInput{
-			StartTime: &from,
-			EndTime:   &to,
-			MetricDataQueries: []types.MetricDataQuery{
-
-				{
-					Id: aws.String("latency_percentile"),
-					MetricStat: &types.MetricStat{
-						Metric: &types.Metric{
-							Namespace:  aws.String(ns),
-							MetricName: aws.String("Latency"),
-							Dimensions: []types.Dimension{
-								{
-									Name:  aws.String("ApiId"),
-									Value: aws.String(apiID),
-								},
-							},
-						},
-						Period: aws.Int32(period),
-						Stat:   aws.String("p99"),
-					},
-				},
-			},
-		}
-
-	default:
-		return nil, fmt.Errorf("Unable to construct Metric Query for AWS Service '%s'", r.arn.Service)
-	}
-
-	return params, nil
+	return
 }
