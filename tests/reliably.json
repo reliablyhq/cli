@@ -1,5 +1,5 @@
 {
-  "service": [
+  "services": [
     {
       "name": "Service A",
       "service-levels": [
@@ -9,11 +9,11 @@
           "slo": 99,
           "sli": [
             {
-              "id": "arn:partition:service:region:account-id:resource-type:resource-id",
+              "id": "arn1",
               "provider": "aws"
             },
             {
-              "id": "project-XXXXXX/google-cloud-load-balancers/resource-A",
+              "id": "uri",
               "provider": "gcp"
             }
           ]
@@ -25,7 +25,7 @@
           "slo": 99,
           "sli": [
             {
-              "id": "arnA",
+              "id": "arn2",
               "provider": "aws"
             }
           ]
@@ -42,7 +42,7 @@
           "slo": 99,
           "sli": [
             {
-              "id": "arn:partition:service:region:account-id:resource-type:resource-id",
+              "id": "arn3",
               "provider": "aws"
             }
           ]

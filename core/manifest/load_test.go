@@ -28,29 +28,57 @@ func TestLoad(t *testing.T) {
 				path: dummyReliablyYamlManifestPath,
 			},
 			want: &Manifest{
-				ServiceLevel: []*Service{&Service{
-					Objective: ServiceLevelObjective{
-						Latency:            core.Duration{Duration: 100 * time.Millisecond},
-						ErrorBudgetPercent: 0.5,
-					},
-					Resources: []ServiceResource{
-						{
-							Provider: "abc",
-							ID:       "123",
+				Services: []*Service{
+					&Service{
+						Name: "Service A",
+						ServiceLevels: []*ServiceLevel{
+							&ServiceLevel{
+								Name: "Service A Availability",
+								Type: "availability",
+								Objective: 99,
+								Indicators: []ServiceLevelIndicator{
+									{
+										Provider: "aws",
+										ID: "arn1",
+									},
+									{
+										Provider: "gcp",
+										ID: "uri",
+									},
+								},
+							},
+							&ServiceLevel{
+								Name: "Service A Latency",
+								Type: "latency",
+								Threshold: core.Duration{Duration: 300 * time.Millisecond},
+								Objective: 99,
+								Indicators: []ServiceLevelIndicator{
+									{
+										Provider: "aws",
+										ID: "arn2",
+									},
+								},
+							},
 						},
-						{
-							Provider: "xyz",
-							ID:       "456",
-						},
+						Dependencies: []string{},
 					},
-				}},
-				Dependencies: []string{
-					"some service",
-					"some other service",
-				},
-				Tags: map[string]string{
-					"team":   "abc",
-					"domain": "xyz",
+					&Service{
+						Name: "Service B",
+						ServiceLevels: []*ServiceLevel{
+							&ServiceLevel{
+								Name: "Service B Availability",
+								Type: "availability",
+								Objective: 99,
+								Indicators: []ServiceLevelIndicator{
+									{
+										Provider: "aws",
+										ID: "arn3",
+									},
+								},
+							},
+						},
+						Dependencies: []string{},
+					},
 				},
 			},
 			wantErr: false,
@@ -61,29 +89,57 @@ func TestLoad(t *testing.T) {
 				path: dummyReliablyJsonManifestPath,
 			},
 			want: &Manifest{
-				ServiceLevel: []*Service{&Service{
-					Objective: ServiceLevelObjective{
-						Latency:            core.Duration{Duration: 100 * time.Millisecond},
-						ErrorBudgetPercent: 0.5,
-					},
-					Resources: []ServiceResource{
-						{
-							Provider: "abc",
-							ID:       "123",
+				Services: []*Service{
+					&Service{
+						Name: "Service A",
+						ServiceLevels: []*ServiceLevel{
+							&ServiceLevel{
+								Name: "Service A Availability",
+								Type: "availability",
+								Objective: 99,
+								Indicators: []ServiceLevelIndicator{
+									{
+										Provider: "aws",
+										ID: "arn1",
+									},
+									{
+										Provider: "gcp",
+										ID: "uri",
+									},
+								},
+							},
+							&ServiceLevel{
+								Name: "Service A Latency",
+								Type: "latency",
+								Threshold: core.Duration{Duration: 300 * time.Millisecond},
+								Objective: 99,
+								Indicators: []ServiceLevelIndicator{
+									{
+										Provider: "aws",
+										ID: "arn2",
+									},
+								},
+							},
 						},
-						{
-							Provider: "xyz",
-							ID:       "456",
-						},
+						Dependencies: []string{},
 					},
-				}},
-				Dependencies: []string{
-					"some service",
-					"some other service",
-				},
-				Tags: map[string]string{
-					"team":   "abc",
-					"domain": "xyz",
+					&Service{
+						Name: "Service B",
+						ServiceLevels: []*ServiceLevel{
+							&ServiceLevel{
+								Name: "Service B Availability",
+								Type: "availability",
+								Objective: 99,
+								Indicators: []ServiceLevelIndicator{
+									{
+										Provider: "aws",
+										ID: "arn3",
+									},
+								},
+							},
+						},
+						Dependencies: []string{},
+					},
 				},
 			},
 			wantErr: false,
@@ -115,38 +171,35 @@ func TestLoad(t *testing.T) {
 				return
 			}
 
-			for serviceIndex, s := range tt.want.ServiceLevel {
-				if !reflect.DeepEqual(s.Objective, got.ServiceLevel[serviceIndex].Objective) {
-					t.Errorf("Wanted Service.Objective to be %v but was %v", s.Objective, got.ServiceLevel[serviceIndex].Objective)
+			for serviceIndex, s := range tt.want.Services {
+				if !reflect.DeepEqual(s.ServiceLevels, got.Services[serviceIndex].ServiceLevels) {
+					t.Errorf("Wanted Service.ServiceLevels to be %v but was %v", s.ServiceLevels, got.Services[serviceIndex].ServiceLevels)
 					return
 				}
 
-				if len(s.Resources) == len(got.ServiceLevel[serviceIndex].Resources) {
-					for i, r := range tt.want.ServiceLevel[serviceIndex].Resources {
-						if r.ID != got.ServiceLevel[serviceIndex].Resources[i].ID {
-							t.Errorf("%v != %v", r.ID, got.ServiceLevel[serviceIndex].Resources[i].ID)
+				if len(s.ServiceLevels) == len(got.Services[serviceIndex].ServiceLevels) {
+					for i, sl := range tt.want.Services[serviceIndex].ServiceLevels {
+						if sl.Name != got.Services[serviceIndex].ServiceLevels[i].Name {
+							t.Errorf("%v != %v", sl.Name, got.Services[serviceIndex].ServiceLevels[i].Name)
 							return
 						}
 
-						if r.Provider != got.ServiceLevel[serviceIndex].Resources[i].Provider {
-							t.Errorf("%v != %v", r.Provider, got.ServiceLevel[serviceIndex].Resources[i].Provider)
-							return
+						for i2, sli := range tt.want.Services[serviceIndex].ServiceLevels[i].Indicators {
+							if sli.ID != got.Services[serviceIndex].ServiceLevels[i].Indicators[i2].ID {
+								t.Errorf("%v != %v", sli.ID, got.Services[serviceIndex].ServiceLevels[i].Indicators[i2].ID)
+								return
+							}
 						}
 					}
 				} else {
-					t.Errorf("Wanted Service.Resources to be %v but was %v", len(s.Resources), len(got.ServiceLevel[serviceIndex].Resources))
+					t.Errorf("Wanted Service.Resources to be %v but was %v", len(s.ServiceLevels), len(got.Services[serviceIndex].ServiceLevels))
 					return
 				}
-			}
 
-			if !reflect.DeepEqual(tt.want.Dependencies, got.Dependencies) {
-				t.Errorf("Wanted Dependencies to be %v but got %v", tt.want.Dependencies, got.Dependencies)
-				return
-			}
-
-			if !reflect.DeepEqual(tt.want.Tags, got.Tags) {
-				t.Errorf("Wanted Tags to be %v but got %v", tt.want.Tags, got.Tags)
-				return
+				if !reflect.DeepEqual(s.Dependencies, got.Services[serviceIndex].Dependencies) {
+					t.Errorf("Wanted Dependencies to be %v but got %v", s.Dependencies, got.Services[serviceIndex].Dependencies)
+					return
+				}
 			}
 		})
 	}
