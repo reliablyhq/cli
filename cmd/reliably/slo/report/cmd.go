@@ -28,7 +28,7 @@ func NewCommand() *cobra.Command {
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
-	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", "specify the report format. Allowed Values: [json, simple, tabbed]")
+	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", "specify the report format. Allowed Values: [json, simple, tabbed, markdown]")
 
 	return cmd
 }
@@ -62,6 +62,8 @@ func run(_ *cobra.Command, _ []string) {
 		format = report.JSON
 	case "simple":
 		format = report.SimpleText
+	case "markdown":
+		format = report.MARKDOWN
 	}
 
 	for _, r := range reports {
