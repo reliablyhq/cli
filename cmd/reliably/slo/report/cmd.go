@@ -76,6 +76,8 @@ func runE(_ *cobra.Command, _ []string) error {
 		format = report.JSON
 	case "simple":
 		format = report.SimpleText
+	case "markdown":
+		format = report.MARKDOWN
 	}
 
 	report.Write(format, r, os.Stdout, log.StandardLogger())
