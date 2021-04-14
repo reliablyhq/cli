@@ -31,7 +31,7 @@ func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "report",
 		Short: "Report my slo metrics",
-		Run:   run,
+		RunE:  runE,
 	}
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
@@ -42,12 +42,11 @@ func NewCommand() *cobra.Command {
 	return cmd
 }
 
-func run(_ *cobra.Command, _ []string) {
+func runE(_ *cobra.Command, _ []string) error {
 
 	// check for -w/--watch
 	if watchFlag {
-		watch(manifestPath)
-		return
+		return watch(manifestPath)
 	}
 
 	m, err := manifest.Load(manifestPath)
@@ -55,16 +54,15 @@ func run(_ *cobra.Command, _ []string) {
 		log.Debug(err)
 
 		if os.IsNotExist(err) {
-			log.Fatal("A manifest was not found. Please run `reliably slo init` to create one.")
-			return
+			return errors.New("A manifest was not found. Please run `reliably slo init` to create one.")
 		}
 
-		log.Fatal("An error occured while attempting to load the manifest")
+		return errors.New("An error occured while attempting to load the manifest")
 	}
 
 	reports, err := report.FromManifest(m)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// if err := sendReportToReliably(r); err != nil {
@@ -87,18 +85,20 @@ func run(_ *cobra.Command, _ []string) {
 	if outputPath != "" {
 		if !strings.HasSuffix(outputPath, ".json") {
 			log.Warn("output file should have a .json extension")
-			return
+			return nil
 		}
 
 		bytes, err := json.Marshal(reports)
 		if err != nil {
-			log.Fatal(err)
+			return nil
 		}
 
 		if err := ioutil.WriteFile(outputPath, bytes, 0666); err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
+
+	return nil
 }
 
 func sendReportToReliably(r *report.Report) error {
@@ -107,11 +107,17 @@ func sendReportToReliably(r *report.Report) error {
 
 // watch - continously fetch and update report
 // and output to terminal
-func watch(manifestPath string) {
+func watch(manifestPath string) error {
 	rChan := make(chan []*report.Report, 5)
-	c := make(chan os.Signal)
+	errChan := make(chan error, 1)
 	done := make(chan struct{})
+	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	defer func() {
+		// put cursor back on return
+		fmt.Print("\033[?25h")
+	}()
 
 	// refresh every 3 seconds
 	go func() {
@@ -119,20 +125,17 @@ func watch(manifestPath string) {
 			m, err := manifest.Load(manifestPath)
 			if err != nil {
 				log.Debug(err)
-
 				if os.IsNotExist(err) {
-					log.Fatal("A manifest was not found. Please run `reliably slo init` to create one.")
+					errChan <- errors.New("A manifest was not found. Please run `reliably slo init` to create one.")
 					return
 				}
-
-				log.Fatal("An error occured while attempting to load the manifest")
+				errChan <- errors.New("An error occured while attempting to load the manifest")
 			}
 
 			reports, err := report.FromManifest(m)
 			if err != nil {
-				log.Fatal(err)
+				errChan <- err
 			}
-
 			rChan <- reports
 		}
 	}()
@@ -140,15 +143,12 @@ func watch(manifestPath string) {
 	// Ctrl+C listener
 	go func() {
 		<-c
-		log.Info("CTRL+C pressed... exiting")
-		// put cursor back on exit
-		fmt.Print("\033[?25h")
+		fmt.Printf("\nCTRL+C pressed... exiting\n")
 		done <- struct{}{}
 	}()
 
 	// print stuff
 	for {
-
 		select {
 		case reports := <-rChan:
 			clearScreen()
@@ -157,8 +157,11 @@ func watch(manifestPath string) {
 				report.Write(report.TABBED, r, os.Stdout, log.StandardLogger())
 			}
 
+		case err := <-errChan:
+			return err
+
 		case <-done:
-			return
+			return nil
 		}
 	}
 
