@@ -1,32 +1,54 @@
 {
-  "app": {
-    "name": "unit test app",
-    "owner": "unit test owner",
-    "repo": "github.com/reliablyhq/cli"
-  },
-  "slo": [{
-    "name": "test",
-    "objective": {
-      "latency": "100ms",
-      "error_budget_percent": 0.5
+  "service": [
+    {
+      "name": "Service A",
+      "service-levels": [
+        {
+          "name": "Service A Availability",
+          "type": "availability",
+          "slo": 99,
+          "sli": [
+            {
+              "id": "arn:partition:service:region:account-id:resource-type:resource-id",
+              "provider": "aws"
+            },
+            {
+              "id": "project-XXXXXX/google-cloud-load-balancers/resource-A",
+              "provider": "gcp"
+            }
+          ]
+        },
+        {
+          "name": "Service A Latency",
+          "type": "latency",
+          "threshold": "300ms",
+          "slo": 99,
+          "sli": [
+            {
+              "id": "arnA",
+              "provider": "aws"
+            }
+          ]
+        }
+      ],
+      "dependencies": []
     },
-    "resources": [
-      {
-        "provider": "abc",
-        "id": "123"
-      },
-      {
-        "provider": "xyz",
-        "id": "456"
-      }
-    ]
-  }],
-  "dependencies": [
-    "some service",
-    "some other service"
-  ],
-  "tags": {
-    "team": "abc",
-    "domain": "xyz"
-  }
+    {
+      "name": "Service B",
+      "service-levels": [
+        {
+          "name": "Service B Availability",
+          "type": "availability",
+          "slo": 99,
+          "sli": [
+            {
+              "id": "arn:partition:service:region:account-id:resource-type:resource-id",
+              "provider": "aws"
+            }
+          ]
+        }
+      ],
+      "dependencies": []
+    }
+  ]
 }
