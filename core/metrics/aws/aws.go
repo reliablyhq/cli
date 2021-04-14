@@ -11,9 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	log "github.com/sirupsen/logrus"
-
-	apiGateway "github.com/reliablyhq/cli/core/metrics/aws/api_gateway"
-	elb "github.com/reliablyhq/cli/core/metrics/aws/elb"
 )
 
 type AwsCloudWatch struct{}
@@ -210,9 +207,9 @@ func (r *AwsResource) MetricProvider() (provider AwsMetricsProvider, err error) 
 
 	switch r.arn.Service {
 	case "apigateway":
-		provider = &apiGateway.Provider{}
+		provider = &ApiGateway{}
 	case "elasticloadbalancing":
-		provider = &elb.Provider{}
+		provider = &ElasticLoadBalancer{}
 	default:
 		err = fmt.Errorf("No metric provider found for AWS Service '%s'", r.arn.Service)
 	}

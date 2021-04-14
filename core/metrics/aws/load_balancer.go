@@ -1,4 +1,4 @@
-package apiGateway
+package aws
 
 import (
 	"strings"
@@ -10,33 +10,33 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 )
 
-type Provider struct{}
+type ElasticLoadBalancer struct{}
 
-func (p *Provider) Namespace() string {
-	return "AWS/ApiGateway"
+func (elb *ElasticLoadBalancer) Namespace() string {
+	return "AWS/ApplicationELB"
 }
 
-func (p *Provider) Dimension(arn arn.ARN) (types.Dimension, error) {
+func (elb *ElasticLoadBalancer) Dimension(arn arn.ARN) (types.Dimension, error) {
 
 	parts := strings.Split(arn.Resource, "/")
-	apiID := parts[len(parts)-1]
+	lbID := strings.Join(parts[1:], "/")
 
 	dim := types.Dimension{
-		Name:  aws.String("ApiId"),
-		Value: aws.String(apiID),
+		Name:  aws.String("LoadBalancer"),
+		Value: aws.String(lbID),
 	}
 
 	return dim, nil
 }
 
-func (p *Provider) GetErrorRateMetricDataInput(arn arn.ARN, from, to time.Time) (*cloudwatch.GetMetricDataInput, error) {
+func (elb *ElasticLoadBalancer) GetErrorRateMetricDataInput(arn arn.ARN, from, to time.Time) (*cloudwatch.GetMetricDataInput, error) {
 
 	var params *cloudwatch.GetMetricDataInput
 
 	period := int32(to.Sub(from).Seconds())
 
-	ns := p.Namespace()
-	dim, err := p.Dimension(arn)
+	ns := elb.Namespace()
+	dim, err := elb.Dimension(arn)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (p *Provider) GetErrorRateMetricDataInput(arn arn.ARN, from, to time.Time) 
 
 			{
 				Id:         aws.String("errors"),
-				Expression: aws.String("SUM([http_5xx_error_count])"),
+				Expression: aws.String("SUM([http_5xx_error_count, elb_5xx_error_count])"),
 				ReturnData: aws.Bool(false),
 			},
 
@@ -68,11 +68,11 @@ func (p *Provider) GetErrorRateMetricDataInput(arn arn.ARN, from, to time.Time) 
 				MetricStat: &types.MetricStat{
 					Metric: &types.Metric{
 						Namespace:  aws.String(ns),
-						MetricName: aws.String("Count"),
+						MetricName: aws.String("RequestCount"),
 						Dimensions: []types.Dimension{dim},
 					},
 					Period: aws.Int32(period),
-					Stat:   aws.String("SampleCount"),
+					Stat:   aws.String("Sum"),
 				},
 				ReturnData: aws.Bool(false),
 			},
@@ -82,7 +82,21 @@ func (p *Provider) GetErrorRateMetricDataInput(arn arn.ARN, from, to time.Time) 
 				MetricStat: &types.MetricStat{
 					Metric: &types.Metric{
 						Namespace:  aws.String(ns),
-						MetricName: aws.String("5xx"),
+						MetricName: aws.String("HTTPCode_Target_5XX_Count"),
+						Dimensions: []types.Dimension{dim},
+					},
+					Period: aws.Int32(period),
+					Stat:   aws.String("Sum"),
+				},
+				ReturnData: aws.Bool(false),
+			},
+
+			{
+				Id: aws.String("elb_5xx_error_count"),
+				MetricStat: &types.MetricStat{
+					Metric: &types.Metric{
+						Namespace:  aws.String(ns),
+						MetricName: aws.String("HTTPCode_ELB_5XX_Count"),
 						Dimensions: []types.Dimension{dim},
 					},
 					Period: aws.Int32(period),
@@ -96,14 +110,14 @@ func (p *Provider) GetErrorRateMetricDataInput(arn arn.ARN, from, to time.Time) 
 	return params, nil
 }
 
-func (p *Provider) GetLatencyMetricDataInput(arn arn.ARN, from, to time.Time) (*cloudwatch.GetMetricDataInput, error) {
+func (elb *ElasticLoadBalancer) GetLatencyMetricDataInput(arn arn.ARN, from, to time.Time) (*cloudwatch.GetMetricDataInput, error) {
 
 	var params *cloudwatch.GetMetricDataInput
 
 	period := int32(to.Sub(from).Seconds())
 
-	ns := p.Namespace()
-	dim, err := p.Dimension(arn)
+	ns := elb.Namespace()
+	dim, err := elb.Dimension(arn)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +132,7 @@ func (p *Provider) GetLatencyMetricDataInput(arn arn.ARN, from, to time.Time) (*
 				MetricStat: &types.MetricStat{
 					Metric: &types.Metric{
 						Namespace:  aws.String(ns),
-						MetricName: aws.String("Latency"),
+						MetricName: aws.String("TargetResponseTime"),
 						Dimensions: []types.Dimension{dim},
 					},
 					Period: aws.Int32(period),
