@@ -141,7 +141,8 @@ func watch(manifestPath string) {
 	go func() {
 		<-c
 		log.Info("CTRL+C pressed... exiting")
-		// TODO: add any other cleanup actions here if needed
+		// put cursor back on exit
+		fmt.Print("\033[?25h")
 		done <- struct{}{}
 	}()
 
@@ -155,7 +156,11 @@ func watch(manifestPath string) {
 			for _, r := range reports {
 				report.Write(report.TABBED, r, os.Stdout, log.StandardLogger())
 			}
-			// tm.Flush()
+
+			// hide cursor
+			if runtime.GOOS != "" {
+				fmt.Print("\033[?25l")
+			}
 		case <-done:
 			return
 		}
@@ -172,6 +177,9 @@ func clearScreen() {
 	default:
 		// clear should work for UNIX & linux based systems
 		c = exec.Command("clear")
+
+		// hide cursor on unix based systems
+		fmt.Print("\033[?25l")
 	}
 
 	c.Stdout = os.Stdout
