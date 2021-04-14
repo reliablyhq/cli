@@ -3,10 +3,17 @@ package report
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
+	"os/signal"
+	"runtime"
 	"strings"
+	"syscall"
+	"time"
 
+	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
 	log "github.com/sirupsen/logrus"
@@ -17,38 +24,45 @@ var (
 	manifestPath string
 	outputPath   string
 	outputFormat string
+	watchFlag    bool
 )
 
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "report",
 		Short: "Report my slo metrics",
-		Run:   run,
+		RunE:  runE,
 	}
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
 	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", "specify the report format. Allowed Values: [json, simple, tabbed]")
+	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "continously watch for changes in report output")
 
 	return cmd
 }
 
-func run(_ *cobra.Command, _ []string) {
+func runE(_ *cobra.Command, _ []string) error {
+
+	// check for -w/--watch
+	if watchFlag {
+		return watch(manifestPath)
+	}
+
 	m, err := manifest.Load(manifestPath)
 	if err != nil {
 		log.Debug(err)
 
 		if os.IsNotExist(err) {
-			log.Fatal("A manifest was not found. Please run `reliably slo init` to create one.")
-			return
+			return errors.New("A manifest was not found. Please run `reliably slo init` to create one.")
 		}
 
-		log.Fatal("An error occured while attempting to load the manifest")
+		return errors.New("An error occured while attempting to load the manifest")
 	}
 
 	reports, err := report.FromManifest(m)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// if err := sendReportToReliably(r); err != nil {
@@ -71,20 +85,102 @@ func run(_ *cobra.Command, _ []string) {
 	if outputPath != "" {
 		if !strings.HasSuffix(outputPath, ".json") {
 			log.Warn("output file should have a .json extension")
-			return
+			return nil
 		}
 
 		bytes, err := json.Marshal(reports)
 		if err != nil {
-			log.Fatal(err)
+			return nil
 		}
 
 		if err := ioutil.WriteFile(outputPath, bytes, 0666); err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
+
+	return nil
 }
 
 func sendReportToReliably(r *report.Report) error {
 	return errors.New("Sending reports to Reliably is not available yet. Check back later :D")
+}
+
+// watch - continously fetch and update report
+// and output to terminal
+func watch(manifestPath string) error {
+	rChan := make(chan []*report.Report, 5)
+	errChan := make(chan error, 1)
+	done := make(chan struct{})
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	defer func() {
+		// put cursor back on return
+		fmt.Print("\033[?25h")
+	}()
+
+	// refresh every 3 seconds
+	go func() {
+		for ch := time.Tick(time.Second * 3); ; <-ch {
+			m, err := manifest.Load(manifestPath)
+			if err != nil {
+				log.Debug(err)
+				if os.IsNotExist(err) {
+					errChan <- errors.New("A manifest was not found. Please run `reliably slo init` to create one.")
+					return
+				}
+				errChan <- errors.New("An error occured while attempting to load the manifest")
+			}
+
+			reports, err := report.FromManifest(m)
+			if err != nil {
+				errChan <- err
+			}
+			rChan <- reports
+		}
+	}()
+
+	// Ctrl+C listener
+	go func() {
+		<-c
+		fmt.Printf("\nCTRL+C pressed... exiting\n")
+		done <- struct{}{}
+	}()
+
+	// print stuff
+	for {
+		select {
+		case reports := <-rChan:
+			clearScreen()
+			fmt.Println(color.Magenta("Watching SLO report (3s)"))
+			for _, r := range reports {
+				report.Write(report.TABBED, r, os.Stdout, log.StandardLogger())
+			}
+
+		case err := <-errChan:
+			return err
+
+		case <-done:
+			return nil
+		}
+	}
+
+}
+
+func clearScreen() {
+	var c *exec.Cmd
+
+	switch runtime.GOOS {
+	case "windows":
+		c = exec.Command("cmd", "/c", "cls")
+	default:
+		// clear should work for UNIX & linux based systems
+		c = exec.Command("clear")
+
+		// hide cursor on unix based systems
+		fmt.Print("\033[?25l")
+	}
+
+	c.Stdout = os.Stdout
+	c.Run()
 }
