@@ -101,6 +101,7 @@ func markdownOutput(r *Report, w io.Writer) error {
 SLO Name: {{ bold .Name }}
 
 ## Report Dates
+
 Report time: {{ dateTime .Timestamp }}
 Window Start time: {{ dateTime .ObservationWindow.From }}
 Window End time: {{ dateTime .ObservationWindow.To }}
@@ -108,8 +109,9 @@ Window Duration: {{ duration .ObservationWindow.From .ObservationWindow.To }}
 
 ## SLO Summary
 
-| |Type| Actual | Target | Delta | |
-|----|----|---|----|---- |----|
+
+    Type            Actual    Target  Delta
+--- ------------- --------   ------- ------ ---------------
 {{ errorBudgetRow .ServiceLevel }}
 {{ latencyRow .ServiceLevel }}
 `
@@ -149,7 +151,7 @@ func markdownFuncMap() template.FuncMap {
 	// by default those functions return the given content untouched
 	return template.FuncMap{
 		"dateTime": func(t time.Time) string {
-			return t.Format(time.RFC1123)
+			return t.Format(time.RFC1123) + "  "
 		},
 		"duration": func(from time.Time, to time.Time) time.Duration {
 			return to.Sub(from)
@@ -165,19 +167,19 @@ func markdownFuncMap() template.FuncMap {
 			statusIcon := getStatusIcon(sl.Delta.ErrorPercent > threshold)
 			errorBudgetMsgF := getErrorBudgetMsgF(sl.Delta.ErrorPercent > threshold)
 
-			fmt.Fprint(&builder, "|")
+			// fmt.Fprint(&builder, "|")
 			fmt.Fprintf(&builder, "%s", statusIcon)
-			fmt.Fprint(&builder, "|")
+			fmt.Fprint(&builder, "    ")
 			fmt.Fprint(&builder, "Error Rate")
-			fmt.Fprint(&builder, "|")
+			fmt.Fprint(&builder, "     ")
 			fmt.Fprintf(&builder, "%.2f", sl.Actual.ErrorPercent)
-			fmt.Fprint(&builder, "|")
+			fmt.Fprint(&builder, "      ")
 			fmt.Fprintf(&builder, "%.2f", sl.Target.ErrorPercent)
-			fmt.Fprint(&builder, "|")
+			fmt.Fprint(&builder, "   ")
 			fmt.Fprintf(&builder, "%.2f%%", sl.Delta.ErrorPercent)
-			fmt.Fprint(&builder, "|")
+			fmt.Fprint(&builder, "   ")
 			fmt.Fprintf(&builder, errorBudgetMsgF, sl.Delta.ErrorPercent)
-			fmt.Fprint(&builder, "|")
+			// fmt.Fprint(&builder, "|")
 
 			return builder.String()
 		},
@@ -185,19 +187,19 @@ func markdownFuncMap() template.FuncMap {
 			var builder strings.Builder
 			statusIcon := getStatusIcon(sl.Delta.LatencyMs > threshold)
 			latencyMsg := getLatencyMsg(sl.Delta.LatencyMs > threshold, sl.Delta.LatencyMs)
-			fmt.Fprint(&builder, "|")
+			// fmt.Fprint(&builder, "|")
 			fmt.Fprintf(&builder, "%s", statusIcon)
-			fmt.Fprint(&builder, "|")
+			fmt.Fprint(&builder, "    ")
 			fmt.Fprint(&builder, "Latency")
-			fmt.Fprint(&builder, "|")
+			fmt.Fprint(&builder, "      ")
 			fmt.Fprintf(&builder, "%dms", sl.Actual.LatencyMs)
-			fmt.Fprint(&builder, "|")
+			fmt.Fprint(&builder, "       ")
 			fmt.Fprintf(&builder, "%dms", sl.Target.LatencyMs)
-			fmt.Fprint(&builder, "|")
+			fmt.Fprint(&builder, "    ")
 			fmt.Fprintf(&builder, "%dms", sl.Delta.LatencyMs)
-			fmt.Fprint(&builder, "|")
+			fmt.Fprint(&builder, "    ")
 			fmt.Fprint(&builder, latencyMsg)
-			fmt.Fprintln(&builder, "|")
+			// fmt.Fprintln(&builder, "|")
 
 			return builder.String()
 		},
