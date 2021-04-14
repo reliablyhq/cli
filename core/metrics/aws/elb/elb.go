@@ -19,7 +19,7 @@ func (p *Provider) Namespace() string {
 func (p *Provider) Dimension(arn arn.ARN) (types.Dimension, error) {
 
 	parts := strings.Split(arn.Resource, "/")
-	lbID := strings.Join(parts[1:len(parts)], "/")
+	lbID := strings.Join(parts[1:], "/")
 
 	dim := types.Dimension{
 		Name:  aws.String("LoadBalancer"),
