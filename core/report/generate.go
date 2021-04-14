@@ -31,14 +31,16 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 		return reports, fmt.Errorf("nil manifest.Manifest received")
 	}
 
-	for _, s := range m.ServiceLevel {
+	for _, s := range m.Services {
 		if s == nil {
-			return nil, go_errors.New("I don't know anything about your service objectives. Run `reliably slo init` to tell me.")
+			return nil, go_errors.New("I don't know anything about your services. Run `reliably slo init` to tell me.")
 		}
 
-		if len(s.Resources) == 0 {
-			return nil, go_errors.New("you haven't told us about any resources, so we won't be able to give you a report. Sorry :(")
+		if len(s.ServiceLevels) == 0 {
+			return nil, go_errors.New("you haven't told us about any SLOs, so we won't be able to give you a report. Sorry :(")
 		}
+
+		// Also need to check if there are SLIs in each Service Level
 
 		r := Report{Name: s.Name}
 
@@ -52,51 +54,53 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 		var latencyHasErrors = false
 		var errorPercentHasErrors = false
 
-		for _, resource := range s.Resources {
-			provider, err := getProviderForResource(resource.Provider)
-			if err != nil {
-				return nil, fmt.Errorf("an error occured while getting a provider for resource: %s => %s", resource.Provider, err)
+		for _, sl := range s.ServiceLevels {
+			for _, sli := range sl.Indicators {
+				provider, err := getProviderForResource(sli.Provider)
+				if err != nil {
+					return nil, fmt.Errorf("an error occured while getting a provider for sli: %s => %s", sli.Provider, err)
+				}
+
+				to := time.Now()
+				from := to.Add(-oneDay)
+				r.ObservationWindow.To = to
+				r.ObservationWindow.From = from
+
+				if l, err := provider.Get99PercentLatencyMetricForResource(sli.ID, from, to); err == nil {
+					allLatency = append(allLatency, l)
+				} else {
+					log.Debugf("an error occured while getting latency data for resource: %s-%s => %v ", sli.Provider, sli.ID, err)
+					latencyHasErrors = true
+				}
+
+				if e, err := provider.GetErrorPercentageMetricForResource(sli.ID, from, to); err == nil {
+					allErrorPercentages = append(allErrorPercentages, e)
+				} else {
+	
+					log.Debugf("an error occured while getting error percentage data for SLI: %s-%s => %v ", sli.Provider, sli.ID, err)
+					errorPercentHasErrors = true
+				}
 			}
 
-			to := time.Now()
-			from := to.Add(-oneDay)
-			r.ObservationWindow.To = to
-			r.ObservationWindow.From = from
+			// define actual indicator data received and errors
+			actual := (&ServiceLevelIndicators{
+				ErrorPercent: average(allErrorPercentages),
+				LatencyMs:    int64(average(allLatency)),
+			}).setErrorState(latencyErr, latencyHasErrors).
+				setErrorState(errPercentErr, errorPercentHasErrors)
 
-			if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
-				allLatency = append(allLatency, l)
-			} else {
-				log.Debugf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
-				latencyHasErrors = true
+			r.ServiceLevel = &ServiceLevel{
+				Target: &ServiceLevelIndicators{
+					ErrorPercent: sl.Objective,
+					LatencyMs:    sl.Threshold.Milliseconds(),
+				},
+				Actual: actual,
+				Delta:  &ServiceLevelIndicators{},
 			}
 
-			if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
-				allErrorPercentages = append(allErrorPercentages, e)
-			} else {
-
-				log.Debugf("an error occured while getting error percentage data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
-				errorPercentHasErrors = true
-			}
+			r.ServiceLevel.Delta.ErrorPercent = r.ServiceLevel.Actual.ErrorPercent - r.ServiceLevel.Target.ErrorPercent
+			r.ServiceLevel.Delta.LatencyMs = r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs
 		}
-
-		// define actual indicator data received and errors
-		actual := (&ServiceLevelIndicators{
-			ErrorPercent: average(allErrorPercentages),
-			LatencyMs:    int64(average(allLatency)),
-		}).setErrorState(latencyErr, latencyHasErrors).
-			setErrorState(errPercentErr, errorPercentHasErrors)
-
-		r.ServiceLevel = &ServiceLevel{
-			Target: &ServiceLevelIndicators{
-				ErrorPercent: s.Objective,
-				LatencyMs:    s.Threshold.Milliseconds(),
-			},
-			Actual: actual,
-			Delta:  &ServiceLevelIndicators{},
-		}
-
-		r.ServiceLevel.Delta.ErrorPercent = r.ServiceLevel.Actual.ErrorPercent - r.ServiceLevel.Target.ErrorPercent
-		r.ServiceLevel.Delta.LatencyMs = r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs
 
 		if s.Dependencies != nil {
 			r.Dependencies = s.Dependencies
