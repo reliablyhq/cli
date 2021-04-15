@@ -21,6 +21,10 @@ func FailureIcon() string {
 	return color.Red("✕")
 }
 
+func UnknownIcon() string {
+	return color.Magenta("?")
+}
+
 type IOStreams struct {
 	In     io.ReadCloser
 	Out    io.Writer

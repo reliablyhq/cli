@@ -72,7 +72,7 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 
 		for _, sl := range s.ServiceLevels {
 
-			fmt.Println(sl.Name, sl.Type, sl.Objective, sl.Threshold)
+			//fmt.Println(sl.Name, sl.Type, sl.Objective, sl.Threshold)
 
 			for _, sli := range sl.Indicators {
 				provider, err := getProviderForResource(sli.Provider)
@@ -114,7 +114,7 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 					setErrorState(errPercentErr, errorPercentHasErrors)
 			*/
 
-			fmt.Println(">>>", sl.Name, sl.Type, allValues, valuesHasError)
+			//fmt.Println(">>>", sl.Name, sl.Type, allValues, valuesHasError)
 
 			var result *ServiceLevelResult
 			if !valuesHasError {

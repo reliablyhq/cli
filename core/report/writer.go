@@ -8,7 +8,7 @@ import (
 	//consolesize "github.com/nathan-fiscaletti/consolesize-go"
 	//"github.com/olekukonko/tablewriter"
 	//"github.com/reliablyhq/cli/core/color"
-	//"github.com/reliablyhq/cli/core/iostreams"
+	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/sirupsen/logrus"
 )
 
@@ -46,52 +46,96 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 		return
 	}
 
-	/*
-		if r.ServiceLevel.Delta == nil {
-			l.Error("the report does not include a 'Delta'")
-			return
-		}
-	*/
-
 	switch format {
 	case JSON:
 		b, _ := json.MarshalIndent(r, "", "  ")
 		fmt.Fprintln(w, string(b))
-		/*
-			if !r.ServiceLevel.Actual.hasErrors(errPercentErr) && !r.ServiceLevel.Actual.hasErrors(latencyErr) {
-				b, _ := json.MarshalIndent(r, "", "  ")
-				fmt.Fprintln(w, string(b))
-			}
-		*/
 
-		/*
-			case SimpleText:
-				fmt.Printf("SLO report: (last %s)\n", r.ObservationWindow.To.Sub(r.ObservationWindow.From))
-				if !r.ServiceLevel.Actual.hasErrors(errPercentErr) {
-					if r.ServiceLevel.Delta.ErrorPercent > threshold {
-						msg := fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)
-						fmt.Printf("%s Error Rate: %.2f%%. %s\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.ErrorPercent, msg)
-					} else {
-						msg := fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)
-						fmt.Printf("%s Error Rate: %.2f%%. %s\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.ErrorPercent, msg)
-					}
-				}
+	case SimpleText:
+		reportSimpleText(r, w)
 
-				if !r.ServiceLevel.Actual.hasErrors(latencyErr) {
-					if r.ServiceLevel.Delta.LatencyMs > threshold {
-						msg := fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)
-						fmt.Printf("%s Latency: %vms. %s\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.LatencyMs, msg)
-					} else {
-						fmt.Printf("%s Latency: %vms. %s\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.LatencyMs, latencyValid)
-					}
-				}
+	default:
+		return
+		//tabbedoutput(r, w)
 
-			default:
-				tabbedoutput(r, w)
-		*/
 	}
 
 	return
+}
+
+func reportSimpleText(r *Report, w io.Writer) {
+
+	for i, svc := range r.Services {
+		fmt.Fprintf(w, "# Service: %s\n", svc.Name)
+
+		for _, sl := range svc.ServiceLevels {
+
+			tick := iostreams.SuccessIcon()
+
+			/*
+				if sl.Type == "latency" {
+
+				} else {
+
+				}
+			*/
+
+			if sl.Result == nil {
+				tick = iostreams.UnknownIcon()
+				fmt.Fprintf(w, "%s %s\n", tick, sl.Name)
+
+			} else {
+
+				if sl.Type == "latency" {
+
+					if float64(sl.Result.Actual.(float64)) > float64(sl.Result.Objective.(float64)) {
+						tick = iostreams.FailureIcon()
+					}
+
+				} else {
+					if float64(sl.Result.Actual.(float64)) < float64(sl.Result.Objective.(float64)) {
+						tick = iostreams.FailureIcon()
+					}
+				}
+
+				fmt.Fprintf(w, "%s %s: %v (last %s) [objective: %v, delta: %v]\n",
+					tick, sl.Name, sl.Result.Actual,
+					sl.ObservationWindow.To.Sub(sl.ObservationWindow.From),
+					sl.Result.Objective, sl.Result.Delta)
+
+			}
+
+		}
+
+		if i < len(r.Services)-1 {
+			fmt.Println() // empty lines between services except last one
+		}
+
+	}
+
+	/*
+		fmt.Printf("SLO report: (last %s)\n", r.ObservationWindow.To.Sub(r.ObservationWindow.From))
+		if !r.ServiceLevel.Actual.hasErrors(errPercentErr) {
+			if r.ServiceLevel.Delta.ErrorPercent > threshold {
+				msg := fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)
+				fmt.Printf("%s Error Rate: %.2f%%. %s\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.ErrorPercent, msg)
+			} else {
+				msg := fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)
+				fmt.Printf("%s Error Rate: %.2f%%. %s\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.ErrorPercent, msg)
+			}
+		}
+
+		if !r.ServiceLevel.Actual.hasErrors(latencyErr) {
+			if r.ServiceLevel.Delta.LatencyMs > threshold {
+				msg := fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)
+				fmt.Printf("%s Latency: %vms. %s\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.LatencyMs, msg)
+			} else {
+				fmt.Printf("%s Latency: %vms. %s\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.LatencyMs, latencyValid)
+			}
+		}
+
+	*/
+
 }
 
 /*
