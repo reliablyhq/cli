@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/reliablyhq/cli/core/errors"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/metrics"
 	log "github.com/sirupsen/logrus"
@@ -42,7 +41,6 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 		}
 
 		r := Report{Name: s.Name}
-		allErrors := make([]error, 0)
 
 		r.APIVersion = apiVersion
 		r.Timestamp = timestampFn()
@@ -51,11 +49,13 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 		allLatency := []float64{}
 		allErrorPercentages := []float64{}
 
+		var latencyHasErrors = false
+		var errorPercentHasErrors = false
+
 		for _, resource := range s.Resources {
 			provider, err := getProviderForResource(resource.Provider)
 			if err != nil {
-				log.Errorf("an error occured while getting a provider for resource: %s => %s", resource.Provider, err)
-				continue
+				return nil, fmt.Errorf("an error occured while getting a provider for resource: %s => %s", resource.Provider, err)
 			}
 
 			to := time.Now()
@@ -66,27 +66,33 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 			if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
 				allLatency = append(allLatency, l)
 			} else {
-				log.Errorf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
+				log.Debugf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
+				latencyHasErrors = true
 			}
 
 			if e, err := provider.GetErrorPercentageMetricForResource(resource.ID, from, to); err == nil {
 				allErrorPercentages = append(allErrorPercentages, e)
 			} else {
-				log.Errorf("an error occured while getting error percentage data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
-			}
 
+				log.Debugf("an error occured while getting error percentage data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
+				errorPercentHasErrors = true
+			}
 		}
+
+		// define actual indicator data received and errors
+		actual := (&ServiceLevelIndicators{
+			ErrorPercent: average(allErrorPercentages),
+			LatencyMs:    int64(average(allLatency)),
+		}).setErrorState(latencyErr, latencyHasErrors).
+			setErrorState(errPercentErr, errorPercentHasErrors)
 
 		r.ServiceLevel = &ServiceLevel{
 			Target: &ServiceLevelIndicators{
 				ErrorPercent: s.Objective.ErrorBudgetPercent,
 				LatencyMs:    s.Objective.Latency.Milliseconds(),
 			},
-			Actual: &ServiceLevelIndicators{
-				ErrorPercent: average(allErrorPercentages),
-				LatencyMs:    int64(average(allLatency)),
-			},
-			Delta: &ServiceLevelIndicators{},
+			Actual: actual,
+			Delta:  &ServiceLevelIndicators{},
 		}
 
 		r.ServiceLevel.Delta.ErrorPercent = r.ServiceLevel.Actual.ErrorPercent - r.ServiceLevel.Target.ErrorPercent
@@ -94,10 +100,6 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 
 		if m.Dependencies != nil {
 			r.Dependencies = m.Dependencies
-		}
-
-		if len(allErrors) > 0 {
-			return reports, errors.NewCompoundError("multiple errors occured", allErrors)
 		}
 
 		reports = append(reports, &r)

@@ -1,6 +1,7 @@
 package report
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -30,4 +31,37 @@ type ServiceLevel struct {
 type ServiceLevelIndicators struct {
 	ErrorPercent float64 `json:"error_percent"`
 	LatencyMs    int64   `json:"latency_ms"`
+
+	// used to record whether a particular property had
+	// error in it's retrieval process
+	errored [2]bool `json:"-"`
 }
+
+func (s *ServiceLevelIndicators) setErrorState(i indicatorErrType, b bool) *ServiceLevelIndicators {
+	s.errored[i] = b
+	return s
+}
+
+func (s *ServiceLevelIndicators) hasErrors(i indicatorErrType) bool {
+	return s.errored[i]
+}
+
+func (s *ServiceLevelIndicators) errorPercentString() string {
+	if s.hasErrors(errPercentErr) {
+		return "---"
+	}
+	return fmt.Sprintf("%.2f", s.ErrorPercent)
+}
+
+func (s *ServiceLevelIndicators) latencyMsString() string {
+	if s.hasErrors(latencyErr) {
+		return "---"
+	}
+	return fmt.Sprintf("%dms", s.LatencyMs)
+}
+
+// indicatorErrType - used to define indicator error types
+type indicatorErrType int
+
+var latencyErr indicatorErrType = 0
+var errPercentErr indicatorErrType = 1
