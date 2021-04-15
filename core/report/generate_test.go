@@ -115,8 +115,8 @@ func TestFromManifest(t *testing.T) {
 									Objective: 99,
 									Indicators: []manifest.ServiceLevelIndicator{
 										{
-											Provider: "aws",
-											ID: "arn2",
+											Provider: "test_from_manifest",
+											ID: "abc13",
 										},
 									},
 								},
