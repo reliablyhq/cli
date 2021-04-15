@@ -6,16 +6,15 @@ import (
 )
 
 type Report struct {
-	APIVersion    string          `json:"api_version"`
-	Timestamp     time.Time       `json:"timestamp"`
+	APIVersion string     `json:"api_version"`
+	Timestamp  time.Time  `json:"timestamp"`
+	Services   []*Service `json:"services"`
+}
+
+type Service struct {
 	Dependencies  []string        `json:"-"`
 	ServiceLevels []*ServiceLevel `json:"service_levels"`
 	Name          string          `json:"name"`
-}
-
-type Window struct {
-	From time.Time `json:"from"`
-	To   time.Time `json:"to"`
 }
 
 type ServiceLevel struct {
@@ -43,6 +42,11 @@ type ServiceLevelIndicators struct {
 	// used to record whether a particular property had
 	// error in it's retrieval process
 	errored bool `json:"-"`
+}
+
+type Window struct {
+	From time.Time `json:"from"`
+	To   time.Time `json:"to"`
 }
 
 type ServiceLevelResult struct {

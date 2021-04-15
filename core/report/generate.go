@@ -25,14 +25,22 @@ var notSuportedErrorBuilder = func(thingType, thingName string) error {
 	return fmt.Errorf("%s type '%s' is not currently supported. I've informed ReliablyHQ about this; check back later - maybe we'll be able to help then.", thingType, thingName)
 }
 
-func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
+func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 	// check for nil manifest
 	if m == nil {
-		return reports, fmt.Errorf("nil manifest.Manifest received")
+		err = go_errors.New("nil manifest.Manifest received")
+		return
 	}
 
 	to := time.Now()
 	from := to.Add(-oneDay)
+
+	var services []*Service = make([]*Service, 0)
+	report = &Report{
+		APIVersion: apiVersion,
+		Timestamp:  timestampFn(),
+		Services:   services,
+	}
 
 	for _, s := range m.Services {
 		if s == nil {
@@ -46,11 +54,12 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 		// Also need to check if there are SLIs in each Service Level
 
 		sls := make([]*ServiceLevel, 0)
-		r := Report{Name: s.Name, ServiceLevels: sls}
-
-		r.APIVersion = apiVersion
-		r.Timestamp = timestampFn()
-		r.Dependencies = []string{}
+		//r := Report{Name: s.Name, ServiceLevels: sls}
+		rs := Service{
+			Name:          s.Name,
+			Dependencies:  []string{},
+			ServiceLevels: sls,
+		}
 
 		//allLatency := []float64{}
 		//allErrorPercentages := []float64{}
@@ -133,7 +142,7 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 				}
 
 			}
-			r.ServiceLevels = append(r.ServiceLevels, &ServiceLevel{
+			rs.ServiceLevels = append(rs.ServiceLevels, &ServiceLevel{
 				Name:    sl.Name,
 				Type:    sl.Type,
 				Result:  result,
@@ -149,10 +158,11 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 		}
 
 		if s.Dependencies != nil {
-			r.Dependencies = s.Dependencies
+			rs.Dependencies = s.Dependencies
 		}
 
-		reports = append(reports, &r)
+		//reports = append(reports, &r)
+		report.Services = append(report.Services, &rs)
 	}
 
 	return

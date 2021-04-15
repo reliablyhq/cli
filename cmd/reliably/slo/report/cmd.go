@@ -60,7 +60,7 @@ func runE(_ *cobra.Command, _ []string) error {
 		return errors.New("An error occured while attempting to load the manifest")
 	}
 
-	reports, err := report.FromManifest(m)
+	r, err := report.FromManifest(m)
 	if err != nil {
 		return err
 	}
@@ -78,9 +78,7 @@ func runE(_ *cobra.Command, _ []string) error {
 		format = report.SimpleText
 	}
 
-	for _, r := range reports {
-		report.Write(format, r, os.Stdout, log.StandardLogger())
-	}
+	report.Write(format, r, os.Stdout, log.StandardLogger())
 
 	if outputPath != "" {
 		if !strings.HasSuffix(outputPath, ".json") {
@@ -88,7 +86,7 @@ func runE(_ *cobra.Command, _ []string) error {
 			return nil
 		}
 
-		bytes, err := json.Marshal(reports)
+		bytes, err := json.Marshal(r)
 		if err != nil {
 			return nil
 		}
