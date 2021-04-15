@@ -27,3 +27,21 @@ func Filter(arr interface{}, cond func(interface{}) bool) interface{} {
 	}
 	return newContent.Interface()
 }
+
+// SumInt returns the sum of all int values of the slice
+func SumInt(array []int) int {
+	result := 0
+	for _, v := range array {
+		result += v
+	}
+	return result
+}
+
+// SumFloat64 returns the sum of all float64 values of the slice
+func SumFloat64(array []float64) float64 {
+	result := 0.0
+	for _, v := range array {
+		result += v
+	}
+	return result
+}

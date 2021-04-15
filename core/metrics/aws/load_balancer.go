@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
+	log "github.com/sirupsen/logrus"
 )
 
 type ElasticLoadBalancer struct{}
@@ -143,4 +145,59 @@ func (elb *ElasticLoadBalancer) GetLatencyMetricDataInput(arn arn.ARN, from, to 
 	}
 
 	return params, nil
+}
+
+func (elb *ElasticLoadBalancer) GetLatencyAboveThresholdPerMin(
+	arn arn.ARN, threshold float64, from, to time.Time) (*cloudwatch.GetMetricDataInput, error) {
+
+	var params *cloudwatch.GetMetricDataInput
+
+	ns := elb.Namespace()
+	dim, err := elb.Dimension(arn)
+	if err != nil {
+		return nil, err
+	}
+
+	period := int32(to.Sub(from).Seconds())
+
+	///
+	//from, _ = time.Parse(time.RFC3339, "2021-04-12T15:00:00Z")
+	//to, _ = time.Parse(time.RFC3339, "2021-04-13T08:00:00Z")
+	//period = int32(to.Sub(from).Seconds())
+
+	fmt.Println("from", from, " - to ", to, " => ", period)
+	fmt.Println("how many minutes in the period ? ", period/60)
+	///
+
+	expression := fmt.Sprintf("latency_p99_per_min > %f", threshold)
+	log.Debugf("Latency expression=%s\n", expression)
+
+	params = &cloudwatch.GetMetricDataInput{
+		StartTime: &from,
+		EndTime:   &to,
+		MetricDataQueries: []types.MetricDataQuery{
+
+			{
+				Id:         aws.String("latency_above_threshold_per_min"),
+				Expression: aws.String(expression),
+			},
+
+			{
+				Id: aws.String("latency_p99_per_min"),
+				MetricStat: &types.MetricStat{
+					Metric: &types.Metric{
+						Namespace:  aws.String(ns),
+						MetricName: aws.String("TargetResponseTime"),
+						Dimensions: []types.Dimension{dim},
+					},
+					Period: aws.Int32(60),
+					Stat:   aws.String("p99"),
+				},
+				ReturnData: aws.Bool(false),
+			},
+		},
+	}
+
+	return params, nil
+
 }

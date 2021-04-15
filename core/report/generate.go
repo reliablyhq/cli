@@ -60,10 +60,11 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 
 			to := time.Now()
 			from := to.Add(-oneDay)
+			//from := to.Add(-oneWeek)
 			r.ObservationWindow.To = to
 			r.ObservationWindow.From = from
 
-			if l, err := provider.Get99PercentLatencyMetricForResource(resource.ID, from, to); err == nil {
+			if l, err := provider.GetLatencyAboveThresholdPercentage(resource.ID, int(s.Objective.Latency.Duration.Milliseconds()), from, to); err == nil {
 				allLatency = append(allLatency, l)
 			} else {
 				log.Debugf("an error occured while getting latency data for resource: %s-%s => %v ", resource.Provider, resource.ID, err)
