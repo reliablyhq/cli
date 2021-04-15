@@ -17,6 +17,12 @@ var (
 	manifestPath        string
 	supportedExtensions = []string{".yaml", ".json"}
 	googleResourceTypes = []string{"Google Cloud Load Balancers"}
+	awsPartitions				= []string{
+		"aws",
+		"aws-cn",
+		"aws-us-gov",
+	}
+	awsServices = []string{"API Getaway"}
 	providersMap        = map[string]string{
 		"Amazon Web Services":   "aws",
 		"Google Cloud Platform": "gcp",
@@ -143,7 +149,14 @@ func declareSLOForService(s *manifest.Service) {
 func getResourceIDForProvider(provider string) string {
 	switch provider {
 	case "aws":
-		return question.WithStringAnswer("What is the ARN of the resource?")
+		// return question.WithStringAnswer("What is the ARN of the resource?")
+		arn := question.WithStringAnswer("Paste an AWS ARN, or press ENTER for step-by-step identification.")
+		if arn == "" {
+			partition := question.WithSingleChoiceAnswer("Select an AWS partition", awsPartitions...)
+			service := question.WithSingleChoiceAnswer("Select an AWS service", awsServices...)
+			return "arn:" + partition + ":" + service
+		}
+		return arn
 	case "gcp":
 		{
 			projectID := question.WithStringAnswer("What is the GCP project ID?")
