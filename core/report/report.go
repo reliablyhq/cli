@@ -1,20 +1,16 @@
 package report
 
 import (
-	"fmt"
+	//"fmt"
 	"time"
 )
 
 type Report struct {
-	APIVersion   string        `json:"api_version"`
-	Timestamp    time.Time     `json:"timestamp"`
-	Dependencies []string      `json:"dependencies"`
-	ServiceLevel *ServiceLevel `json:"service_level"`
-	Name         string        `json:"name"`
-
-	// TODO: decide whether this should be implemented as
-	// Observation Windor or Boundary
-	ObservationWindow Window `json:"window"`
+	APIVersion    string          `json:"api_version"`
+	Timestamp     time.Time       `json:"timestamp"`
+	Dependencies  []string        `json:"-"`
+	ServiceLevels []*ServiceLevel `json:"service_levels"`
+	Name          string          `json:"name"`
 }
 
 type Window struct {
@@ -23,20 +19,39 @@ type Window struct {
 }
 
 type ServiceLevel struct {
-	Target *ServiceLevelIndicators `json:"target"`
-	Actual *ServiceLevelIndicators `json:"actual"`
-	Delta  *ServiceLevelIndicators `json:"delta"`
+	Name   string              `json:"name"`
+	Type   string              `json:"type"`
+	Result *ServiceLevelResult `json:"result"`
+
+	//Target *ServiceLevelIndicators `json:"target"`
+	//Actual *ServiceLevelIndicators `json:"actual"`
+	//Delta  *ServiceLevelIndicators `json:"delta"`
+
+	// TODO: decide whether this should be implemented as
+	// Observation Windor or Boundary
+	ObservationWindow Window `json:"window"`
+
+	// used to record whether a particular SLI had
+	// error in it's retrieval process
+	errored bool `json:"-"`
 }
 
 type ServiceLevelIndicators struct {
-	ErrorPercent float64 `json:"error_percent"`
-	LatencyMs    int64   `json:"latency_ms"`
+	ErrorPercent   float64 `json:"error_percent"`
+	LatencyPercent int64   `json:"latency_percent"`
 
 	// used to record whether a particular property had
 	// error in it's retrieval process
-	errored [2]bool `json:"-"`
+	errored bool `json:"-"`
 }
 
+type ServiceLevelResult struct {
+	Objective interface{} `json:"slo"`
+	Actual    interface{} `json:"actual"`
+	Delta     interface{} `json:"delta"`
+}
+
+/*
 func (s *ServiceLevelIndicators) setErrorState(i indicatorErrType, b bool) *ServiceLevelIndicators {
 	s.errored[i] = b
 	return s
@@ -59,7 +74,7 @@ func (s *ServiceLevelIndicators) latencyMsString() string {
 	}
 	return fmt.Sprintf("%dms", s.LatencyMs)
 }
-
+*/
 // indicatorErrType - used to define indicator error types
 type indicatorErrType int
 

@@ -31,6 +31,9 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 		return reports, fmt.Errorf("nil manifest.Manifest received")
 	}
 
+	to := time.Now()
+	from := to.Add(-oneDay)
+
 	for _, s := range m.Services {
 		if s == nil {
 			return nil, go_errors.New("I don't know anything about your services. Run `reliably slo init` to tell me.")
@@ -42,64 +45,107 @@ func FromManifest(m *manifest.Manifest) (reports []*Report, err error) {
 
 		// Also need to check if there are SLIs in each Service Level
 
-		r := Report{Name: s.Name}
+		sls := make([]*ServiceLevel, 0)
+		r := Report{Name: s.Name, ServiceLevels: sls}
 
 		r.APIVersion = apiVersion
 		r.Timestamp = timestampFn()
 		r.Dependencies = []string{}
 
-		allLatency := []float64{}
-		allErrorPercentages := []float64{}
+		//allLatency := []float64{}
+		//allErrorPercentages := []float64{}
 
-		var latencyHasErrors = false
-		var errorPercentHasErrors = false
+		allValues := []float64{}
+		valuesHasError := false
+
+		//var latencyHasErrors = false
+		//var errorPercentHasErrors = false
 
 		for _, sl := range s.ServiceLevels {
+
+			fmt.Println(sl.Name, sl.Type, sl.Objective, sl.Threshold)
+
 			for _, sli := range sl.Indicators {
 				provider, err := getProviderForResource(sli.Provider)
 				if err != nil {
 					return nil, fmt.Errorf("an error occured while getting a provider for sli: %s => %s", sli.Provider, err)
 				}
 
-				to := time.Now()
-				from := to.Add(-oneDay)
-				r.ObservationWindow.To = to
-				r.ObservationWindow.From = from
-
-				if l, err := provider.Get99PercentLatencyMetricForResource(sli.ID, from, to); err == nil {
-					allLatency = append(allLatency, l)
-				} else {
-					log.Debugf("an error occured while getting latency data for resource: %s-%s => %v ", sli.Provider, sli.ID, err)
-					latencyHasErrors = true
+				if sl.Type == "latency" {
+					if l, err := provider.Get99PercentLatencyMetricForResource(sli.ID, from, to); err == nil {
+						//allLatency = append(allLatency, l)
+						allValues = append(allValues, l)
+					} else {
+						log.Debugf("an error occured while getting latency data for resource: %s-%s => %v ", sli.Provider, sli.ID, err)
+						//latencyHasErrors = true
+						valuesHasError = true
+					}
 				}
 
-				if e, err := provider.GetErrorPercentageMetricForResource(sli.ID, from, to); err == nil {
-					allErrorPercentages = append(allErrorPercentages, e)
-				} else {
-	
-					log.Debugf("an error occured while getting error percentage data for SLI: %s-%s => %v ", sli.Provider, sli.ID, err)
-					errorPercentHasErrors = true
+				if sl.Type == "availability" {
+					if e, err := provider.GetErrorPercentageMetricForResource(sli.ID, from, to); err == nil {
+						//allErrorPercentages = append(allErrorPercentages, e)
+						allValues = append(allValues, e)
+					} else {
+
+						log.Debugf("an error occured while getting error percentage data for SLI: %s-%s => %v ", sli.Provider, sli.ID, err)
+						//errorPercentHasErrors = true
+						valuesHasError = true
+					}
 				}
+
 			}
 
-			// define actual indicator data received and errors
-			actual := (&ServiceLevelIndicators{
-				ErrorPercent: average(allErrorPercentages),
-				LatencyMs:    int64(average(allLatency)),
-			}).setErrorState(latencyErr, latencyHasErrors).
-				setErrorState(errPercentErr, errorPercentHasErrors)
+			/*
+				// define actual indicator data received and errors
+				actual := (&ServiceLevelIndicators{
+					ErrorPercent: average(allErrorPercentages),
+					LatencyMs:    int64(average(allLatency)),
+				}).setErrorState(latencyErr, latencyHasErrors).
+					setErrorState(errPercentErr, errorPercentHasErrors)
+			*/
 
-			r.ServiceLevel = &ServiceLevel{
-				Target: &ServiceLevelIndicators{
-					ErrorPercent: sl.Objective,
-					LatencyMs:    sl.Threshold.Milliseconds(),
+			fmt.Println(">>>", sl.Name, sl.Type, allValues, valuesHasError)
+
+			var result *ServiceLevelResult
+			if !valuesHasError {
+
+				// hack for now, until we merge the new API for fetching latency as %
+
+				if sl.Type == "latency" {
+					objective := float64(sl.Threshold.Duration.Milliseconds())
+					avg := average(allValues)
+					delta := avg - objective
+
+					result = &ServiceLevelResult{
+						Objective: objective,
+						Actual:    round2digits(avg),
+						Delta:     round2digits(delta),
+					}
+
+				} else {
+
+					result = &ServiceLevelResult{
+						Objective: sl.Objective,
+						Actual:    round2digits(average(allValues)),
+						Delta:     round2digits(average(allValues) - sl.Objective),
+					}
+				}
+
+			}
+			r.ServiceLevels = append(r.ServiceLevels, &ServiceLevel{
+				Name:    sl.Name,
+				Type:    sl.Type,
+				Result:  result,
+				errored: valuesHasError,
+				ObservationWindow: Window{
+					To:   to,
+					From: from,
 				},
-				Actual: actual,
-				Delta:  &ServiceLevelIndicators{},
-			}
+			})
 
-			r.ServiceLevel.Delta.ErrorPercent = r.ServiceLevel.Actual.ErrorPercent - r.ServiceLevel.Target.ErrorPercent
-			r.ServiceLevel.Delta.LatencyMs = r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs
+			//r.ServiceLevel.Delta.ErrorPercent = r.ServiceLevel.Actual.ErrorPercent - r.ServiceLevel.Target.ErrorPercent
+			//r.ServiceLevel.Delta.LatencyMs = r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs
 		}
 
 		if s.Dependencies != nil {

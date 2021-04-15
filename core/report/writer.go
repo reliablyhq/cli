@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io"
 
-	consolesize "github.com/nathan-fiscaletti/consolesize-go"
-	"github.com/olekukonko/tablewriter"
-	"github.com/reliablyhq/cli/core/color"
-	"github.com/reliablyhq/cli/core/iostreams"
+	//consolesize "github.com/nathan-fiscaletti/consolesize-go"
+	//"github.com/olekukonko/tablewriter"
+	//"github.com/reliablyhq/cli/core/color"
+	//"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/sirupsen/logrus"
 )
 
@@ -46,45 +46,55 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 		return
 	}
 
-	if r.ServiceLevel.Delta == nil {
-		l.Error("the report does not include a 'Delta'")
-		return
-	}
+	/*
+		if r.ServiceLevel.Delta == nil {
+			l.Error("the report does not include a 'Delta'")
+			return
+		}
+	*/
 
 	switch format {
 	case JSON:
-		if !r.ServiceLevel.Actual.hasErrors(errPercentErr) && !r.ServiceLevel.Actual.hasErrors(latencyErr) {
-			b, _ := json.MarshalIndent(r, "", "  ")
-			fmt.Fprintln(w, string(b))
-		}
-
-	case SimpleText:
-		fmt.Printf("SLO report: (last %s)\n", r.ObservationWindow.To.Sub(r.ObservationWindow.From))
-		if !r.ServiceLevel.Actual.hasErrors(errPercentErr) {
-			if r.ServiceLevel.Delta.ErrorPercent > threshold {
-				msg := fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)
-				fmt.Printf("%s Error Rate: %.2f%%. %s\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.ErrorPercent, msg)
-			} else {
-				msg := fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)
-				fmt.Printf("%s Error Rate: %.2f%%. %s\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.ErrorPercent, msg)
+		b, _ := json.MarshalIndent(r, "", "  ")
+		fmt.Fprintln(w, string(b))
+		/*
+			if !r.ServiceLevel.Actual.hasErrors(errPercentErr) && !r.ServiceLevel.Actual.hasErrors(latencyErr) {
+				b, _ := json.MarshalIndent(r, "", "  ")
+				fmt.Fprintln(w, string(b))
 			}
-		}
+		*/
 
-		if !r.ServiceLevel.Actual.hasErrors(latencyErr) {
-			if r.ServiceLevel.Delta.LatencyMs > threshold {
-				msg := fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)
-				fmt.Printf("%s Latency: %vms. %s\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.LatencyMs, msg)
-			} else {
-				fmt.Printf("%s Latency: %vms. %s\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.LatencyMs, latencyValid)
-			}
-		}
+		/*
+			case SimpleText:
+				fmt.Printf("SLO report: (last %s)\n", r.ObservationWindow.To.Sub(r.ObservationWindow.From))
+				if !r.ServiceLevel.Actual.hasErrors(errPercentErr) {
+					if r.ServiceLevel.Delta.ErrorPercent > threshold {
+						msg := fmt.Sprintf(errorBudgetExceededf, r.ServiceLevel.Delta.ErrorPercent)
+						fmt.Printf("%s Error Rate: %.2f%%. %s\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.ErrorPercent, msg)
+					} else {
+						msg := fmt.Sprintf(errorBudgetTooLowf, -r.ServiceLevel.Delta.ErrorPercent)
+						fmt.Printf("%s Error Rate: %.2f%%. %s\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.ErrorPercent, msg)
+					}
+				}
 
-	default:
-		tabbedoutput(r, w)
+				if !r.ServiceLevel.Actual.hasErrors(latencyErr) {
+					if r.ServiceLevel.Delta.LatencyMs > threshold {
+						msg := fmt.Sprintf(latencyExceeded, r.ServiceLevel.Delta.LatencyMs)
+						fmt.Printf("%s Latency: %vms. %s\n", iostreams.FailureIcon(), r.ServiceLevel.Actual.LatencyMs, msg)
+					} else {
+						fmt.Printf("%s Latency: %vms. %s\n", iostreams.SuccessIcon(), r.ServiceLevel.Actual.LatencyMs, latencyValid)
+					}
+				}
+
+			default:
+				tabbedoutput(r, w)
+		*/
 	}
+
 	return
 }
 
+/*
 func tabbedoutput(r *Report, w io.Writer) {
 	fmt.Fprintf(w, "\n-----------\n[%s] SLO report: (last %s) \n-----------\n",
 		color.Cyan(r.Name),
@@ -168,3 +178,4 @@ func tabbedoutput(r *Report, w io.Writer) {
 	// render table
 	table.Render()
 }
+*/

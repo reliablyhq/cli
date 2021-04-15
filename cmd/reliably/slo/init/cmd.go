@@ -107,7 +107,7 @@ func declareSLOForService(s *manifest.Service) {
 		sl.Threshold = question.WithDurationAnswer("What is your latency threshold (in milliseconds)?")
 	}
 
-	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?'.", 0, 100)
+	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?", 0, 100)
 
 	do := question.WithBoolAnswer("Do you want to add an SLI to measure this SLO?")
 	if do {
