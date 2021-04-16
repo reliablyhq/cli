@@ -21,7 +21,9 @@
         {
           "name": "Service A Latency",
           "type": "latency",
-          "threshold": "300ms",
+          "criteria": {
+            "threshold": "300ms"
+          },
           "slo": 99,
           "sli": [
             {

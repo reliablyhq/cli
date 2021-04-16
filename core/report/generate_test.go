@@ -109,9 +109,11 @@ func TestFromManifest(t *testing.T) {
 							Name: "Service A",
 							ServiceLevels: []*manifest.ServiceLevel{
 								&manifest.ServiceLevel{
-									Name:      "Service A Latency",
-									Type:      "latency",
-									Threshold: core.Duration{Duration: 300 * time.Millisecond},
+									Name: "Service A Latency",
+									Type: "latency",
+									Criteria: manifest.LatencyCriteria{
+										Threshold: core.Duration{Duration: 300 * time.Millisecond},
+									},
 									Objective: 99,
 									Indicators: []manifest.ServiceLevelIndicator{
 										{

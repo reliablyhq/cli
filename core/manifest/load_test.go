@@ -33,29 +33,31 @@ func TestLoad(t *testing.T) {
 						Name: "Service A",
 						ServiceLevels: []*ServiceLevel{
 							&ServiceLevel{
-								Name: "Service A Availability",
-								Type: "availability",
+								Name:      "Service A Availability",
+								Type:      "availability",
 								Objective: 99,
 								Indicators: []ServiceLevelIndicator{
 									{
 										Provider: "aws",
-										ID: "arn1",
+										ID:       "arn1",
 									},
 									{
 										Provider: "gcp",
-										ID: "uri",
+										ID:       "uri",
 									},
 								},
 							},
 							&ServiceLevel{
 								Name: "Service A Latency",
 								Type: "latency",
-								Threshold: core.Duration{Duration: 300 * time.Millisecond},
+								Criteria: LatencyCriteria{
+									Threshold: core.Duration{Duration: 300 * time.Millisecond},
+								},
 								Objective: 99,
 								Indicators: []ServiceLevelIndicator{
 									{
 										Provider: "aws",
-										ID: "arn2",
+										ID:       "arn2",
 									},
 								},
 							},
@@ -66,13 +68,13 @@ func TestLoad(t *testing.T) {
 						Name: "Service B",
 						ServiceLevels: []*ServiceLevel{
 							&ServiceLevel{
-								Name: "Service B Availability",
-								Type: "availability",
+								Name:      "Service B Availability",
+								Type:      "availability",
 								Objective: 99,
 								Indicators: []ServiceLevelIndicator{
 									{
 										Provider: "aws",
-										ID: "arn3",
+										ID:       "arn3",
 									},
 								},
 							},
@@ -94,29 +96,31 @@ func TestLoad(t *testing.T) {
 						Name: "Service A",
 						ServiceLevels: []*ServiceLevel{
 							&ServiceLevel{
-								Name: "Service A Availability",
-								Type: "availability",
+								Name:      "Service A Availability",
+								Type:      "availability",
 								Objective: 99,
 								Indicators: []ServiceLevelIndicator{
 									{
 										Provider: "aws",
-										ID: "arn1",
+										ID:       "arn1",
 									},
 									{
 										Provider: "gcp",
-										ID: "uri",
+										ID:       "uri",
 									},
 								},
 							},
 							&ServiceLevel{
 								Name: "Service A Latency",
 								Type: "latency",
-								Threshold: core.Duration{Duration: 300 * time.Millisecond},
+								Criteria: LatencyCriteria{
+									Threshold: core.Duration{Duration: 300 * time.Millisecond},
+								},
 								Objective: 99,
 								Indicators: []ServiceLevelIndicator{
 									{
 										Provider: "aws",
-										ID: "arn2",
+										ID:       "arn2",
 									},
 								},
 							},
@@ -127,13 +131,13 @@ func TestLoad(t *testing.T) {
 						Name: "Service B",
 						ServiceLevels: []*ServiceLevel{
 							&ServiceLevel{
-								Name: "Service B Availability",
-								Type: "availability",
+								Name:      "Service B Availability",
+								Type:      "availability",
 								Objective: 99,
 								Indicators: []ServiceLevelIndicator{
 									{
 										Provider: "aws",
-										ID: "arn3",
+										ID:       "arn3",
 									},
 								},
 							},
