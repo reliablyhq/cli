@@ -134,8 +134,13 @@ func tabbedoutput(r *Report, w io.Writer) {
 	emptyRow := []string{"", "", "", ""}
 
 	for i, svc := range r.Services {
-		svcRowHeader := []string{color.Yellow(fmt.Sprintf("Service #%d: %s", i+1, svc.Name))}
+		svcRowHeader := []string{fmt.Sprintf("Service #%d: %s", i+1, svc.Name)}
 		table.Append(svcRowHeader)
+
+		// Using color breaks autowrap text to have weird behavior with unnecessary line return
+		//svcRowHeader = []string{
+		//  color.Yellow(fmt.Sprintf("Service #%d: %s", i+1, svc.Name))}
+		//table.Append(svcRowHeader)
 
 		for _, sl := range svc.ServiceLevels {
 
