@@ -1,11 +1,20 @@
 package init
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"os"
 	"sort"
 	"strings"
 
+	// Using this as v2 doesn't have an equivalent
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/apigatewayv2"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/aws/aws-sdk-go/aws/arn"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
@@ -17,13 +26,15 @@ var (
 	manifestPath        string
 	supportedExtensions = []string{".yaml", ".json"}
 	googleResourceTypes = []string{"Google Cloud Load Balancers"}
-	awsPartitions				= []string{
+	awsPartitionsIDs    = []string{
 		"aws",
 		"aws-cn",
 		"aws-us-gov",
 	}
-	awsServices = []string{"API Getaway"}
-	providersMap        = map[string]string{
+	awsServicesMap = map[string]string{
+		"API Getaway": "apigateway",
+	}
+	providersMap = map[string]string{
 		"Amazon Web Services":   "aws",
 		"Google Cloud Platform": "gcp",
 	}
@@ -149,14 +160,92 @@ func declareSLOForService(s *manifest.Service) {
 func getResourceIDForProvider(provider string) string {
 	switch provider {
 	case "aws":
-		// return question.WithStringAnswer("What is the ARN of the resource?")
-		arn := question.WithStringAnswer("Paste an AWS ARN, or press ENTER for step-by-step identification.")
-		if arn == "" {
-			partition := question.WithSingleChoiceAnswer("Select an AWS partition", awsPartitions...)
-			service := question.WithSingleChoiceAnswer("Select an AWS service", awsServices...)
-			return "arn:" + partition + ":" + service
+		resourceArn := question.WithStringAnswer("Paste an AWS ARN, or type \"help\" for step-by-step identification.")
+		if resourceArn == "help" {
+			resolver := endpoints.DefaultResolver()
+			partitions := resolver.(endpoints.EnumPartitions).Partitions()
+
+			var partitionsIDs = []string{}
+			for _, p := range partitions {
+				partitionsIDs = append(partitionsIDs, p.ID())
+			}
+			partitionID := question.WithSingleChoiceAnswer("Select an AWS partition.", partitionsIDs...)
+
+			var partition endpoints.Partition
+
+			for _, p := range partitions {
+				if p.ID() == partitionID {
+					partition = p
+				}
+			}
+
+			var regionsIDs = []string{}
+			for id := range partition.Regions() {
+				regionsIDs = append(regionsIDs, id)
+			}
+			sort.Strings(regionsIDs)
+			regionID := question.WithSingleChoiceAnswer("Select an AWS region.", regionsIDs...)
+
+			cfgIAM, err := config.LoadDefaultConfig(context.TODO())
+			if err != nil {
+				log.Fatal(err)
+			}
+			clientIAM := iam.NewFromConfig(
+				cfgIAM,
+				func(opt *iam.Options) {
+					opt.Region = regionID
+				},
+			)
+			iamParams := &iam.GetUserInput{}
+			user, err := clientIAM.GetUser(context.TODO(), iamParams)
+			userArnStr := aws.ToString(user.User.Arn)
+			userArn, err := arn.Parse(userArnStr)
+			accountID := userArn.AccountID
+
+			awsServices := []string{}
+			for key := range awsServicesMap {
+				awsServices = append(awsServices, key)
+			}
+			sort.Strings(awsServices) // sorts slice in-place
+			serviceFullName := question.WithSingleChoiceAnswer("Select an AWS service.", awsServices...)
+			service := awsServicesMap[serviceFullName]
+
+			agwCfg, err := config.LoadDefaultConfig(context.TODO())
+			if err != nil {
+				log.Fatal(err)
+			}
+			agwClient := apigatewayv2.NewFromConfig(agwCfg)
+			output, err := agwClient.GetApis(
+				context.TODO(),
+				&apigatewayv2.GetApisInput{
+					MaxResults: aws.String("50"),
+					// NextToken: aws.String("2"),
+				},
+				func(opt *apigatewayv2.Options) {
+					opt.Region = regionID
+				},
+			)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			var agwApis = []string{}
+			agwApisMap := make(map[string]string)
+			for _, api := range output.Items {
+				name := aws.ToString(api.Name)
+				ID := aws.ToString(api.ApiId)
+				niceName := name + " (" + ID + ")"
+				agwApis = append(agwApis, niceName)
+				agwApisMap[niceName] = ID
+			}
+			// fmt.Printf("%s", agwApis)
+			apiNiceName := question.WithSingleChoiceAnswer("Select a Resource.", agwApis...)
+			// fmt.Printf("%s", resourceID)
+			apiID := agwApisMap[apiNiceName]
+
+			resourceArn = "arn:" + partitionID + ":" + service + ":" + regionID + ":" + accountID + ":/apis/" + apiID
 		}
-		return arn
+		return resourceArn
 	case "gcp":
 		{
 			projectID := question.WithStringAnswer("What is the GCP project ID?")

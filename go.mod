@@ -7,9 +7,13 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.2.9
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
-	github.com/aws/aws-sdk-go-v2 v1.3.0
+	github.com/aws/aws-sdk-go v1.38.20
+	github.com/aws/aws-sdk-go-v2 v1.3.2
 	github.com/aws/aws-sdk-go-v2/config v1.1.3
+	github.com/aws/aws-sdk-go-v2/service/apigateway v1.2.2
+	github.com/aws/aws-sdk-go-v2/service/apigatewayv2 v1.2.2
 	github.com/aws/aws-sdk-go-v2/service/cloudwatch v1.2.0
+	github.com/aws/aws-sdk-go-v2/service/iam v1.3.1
 	github.com/cli/safeexec v1.0.0
 	github.com/fatih/color v1.7.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
