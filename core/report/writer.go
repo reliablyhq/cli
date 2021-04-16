@@ -86,11 +86,14 @@ func reportSimpleText(r *Report, w io.Writer) {
 
 			} else {
 
+				unit := "%"
+
 				if sl.Type == "latency" {
 
 					if float64(sl.Result.Actual.(float64)) > float64(sl.Result.Objective.(float64)) {
 						tick = iostreams.FailureIcon()
 					}
+					unit = "ms"
 
 				} else {
 					if float64(sl.Result.Actual.(float64)) < float64(sl.Result.Objective.(float64)) {
@@ -98,10 +101,10 @@ func reportSimpleText(r *Report, w io.Writer) {
 					}
 				}
 
-				fmt.Fprintf(w, "%s %s: %v (last %s) [objective: %v, delta: %v]\n",
-					tick, sl.Name, sl.Result.Actual,
+				fmt.Fprintf(w, "%s %s: %v%s (last %s) [objective: %v%s, delta: %v%s]\n",
+					tick, sl.Name, sl.Result.Actual, unit,
 					sl.ObservationWindow.To.Sub(sl.ObservationWindow.From),
-					sl.Result.Objective, sl.Result.Delta)
+					sl.Result.Objective, unit, sl.Result.Delta, unit)
 
 			}
 
