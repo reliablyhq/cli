@@ -25,17 +25,28 @@ type (
 	// }
 
 	Service struct {
-		Name					string        	`yaml:"name" json:"name"`
-		ServiceLevels	[]*ServiceLevel `yaml:"service-levels" json:"service-levels"`
-		Dependencies	[]string				`yaml:"dependencies" json:"dependencies"`
+		Name          string          `yaml:"name" json:"name"`
+		ServiceLevels []*ServiceLevel `yaml:"service-levels" json:"service-levels"`
+		Dependencies  []string        `yaml:"dependencies" json:"dependencies"`
 	}
 
 	ServiceLevel struct {
-		Name				 string            			 `yaml:"name" json:"name"`
-		Type				 string									 `yaml:"type" json:"type"`
-		Threshold		 core.Duration					 `yaml:"threshold,omitempty" json:"threshold,omitempty"`
-		Objective 	 float64								 `yaml:"slo" json:"slo"`
-		Indicators 	 []ServiceLevelIndicator `yaml:"sli" json:"sli"`
+		Name     string      `yaml:"name" json:"name"`
+		Type     string      `yaml:"type" json:"type"`
+		Criteria interface{} `yaml:"criteria,omitempty" json:"criteria,omitempty"`
+		//Threshold  core.Duration           `yaml:"threshold,omitempty" json:"threshold,omitempty"`
+		Objective  float64                 `yaml:"slo" json:"slo"`
+		Indicators []ServiceLevelIndicator `yaml:"sli" json:"sli"`
+	}
+
+	Criteria struct {
+	}
+
+	LatencyCriteria struct {
+		Threshold core.Duration `yaml:"threshold,omitempty" json:"threshold,omitempty"`
+	}
+
+	AvailabilityCriteria struct {
 	}
 
 	// ServiceLevelObjective struct {
@@ -77,8 +88,8 @@ func (m *Manifest) Validate() error {
 			return fmt.Errorf("Duplicate Service Name detected: [%s]", s.Name)
 		}
 		servicesNames[s.Name] = struct{}{}
-		
-		sloNames := make(map[string]struct{}, len (s.ServiceLevels))
+
+		sloNames := make(map[string]struct{}, len(s.ServiceLevels))
 		for _, sl := range s.ServiceLevels {
 			if _, exists2 := sloNames[sl.Name]; exists2 {
 				return fmt.Errorf("Duplicate Service Level Name detected in Service %s: [%s]", s.Name, sl.Name)
@@ -86,6 +97,44 @@ func (m *Manifest) Validate() error {
 			sloNames[sl.Name] = struct{}{}
 		}
 	}
+
+	return nil
+}
+func (sl *ServiceLevel) UnmarshalYAML(unmarshal func(v interface{}) error) error {
+
+	type Alias ServiceLevel
+
+	// We unmarshal the ServiceLevel into the object
+	var asl Alias
+	if err := unmarshal(&asl); err != nil {
+		fmt.Println("error unmarshall")
+		return err
+	}
+
+	// assign the unmarshaled content to the current service level pointer
+	*sl = ServiceLevel(asl)
+
+	// Then we make a second unmarshalling
+	// to create the right Criteria structure
+	// depending on the service level type
+	var criteria interface{}
+	switch sl.Type {
+	case "latency":
+
+		lc := struct {
+			Criteria LatencyCriteria `json:"criteria"`
+		}{}
+
+		if err := unmarshal(&lc); err == nil {
+			criteria = lc.Criteria
+		}
+
+	case "availability":
+	default:
+	}
+
+	// assign the parsed criteria to the current service level
+	sl.Criteria = criteria
 
 	return nil
 }

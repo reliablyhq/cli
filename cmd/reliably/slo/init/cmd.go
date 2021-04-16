@@ -104,7 +104,8 @@ func declareSLOForService(s *manifest.Service) {
 	sl.Type = sanitizeString(slType)
 
 	if sl.Type == "latency" {
-		sl.Threshold = question.WithDurationAnswer("What is your latency threshold (in milliseconds)?")
+		threshold := question.WithDurationAnswer("What is your latency threshold (in milliseconds)?")
+		sl.Criteria = &manifest.LatencyCriteria{Threshold: threshold}
 	}
 
 	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?", 0, 100)

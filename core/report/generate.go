@@ -124,7 +124,7 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 				// hack for now, until we merge the new API for fetching latency as %
 
 				if sl.Type == "latency" {
-					objective = float64(sl.Threshold.Duration.Milliseconds())
+					objective = float64(sl.Criteria.(manifest.LatencyCriteria).Threshold.Duration.Milliseconds())
 					avg := average(allValues)
 					delta := avg - objective
 					sloIsMet = avg <= objective
