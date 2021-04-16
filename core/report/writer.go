@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+/*
 const (
 	threshold                       = 0
 	lessThan95pcAvailabilityMessage = "An availability of less than 95% allows more than 36.5 hours of downtime per month, which should be possible for any well built app deployed as a single instance. This availability target is probably not high enough for a production-ready system."
@@ -20,6 +21,7 @@ const (
 	latencyExceeded                 = "The average latency threshold has been exceeeded by %vms."
 	latencyValid                    = "The average latency threshold has not been exceeded."
 )
+*/
 
 const (
 	iconTick    = "✅"
