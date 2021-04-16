@@ -106,7 +106,7 @@ func sendReportToReliably(r *report.Report) error {
 // watch - continously fetch and update report
 // and output to terminal
 func watch(manifestPath string) error {
-	rChan := make(chan []*report.Report, 5)
+	rChan := make(chan *report.Report, 5)
 	errChan := make(chan error, 1)
 	done := make(chan struct{})
 	c := make(chan os.Signal)
@@ -130,11 +130,11 @@ func watch(manifestPath string) error {
 				errChan <- errors.New("An error occured while attempting to load the manifest")
 			}
 
-			reports, err := report.FromManifest(m)
+			report, err := report.FromManifest(m)
 			if err != nil {
 				errChan <- err
 			}
-			rChan <- reports
+			rChan <- report
 		}
 	}()
 
@@ -148,12 +148,10 @@ func watch(manifestPath string) error {
 	// print stuff
 	for {
 		select {
-		case reports := <-rChan:
+		case r := <-rChan:
 			clearScreen()
-			fmt.Println(color.Magenta("Watching SLO report (3s)"))
-			for _, r := range reports {
-				report.Write(report.TABBED, r, os.Stdout, log.StandardLogger())
-			}
+			fmt.Println(color.Magenta("Watching SLO report (3s)"), "Press CTRL+C to exit")
+			report.Write(report.TABBED, r, os.Stdout, log.StandardLogger())
 
 		case err := <-errChan:
 			return err
