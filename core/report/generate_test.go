@@ -138,8 +138,9 @@ func TestFromManifest(t *testing.T) {
 								Type:      "latency",
 								Objective: float64(300),
 								Result: &ServiceLevelResult{
-									Actual: float64(p.latencyMetricValue),
-									Delta:  float64(p.latencyMetricValue) - 300,
+									Actual:   float64(p.latencyMetricValue),
+									Delta:    float64(p.latencyMetricValue) - 300,
+									sloIsMet: true,
 								},
 							},
 						},
