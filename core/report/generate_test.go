@@ -134,12 +134,12 @@ func TestFromManifest(t *testing.T) {
 						Dependencies: []string{"dependencies"},
 						ServiceLevels: []*ServiceLevel{
 							{
-								Name: "Service A Latency",
-								Type: "latency",
+								Name:      "Service A Latency",
+								Type:      "latency",
+								Objective: float64(300),
 								Result: &ServiceLevelResult{
-									Objective: float64(300),
-									Actual:    float64(p.latencyMetricValue),
-									Delta:     float64(p.latencyMetricValue) - 300,
+									Actual: float64(p.latencyMetricValue),
+									Delta:  float64(p.latencyMetricValue) - 300,
 								},
 							},
 						},
