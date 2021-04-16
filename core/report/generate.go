@@ -116,41 +116,51 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 
 			//fmt.Println(">>>", sl.Name, sl.Type, allValues, valuesHasError)
 
+			var sloIsMet bool
+			var objective float64 = sl.Objective
 			var result *ServiceLevelResult
 			if !valuesHasError {
 
 				// hack for now, until we merge the new API for fetching latency as %
 
 				if sl.Type == "latency" {
-					objective := float64(sl.Threshold.Duration.Milliseconds())
+					objective = float64(sl.Threshold.Duration.Milliseconds())
 					avg := average(allValues)
 					delta := avg - objective
 
+					sloIsMet = avg < objective
+
 					result = &ServiceLevelResult{
-						Objective: objective,
-						Actual:    round2digits(avg),
-						Delta:     round2digits(delta),
+						//Objective: objective,
+						Actual: round2digits(avg),
+						Delta:  round2digits(delta),
 					}
 
 				} else {
+					avg := average(allValues)
+					delta := avg - objective
+
+					sloIsMet = avg > objective
 
 					result = &ServiceLevelResult{
-						Objective: sl.Objective,
-						Actual:    round2digits(average(allValues)),
-						Delta:     round2digits(average(allValues) - sl.Objective),
+						//Objective: sl.Objective,
+						Actual: avg,
+						Delta:  delta,
 					}
 				}
 
 			}
 			rs.ServiceLevels = append(rs.ServiceLevels, &ServiceLevel{
-				Name:    sl.Name,
-				Type:    sl.Type,
-				Result:  result,
-				errored: valuesHasError,
+				Name:      sl.Name,
+				Type:      sl.Type,
+				Objective: objective,
+				Result:    result,
 				ObservationWindow: Window{
 					To:   to,
 					From: from,
 				},
+				errored:  valuesHasError,
+				sloIsMet: sloIsMet,
 			})
 
 			//r.ServiceLevel.Delta.ErrorPercent = r.ServiceLevel.Actual.ErrorPercent - r.ServiceLevel.Target.ErrorPercent

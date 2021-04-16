@@ -18,9 +18,10 @@ type Service struct {
 }
 
 type ServiceLevel struct {
-	Name   string              `json:"name"`
-	Type   string              `json:"type"`
-	Result *ServiceLevelResult `json:"result"`
+	Name      string              `json:"name"`
+	Type      string              `json:"type"`
+	Objective float64             `json:"objective"`
+	Result    *ServiceLevelResult `json:"result"`
 
 	//Target *ServiceLevelIndicators `json:"target"`
 	//Actual *ServiceLevelIndicators `json:"actual"`
@@ -33,6 +34,9 @@ type ServiceLevel struct {
 	// used to record whether a particular SLI had
 	// error in it's retrieval process
 	errored bool `json:"-"`
+
+	// used to record whether the SLO is met or not
+	sloIsMet bool `json:"-"`
 }
 
 type ServiceLevelIndicators struct {
@@ -50,9 +54,9 @@ type Window struct {
 }
 
 type ServiceLevelResult struct {
-	Objective interface{} `json:"slo"`
-	Actual    interface{} `json:"actual"`
-	Delta     interface{} `json:"delta"`
+	//Objective interface{} `json:"slo"`
+	Actual interface{} `json:"actual"`
+	Delta  interface{} `json:"delta"`
 }
 
 /*
