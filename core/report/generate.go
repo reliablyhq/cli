@@ -127,25 +127,25 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 					objective = float64(sl.Threshold.Duration.Milliseconds())
 					avg := average(allValues)
 					delta := avg - objective
-
-					sloIsMet = avg < objective
+					sloIsMet = avg <= objective
 
 					result = &ServiceLevelResult{
 						//Objective: objective,
-						Actual: round2digits(avg),
-						Delta:  round2digits(delta),
+						Actual:   round2digits(avg),
+						Delta:    round2digits(delta),
+						sloIsMet: sloIsMet,
 					}
 
 				} else {
 					avg := average(allValues)
 					delta := avg - objective
-
-					sloIsMet = avg > objective
+					sloIsMet = avg >= objective
 
 					result = &ServiceLevelResult{
 						//Objective: sl.Objective,
-						Actual: avg,
-						Delta:  delta,
+						Actual:   avg,
+						Delta:    delta,
+						sloIsMet: sloIsMet,
 					}
 				}
 
@@ -159,8 +159,7 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 					To:   to,
 					From: from,
 				},
-				errored:  valuesHasError,
-				sloIsMet: sloIsMet,
+				errored: valuesHasError,
 			})
 
 			//r.ServiceLevel.Delta.ErrorPercent = r.ServiceLevel.Actual.ErrorPercent - r.ServiceLevel.Target.ErrorPercent

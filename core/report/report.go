@@ -34,18 +34,6 @@ type ServiceLevel struct {
 	// used to record whether a particular SLI had
 	// error in it's retrieval process
 	errored bool `json:"-"`
-
-	// used to record whether the SLO is met or not
-	sloIsMet bool `json:"-"`
-}
-
-type ServiceLevelIndicators struct {
-	ErrorPercent   float64 `json:"error_percent"`
-	LatencyPercent int64   `json:"latency_percent"`
-
-	// used to record whether a particular property had
-	// error in it's retrieval process
-	errored bool `json:"-"`
 }
 
 type Window struct {
@@ -54,37 +42,9 @@ type Window struct {
 }
 
 type ServiceLevelResult struct {
-	//Objective interface{} `json:"slo"`
 	Actual interface{} `json:"actual"`
 	Delta  interface{} `json:"delta"`
-}
 
-/*
-func (s *ServiceLevelIndicators) setErrorState(i indicatorErrType, b bool) *ServiceLevelIndicators {
-	s.errored[i] = b
-	return s
+	// used to record whether the SLO is met or not
+	sloIsMet bool `json:"-"`
 }
-
-func (s *ServiceLevelIndicators) hasErrors(i indicatorErrType) bool {
-	return s.errored[i]
-}
-
-func (s *ServiceLevelIndicators) errorPercentString() string {
-	if s.hasErrors(errPercentErr) {
-		return "---"
-	}
-	return fmt.Sprintf("%.2f", s.ErrorPercent)
-}
-
-func (s *ServiceLevelIndicators) latencyMsString() string {
-	if s.hasErrors(latencyErr) {
-		return "---"
-	}
-	return fmt.Sprintf("%dms", s.LatencyMs)
-}
-*/
-// indicatorErrType - used to define indicator error types
-type indicatorErrType int
-
-var latencyErr indicatorErrType = 0
-var errPercentErr indicatorErrType = 1

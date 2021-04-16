@@ -59,13 +59,12 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 		tabbedoutput(r, w)
 	}
 
-	return
 }
 
 func reportSimpleText(r *Report, w io.Writer) {
 
 	for i, svc := range r.Services {
-		fmt.Fprintf(w, color.Yellow(fmt.Sprintf("Service #%d: %s\n", i+1, svc.Name)))
+		fmt.Fprint(w, color.Yellow(fmt.Sprintf("Service #%d: %s\n", i+1, svc.Name)))
 
 		for _, sl := range svc.ServiceLevels {
 
@@ -80,16 +79,11 @@ func reportSimpleText(r *Report, w io.Writer) {
 				unit := "%"
 
 				if sl.Type == "latency" {
-
-					if float64(sl.Result.Actual.(float64)) > sl.Objective {
-						tick = iostreams.FailureIcon()
-					}
 					unit = "ms"
+				}
 
-				} else {
-					if float64(sl.Result.Actual.(float64)) < sl.Objective {
-						tick = iostreams.FailureIcon()
-					}
+				if !sl.Result.sloIsMet {
+					tick = iostreams.FailureIcon()
 				}
 
 				fmt.Fprintf(w, "%s %s: %v%s (last %s) [objective: %v%s, delta: %v%s]\n",
@@ -100,7 +94,6 @@ func reportSimpleText(r *Report, w io.Writer) {
 					sl.Result.Delta, unit)
 
 			}
-
 		}
 
 		if i < len(r.Services)-1 {
@@ -164,7 +157,7 @@ func tabbedoutput(r *Report, w io.Writer) {
 
 			} else {
 
-				if !sl.sloIsMet {
+				if !sl.Result.sloIsMet {
 					tick = iconEx
 					colorFunc = color.Red
 				}
@@ -177,7 +170,6 @@ func tabbedoutput(r *Report, w io.Writer) {
 				table.Append(row)
 
 			}
-
 		}
 
 		if i < len(r.Services)-1 {
@@ -185,65 +177,6 @@ func tabbedoutput(r *Report, w io.Writer) {
 		}
 
 	}
-
-	/*
-		var actual string
-		var delta = func(actual, s string) string {
-			if actual != "---" {
-				return s
-			}
-			return actual
-		}
-	*/
-
-	/*
-		// set error budget data
-		actual = r.ServiceLevel.Actual.errorPercentString()
-		if r.ServiceLevel.Delta.ErrorPercent > threshold {
-			data = append(data, []string{
-				fmt.Sprintf("%s Error Rate", iconEx),
-				color.Bold(color.IfTrueRed(actual != "---", actual)),
-				fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
-				delta(actual, fmt.Sprintf("%.2f%%", r.ServiceLevel.Delta.ErrorPercent)),
-			})
-		} else {
-			data = append(data, []string{
-				fmt.Sprintf("%s Error Rate", iconTick),
-				color.Bold(color.IfTrueGreen(actual != "---", actual)),
-				fmt.Sprintf("%.2f", r.ServiceLevel.Target.ErrorPercent),
-				delta(actual, fmt.Sprintf("%.2f%%", -r.ServiceLevel.Delta.ErrorPercent)),
-			})
-		}
-	*/
-
-	/*
-		// set latency
-		actual = r.ServiceLevel.Actual.latencyMsString()
-		if r.ServiceLevel.Delta.LatencyMs > threshold {
-			data = append(data, []string{
-				fmt.Sprintf("%s Latency", iconEx),
-				color.Bold(color.IfTrueRed(actual != "---", actual)),
-				fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
-				delta(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
-			})
-		} else {
-			data = append(data, []string{
-				fmt.Sprintf("%s Latency", iconTick),
-				color.Bold(color.IfTrueGreen(actual != "---", actual)),
-				fmt.Sprintf("%dms", r.ServiceLevel.Target.LatencyMs),
-				delta(actual, fmt.Sprintf("%dms", r.ServiceLevel.Delta.LatencyMs)),
-			})
-		}
-	*/
-
-	/*
-		for _, row := range data {
-			table.Append(fmt.Sprintf("# %s", sl.Name), "", "", "")
-			table.Append(row)
-			// add black row for spacing betwen services
-			table.Append([]string{"", "", "", ""})
-		}
-	*/
 
 	// render table
 	table.Render()
