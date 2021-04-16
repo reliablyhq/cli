@@ -238,9 +238,7 @@ func getResourceIDForProvider(provider string) string {
 				agwApis = append(agwApis, niceName)
 				agwApisMap[niceName] = ID
 			}
-			// fmt.Printf("%s", agwApis)
 			apiNiceName := question.WithSingleChoiceAnswer("Select a Resource.", agwApis...)
-			// fmt.Printf("%s", resourceID)
 			apiID := agwApisMap[apiNiceName]
 
 			resourceArn = "arn:" + partitionID + ":" + service + ":" + regionID + ":" + accountID + ":/apis/" + apiID
