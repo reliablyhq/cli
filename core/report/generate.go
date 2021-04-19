@@ -81,7 +81,7 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 				}
 
 				if sl.Type == "latency" {
-					if l, err := provider.Get99PercentLatencyMetricForResource(sli.ID, from, to); err == nil {
+					if l, err := provider.GetLatencyAboveThresholdPercentage(sli.ID, int(sl.Criteria.Threshold.Duration.Milliseconds()), from, to); err == nil {
 						//allLatency = append(allLatency, l)
 						allValues = append(allValues, l)
 					} else {

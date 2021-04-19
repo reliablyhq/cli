@@ -18,5 +18,6 @@ type (
 	Provider interface {
 		Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error)
 		GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error)
+		GetLatencyAboveThresholdPercentage(resourceID string, threshold int, from, to time.Time) (float64, error)
 	}
 )

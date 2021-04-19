@@ -105,10 +105,10 @@ func TestFromManifest(t *testing.T) {
 			args: args{
 				m: &manifest.Manifest{
 					Services: []*manifest.Service{
-						&manifest.Service{
+						{
 							Name: "Service A",
 							ServiceLevels: []*manifest.ServiceLevel{
-								&manifest.ServiceLevel{
+								{
 									Name: "Service A Latency",
 									Type: "latency",
 									Criteria: manifest.LatencyCriteria{
