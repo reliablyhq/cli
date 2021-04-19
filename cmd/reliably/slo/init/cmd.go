@@ -110,7 +110,7 @@ func declareSLOForService(s *manifest.Service) {
 
 	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?", 0, 100)
 
-	do := question.WithBoolAnswer("Do you want to add an SLI to measure this SLO?")
+	do := question.WithBoolAnswer("Do you want to add a resource for measuring your SLI?")
 	if do {
 		providers := []string{}
 		for key := range providersMap {
@@ -128,7 +128,7 @@ func declareSLOForService(s *manifest.Service) {
 				ID:       id,
 			})
 
-			do = question.WithBoolAnswer("Do you want to add another SLI?")
+			do = question.WithBoolAnswer("Do you want to add another resource for measuring your SLI?")
 		}
 	}
 	sl.Name = question.WithStringAnswer("What is the name of this SLO?")
