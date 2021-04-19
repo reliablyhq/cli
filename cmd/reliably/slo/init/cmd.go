@@ -272,7 +272,7 @@ func selectAWSService(serviceType string, region string) string {
 			context.TODO(),
 			&elb.DescribeLoadBalancersInput{
 				// PageSize: aws.String("50"),
-				// NextToken: aws.String("2"),
+				// NextToken:,
 			},
 			func(opt *elb.Options) {
 				opt.Region = region
@@ -293,7 +293,6 @@ func selectAWSService(serviceType string, region string) string {
 			elbID := parsedArn.Resource
 			elbSlice := strings.Split(elbID, "/")
 			elb := elbSlice[len(elbSlice)-1]
-			// fmt.Printf("%s (%s)\n", name, elb)
 			niceName := name + " (" + elb + ")"
 			elbs = append(elbs, niceName)
 			elbsMap[niceName] = elbID
