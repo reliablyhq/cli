@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- changed computation for latency SLO: percentage of 99 percentiles under threshold for 1-minute samples
+
 ## [0.10.0] - 2021-04-19
 ### Added
 
