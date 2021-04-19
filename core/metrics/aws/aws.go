@@ -119,7 +119,7 @@ func (cw *AwsCloudWatch) GetLatencyAboveThresholdPercentage(resourceID string, f
 		return latencyAboveThreshold, errors.New("No latency value retrieved from cloud watch")
 	}
 
-	log.Debugf("Latency above threshold %sms is %.2f%%\n", threshold, latencyAboveThreshold)
+	log.Debugf("Latency above threshold %vms is %.2f%%\n", threshold, latencyAboveThreshold)
 	return latencyAboveThreshold, nil
 }
 
