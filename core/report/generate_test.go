@@ -77,8 +77,8 @@ func Test_getProviderForResource(t *testing.T) {
 
 func TestFromManifest(t *testing.T) {
 	p := &dummyProvider{
-		latencyMetricValue: 100,
-		errorPercentValue:  1,
+		latencyMetricValue: 250,
+		errorPercentValue:  99,
 	}
 
 	metrics.ProviderFactories["test_from_manifest"] = func() (metrics.Provider, error) { return p, nil }
@@ -99,45 +99,55 @@ func TestFromManifest(t *testing.T) {
 		}
 	)
 
-	srv := &manifest.Service{
-		Objective: manifest.ServiceLevelObjective{
-			Latency:            core.Duration{Duration: time.Millisecond * 250},
-			ErrorBudgetPercent: 2.5,
-		},
-		Resources: []manifest.ServiceResource{
-			{
-				Provider: "test_from_manifest",
-				ID:       "abc13",
-			},
-		},
-	}
-
 	tests := []subtest{
 		{
 			name: "returns report with correct info",
 			args: args{
 				m: &manifest.Manifest{
-					ServiceLevel: []*manifest.Service{srv},
-					Dependencies: []string{"abc"},
+					Services: []*manifest.Service{
+						&manifest.Service{
+							Name: "Service A",
+							ServiceLevels: []*manifest.ServiceLevel{
+								&manifest.ServiceLevel{
+									Name: "Service A Latency",
+									Type: "latency",
+									Criteria: manifest.LatencyCriteria{
+										Threshold: core.Duration{Duration: 300 * time.Millisecond},
+									},
+									Objective: 99,
+									Indicators: []manifest.ServiceLevelIndicator{
+										{
+											Provider: "test_from_manifest",
+											ID:       "abc13",
+										},
+									},
+								},
+							},
+							Dependencies: []string{"dependencies"},
+						},
+					},
 				},
 			},
 			want: &Report{
 				Timestamp: tVal,
-				ServiceLevel: &ServiceLevel{
-					Target: &ServiceLevelIndicators{
-						ErrorPercent: 2.5,
-						LatencyMs:    250,
-					},
-					Actual: &ServiceLevelIndicators{
-						ErrorPercent: p.errorPercentValue,
-						LatencyMs:    int64(p.latencyMetricValue),
-					},
-					Delta: &ServiceLevelIndicators{
-						ErrorPercent: p.errorPercentValue - 2.5,
-						LatencyMs:    int64(p.latencyMetricValue) - 250,
+				Services: []*Service{
+					{
+						Name:         "Service A",
+						Dependencies: []string{"dependencies"},
+						ServiceLevels: []*ServiceLevel{
+							{
+								Name:      "Service A Latency",
+								Type:      "latency",
+								Objective: float64(300),
+								Result: &ServiceLevelResult{
+									Actual:   float64(p.latencyMetricValue),
+									Delta:    float64(p.latencyMetricValue) - 300,
+									sloIsMet: true,
+								},
+							},
+						},
 					},
 				},
-				Dependencies: []string{"abc"},
 			},
 			wantErr: false,
 		},
@@ -162,15 +172,9 @@ func TestFromManifest(t *testing.T) {
 			// else just assert error
 			assert.NoError(t, err)
 
-			assert.Equal(t, got[0].Timestamp, tt.want.Timestamp,
-				"FromManifest().Timestamp = %v, want %v", got[0].Timestamp, tt.want.Timestamp)
-
-			assert.Equal(t, got[0].ServiceLevel, tt.want.ServiceLevel,
-				"FromManifest().ServiceLevel = %v, want %v", got[0].ServiceLevel, tt.want.ServiceLevel)
-
-			assert.Equal(t, got[0].Dependencies, tt.want.Dependencies,
-				"FromManifest().Dependencies = %v, want %v", got[0].Dependencies, tt.want.Dependencies)
-
+			assert.Equal(t, got.Timestamp, tt.want.Timestamp, "Timestamp mismatch")
+			assert.Equal(t, got.Services[0].ServiceLevels[0].Result, tt.want.Services[0].ServiceLevels[0].Result, "service level result mismatch")
+			assert.Equal(t, got.Services[0].Dependencies, tt.want.Services[0].Dependencies, "service dependencies mismatch")
 		})
 	}
 }

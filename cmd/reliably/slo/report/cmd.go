@@ -60,7 +60,7 @@ func runE(_ *cobra.Command, _ []string) error {
 		return errors.New("An error occured while attempting to load the manifest")
 	}
 
-	reports, err := report.FromManifest(m)
+	r, err := report.FromManifest(m)
 	if err != nil {
 		return err
 	}
@@ -78,9 +78,7 @@ func runE(_ *cobra.Command, _ []string) error {
 		format = report.SimpleText
 	}
 
-	for _, r := range reports {
-		report.Write(format, r, os.Stdout, log.StandardLogger())
-	}
+	report.Write(format, r, os.Stdout, log.StandardLogger())
 
 	if outputPath != "" {
 		if !strings.HasSuffix(outputPath, ".json") {
@@ -88,7 +86,7 @@ func runE(_ *cobra.Command, _ []string) error {
 			return nil
 		}
 
-		bytes, err := json.Marshal(reports)
+		bytes, err := json.Marshal(r)
 		if err != nil {
 			return nil
 		}
@@ -108,7 +106,7 @@ func sendReportToReliably(r *report.Report) error {
 // watch - continously fetch and update report
 // and output to terminal
 func watch(manifestPath string) error {
-	rChan := make(chan []*report.Report, 5)
+	rChan := make(chan *report.Report, 5)
 	errChan := make(chan error, 1)
 	done := make(chan struct{})
 	c := make(chan os.Signal)
@@ -132,11 +130,11 @@ func watch(manifestPath string) error {
 				errChan <- errors.New("An error occured while attempting to load the manifest")
 			}
 
-			reports, err := report.FromManifest(m)
+			report, err := report.FromManifest(m)
 			if err != nil {
 				errChan <- err
 			}
-			rChan <- reports
+			rChan <- report
 		}
 	}()
 
@@ -150,12 +148,10 @@ func watch(manifestPath string) error {
 	// print stuff
 	for {
 		select {
-		case reports := <-rChan:
+		case r := <-rChan:
 			clearScreen()
-			fmt.Println(color.Magenta("Watching SLO report (3s)"))
-			for _, r := range reports {
-				report.Write(report.TABBED, r, os.Stdout, log.StandardLogger())
-			}
+			fmt.Println(color.Magenta("Watching SLO report (3s)"), "Press CTRL+C to exit")
+			report.Write(report.TABBED, r, os.Stdout, log.StandardLogger())
 
 		case err := <-errChan:
 			return err

@@ -1,22 +1,29 @@
-app: 
-  name: unit test app
-  owner: unit test owner
-  repo: github.com/reliablyhq/cli
-  
-slo:
-  - name:
-    objective:
-      latency: 100ms
-      error_budget_percent: 0.5
-    resources:
-    - provider: abc
-      id: 123
-    - provider: xyz
-      id: 456
-
-dependencies:
-- some service
-- some other service
-tags:
-  team: abc
-  domain: xyz
+services:
+- name: Service A
+  service-levels:
+  - name: Service A Availability
+    type: availability
+    slo: 99
+    sli:
+    - id: arn1
+      provider: aws
+    - id: uri
+      provider: gcp
+  - name: Service A Latency
+    type: latency
+    criteria:
+      threshold: 300ms
+    slo: 99
+    sli:
+    - id: arn2
+      provider: aws
+  dependencies: []
+- name: Service B
+  service-levels:
+  - name: Service B Availability
+    type: availability
+    slo: 99
+    sli:
+    - id: arn3
+      provider: aws
+  dependencies: []
