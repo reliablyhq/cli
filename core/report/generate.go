@@ -52,27 +52,16 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 		}
 
 		// Also need to check if there are SLIs in each Service Level
-
 		sls := make([]*ServiceLevel, 0)
-		//r := Report{Name: s.Name, ServiceLevels: sls}
 		rs := Service{
 			Name:          s.Name,
 			Dependencies:  []string{},
 			ServiceLevels: sls,
 		}
 
-		//allLatency := []float64{}
-		//allErrorPercentages := []float64{}
-
 		allValues := []float64{}
 		valuesHasError := false
-
-		//var latencyHasErrors = false
-		//var errorPercentHasErrors = false
-
 		for _, sl := range s.ServiceLevels {
-
-			//fmt.Println(sl.Name, sl.Type, sl.Objective, sl.Threshold)
 
 			for _, sli := range sl.Indicators {
 				provider, err := getProviderForResource(sli.Provider)
@@ -98,44 +87,20 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 					log.Debugf("an error occured while getting %s data for resource: %s-%s => %v ", sl.Type, sli.Provider, sli.ID, err)
 					valuesHasError = true
 				}
-
 			}
-
-			//fmt.Println(">>>", sl.Name, sl.Type, allValues, valuesHasError)
 
 			var sloIsMet bool
 			var objective float64 = sl.Objective
 			var result *ServiceLevelResult
 			if !valuesHasError {
-
-				// hack for now, until we merge the new API for fetching latency as %
-
-				if sl.Type == "latency" {
-					objective = float64(sl.Criteria.(manifest.LatencyCriteria).Threshold.Duration.Milliseconds())
-					avg := average(allValues)
-					delta := avg - objective
-					sloIsMet = avg <= objective
-
-					result = &ServiceLevelResult{
-						//Objective: objective,
-						Actual:   round2digits(avg),
-						Delta:    round2digits(delta),
-						sloIsMet: sloIsMet,
-					}
-
-				} else {
-					avg := average(allValues)
-					delta := avg - objective
-					sloIsMet = avg >= objective
-
-					result = &ServiceLevelResult{
-						//Objective: sl.Objective,
-						Actual:   avg,
-						Delta:    delta,
-						sloIsMet: sloIsMet,
-					}
+				avg := average(allValues)
+				delta := avg - objective
+				sloIsMet = avg >= objective
+				result = &ServiceLevelResult{
+					Actual:   avg,
+					Delta:    delta,
+					sloIsMet: sloIsMet,
 				}
-
 			}
 			rs.ServiceLevels = append(rs.ServiceLevels, &ServiceLevel{
 				Name:      sl.Name,
@@ -149,15 +114,12 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 				errored: valuesHasError,
 			})
 
-			//r.ServiceLevel.Delta.ErrorPercent = r.ServiceLevel.Actual.ErrorPercent - r.ServiceLevel.Target.ErrorPercent
-			//r.ServiceLevel.Delta.LatencyMs = r.ServiceLevel.Actual.LatencyMs - r.ServiceLevel.Target.LatencyMs
 		}
 
 		if s.Dependencies != nil {
 			rs.Dependencies = s.Dependencies
 		}
 
-		//reports = append(reports, &r)
 		report.Services = append(report.Services, &rs)
 	}
 
@@ -170,5 +132,4 @@ func getProviderForResource(providerID string) (metrics.Provider, error) {
 	}
 
 	return nil, fmt.Errorf("No provider factory found for '%s'", providerID)
-
 }

@@ -80,15 +80,11 @@ func reportSimpleText(r *Report, w io.Writer) {
 
 				unit := "%"
 
-				if sl.Type == "latency" {
-					unit = "ms"
-				}
-
 				if !sl.Result.sloIsMet {
 					tick = iostreams.FailureIcon()
 				}
 
-				fmt.Fprintf(w, "%s %s: %v%s (last %s) [objective: %v%s, delta: %v%s]\n",
+				fmt.Fprintf(w, "%s %s: %.2f%s (last %s) [objective: %v%s, delta: %.2f%s]\n",
 					tick, sl.Name,
 					sl.Result.Actual, unit,
 					sl.ObservationWindow.To.Sub(sl.ObservationWindow.From),
@@ -148,10 +144,6 @@ func tabbedoutput(r *Report, w io.Writer) {
 			unit := "%"
 			colorFunc := color.Green
 
-			if sl.Type == "latency" {
-				unit = "ms"
-			}
-
 			if sl.Result == nil {
 				tick = iconUnknown
 
@@ -171,9 +163,9 @@ func tabbedoutput(r *Report, w io.Writer) {
 
 				row := []string{
 					fmt.Sprintf("%s %s", tick, sl.Name),
-					color.Bold(colorFunc(fmt.Sprintf("%v%s", sl.Result.Actual, unit))),
+					color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))),
 					fmt.Sprintf("%v%s", sl.Objective, unit),
-					fmt.Sprintf("%v%s", sl.Result.Delta, unit)}
+					fmt.Sprintf("%.2f%s", sl.Result.Delta, unit)}
 				table.Append(row)
 
 			}
