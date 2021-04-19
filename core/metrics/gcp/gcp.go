@@ -89,6 +89,57 @@ func (p *GCP) Get99PercentLatencyMetricForResource(resourceID string, from, to t
 	return latency, nil
 }
 
+func (p *GCP) GetLatencyAboveThresholdPercentage(resourceID string, threshold int, from, to time.Time) (float64, error) {
+
+	if !isValidResourceID(resourceID) {
+		return -1, fmt.Errorf("Resource ID not valid: %s", resourceID)
+	}
+	log.Debugf("Resource Id: %#v", resourceID)
+	log.Debugf("Retrieve latency metrics From %s To %s", from, to)
+
+	projectID := strings.SplitN(resourceID, "/", -1)[0]
+
+	metricType := "loadbalancing.googleapis.com/https/total_latencies"
+	resourceName := strings.SplitN(resourceID, "/", -1)[2]
+
+	req := &monitoringpb.ListTimeSeriesRequest{
+		Name: "projects/" + projectID,
+		Filter: fmt.Sprintf(
+			`metric.type="%s" AND resource.labels.url_map_name="%s"`,
+			metricType,
+			resourceName,
+		),
+		Interval: &monitoringpb.TimeInterval{
+			StartTime: &timestamp.Timestamp{
+				Seconds: from.Unix(),
+			},
+			EndTime: &timestamp.Timestamp{
+				Seconds: to.Unix(),
+			},
+		},
+		Aggregation: &monitoringpb.Aggregation{
+			PerSeriesAligner: monitoringpb.Aggregation_ALIGN_PERCENTILE_99,
+			AlignmentPeriod: &duration.Duration{
+				Seconds: 60,
+			},
+			GroupByFields: []string{"resource.label.url_map_name"},
+		},
+	}
+	timeSeries, err := collectIterations(p.client.ListTimeSeries(p.ctx, req))
+	if err != nil {
+		return -1, err
+	}
+
+	latencyThresholdPercentage, err := calculateLatencyOverThresholdPercentage(threshold, timeSeries)
+	if err != nil {
+		return -1, err
+	}
+
+	log.Debugf("Latency SLI is %.3f%%\n", latencyThresholdPercentage)
+
+	return latencyThresholdPercentage, nil
+}
+
 // GetErrorPercentageMetricForResource retrieves the error status code data for a resource on
 // GCP and calculates percentage of 500 status code
 func (p *GCP) GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error) {
@@ -143,6 +194,26 @@ func (p *GCP) GetErrorPercentageMetricForResource(resourceID string, from, to ti
 	log.Debugf("error rate is %.2f%%\n", errorPercentage)
 
 	return errorPercentage, nil
+}
+
+func calculateLatencyOverThresholdPercentage(threshold int, it []*monitoringpb.TimeSeries) (float64, error) {
+	if len(it) < 1 {
+		return -1, fmt.Errorf("No data found for resource")
+	}
+
+	responsesUnderThreshold := 0
+	totalResponses := 0
+	for _, resp := range it {
+		latency := resp.GetPoints()[0].GetValue().GetDoubleValue()
+		totalResponses += 1
+		if latency < float64(threshold) {
+			responsesUnderThreshold += 1
+		}
+	}
+
+	latencyPercentage := (float64(responsesUnderThreshold) / float64(totalResponses)) * 100
+
+	return latencyPercentage, nil
 }
 
 func parseLatency(it []*monitoringpb.TimeSeries) (float64, error) {

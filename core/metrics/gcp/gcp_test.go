@@ -9,6 +9,32 @@ import (
 	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
 )
 
+func TestCalculateLatencyOverThresholdPercentage(t *testing.T) {
+	gob.Register(&monitoringpb.TypedValue_DoubleValue{})
+	gob.Register(&monitoringpb.TypedValue_Int64Value{})
+	latency, err := os.Open("../../../tests/providers/gcp/latency_1min.gob")
+	if err != nil {
+		t.Errorf("Could not open file: %v", err)
+	}
+
+	defer latency.Close()
+
+	var decoded []*monitoringpb.TimeSeries
+	if err := gob.NewDecoder(latency).Decode(&decoded); err != nil {
+		panic(err)
+	}
+
+	threshold := 200
+
+	latencyThresholdPercentage, err := calculateLatencyOverThresholdPercentage(threshold, decoded)
+	if err != nil {
+		t.Errorf("Could not parse latency: %v", err)
+	}
+
+	assert.Equal(t, 63.63636363636363, latencyThresholdPercentage, "Latency percentage incorrect")
+
+}
+
 func TestParseLatency(t *testing.T) {
 
 	gob.Register(&monitoringpb.TypedValue_DoubleValue{})
