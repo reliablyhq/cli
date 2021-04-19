@@ -37,7 +37,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
 	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", "specify the report format. Allowed Values: [json, simple, tabbed]")
-	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "continously watch for changes in report output")
+	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "continuously watch for changes in report output")
 
 	return cmd
 }

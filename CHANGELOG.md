@@ -2,9 +2,11 @@
 
 ## [Unreleased]
 
+## [0.10.0] - 2021-04-19
 ### Added
 
 - added retrieval of service level indicators for AWS `Application Load Balancer` resources
+- added `watch` flag for `slo report` command to continuously watch SLO report output
 
 ## [0.9.0] - 2021-04-12
 
@@ -91,7 +93,8 @@
 
 - Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/reliablyhq/cli/releases/tag/v0.10.0
 [0.9.0]: https://github.com/reliablyhq/cli/releases/tag/v0.9.0
 [0.8.0]: https://github.com/reliablyhq/cli/releases/tag/v0.8.0
 [0.7.0]: https://github.com/reliablyhq/cli/releases/tag/v0.7.0
