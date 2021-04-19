@@ -2,7 +2,6 @@ package gcp
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -89,7 +88,7 @@ func (p *GCP) Get99PercentLatencyMetricForResource(resourceID string, from, to t
 	return latency, nil
 }
 
-func (p *GCP) GetLatencyAboveThresholdPercentage(resourceID string, threshold int, from, to time.Time) (float64, error) {
+func (p *GCP) GetLatencyAboveThresholdPercentage(resourceID string, from, to time.Time, threshold int) (float64, error) {
 
 	if !isValidResourceID(resourceID) {
 		return -1, fmt.Errorf("Resource ID not valid: %s", resourceID)
@@ -191,6 +190,8 @@ func (p *GCP) GetErrorPercentageMetricForResource(resourceID string, from, to ti
 		return -1, fmt.Errorf("%s: %s", err, resourceID)
 	}
 
+	errorPercentage = 100 - errorPercentage
+
 	log.Debugf("error rate is %.2f%%\n", errorPercentage)
 
 	return errorPercentage, nil
@@ -277,8 +278,4 @@ func isValidResourceID(resourceID string) bool {
 	}
 	return true
 
-}
-
-func (p *GCP) GetLatencyAboveThresholdPercentage(resourceID string, from, to time.Time, threshold int) (float64, error) {
-	return -1, errors.New("GCP is not currently able to retrieve the latency above theshold metric")
 }
