@@ -158,17 +158,6 @@ func (elb *ElasticLoadBalancer) GetLatencyAboveThresholdPerMin(
 		return nil, err
 	}
 
-	period := int32(to.Sub(from).Seconds())
-
-	///
-	//from, _ = time.Parse(time.RFC3339, "2021-04-12T15:00:00Z")
-	//to, _ = time.Parse(time.RFC3339, "2021-04-13T08:00:00Z")
-	//period = int32(to.Sub(from).Seconds())
-
-	fmt.Println("from", from, " - to ", to, " => ", period)
-	fmt.Println("how many minutes in the period ? ", period/60)
-	///
-
 	expression := fmt.Sprintf("latency_p99_per_min > %f", threshold)
 	log.Debugf("Latency expression=%s\n", expression)
 

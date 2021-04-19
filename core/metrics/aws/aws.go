@@ -106,10 +106,7 @@ func (cw *AwsCloudWatch) GetLatencyAboveThresholdPercentage(resourceID string, f
 	var latencyAboveThreshold float64 = -1
 	for _, r := range data.MetricDataResults {
 		if string(*r.Id) == "latency_above_threshold_per_min" {
-			fmt.Println("data -->", len(r.Values))
-			fmt.Println(r.Values)
 			if len(r.Values) > 0 {
-				fmt.Println(utils.SumFloat64(r.Values), float64(len(r.Values)), utils.SumFloat64(r.Values)/float64(len(r.Values))*100.0)
 				latencyAboveThreshold = utils.SumFloat64(r.Values) / float64(len(r.Values)) * 100.0
 			}
 			break
