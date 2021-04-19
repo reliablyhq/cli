@@ -59,10 +59,9 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 			ServiceLevels: sls,
 		}
 
-		allValues := []float64{}
-		valuesHasError := false
 		for _, sl := range s.ServiceLevels {
-
+			allValues := []float64{}
+			valuesHasError := false
 			for _, sli := range sl.Indicators {
 				provider, err := getProviderForResource(sli.Provider)
 				if err != nil {
