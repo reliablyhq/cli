@@ -75,3 +75,17 @@ func TestFilterArray(t *testing.T) {
 		})
 	}
 }
+
+func TestSumInt(t *testing.T) {
+	a := []int{1, 2, 3, 4, 5}
+
+	sum := SumInt(a)
+	assert.Equal(t, 15, sum, "Sum is not expected value")
+}
+
+func TestSumFloat64(t *testing.T) {
+	a := []float64{1.0, 2.0, 3.0, 4.0, 5.5}
+
+	sum := SumFloat64(a)
+	assert.Equal(t, 15.5, sum, "Sum is not expected value")
+}

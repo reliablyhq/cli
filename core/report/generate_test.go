@@ -12,11 +12,13 @@ import (
 )
 
 type dummyProvider struct {
-	latencyMetricValue float64
-	latencyError       error
-	errorPercentValue  float64
-	errorPercentError  error
-	resourceID         string
+	latencyMetricValue  float64
+	latencyError        error
+	errorPercentValue   float64
+	errorPercentError   error
+	latencyPercentValue float64
+	latencyPercentError error
+	resourceID          string
 }
 
 func (p *dummyProvider) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
@@ -27,6 +29,11 @@ func (p *dummyProvider) Get99PercentLatencyMetricForResource(resourceID string, 
 func (p *dummyProvider) GetErrorPercentageMetricForResource(resourceID string, from, to time.Time) (float64, error) {
 	p.resourceID = resourceID
 	return p.errorPercentValue, p.errorPercentError
+}
+
+func (p *dummyProvider) GetLatencyAboveThresholdPercentage(resourceID string, from, to time.Time, threshold int) (float64, error) {
+	p.resourceID = resourceID
+	return p.latencyPercentValue, p.latencyPercentError
 }
 
 func Test_getProviderForResource(t *testing.T) {
@@ -77,8 +84,8 @@ func Test_getProviderForResource(t *testing.T) {
 
 func TestFromManifest(t *testing.T) {
 	p := &dummyProvider{
-		latencyMetricValue: 250,
-		errorPercentValue:  99,
+		latencyPercentValue: 93,
+		errorPercentValue:   99,
 	}
 
 	metrics.ProviderFactories["test_from_manifest"] = func() (metrics.Provider, error) { return p, nil }
@@ -105,10 +112,10 @@ func TestFromManifest(t *testing.T) {
 			args: args{
 				m: &manifest.Manifest{
 					Services: []*manifest.Service{
-						&manifest.Service{
+						{
 							Name: "Service A",
 							ServiceLevels: []*manifest.ServiceLevel{
-								&manifest.ServiceLevel{
+								{
 									Name: "Service A Latency",
 									Type: "latency",
 									Criteria: manifest.LatencyCriteria{
@@ -138,11 +145,11 @@ func TestFromManifest(t *testing.T) {
 							{
 								Name:      "Service A Latency",
 								Type:      "latency",
-								Objective: float64(300),
+								Objective: 99,
 								Result: &ServiceLevelResult{
-									Actual:   float64(p.latencyMetricValue),
-									Delta:    float64(p.latencyMetricValue) - 300,
-									sloIsMet: true,
+									Actual:   93.0,
+									Delta:    -6.0,
+									sloIsMet: false,
 								},
 							},
 						},

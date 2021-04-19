@@ -11,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/reliablyhq/cli/utils"
 )
 
 type AwsCloudWatch struct{}
@@ -20,6 +22,7 @@ type AwsMetricsProvider interface {
 	Dimension(arn.ARN) (types.Dimension, error)
 	GetErrorRateMetricDataInput(arn.ARN, time.Time, time.Time) (*cloudwatch.GetMetricDataInput, error)
 	GetLatencyMetricDataInput(arn.ARN, time.Time, time.Time) (*cloudwatch.GetMetricDataInput, error)
+	GetLatencyAboveThresholdPerMin(arn.ARN, time.Time, time.Time, float64) (*cloudwatch.GetMetricDataInput, error)
 }
 
 type AwsResource struct {
@@ -64,6 +67,57 @@ func tryGetClient(region string) (AwsCloudWatchClient, error) {
 	}
 
 	return client, nil
+}
+
+func (cw *AwsCloudWatch) GetLatencyAboveThresholdPercentage(resourceID string, from, to time.Time, threshold int) (float64, error) {
+	res, err := parseResourceID(resourceID)
+	if err != nil {
+		return -1, err
+	}
+	log.Debugf("%#v", res)
+
+	client, err := tryGetClient(res.arn.Region)
+	if err != nil {
+		return -1, err
+	}
+
+	provider, err := res.MetricProvider()
+	if err != nil {
+		return -1, err
+	}
+
+	thresholdf64 := float64(threshold)
+	switch res.arn.Service {
+	case "elasticloadbalancing":
+		// TargetResponseTime is returned as seconds not ms
+		thresholdf64 = thresholdf64 / 1000
+	}
+	params, err := provider.GetLatencyAboveThresholdPerMin(res.arn, from, to, thresholdf64)
+	if err != nil {
+		return -1, err
+	}
+
+	log.Debugf("Retrieve latency above %vms threshold metrics From %s To %s", threshold, from, to)
+	data, err := client.GetMetricData(ctx, params)
+	if err != nil {
+		return -1, err
+	}
+
+	var latencyAboveThreshold float64 = -1
+	for _, r := range data.MetricDataResults {
+		if string(*r.Id) == "latency_above_threshold_per_min" {
+			if len(r.Values) > 0 {
+				latencyAboveThreshold = utils.SumFloat64(r.Values) / float64(len(r.Values)) * 100.0
+			}
+			break
+		}
+	}
+	if latencyAboveThreshold == -1 {
+		return latencyAboveThreshold, errors.New("No latency value retrieved from cloud watch")
+	}
+
+	log.Debugf("Latency above threshold %vms is %.2f%%\n", threshold, latencyAboveThreshold)
+	return latencyAboveThreshold, nil
 }
 
 func (cw *AwsCloudWatch) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {

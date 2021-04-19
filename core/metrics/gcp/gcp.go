@@ -2,6 +2,7 @@ package gcp
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -205,4 +206,8 @@ func isValidResourceID(resourceID string) bool {
 	}
 	return true
 
+}
+
+func (p *GCP) GetLatencyAboveThresholdPercentage(resourceID string, from, to time.Time, threshold int) (float64, error) {
+	return -1, errors.New("GCP is not currently able to retrieve the latency above theshold metric")
 }

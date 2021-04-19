@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"errors"
 	"strings"
 	"time"
 
@@ -129,4 +130,10 @@ func (agw *ApiGateway) GetLatencyMetricDataInput(arn arn.ARN, from, to time.Time
 	}
 
 	return params, nil
+}
+
+func (agw *ApiGateway) GetLatencyAboveThresholdPerMin(
+	arn arn.ARN, from, to time.Time, threshold float64) (*cloudwatch.GetMetricDataInput, error) {
+
+	return nil, errors.New("Not implemented yet")
 }
