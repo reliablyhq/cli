@@ -133,7 +133,7 @@ func (agw *ApiGateway) GetLatencyMetricDataInput(arn arn.ARN, from, to time.Time
 }
 
 func (agw *ApiGateway) GetLatencyAboveThresholdPerMin(
-	arn arn.ARN, threshold float64, from, to time.Time) (*cloudwatch.GetMetricDataInput, error) {
+	arn arn.ARN, from, to time.Time, threshold float64) (*cloudwatch.GetMetricDataInput, error) {
 
 	return nil, errors.New("Not implemented yet")
 }

@@ -148,7 +148,7 @@ func (elb *ElasticLoadBalancer) GetLatencyMetricDataInput(arn arn.ARN, from, to 
 }
 
 func (elb *ElasticLoadBalancer) GetLatencyAboveThresholdPerMin(
-	arn arn.ARN, threshold float64, from, to time.Time) (*cloudwatch.GetMetricDataInput, error) {
+	arn arn.ARN, from, to time.Time, threshold float64) (*cloudwatch.GetMetricDataInput, error) {
 
 	var params *cloudwatch.GetMetricDataInput
 

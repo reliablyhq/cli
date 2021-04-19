@@ -80,39 +80,26 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 					return nil, fmt.Errorf("an error occured while getting a provider for sli: %s => %s", sli.Provider, err)
 				}
 
-				if sl.Type == "latency" {
-					if l, err := provider.GetLatencyAboveThresholdPercentage(sli.ID, int(sl.Criteria.Threshold.Duration.Milliseconds()), from, to); err == nil {
-						//allLatency = append(allLatency, l)
-						allValues = append(allValues, l)
-					} else {
-						log.Debugf("an error occured while getting latency data for resource: %s-%s => %v ", sli.Provider, sli.ID, err)
-						//latencyHasErrors = true
-						valuesHasError = true
-					}
+				var val float64
+				switch sl.Type {
+				case "latency":
+					c := sl.Criteria.(manifest.LatencyCriteria)
+					threshold := int(c.Threshold.Duration.Milliseconds())
+					val, err = provider.GetLatencyAboveThresholdPercentage(sli.ID, from, to, threshold)
+				case "availability":
+					val, err = provider.GetErrorPercentageMetricForResource(sli.ID, from, to)
+				default:
+					continue // skip unknown SL type - should not occur here though
 				}
 
-				if sl.Type == "availability" {
-					if e, err := provider.GetErrorPercentageMetricForResource(sli.ID, from, to); err == nil {
-						//allErrorPercentages = append(allErrorPercentages, e)
-						allValues = append(allValues, e)
-					} else {
-
-						log.Debugf("an error occured while getting error percentage data for SLI: %s-%s => %v ", sli.Provider, sli.ID, err)
-						//errorPercentHasErrors = true
-						valuesHasError = true
-					}
+				if err == nil {
+					allValues = append(allValues, val)
+				} else {
+					log.Debugf("an error occured while getting %s data for resource: %s-%s => %v ", sl.Type, sli.Provider, sli.ID, err)
+					valuesHasError = true
 				}
 
 			}
-
-			/*
-				// define actual indicator data received and errors
-				actual := (&ServiceLevelIndicators{
-					ErrorPercent: average(allErrorPercentages),
-					LatencyMs:    int64(average(allLatency)),
-				}).setErrorState(latencyErr, latencyHasErrors).
-					setErrorState(errPercentErr, errorPercentHasErrors)
-			*/
 
 			//fmt.Println(">>>", sl.Name, sl.Type, allValues, valuesHasError)
 

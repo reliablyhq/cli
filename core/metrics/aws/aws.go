@@ -22,7 +22,7 @@ type AwsMetricsProvider interface {
 	Dimension(arn.ARN) (types.Dimension, error)
 	GetErrorRateMetricDataInput(arn.ARN, time.Time, time.Time) (*cloudwatch.GetMetricDataInput, error)
 	GetLatencyMetricDataInput(arn.ARN, time.Time, time.Time) (*cloudwatch.GetMetricDataInput, error)
-	GetLatencyAboveThresholdPerMin(arn.ARN, float64, time.Time, time.Time) (*cloudwatch.GetMetricDataInput, error)
+	GetLatencyAboveThresholdPerMin(arn.ARN, time.Time, time.Time, float64) (*cloudwatch.GetMetricDataInput, error)
 }
 
 type AwsResource struct {
@@ -69,7 +69,7 @@ func tryGetClient(region string) (AwsCloudWatchClient, error) {
 	return client, nil
 }
 
-func (cw *AwsCloudWatch) GetLatencyAboveThresholdPercentage(resourceID string, threshold int, from, to time.Time) (float64, error) {
+func (cw *AwsCloudWatch) GetLatencyAboveThresholdPercentage(resourceID string, from, to time.Time, threshold int) (float64, error) {
 	res, err := parseResourceID(resourceID)
 	if err != nil {
 		return -1, err
@@ -92,7 +92,7 @@ func (cw *AwsCloudWatch) GetLatencyAboveThresholdPercentage(resourceID string, t
 		// TargetResponseTime is returned as seconds not ms
 		thresholdf64 = thresholdf64 / 1000
 	}
-	params, err := provider.GetLatencyAboveThresholdPerMin(res.arn, thresholdf64, from, to)
+	params, err := provider.GetLatencyAboveThresholdPerMin(res.arn, from, to, thresholdf64)
 	if err != nil {
 		return -1, err
 	}
