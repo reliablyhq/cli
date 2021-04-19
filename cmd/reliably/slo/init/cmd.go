@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewayv2"
+	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
@@ -32,7 +33,8 @@ var (
 		"aws-us-gov",
 	}
 	awsServicesMap = map[string]string{
-		"API Getaway": "apigateway",
+		"API Getaway":           "apigateway",
+		"Elastic Load Balancer": "elasticloadbalancing",
 	}
 	providersMap = map[string]string{
 		"Amazon Web Services":   "aws",
@@ -210,38 +212,9 @@ func getResourceIDForProvider(provider string) string {
 			serviceFullName := question.WithSingleChoiceAnswer("Select an AWS service.", awsServices...)
 			service := awsServicesMap[serviceFullName]
 
-			agwCfg, err := config.LoadDefaultConfig(context.TODO())
-			if err != nil {
-				log.Fatal(err)
-			}
-			agwClient := apigatewayv2.NewFromConfig(agwCfg)
-			output, err := agwClient.GetApis(
-				context.TODO(),
-				&apigatewayv2.GetApisInput{
-					MaxResults: aws.String("50"),
-					// NextToken: aws.String("2"),
-				},
-				func(opt *apigatewayv2.Options) {
-					opt.Region = regionID
-				},
-			)
-			if err != nil {
-				log.Fatal(err)
-			}
+			serviceID := selectAWSService(service, regionID)
 
-			var agwApis = []string{}
-			agwApisMap := make(map[string]string)
-			for _, api := range output.Items {
-				name := aws.ToString(api.Name)
-				ID := aws.ToString(api.ApiId)
-				niceName := name + " (" + ID + ")"
-				agwApis = append(agwApis, niceName)
-				agwApisMap[niceName] = ID
-			}
-			apiNiceName := question.WithSingleChoiceAnswer("Select a Resource.", agwApis...)
-			apiID := agwApisMap[apiNiceName]
-
-			resourceArn = "arn:" + partitionID + ":" + service + ":" + regionID + ":" + accountID + ":/apis/" + apiID
+			resourceArn = "arn:" + partitionID + ":" + service + ":" + regionID + ":" + accountID + ":" + serviceID
 		}
 		return resourceArn
 	case "gcp":
@@ -257,6 +230,82 @@ func getResourceIDForProvider(provider string) string {
 	}
 }
 
-func sanitizeString(s string) string {
+func selectAWSService(serviceType string, region string) string {
+	config, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	switch serviceType {
+	case "apigateway":
+		agwClient := apigatewayv2.NewFromConfig(config)
+		output, err := agwClient.GetApis(
+			context.TODO(),
+			&apigatewayv2.GetApisInput{
+				MaxResults: aws.String("50"),
+				// NextToken: aws.String("2"),
+			},
+			func(opt *apigatewayv2.Options) {
+				opt.Region = region
+			},
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var agwApis = []string{}
+		agwApisMap := make(map[string]string)
+		for _, api := range output.Items {
+			name := aws.ToString(api.Name)
+			ID := aws.ToString(api.ApiId)
+			niceName := name + " (" + ID + ")"
+			agwApis = append(agwApis, niceName)
+			agwApisMap[niceName] = ID
+		}
+		apiNiceName := question.WithSingleChoiceAnswer("Select a Resource.", agwApis...)
+		apiID := agwApisMap[apiNiceName]
+
+		return "/apis/" + apiID
+	case "elasticloadbalancing":
+		elbClient := elb.NewFromConfig(config)
+		output, err := elbClient.DescribeLoadBalancers(
+			context.TODO(),
+			&elb.DescribeLoadBalancersInput{
+				// PageSize: aws.String("50"),
+				// NextToken: aws.String("2"),
+			},
+			func(opt *elb.Options) {
+				opt.Region = region
+			},
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		var elbs = []string{}
+		elbsMap := make(map[string]string)
+		for _, lb := range output.LoadBalancers {
+			elbArn := aws.ToString(lb.LoadBalancerArn)
+			name := aws.ToString(lb.LoadBalancerName)
+			parsedArn, err := arn.Parse(elbArn)
+			if err != nil {
+				log.Fatal(err)
+			}
+			elbID := parsedArn.Resource
+			elbSlice := strings.Split(elbID, "/")
+			elb := elbSlice[len(elbSlice)-1]
+			// fmt.Printf("%s (%s)\n", name, elb)
+			niceName := name + " (" + elb + ")"
+			elbs = append(elbs, niceName)
+			elbsMap[niceName] = elbID
+		}
+		elbNiceName := question.WithSingleChoiceAnswer("Select a Resource.", elbs...)
+		elbID := elbsMap[elbNiceName]
+		return elbID
+	default:
+		return "something went wrong"
+	}
+}
+
+func sanitizeResourceType(s string) string {
 	return strings.ToLower(strings.ReplaceAll(s, " ", "-"))
 }

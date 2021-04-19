@@ -92,6 +92,8 @@ github.com/aws/aws-sdk-go-v2/service/apigatewayv2 v1.2.2 h1:DG/CMyWpGLjUZlP4R5cu
 github.com/aws/aws-sdk-go-v2/service/apigatewayv2 v1.2.2/go.mod h1:gRrmvdpLpVqHkBT87QVd9XJkLNM7XzywuVe+KWNZvMc=
 github.com/aws/aws-sdk-go-v2/service/cloudwatch v1.2.0 h1:+QEKobG+Bl0aB9svUqPq1R4XrpybtD+omHjPcEadILU=
 github.com/aws/aws-sdk-go-v2/service/cloudwatch v1.2.0/go.mod h1:eK3GYPihA7IfpgkNozCtaTp0j9RK3PgjDbyycpVBdas=
+github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.2.2 h1:9SJjPuaLEtljstkJGddQu0SdvFMDFdQGPRn029gBws0=
+github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.2.2/go.mod h1:PKiFeEhYiSIo+wQr6n4GPLT9NEF91y9872nHxG3FuZQ=
 github.com/aws/aws-sdk-go-v2/service/iam v1.3.1 h1:aTJTynJuqZjZ0ptNubJcEEN511FDiajRYI/PTnRO1U8=
 github.com/aws/aws-sdk-go-v2/service/iam v1.3.1/go.mod h1:b1K3TViQAwFbfJn8htcD5vtM8AqkMtDc53OreIpCRtk=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.0.4 h1:DRIpujxvhdv3+xLXCoaKk1VB4vk/Sh8sIOBewLJJpes=
