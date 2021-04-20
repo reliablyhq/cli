@@ -85,3 +85,6 @@ install: release manpages
 uninstall:
 	rm -f ${DESTDIR}${bindir}/reliably ${DESTDIR}${mandir}/man1/reliably.1 ${DESTDIR}${mandir}/man1/reliably-*.1
 
+.PHONY: lint
+lint:
+	docker run --rm -v $(CURDIR):/app -w /app golangci/golangci-lint:v1.39.0 golangci-lint run -v --timeout 120s
