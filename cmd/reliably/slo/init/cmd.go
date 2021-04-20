@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	// Using this as v2 doesn't have an equivalent
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewayv2"
@@ -20,6 +21,10 @@ import (
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/spf13/cobra"
+
+	// compute "google.golang.org/api/compute/v1"
+	crm "google.golang.org/api/cloudresourcemanager/v3"
+	compute "google.golang.org/api/compute/v1"
 	"gopkg.in/yaml.v2"
 )
 
@@ -218,13 +223,77 @@ func getResourceIDForProvider(provider string) string {
 		}
 		return resourceArn
 	case "gcp":
-		{
-			projectID := question.WithStringAnswer("What is the GCP project ID?")
-			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", googleResourceTypes...)
-			sanitizedResourceType := sanitizeString(resourceType)
-			resourceName := question.WithStringAnswer("What is the name of resource?")
-			return fmt.Sprintf("%s/%s/%s", projectID, sanitizedResourceType, resourceName)
+		ctx := context.Background()
+		crmService, err := crm.NewService(ctx)
+		orgsService := crm.NewOrganizationsService(crmService)
+		orgs, err := orgsService.Search().Context(ctx).Do()
+		if err != nil {
+			// TODO
+			// Example error
+			// 2021/04/20 12:47:36 googleapi: Error 403: The caller does not have permission, forbidden
+			// exit status 1
+			// log.Fatal(err)
 		}
+		var orgsList = []string{}
+		orgsMap := make(map[string]string)
+		for _, o := range orgs.Organizations {
+			displayName := o.DisplayName
+			id := o.Name
+			orgsList = append(orgsList, displayName)
+			orgsMap[displayName] = id
+		}
+		// TODO Handle empty list case
+		orgDisplayName := question.WithSingleChoiceAnswer("Select an Organization.", orgsList...)
+		orgID := orgsMap[orgDisplayName]
+
+		projectsService := crm.NewProjectsService(crmService)
+		projects, err := projectsService.List().Context(ctx).Parent(orgID).Do()
+		if err != nil {
+			// Example error if CLoud Resource Manager API has not been used in project or is disabled
+			// -----
+			// #: &googleapi.Error{Code:403, Message:"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.", Details:[]interface {}(nil), Body:"{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\",\n    \"errors\": [\n      {\n        \"message\": \"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\",\n        \"domain\": \"usageLimits\",\n        \"reason\": \"accessNotConfigured\",\n        \"extendedHelp\": \"https://console.developers.google.com\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n", Header:http.Header(nil), Errors:[]googleapi.ErrorItem{googleapi.ErrorItem{Reason:"accessNotConfigured", Message:"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."}}}
+			// -----
+			// +: googleapi: Error 403: Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry., accessNotConfigured
+			// -----
+			// *googleapi.Error
+			// log.Fatal(err)
+		}
+		var projectsList = []string{}
+		projectsMap := make(map[string]string)
+		for _, p := range projects.Projects {
+			displayName := p.DisplayName
+			id := p.ProjectId
+			fullName := displayName + " (" + id + ")"
+			projectsList = append(projectsList, fullName)
+			projectsMap[fullName] = id
+		}
+		// TODO Handle empty list case
+		projectFullName := question.WithSingleChoiceAnswer("Select an Project.", projectsList...)
+		projectID := projectsMap[projectFullName]
+
+		resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", googleResourceTypes...)
+		sanitizedResourceType := sanitizeResourceType(resourceType)
+
+		lbctx := context.Background()
+		computeService, err := compute.NewService(lbctx)
+		lbsService := compute.NewUrlMapsService(computeService)
+		lbs, err := lbsService.List(projectID).Context(ctx).Do()
+		if err != nil {
+			// TODO
+			// log.Fatal(err)
+		}
+		var lbsList = []string{}
+		for _, lb := range lbs.Items {
+			name := lb.Name
+			lbsList = append(lbsList, name)
+		}
+		resourceName := question.WithSingleChoiceAnswer("Select a resource.", lbsList...)
+
+		resourceID := fmt.Sprintf("%s/%s/%s", projectID, sanitizedResourceType, resourceName)
+
+		fmt.Println(resourceID)
+		return resourceID
+
 	default:
 		return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.")
 	}

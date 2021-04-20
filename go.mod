@@ -3,7 +3,7 @@ module github.com/reliablyhq/cli
 go 1.15
 
 require (
-	cloud.google.com/go v0.79.0
+	cloud.google.com/go v0.81.0
 	github.com/AlecAivazis/survey/v2 v2.2.9
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
@@ -46,8 +46,8 @@ require (
 	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 // indirect
 	golang.org/x/term v0.0.0-20210406210042-72f3dc4e9b72 // indirect
 	golang.org/x/text v0.3.6 // indirect
-	google.golang.org/api v0.42.0
-	google.golang.org/genproto v0.0.0-20210322173543-5f0e89347f5a
+	google.golang.org/api v0.44.0
+	google.golang.org/genproto v0.0.0-20210402141018-6c239bbf2bb1
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/h2non/gock.v1 v1.0.16
 	gopkg.in/yaml.v2 v2.3.0
