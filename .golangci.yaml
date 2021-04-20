@@ -1,0 +1,7 @@
+run:
+  concurrency: 10
+  timeout: 2m
+  modules-download-mode: vendor
+  allow-parallel-runners: true
+output:
+  format: line-number
