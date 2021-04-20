@@ -61,6 +61,9 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 	case SimpleText:
 		reportSimpleText(r, w)
 
+	case MARKDOWN:
+		reportMarkdown(r, w)
+
 	default:
 		tabbedoutput(r, w)
 	}
@@ -105,31 +108,20 @@ func reportSimpleText(r *Report, w io.Writer) {
 	}
 }
 
-type Todo struct {
-	Name        string
-	Description string
-}
-
-func markdownOutput(r *Report, w io.Writer) error {
+func reportMarkdown(r *Report, w io.Writer) error {
 
 	mdTemplate := `# SLO Report
 
-SLO Name: {{ bold .Name }}
-
-## Report Dates
-
 Report time: {{ dateTime .Timestamp }}
-Window Start time: {{ dateTime .ObservationWindow.From }}
-Window End time: {{ dateTime .ObservationWindow.To }}
-Window Duration: {{ duration .ObservationWindow.From .ObservationWindow.To }}
+{{ range $index, $service := .Services }}
+## Service #({{ serviceNo $index}}): {{$service.Name}}
 
-## SLO Summary
+|  |  Type    | Name          | Actual | Target | Delta  |
+|--| -------- | --------------| ------ | ------ | ------ | ---------------
+{{ range $ind, $sl := $service.ServiceLevels }}{{ serviceLevelRow $sl }}
+{{ end }}
+{{ end }}
 
-
-    Type            Actual    Target  Delta
---- ------------- --------   ------- ------ ---------------
-{{ errorBudgetRow .ServiceLevel }}
-{{ latencyRow .ServiceLevel }}
 `
 
 	t, err := template.New("slo-report").Funcs(markdownFuncMap()).Parse(mdTemplate)
@@ -139,27 +131,14 @@ Window Duration: {{ duration .ObservationWindow.From .ObservationWindow.To }}
 	return t.Execute(w, r)
 }
 
-func getStatusIcon(e bool) string {
-	if e {
-		return iconEx
-	} else {
+func getStatusIcon(res *ServiceLevelResult) string {
+	if res == nil {
+		return iconUnknown
+	} else if res.sloIsMet {
 		return iconTick
-	}
-}
-
-func getErrorBudgetMsgF(e bool) string {
-	if e {
-		return errorBudgetExceededf
 	} else {
-		return errorBudgetTooLowf
-	}
-}
+		return iconEx
 
-func getLatencyMsg(e bool, l int64) string {
-	if e {
-		return fmt.Sprintf(latencyExceeded, l)
-	} else {
-		return latencyValid
 	}
 }
 
@@ -169,53 +148,32 @@ func markdownFuncMap() template.FuncMap {
 		"dateTime": func(t time.Time) string {
 			return t.Format(time.RFC1123) + "  "
 		},
-		"duration": func(from time.Time, to time.Time) time.Duration {
-			return to.Sub(from)
-		},
 		"bold": func(t string) string {
 			return "**" + t + "**"
 		},
-		"errorRate": func(t string) string {
-			return "**" + t + "**"
+		"serviceNo": func(i int) int {
+			return i + 1
 		},
-		"errorBudgetRow": func(sl ServiceLevel) string {
+		"serviceLevelRow": func(sl ServiceLevel) string {
 			var builder strings.Builder
-			statusIcon := getStatusIcon(sl.Delta.ErrorPercent > threshold)
-			errorBudgetMsgF := getErrorBudgetMsgF(sl.Delta.ErrorPercent > threshold)
-
-			// fmt.Fprint(&builder, "|")
+			statusIcon := getStatusIcon(sl.Result)
+			unit := "%"
+			fmt.Fprint(&builder, "|")
 			fmt.Fprintf(&builder, "%s", statusIcon)
-			fmt.Fprint(&builder, "    ")
-			fmt.Fprint(&builder, "Error Rate")
-			fmt.Fprint(&builder, "     ")
-			fmt.Fprintf(&builder, "%.2f", sl.Actual.ErrorPercent)
-			fmt.Fprint(&builder, "      ")
-			fmt.Fprintf(&builder, "%.2f", sl.Target.ErrorPercent)
-			fmt.Fprint(&builder, "   ")
-			fmt.Fprintf(&builder, "%.2f%%", sl.Delta.ErrorPercent)
-			fmt.Fprint(&builder, "   ")
-			fmt.Fprintf(&builder, errorBudgetMsgF, sl.Delta.ErrorPercent)
-			// fmt.Fprint(&builder, "|")
-
-			return builder.String()
-		},
-		"latencyRow": func(sl ServiceLevel) string {
-			var builder strings.Builder
-			statusIcon := getStatusIcon(sl.Delta.LatencyMs > threshold)
-			latencyMsg := getLatencyMsg(sl.Delta.LatencyMs > threshold, sl.Delta.LatencyMs)
-			// fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", statusIcon)
-			fmt.Fprint(&builder, "    ")
-			fmt.Fprint(&builder, "Latency")
-			fmt.Fprint(&builder, "      ")
-			fmt.Fprintf(&builder, "%dms", sl.Actual.LatencyMs)
-			fmt.Fprint(&builder, "       ")
-			fmt.Fprintf(&builder, "%dms", sl.Target.LatencyMs)
-			fmt.Fprint(&builder, "    ")
-			fmt.Fprintf(&builder, "%dms", sl.Delta.LatencyMs)
-			fmt.Fprint(&builder, "    ")
-			fmt.Fprint(&builder, latencyMsg)
-			// fmt.Fprintln(&builder, "|")
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%s", sl.Type)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%s", sl.Name)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%.2f%s", sl.Result.Actual, unit)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%v%s", sl.Objective, unit)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%.2f%s", sl.Result.Delta, unit)
+			fmt.Fprint(&builder, "|")
+			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
+			fmt.Fprintf(&builder, "(last %s)", period)
+			sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
 
 			return builder.String()
 		},
