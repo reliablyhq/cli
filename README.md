@@ -1,17 +1,43 @@
-# Reliably CLI
+<h2 align="center">
+  <br>
+  <p align="center"><img src="https://raw.githubusercontent.com/reliablyhq/cli/main/logo.png"></p>
+</h2>
 
-![Reliably](logo.png "Reliably CLI")
+<h4 align="center">Reliably CLI</h4>
 
-Reliability toolbox for developers from the command line.
+<p align="center">
+   <a href="https://github.com/reliablyhq/cli/releases">
+   <img alt="Release" src="https://img.shields.io/github/v/release/reliablyhq/cli">
+   <a href="https://goreportcard.com/report/github.com/reliablyhq/cli">
+   <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/reliablyhq/cli">
+   <a href="#">
+   <img alt="Build" src="https://github.com/reliablyhq/cli/actions/workflows/build.yaml/badge.svg">
+   <a href="https://github.com/reliablyhq/cli/issues">
+   
+   <img alt="GitHub issues" src="https://img.shields.io/github/issues/reliablyhq/cli?style=flat-square&logo=github&logoColor=white">
+   <a href="https://github.com/reliablyhq/cli/blob/master/LICENSE.md">
+   <img alt="License" src="https://img.shields.io/github/license/reliablyhq/cli">
+   <a href="#">
+   <img alt="Go Version" src="https://img.shields.io/github/go-mod/go-version/reliablyhq/cli">
+   <a href="https://pkg.go.dev/github.com/reliablyhq/cli">
+</p>
 
-### Installation
+<p align="center">
+  <a href="#installation">Installation</a> •
+  <a href="https://docs.reliably.com">Documentation</a> •
+  <a href="#credits">Credits</a> •
+</p>
+
+---
+
+# Installation
 
 Reliably CLI is available for macOS, Linux and Windows as
 downloadable binaries from the [releases page][releases].
 
 [releases]: https://github.com/reliablyhq/cli/releases
 
-### Installation as a Krew plugin
+## Installation as a Krew plugin
 
 Reliably CLI can be used as a kubectl [Krew plugin][krew-home]
 for macOS and Linux.
@@ -31,7 +57,7 @@ $ kubectl reliably
 [krew-home]: (https://krew.sigs.k8s.io/)
 [krew-installation]: (https://krew.sigs.k8s.io/docs/user-guide/setup/install/)
 
-### Authentication
+## Authentication
 
 Run `reliably auth login` to authenticate with your Reliably account.
 This will run the interactive authentication flow by default.
@@ -42,7 +68,7 @@ You can also choose to login with an access token in a non-interactive mode:
 Finally, `reliably` will respect tokens set as environment variable
 using `RELIABLY_TOKEN`.
 
-## Usage
+# Usage
 
 To check your Kubernetes manifests for Reliably Advice and Suggestions, simply run:
 
@@ -92,7 +118,7 @@ Please read the [documentation][docs] for more information.
 
 [docs]: https://docs.reliably.com/
 
-## Credits
+# Credits
 
 This repository contains code from the Reliably CLI project as well as
 some open-source works:
