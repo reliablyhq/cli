@@ -122,6 +122,7 @@ Report time: {{ dateTime .Timestamp }}
 {{ end }}
 {{ end }}
 
+
 `
 
 	t, err := template.New("slo-report").Funcs(markdownFuncMap()).Parse(mdTemplate)
@@ -158,6 +159,8 @@ func markdownFuncMap() template.FuncMap {
 			var builder strings.Builder
 			statusIcon := getStatusIcon(sl.Result)
 			unit := "%"
+			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
+
 			fmt.Fprint(&builder, "|")
 			fmt.Fprintf(&builder, "%s", statusIcon)
 			fmt.Fprint(&builder, "|")
@@ -171,126 +174,8 @@ func markdownFuncMap() template.FuncMap {
 			fmt.Fprint(&builder, "|")
 			fmt.Fprintf(&builder, "%.2f%s", sl.Result.Delta, unit)
 			fmt.Fprint(&builder, "|")
-			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
 			fmt.Fprintf(&builder, "(last %s)", period)
-			sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
-
-			return builder.String()
-		},
-	}
-}
-
-type Todo struct {
-	Name        string
-	Description string
-}
-
-func markdownOutput(r *Report, w io.Writer) error {
-
-	mdTemplate := `# SLO Report
-
-SLO Name: {{ bold .Name }}
-
-## Report Dates
-
-Report time: {{ dateTime .Timestamp }}
-Window Start time: {{ dateTime .ObservationWindow.From }}
-Window End time: {{ dateTime .ObservationWindow.To }}
-Window Duration: {{ duration .ObservationWindow.From .ObservationWindow.To }}
-
-## SLO Summary
-
-
-    Type            Actual    Target  Delta
---- ------------- --------   ------- ------ ---------------
-{{ errorBudgetRow .ServiceLevel }}
-{{ latencyRow .ServiceLevel }}
-`
-
-	t, err := template.New("slo-report").Funcs(markdownFuncMap()).Parse(mdTemplate)
-	if err != nil {
-		panic(err)
-	}
-	return t.Execute(w, r)
-}
-
-func getStatusIcon(e bool) string {
-	if e {
-		return iconEx
-	} else {
-		return iconTick
-	}
-}
-
-func getErrorBudgetMsgF(e bool) string {
-	if e {
-		return errorBudgetExceededf
-	} else {
-		return errorBudgetTooLowf
-	}
-}
-
-func getLatencyMsg(e bool, l int64) string {
-	if e {
-		return fmt.Sprintf(latencyExceeded, l)
-	} else {
-		return latencyValid
-	}
-}
-
-func markdownFuncMap() template.FuncMap {
-	// by default those functions return the given content untouched
-	return template.FuncMap{
-		"dateTime": func(t time.Time) string {
-			return t.Format(time.RFC1123) + "  "
-		},
-		"duration": func(from time.Time, to time.Time) time.Duration {
-			return to.Sub(from)
-		},
-		"bold": func(t string) string {
-			return "**" + t + "**"
-		},
-		"errorRate": func(t string) string {
-			return "**" + t + "**"
-		},
-		"errorBudgetRow": func(sl ServiceLevel) string {
-			var builder strings.Builder
-			statusIcon := getStatusIcon(sl.Delta.ErrorPercent > threshold)
-			errorBudgetMsgF := getErrorBudgetMsgF(sl.Delta.ErrorPercent > threshold)
-
-			// fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", statusIcon)
-			fmt.Fprint(&builder, "    ")
-			fmt.Fprint(&builder, "Error Rate")
-			fmt.Fprint(&builder, "     ")
-			fmt.Fprintf(&builder, "%.2f", sl.Actual.ErrorPercent)
-			fmt.Fprint(&builder, "      ")
-			fmt.Fprintf(&builder, "%.2f", sl.Target.ErrorPercent)
-			fmt.Fprint(&builder, "   ")
-			fmt.Fprintf(&builder, "%.2f%%", sl.Delta.ErrorPercent)
-			fmt.Fprint(&builder, "   ")
-			fmt.Fprintf(&builder, errorBudgetMsgF, sl.Delta.ErrorPercent)
-			// fmt.Fprint(&builder, "|")
-
-			return builder.String()
-		},
-		"latencyRow": func(sl ServiceLevel) string {
-			var builder strings.Builder
-			statusIcon := getStatusIcon(sl.Delta.LatencyMs > threshold)
-			latencyMsg := getLatencyMsg(sl.Delta.LatencyMs > threshold, sl.Delta.LatencyMs)
-			// fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", statusIcon)
-			fmt.Fprint(&builder, "    ")
-			fmt.Fprint(&builder, "Latency")
-			fmt.Fprint(&builder, "      ")
-			fmt.Fprintf(&builder, "%dms", sl.Actual.LatencyMs)
-			fmt.Fprint(&builder, "       ")
-			fmt.Fprintf(&builder, "%dms", sl.Target.LatencyMs)
-			fmt.Fprint(&builder, "    ")
-			fmt.Fprintf(&builder, "%dms", sl.Delta.LatencyMs)
-			fmt.Fprint(&builder, "    ")
-			fmt.Fprint(&builder, latencyMsg)
-			// fmt.Fprintln(&builder, "|")
+			fmt.Fprint(&builder, "|")
 
 			return builder.String()
 		},
