@@ -150,7 +150,7 @@ func watch(manifestPath string) error {
 		select {
 		case r := <-rChan:
 			clearScreen()
-			fmt.Println(color.Magenta("Watching SLO report (3s)"), "Press CTRL+C to exit")
+			fmt.Println(color.Magenta("Refreshing SLO report every 3 seconds."), "Press CTRL+C to quit.")
 			report.Write(report.TABBED, r, os.Stdout, log.StandardLogger())
 
 		case err := <-errChan:
