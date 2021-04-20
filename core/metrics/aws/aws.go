@@ -224,6 +224,17 @@ func (cw *AwsCloudWatch) GetErrorPercentageMetricForResource(resourceID string, 
 	return errorRatePercent, nil
 }
 
+func (cw *AwsCloudWatch) GetAvailabilityPercentage(resourceID string, from, to time.Time) (float64, error) {
+	errorRate, err := cw.GetErrorPercentageMetricForResource(resourceID, from, to)
+	if err != nil {
+		return -1, err
+	}
+
+	availability := 100.0 - errorRate
+	log.Debugf("Availability is %.2f%%\n", availability)
+	return availability, nil
+}
+
 // IsSupportedService indicates wether the resource is supported
 // for metrics retrieval
 func (r *AwsResource) IsSupportedService() bool {

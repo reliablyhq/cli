@@ -75,7 +75,7 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 					threshold := int(c.Threshold.Duration.Milliseconds())
 					val, err = provider.GetLatencyAboveThresholdPercentage(sli.ID, from, to, threshold)
 				case "availability":
-					val, err = provider.GetErrorPercentageMetricForResource(sli.ID, from, to)
+					val, err = provider.GetAvailabilityPercentage(sli.ID, from, to)
 				default:
 					continue // skip unknown SL type - should not occur here though
 				}

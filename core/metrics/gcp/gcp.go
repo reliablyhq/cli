@@ -190,11 +190,19 @@ func (p *GCP) GetErrorPercentageMetricForResource(resourceID string, from, to ti
 		return -1, fmt.Errorf("%s: %s", err, resourceID)
 	}
 
-	errorPercentage = 100 - errorPercentage
-
 	log.Debugf("error rate is %.2f%%\n", errorPercentage)
-
 	return errorPercentage, nil
+}
+
+func (p *GCP) GetAvailabilityPercentage(resourceID string, from, to time.Time) (float64, error) {
+	errorRate, err := p.GetErrorPercentageMetricForResource(resourceID, from, to)
+	if err != nil {
+		return -1, err
+	}
+
+	availability := 100.0 - errorRate
+	log.Debugf("Availability is %.2f%%\n", availability)
+	return availability, nil
 }
 
 func calculateLatencyOverThresholdPercentage(threshold int, it []*monitoringpb.TimeSeries) (float64, error) {
