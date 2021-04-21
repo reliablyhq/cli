@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
+	"text/template"
+	"time"
 
 	consolesize "github.com/nathan-fiscaletti/consolesize-go"
 	"github.com/olekukonko/tablewriter"
@@ -37,6 +40,7 @@ const (
 	JSON       Format = "json"
 	TABBED     Format = "tabbed"
 	SimpleText Format = "simple"
+	MARKDOWN   Format = "markdown"
 )
 
 // Write - write report based on given format
@@ -56,6 +60,9 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 
 	case SimpleText:
 		reportSimpleText(r, w)
+
+	case MARKDOWN:
+		reportMarkdown(r, w)
 
 	default:
 		tabbedoutput(r, w)
@@ -98,6 +105,80 @@ func reportSimpleText(r *Report, w io.Writer) {
 			fmt.Println() // empty lines between services except last one
 		}
 
+	}
+}
+
+func reportMarkdown(r *Report, w io.Writer) error {
+
+	mdTemplate := `# SLO Report
+
+Report time: {{ dateTime .Timestamp }}
+{{ range $index, $service := .Services }}
+## Service #({{ serviceNo $index}}): {{$service.Name}}
+
+|  |  Type    | Name          | Actual | Target | Delta  |
+|--| -------- | --------------| ------ | ------ | ------ | ---------------
+{{ range $ind, $sl := $service.ServiceLevels }}{{ serviceLevelRow $sl }}
+{{ end }}
+{{ end }}
+
+
+`
+
+	t, err := template.New("slo-report").Funcs(markdownFuncMap()).Parse(mdTemplate)
+	if err != nil {
+		panic(err)
+	}
+	return t.Execute(w, r)
+}
+
+func getStatusIcon(res *ServiceLevelResult) string {
+	if res == nil {
+		return iconUnknown
+	} else if res.sloIsMet {
+		return iconTick
+	} else {
+		return iconEx
+
+	}
+}
+
+func markdownFuncMap() template.FuncMap {
+	// by default those functions return the given content untouched
+	return template.FuncMap{
+		"dateTime": func(t time.Time) string {
+			return t.Format(time.RFC1123) + "  "
+		},
+		"bold": func(t string) string {
+			return "**" + t + "**"
+		},
+		"serviceNo": func(i int) int {
+			return i + 1
+		},
+		"serviceLevelRow": func(sl ServiceLevel) string {
+			var builder strings.Builder
+			statusIcon := getStatusIcon(sl.Result)
+			unit := "%"
+			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
+
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%s", statusIcon)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%s", sl.Type)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%s", sl.Name)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%.2f%s", sl.Result.Actual, unit)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%v%s", sl.Objective, unit)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%.2f%s", sl.Result.Delta, unit)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "(last %s)", period)
+			fmt.Fprint(&builder, "|")
+
+			return builder.String()
+		},
 	}
 }
 
