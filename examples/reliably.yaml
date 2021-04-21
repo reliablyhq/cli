@@ -1,19 +1,25 @@
 services:
 - name: website
   service-levels:
-  - name: Response time 99th percentile must be under 300ms
+  - name: 95th of requests response time under 100ms
     type: latency
     criteria:
-      threshold: 300ms
+      threshold: 100ms
+    slo: 95
+    sli:
+    - id: myprojectid/google-cloud-load-balancers/myloadbalancer-name
+      provider: gcp
+  - name: 99th of requests response time under 500ms
+    type: latency
+    criteria:
+      threshold: 500ms
     slo: 99
     sli:
     - id: myprojectid/google-cloud-load-balancers/myloadbalancer-name
       provider: gcp
-  - name: Response time 90th percentile must be under 1000ms
-    type: latency
-    criteria:
-      threshold: 1000ms
-    slo: 90
+  - name: 99th of requests responses not 5xx
+    type: availability
+    slo: 99
     sli:
     - id: myprojectid/google-cloud-load-balancers/myloadbalancer-name
       provider: gcp
