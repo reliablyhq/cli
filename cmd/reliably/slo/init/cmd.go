@@ -110,7 +110,7 @@ func declareSLOForService(s *manifest.Service) {
 		sl.Criteria = &manifest.LatencyCriteria{Threshold: threshold}
 	}
 
-	do := question.WithBoolAnswer("Do you want to add an SLI to measure this SLO?", question.WithYesAsDefault)
+	do := question.WithBoolAnswer("Do you want to add a resource for measuring your SLI?", question.WithYesAsDefault)
 	if do {
 		providers := []string{}
 		for key := range providersMap {
@@ -128,7 +128,7 @@ func declareSLOForService(s *manifest.Service) {
 				ID:       id,
 			})
 
-			do = question.WithBoolAnswer("Do you want to add another SLI?", question.WithNoAsDefault)
+			do = question.WithBoolAnswer("Do you want to add another resource for measuring your SLI?", question.WithNoAsDefault)
 		}
 	}
 	sl.Name = question.WithStringAnswer("What is the name of this SLO?")
