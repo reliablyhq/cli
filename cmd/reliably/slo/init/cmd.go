@@ -257,11 +257,8 @@ func getResourceIDForProvider(provider string) string {
 		orgsService := crm.NewOrganizationsService(crmService)
 		orgs, err := orgsService.Search().Context(ctx).Do()
 		if err != nil {
-			// TODO
-			// Example error
-			// 2021/04/20 12:47:36 googleapi: Error 403: The caller does not have permission, forbidden
-			// exit status 1
-			// log.Fatal(err)
+			handleGCPError(err)
+			return ""
 		}
 		var orgsList = []string{}
 		orgsMap := make(map[string]string)
@@ -279,19 +276,12 @@ func getResourceIDForProvider(provider string) string {
 			projectsService := crm.NewProjectsService(crmService)
 			projects, err := projectsService.List().Context(ctx).Parent(orgID).Do()
 			if err != nil {
-				// Example error if CLoud Resource Manager API has not been used in project or is disabled
-				// -----
-				// #: &googleapi.Error{Code:403, Message:"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.", Details:[]interface {}(nil), Body:"{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\",\n    \"errors\": [\n      {\n        \"message\": \"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\",\n        \"domain\": \"usageLimits\",\n        \"reason\": \"accessNotConfigured\",\n        \"extendedHelp\": \"https://console.developers.google.com\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n", Header:http.Header(nil), Errors:[]googleapi.ErrorItem{googleapi.ErrorItem{Reason:"accessNotConfigured", Message:"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."}}}
-				// -----
-				// +: googleapi: Error 403: Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry., accessNotConfigured
-				// -----
-				// *googleapi.Error
-				// log.Fatal(err)
-
-				// fmt.Printf("%+v\n", err)
-				// fmt.Println("------")
-				// fmt.Printf("%#v\n", err)
-				// fmt.Println("------")
+				handleGCPError(err)
+				return ""
+			}
+			if len(projects.Projects) == 0 {
+				fmt.Println("Reliably couldn't find any project. Check you have all the required permissions.")
+				return ""
 			}
 			var projectsList = []string{}
 			projectsMap := make(map[string]string)
@@ -314,7 +304,7 @@ func getResourceIDForProvider(provider string) string {
 			lbsService := compute.NewUrlMapsService(computeService)
 			lbs, err := lbsService.List(projectID).Context(ctx).Do()
 			if err != nil {
-				fmt.Println("⚠️ Reliably encountered a problem a problem when listing load balancers. Please try again later.")
+				handleGCPError(err)
 				return ""
 			}
 			if len(lbs.Items) > 0 {
@@ -447,6 +437,15 @@ func selectAWSService(serviceType string, region string) string {
 		fmt.Println("⚠️ Reliably encountered a problem. Please try again or use normal mode.")
 		return ""
 	}
+}
+
+func handleGCPError(err error) {
+	errString := fmt.Sprintf("%+v\n", err)
+	errStringSlice := strings.Split(errString, ".,")
+	errStringNoSuffix := errStringSlice[0] + "."
+	cleanErrString := strings.TrimPrefix(errStringNoSuffix, "googleapi: ")
+	fmt.Println(color.Bold(color.Red("⚠️ GCP Error:")))
+	fmt.Printf("%s\n", cleanErrString)
 }
 
 func sanitizeResourceType(s string) string {
