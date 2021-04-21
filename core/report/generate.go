@@ -33,7 +33,8 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 	}
 
 	to := time.Now()
-	from := to.Add(-oneDay)
+
+	//from := to.Add(-oneDay)
 
 	var services []*Service = make([]*Service, 0)
 	report = &Report{
@@ -60,6 +61,13 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 		}
 
 		for _, sl := range s.ServiceLevels {
+			duration := sl.ObservationWindow.ToDuration()
+			if duration == 0 {
+				// we use a default value, in case we did not found any
+				duration = oneDay
+			}
+			from := to.Add(-duration)
+
 			allValues := []float64{}
 			valuesHasError := false
 			for _, sli := range sl.Indicators {

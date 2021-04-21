@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
+
+	iso8601 "github.com/ChannelMeter/iso8601duration"
 )
 
 // This has been built to mitigate the poor support in JSON and YAML unmarshalling for the time.Duration type
@@ -13,7 +16,7 @@ type Duration struct {
 }
 
 func (d Duration) MarhalJSON() ([]byte, error) {
-	s := fmt.Sprintf("%dms", d.Milliseconds())
+	s := fmt.Sprintf("%s", d.String())
 	return []byte(s), nil
 }
 
@@ -43,7 +46,7 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 }
 
 func (d Duration) MarshalYAML() (interface{}, error) {
-	return fmt.Sprintf("%dms", d.Milliseconds()), nil
+	return fmt.Sprintf("%s", d.String()), nil
 }
 
 func (d *Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -68,6 +71,74 @@ func (d *Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 	default:
 		return errors.New("invalid type")
+	}
+
+	return nil
+}
+
+// Another JSON & YAML support for iso8601duration strings
+type Iso8601Duration struct {
+	iso8601.Duration
+}
+
+func (d *Iso8601Duration) String() string {
+	fmt.Println("convert iso8601 wrapper to string", d.Duration.String())
+	return d.Duration.String()
+}
+
+func (d *Iso8601Duration) ToDuration() time.Duration {
+	fmt.Println("convert iso8601 wrapper to duration", d.Duration.ToDuration())
+	return d.Duration.ToDuration()
+}
+
+func (d Iso8601Duration) MarhalJSON() ([]byte, error) {
+	return []byte(d.String()), nil
+}
+
+func (d *Iso8601Duration) UnmarshalJSON(b []byte) error {
+	var v interface{}
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+
+	switch value := v.(type) {
+	case string:
+		{
+			if t, err := iso8601.FromString(strings.ToUpper(value)); err == nil {
+				d.Duration = *t
+			} else {
+				return err
+			}
+		}
+	default:
+		return errors.New("invalid ISO8601 duration")
+	}
+	return nil
+}
+
+func (d Iso8601Duration) MarshalYAML() (interface{}, error) {
+	fmt.Println("marshall string to iso8601 struct", d)
+	return d.String(), nil
+}
+
+func (d *Iso8601Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	fmt.Println("unmarshall string to iso8601 struct")
+	var tmp interface{}
+	if err := unmarshal(&tmp); err != nil {
+		return err
+	}
+
+	switch value := tmp.(type) {
+	case string:
+		{
+			if t, err := iso8601.FromString(strings.ToUpper(value)); err == nil {
+				d.Duration = *t
+			} else {
+				return err
+			}
+		}
+	default:
+		return errors.New("invalid ISO8601 duration")
 	}
 
 	return nil
