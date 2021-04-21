@@ -40,6 +40,8 @@ reliability to your daily activities:
 * Scan for reliability risks in your Kubernetes manifests
 * Run from anywhere, including your CI/CD so that you can run reliability checks
 
+[slo]: https://sre.google/sre-book/service-level-objectives/
+
 # Installation
 
 Reliably CLI is available for macOS, Linux and Windows as
