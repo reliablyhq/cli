@@ -22,7 +22,6 @@ import (
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/spf13/cobra"
 
-	// compute "google.golang.org/api/compute/v1"
 	crm "google.golang.org/api/cloudresourcemanager/v3"
 	compute "google.golang.org/api/compute/v1"
 	"gopkg.in/yaml.v2"
@@ -147,10 +146,12 @@ func declareSLOForService(s *manifest.Service) {
 			provider := providersMap[providerFullName]
 			id := getResourceIDForProvider(provider)
 
-			sl.Indicators = append(sl.Indicators, manifest.ServiceLevelIndicator{
-				Provider: provider,
-				ID:       id,
-			})
+			if id != "" { // We're returning empty strings when something fails...
+				s.Resources = append(s.Resources, manifest.ServiceResource{
+					Provider: provider,
+					ID:       id,
+				})
+			}
 
 			do = question.WithBoolAnswer("Do you want to add another resource for measuring your SLI?", question.WithNoAsDefault)
 		}
@@ -167,10 +168,15 @@ func declareSLOForService(s *manifest.Service) {
 func getResourceIDForProvider(provider string) string {
 	switch provider {
 	case "aws":
-		resourceArn := question.WithStringAnswer("Paste an AWS ARN, or type \"help\" for step-by-step identification.")
+		resourceArn := question.WithStringAnswer("Paste an AWS ARN, or type \"help\" for interactive mode.")
 		if resourceArn == "help" {
 			resolver := endpoints.DefaultResolver()
 			partitions := resolver.(endpoints.EnumPartitions).Partitions()
+
+			if len(partitions) == 0 {
+				fmt.Println("⚠️ Reliably couldn't query AWS. Please try again or use normal mode.")
+				return ""
+			}
 
 			var partitionsIDs = []string{}
 			for _, p := range partitions {
@@ -186,6 +192,12 @@ func getResourceIDForProvider(provider string) string {
 				}
 			}
 
+			if len(partition.Regions()) == 0 {
+				if len(partitions) == 0 {
+					fmt.Println("⚠️ Reliably couldn't query AWS. Please try again or use normal mode.")
+					return ""
+				}
+			}
 			var regionsIDs = []string{}
 			for id := range partition.Regions() {
 				regionsIDs = append(regionsIDs, id)
@@ -195,7 +207,8 @@ func getResourceIDForProvider(provider string) string {
 
 			cfgIAM, err := config.LoadDefaultConfig(context.TODO())
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println("⚠️ Reliably encountered a problem. Please try again or use normal mode.")
+				return ""
 			}
 			clientIAM := iam.NewFromConfig(
 				cfgIAM,
@@ -205,8 +218,16 @@ func getResourceIDForProvider(provider string) string {
 			)
 			iamParams := &iam.GetUserInput{}
 			user, err := clientIAM.GetUser(context.TODO(), iamParams)
+			if err != nil {
+				fmt.Println("⚠️ Reliably couldn't authenticate you with AWS. Make sure you are logged in to AWS.")
+				return ""
+			}
 			userArnStr := aws.ToString(user.User.Arn)
 			userArn, err := arn.Parse(userArnStr)
+			if err != nil {
+				fmt.Println("⚠️ Reliably encountered a problem. Please try again or use normal mode.")
+				return ""
+			}
 			accountID := userArn.AccountID
 
 			awsServices := []string{}
@@ -219,10 +240,18 @@ func getResourceIDForProvider(provider string) string {
 
 			serviceID := selectAWSService(service, regionID)
 
-			resourceArn = "arn:" + partitionID + ":" + service + ":" + regionID + ":" + accountID + ":" + serviceID
+			if serviceID == "" {
+				return ""
+			} else {
+				resourceArn = "arn:" + partitionID + ":" + service + ":" + regionID + ":" + accountID + ":" + serviceID
+			}
 		}
 		return resourceArn
 	case "gcp":
+		var projectID string
+		var sanitizedResourceType string
+		var resourceName string
+
 		ctx := context.Background()
 		crmService, err := crm.NewService(ctx)
 		orgsService := crm.NewOrganizationsService(crmService)
@@ -236,62 +265,96 @@ func getResourceIDForProvider(provider string) string {
 		}
 		var orgsList = []string{}
 		orgsMap := make(map[string]string)
-		for _, o := range orgs.Organizations {
-			displayName := o.DisplayName
-			id := o.Name
-			orgsList = append(orgsList, displayName)
-			orgsMap[displayName] = id
-		}
-		// TODO Handle empty list case
-		orgDisplayName := question.WithSingleChoiceAnswer("Select an Organization.", orgsList...)
-		orgID := orgsMap[orgDisplayName]
 
-		projectsService := crm.NewProjectsService(crmService)
-		projects, err := projectsService.List().Context(ctx).Parent(orgID).Do()
-		if err != nil {
-			// Example error if CLoud Resource Manager API has not been used in project or is disabled
-			// -----
-			// #: &googleapi.Error{Code:403, Message:"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.", Details:[]interface {}(nil), Body:"{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\",\n    \"errors\": [\n      {\n        \"message\": \"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\",\n        \"domain\": \"usageLimits\",\n        \"reason\": \"accessNotConfigured\",\n        \"extendedHelp\": \"https://console.developers.google.com\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n", Header:http.Header(nil), Errors:[]googleapi.ErrorItem{googleapi.ErrorItem{Reason:"accessNotConfigured", Message:"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."}}}
-			// -----
-			// +: googleapi: Error 403: Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry., accessNotConfigured
-			// -----
-			// *googleapi.Error
-			// log.Fatal(err)
-		}
-		var projectsList = []string{}
-		projectsMap := make(map[string]string)
-		for _, p := range projects.Projects {
-			displayName := p.DisplayName
-			id := p.ProjectId
-			fullName := displayName + " (" + id + ")"
-			projectsList = append(projectsList, fullName)
-			projectsMap[fullName] = id
-		}
-		// TODO Handle empty list case
-		projectFullName := question.WithSingleChoiceAnswer("Select an Project.", projectsList...)
-		projectID := projectsMap[projectFullName]
+		if len(orgs.Organizations) > 0 {
+			for _, o := range orgs.Organizations {
+				displayName := o.DisplayName
+				id := o.Name
+				orgsList = append(orgsList, displayName)
+				orgsMap[displayName] = id
+			}
+			orgDisplayName := question.WithSingleChoiceAnswer("Select an Organization.", orgsList...)
+			orgID := orgsMap[orgDisplayName]
 
-		resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", googleResourceTypes...)
-		sanitizedResourceType := sanitizeResourceType(resourceType)
+			projectsService := crm.NewProjectsService(crmService)
+			projects, err := projectsService.List().Context(ctx).Parent(orgID).Do()
+			if err != nil {
+				// Example error if CLoud Resource Manager API has not been used in project or is disabled
+				// -----
+				// #: &googleapi.Error{Code:403, Message:"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.", Details:[]interface {}(nil), Body:"{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\",\n    \"errors\": [\n      {\n        \"message\": \"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.\",\n        \"domain\": \"usageLimits\",\n        \"reason\": \"accessNotConfigured\",\n        \"extendedHelp\": \"https://console.developers.google.com\"\n      }\n    ],\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n", Header:http.Header(nil), Errors:[]googleapi.ErrorItem{googleapi.ErrorItem{Reason:"accessNotConfigured", Message:"Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."}}}
+				// -----
+				// +: googleapi: Error 403: Cloud Resource Manager API has not been used in project 473344846455 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=473344846455 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry., accessNotConfigured
+				// -----
+				// *googleapi.Error
+				// log.Fatal(err)
 
-		lbctx := context.Background()
-		computeService, err := compute.NewService(lbctx)
-		lbsService := compute.NewUrlMapsService(computeService)
-		lbs, err := lbsService.List(projectID).Context(ctx).Do()
-		if err != nil {
-			// TODO
-			// log.Fatal(err)
+				// fmt.Printf("%+v\n", err)
+				// fmt.Println("------")
+				// fmt.Printf("%#v\n", err)
+				// fmt.Println("------")
+			}
+			var projectsList = []string{}
+			projectsMap := make(map[string]string)
+			for _, p := range projects.Projects {
+				displayName := p.DisplayName
+				id := p.ProjectId
+				fullName := displayName + " (" + id + ")"
+				projectsList = append(projectsList, fullName)
+				projectsMap[fullName] = id
+			}
+			// TODO Handle empty list case
+			projectFullName := question.WithSingleChoiceAnswer("Select an Project.", projectsList...)
+			projectID := projectsMap[projectFullName]
+
+			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", googleResourceTypes...)
+			sanitizedResourceType = sanitizeResourceType(resourceType)
+
+			lbctx := context.Background()
+			computeService, err := compute.NewService(lbctx)
+			lbsService := compute.NewUrlMapsService(computeService)
+			lbs, err := lbsService.List(projectID).Context(ctx).Do()
+			if err != nil {
+				fmt.Println("⚠️ Reliably encountered a problem a problem when listing load balancers. Please try again later.")
+				return ""
+			}
+			if len(lbs.Items) > 0 {
+				var lbsList = []string{}
+				for _, lb := range lbs.Items {
+					name := lb.Name
+					lbsList = append(lbsList, name)
+				}
+				resourceName = question.WithSingleChoiceAnswer("Select a resource.", lbsList...)
+			} else {
+				fmt.Println("⚠️ Reliably couldn't find matching resources.")
+				fmt.Println("Cancelling.")
+				return ""
+			}
+
+		} else {
+			fmt.Println("⚠️ Reliably couldn't list your GCP Organizations.")
+			fmt.Println("For interactive mode to work, you need to ensure the following conditions are met:")
+			fmt.Println(" - You are currently logged in to Google Cloud with the `gcloud` CLI.")
+			fmt.Println(" - The currently-logged user as the `resourcemanager.projects.list` rights on the organization you're working on.")
+			fmt.Println(" - The Cloud Resource Manager API is activated on the projects for which you want to list resources.")
+
+			var insufficientGCPRightsOptions = []string{
+				"Manually add resource (you will be asked to provide the project ID and resource name",
+				"Cancel this resource",
+			}
+			insufficientGCPRights := question.WithSingleChoiceAnswer("What do you want to do now?", insufficientGCPRightsOptions...)
+
+			if insufficientGCPRights == "Cancel this resource" {
+				return ""
+			} else {
+				projectID = question.WithStringAnswer("Enter the Project ID:")
+				resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", googleResourceTypes...)
+				sanitizedResourceType = sanitizeResourceType(resourceType)
+				resourceName = question.WithStringAnswer("Enter the Resource name:")
+			}
 		}
-		var lbsList = []string{}
-		for _, lb := range lbs.Items {
-			name := lb.Name
-			lbsList = append(lbsList, name)
-		}
-		resourceName := question.WithSingleChoiceAnswer("Select a resource.", lbsList...)
 
 		resourceID := fmt.Sprintf("%s/%s/%s", projectID, sanitizedResourceType, resourceName)
 
-		fmt.Println(resourceID)
 		return resourceID
 
 	default:
@@ -319,9 +382,14 @@ func selectAWSService(serviceType string, region string) string {
 			},
 		)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println("⚠️ Reliably encountered a problem. Please try again or use normal mode.")
+			return ""
 		}
 
+		if len(output.Items) == 0 {
+			fmt.Println("⚠️ Reliably couldn't find any available resources.")
+			return ""
+		}
 		var agwApis = []string{}
 		agwApisMap := make(map[string]string)
 		for _, api := range output.Items {
@@ -348,7 +416,12 @@ func selectAWSService(serviceType string, region string) string {
 			},
 		)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println("⚠️ Reliably encountered a problem. Please try again or use normal mode.")
+			return ""
+		}
+		if len(output.LoadBalancers) == 0 {
+			fmt.Println("⚠️ Reliably couldn't find any available resources.")
+			return ""
 		}
 		var elbs = []string{}
 		elbsMap := make(map[string]string)
@@ -357,7 +430,8 @@ func selectAWSService(serviceType string, region string) string {
 			name := aws.ToString(lb.LoadBalancerName)
 			parsedArn, err := arn.Parse(elbArn)
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println("⚠️ Reliably encountered a problem. Please try again or use normal mode.")
+				return ""
 			}
 			elbID := parsedArn.Resource
 			elbSlice := strings.Split(elbID, "/")
@@ -370,7 +444,8 @@ func selectAWSService(serviceType string, region string) string {
 		elbID := elbsMap[elbNiceName]
 		return elbID
 	default:
-		return "something went wrong"
+		fmt.Println("⚠️ Reliably encountered a problem. Please try again or use normal mode.")
+		return ""
 	}
 }
 
