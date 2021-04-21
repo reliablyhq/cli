@@ -36,6 +36,13 @@ func (p *dummyProvider) GetLatencyAboveThresholdPercentage(resourceID string, fr
 	return p.latencyPercentValue, p.latencyPercentError
 }
 
+func (p *dummyProvider) GetAvailabilityPercentage(resourceID string, from, to time.Time) (float64, error) {
+	if p.errorPercentError != nil {
+		return -1, p.errorPercentError
+	}
+	return 100.0 - p.errorPercentValue, nil
+}
+
 func Test_getProviderForResource(t *testing.T) {
 	p := &dummyProvider{}
 	metrics.ProviderFactories["test_get_provider_for_resource"] = func() (metrics.Provider, error) { return p, nil }

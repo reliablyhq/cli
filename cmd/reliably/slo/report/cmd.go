@@ -36,7 +36,7 @@ func NewCommand() *cobra.Command {
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
-	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", "specify the report format. Allowed Values: [json, simple, tabbed]")
+	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", "specify the report format. Allowed Values: [json, simple, tabbed, markdown]")
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "continuously watch for changes in report output")
 
 	return cmd
@@ -76,6 +76,8 @@ func runE(_ *cobra.Command, _ []string) error {
 		format = report.JSON
 	case "simple":
 		format = report.SimpleText
+	case "markdown":
+		format = report.MARKDOWN
 	}
 
 	report.Write(format, r, os.Stdout, log.StandardLogger())
@@ -150,7 +152,7 @@ func watch(manifestPath string) error {
 		select {
 		case r := <-rChan:
 			clearScreen()
-			fmt.Println(color.Magenta("Watching SLO report (3s)"), "Press CTRL+C to exit")
+			fmt.Println(color.Magenta("Refreshing SLO report every 3 seconds."), "Press CTRL+C to quit.")
 			report.Write(report.TABBED, r, os.Stdout, log.StandardLogger())
 
 		case err := <-errChan:

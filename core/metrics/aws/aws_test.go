@@ -177,7 +177,7 @@ func TestGetAwsResourceLatencyInput(t *testing.T) {
 
 }
 
-func TestAwsProviderGetLatencyMetric(t *testing.T) {
+func TestAwsProviderGetP99LatencyMetric(t *testing.T) {
 
 	arn := arnApiGateway
 	to := time.Now()
@@ -243,6 +243,78 @@ func TestAwsProviderGetLatencyMetric(t *testing.T) {
 
 			assert.NoError(t, err, "Unexpected error")
 			assert.Equal(t, tt.want, p99, "Latency is not expected value")
+		})
+	}
+
+}
+
+func TestAwsProviderGetLatencyAboveThresholdMetric(t *testing.T) {
+
+	arn := arnApiGateway
+	to := time.Now()
+	from := to.Add(-oneDay)
+	threshold := 250
+
+	defer func() {
+		delete(cloudwatchClients, "eu-west-1")
+	}()
+
+	tests := []struct {
+		name       string
+		mockedData *cloudwatch.GetMetricDataOutput
+		want       float64
+		wantErr    bool
+	}{
+		{
+			name:    "no latency value retrieved",
+			wantErr: true,
+		},
+		{
+			name: "single latency value retrieved - above threshold",
+			mockedData: &cloudwatch.GetMetricDataOutput{
+				MetricDataResults: []types.MetricDataResult{
+					{
+						Id:         aws.String("latency_above_threshold_per_min"),
+						Timestamps: []time.Time{now},
+						Values:     []float64{1},
+					},
+				},
+			},
+			want:    100,
+			wantErr: false,
+		},
+		{
+			name: "multiple latency values per minute (bool over threshold)",
+			mockedData: &cloudwatch.GetMetricDataOutput{
+				MetricDataResults: []types.MetricDataResult{
+					{
+						Id:         aws.String("latency_above_threshold_per_min"),
+						Timestamps: []time.Time{now, now, now, now, now},
+						Values:     []float64{1.0, 0.0, 1.0, 1.0, 0.0},
+					},
+				},
+			},
+			want:    60.0,
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			cloudwatchClients["eu-west-1"] = NewCloudWatchClientMock(tt.mockedData)
+
+			cw := AwsCloudWatch{}
+			lp, err := cw.GetLatencyAboveThresholdPercentage(arn, from, to, threshold)
+
+			if tt.wantErr {
+				assert.NotEqual(t, nil, err, "Expected error not returned in result")
+				t.Log(err)
+				return
+			}
+
+			assert.NoError(t, err, "Unexpected error")
+			assert.Equal(t, tt.want, lp, "Latency percentage is not expected value")
 		})
 	}
 

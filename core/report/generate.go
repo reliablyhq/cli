@@ -59,10 +59,9 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 			ServiceLevels: sls,
 		}
 
-		allValues := []float64{}
-		valuesHasError := false
 		for _, sl := range s.ServiceLevels {
-
+			allValues := []float64{}
+			valuesHasError := false
 			for _, sli := range sl.Indicators {
 				provider, err := getProviderForResource(sli.Provider)
 				if err != nil {
@@ -76,7 +75,7 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 					threshold := int(c.Threshold.Duration.Milliseconds())
 					val, err = provider.GetLatencyAboveThresholdPercentage(sli.ID, from, to, threshold)
 				case "availability":
-					val, err = provider.GetErrorPercentageMetricForResource(sli.ID, from, to)
+					val, err = provider.GetAvailabilityPercentage(sli.ID, from, to)
 				default:
 					continue // skip unknown SL type - should not occur here though
 				}
