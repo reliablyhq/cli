@@ -103,12 +103,12 @@ func declareSLOForService(s *manifest.Service) {
 	slType := question.WithSingleChoiceAnswer("What type of SLO do you want to declare?", "Availability", "Latency")
 	sl.Type = sanitizeString(slType)
 
+	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?", 0, 100)
+
 	if sl.Type == "latency" {
 		threshold := question.WithDurationAnswer("What is your latency threshold (in milliseconds)?")
 		sl.Criteria = &manifest.LatencyCriteria{Threshold: threshold}
 	}
-
-	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?", 0, 100)
 
 	do := question.WithBoolAnswer("Do you want to add an SLI to measure this SLO?")
 	if do {
