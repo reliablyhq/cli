@@ -43,7 +43,7 @@ func NewCommand() *cobra.Command {
 func runE(_ *cobra.Command, args []string) error {
 	var m manifest.Manifest
 	if _, err := os.Stat(manifestPath); err == nil {
-		if !question.WithBoolAnswer(fmt.Sprintf("Existing manifest detected (%s); Do you want to overwrite it?", manifestPath)) {
+		if !question.WithBoolAnswer(fmt.Sprintf("Existing manifest detected (%s); Do you want to overwrite it?", manifestPath), question.WithNoAsDefault) {
 			return nil
 		}
 	}
@@ -91,7 +91,7 @@ func populateManifestInteractively(m *manifest.Manifest) {
 	m.Services = append(m.Services, &s)
 	fmt.Println(color.Green(fmt.Sprintf("Service '%s' added", s.Name)))
 
-	if question.WithBoolAnswer("Do you want to add another Service?") {
+	if question.WithBoolAnswer("Do you want to add another Service?", question.WithNoAsDefault) {
 		populateManifestInteractively(m)
 	}
 
@@ -110,7 +110,7 @@ func declareSLOForService(s *manifest.Service) {
 		sl.Criteria = &manifest.LatencyCriteria{Threshold: threshold}
 	}
 
-	do := question.WithBoolAnswer("Do you want to add an SLI to measure this SLO?")
+	do := question.WithBoolAnswer("Do you want to add an SLI to measure this SLO?", question.WithYesAsDefault)
 	if do {
 		providers := []string{}
 		for key := range providersMap {
@@ -128,14 +128,14 @@ func declareSLOForService(s *manifest.Service) {
 				ID:       id,
 			})
 
-			do = question.WithBoolAnswer("Do you want to add another SLI?")
+			do = question.WithBoolAnswer("Do you want to add another SLI?", question.WithNoAsDefault)
 		}
 	}
 	sl.Name = question.WithStringAnswer("What is the name of this SLO?")
 	s.ServiceLevels = append(s.ServiceLevels, &sl)
 	fmt.Println(color.Green(fmt.Sprintf("SLO '%s' added to Service '%s'", sl.Name, s.Name)))
 
-	if question.WithBoolAnswer("Do you want to add another SLO?") {
+	if question.WithBoolAnswer("Do you want to add another SLO?", question.WithNoAsDefault) {
 		declareSLOForService(s)
 	}
 }

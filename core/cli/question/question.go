@@ -60,11 +60,25 @@ func WithDurationAnswer(question string) core.Duration {
 	}
 }
 
-func WithBoolAnswer(question string) bool {
+type BoolAnswer = bool
+
+const (
+	WithYesAsDefault bool = true
+	WithNoAsDefault  bool = false
+)
+
+func WithBoolAnswer(question string, yesno ...BoolAnswer) bool {
 	var b bool
+	var defaultAnwser bool = true
+
+	// use variadic argument as single optional param
+	if len(yesno) > 0 {
+		defaultAnwser = yesno[0]
+	}
+
 	err := survey.AskOne(&survey.Confirm{
 		Message: question,
-		Default: true,
+		Default: defaultAnwser,
 	}, &b)
 	if err == terminal.InterruptErr {
 		os.Exit(0)
