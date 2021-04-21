@@ -4,6 +4,7 @@
 
 ### Changed
 
+- `slo report` command now includes and output format of markdown
 - changed computation for latency SLO: percentage of 99 percentiles under threshold for 1-minute samples
 
 ## [0.10.0] - 2021-04-19
