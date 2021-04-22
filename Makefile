@@ -40,9 +40,6 @@ show/coverage:
 requirements:
 	go mod tidy -v
 
-lint:
-	${GOPATH}/bin/golint ./...
-
 # format source code in place
 format:
 	go fmt ./...
