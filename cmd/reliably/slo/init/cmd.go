@@ -44,6 +44,8 @@ var (
 	}
 )
 
+const iconWarn = "⚠️ "
+
 func NewCommand() *cobra.Command {
 	cmd := cobra.Command{
 		Use:     "init",
@@ -124,12 +126,12 @@ func declareSLOForService(s *manifest.Service) {
 	slType := question.WithSingleChoiceAnswer("What type of SLO do you want to declare?", "Availability", "Latency")
 	sl.Type = sanitizeString(slType)
 
+	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?", 0, 100)
+
 	if sl.Type == "latency" {
 		threshold := question.WithDurationAnswer("What is your latency threshold (in milliseconds)?")
 		sl.Criteria = &manifest.LatencyCriteria{Threshold: threshold}
 	}
-
-	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?", 0, 100)
 
 	do := question.WithBoolAnswer("Do you want to add a resource for measuring your SLI?", question.WithYesAsDefault)
 	if do {
@@ -166,13 +168,13 @@ func declareSLOForService(s *manifest.Service) {
 func getResourceIDForProvider(provider string) string {
 	switch provider {
 	case "aws":
-		resourceArn := question.WithStringAnswer("Paste an AWS ARN, or type \"help\" for interactive mode.")
-		if resourceArn == "help" {
+		resourceArn := question.WithStringAnswer("Paste an AWS ARN, or type \"i\" for interactive mode.")
+		if resourceArn == "i" {
 			resolver := endpoints.DefaultResolver()
 			partitions := resolver.(endpoints.EnumPartitions).Partitions()
 
 			if len(partitions) == 0 {
-				fmt.Println("⚠️ Reliably couldn't query AWS. Please try again or use normal mode.")
+				fmt.Println(iconWarn, "Reliably couldn't query AWS. Please try again or use normal mode.")
 				return ""
 			}
 
@@ -192,7 +194,7 @@ func getResourceIDForProvider(provider string) string {
 
 			if len(partition.Regions()) == 0 {
 				if len(partitions) == 0 {
-					fmt.Println("⚠️ Reliably couldn't query AWS. Please try again or use normal mode.")
+					fmt.Println(iconWarn, "Reliably couldn't query AWS. Please try again or use normal mode.")
 					return ""
 				}
 			}
@@ -217,13 +219,13 @@ func getResourceIDForProvider(provider string) string {
 			iamParams := &iam.GetUserInput{}
 			user, err := clientIAM.GetUser(context.TODO(), iamParams)
 			if err != nil {
-				fmt.Println("⚠️ Reliably couldn't authenticate you with AWS. Make sure you are logged in to AWS.")
+				fmt.Println(iconWarn, "Reliably couldn't authenticate you with AWS. Make sure you are logged in to AWS.")
 				return ""
 			}
 			userArnStr := aws.ToString(user.User.Arn)
 			userArn, err := arn.Parse(userArnStr)
 			if err != nil {
-				fmt.Println("⚠️ Reliably encountered a problem. Please try again or use normal mode.")
+				fmt.Println(iconWarn, "Reliably encountered a problem. Please try again or use normal mode.")
 				return ""
 			}
 			accountID := userArn.AccountID
@@ -313,16 +315,16 @@ func getResourceIDForProvider(provider string) string {
 				}
 				resourceName = question.WithSingleChoiceAnswer("Select a resource.", lbsList...)
 			} else {
-				fmt.Println("⚠️ Reliably couldn't find matching resources.")
+				fmt.Println(iconWarn, "Reliably couldn't find matching resources.")
 				fmt.Println("Cancelling.")
 				return ""
 			}
 
 		} else {
-			fmt.Println("⚠️ Reliably couldn't list your GCP Organizations.")
+			fmt.Println(iconWarn, "Reliably couldn't list your GCP Organizations.")
 			fmt.Println("For interactive mode to work, you need to ensure the following conditions are met:")
 			fmt.Println(" - You are currently logged in to Google Cloud with the `gcloud` CLI.")
-			fmt.Println(" - The currently-logged user as the `resourcemanager.projects.list` rights on the organization you're working on.")
+			fmt.Println(" - The currently-logged user has the `resourcemanager.projects.list` rights on the organization you're working on.")
 			fmt.Println(" - The Cloud Resource Manager API is activated on the projects for which you want to list resources.")
 
 			var insufficientGCPRightsOptions = []string{
@@ -370,12 +372,12 @@ func selectAWSService(serviceType string, region string) string {
 			},
 		)
 		if err != nil {
-			fmt.Println("⚠️ Reliably encountered a problem. Please try again or use normal mode.")
+			fmt.Println(iconWarn, "Reliably encountered a problem. Please try again or use normal mode.")
 			return ""
 		}
 
 		if len(output.Items) == 0 {
-			fmt.Println("⚠️ Reliably couldn't find any available resources.")
+			fmt.Println(iconWarn, "Reliably couldn't find any available resources.")
 			return ""
 		}
 		var agwApis = []string{}
@@ -404,11 +406,11 @@ func selectAWSService(serviceType string, region string) string {
 			},
 		)
 		if err != nil {
-			fmt.Println("⚠️ Reliably encountered a problem. Please try again or use normal mode.")
+			fmt.Println(iconWarn, "Reliably encountered a problem. Please try again or use normal mode.")
 			return ""
 		}
 		if len(output.LoadBalancers) == 0 {
-			fmt.Println("⚠️ Reliably couldn't find any available resources.")
+			fmt.Println(iconWarn, "Reliably couldn't find any available resources.")
 			return ""
 		}
 		var elbs = []string{}
@@ -418,7 +420,7 @@ func selectAWSService(serviceType string, region string) string {
 			name := aws.ToString(lb.LoadBalancerName)
 			parsedArn, err := arn.Parse(elbArn)
 			if err != nil {
-				fmt.Println("⚠️ Reliably encountered a problem. Please try again or use normal mode.")
+				fmt.Println(iconWarn, "Reliably encountered a problem. Please try again or use normal mode.")
 				return ""
 			}
 			elbID := parsedArn.Resource
@@ -432,7 +434,7 @@ func selectAWSService(serviceType string, region string) string {
 		elbID := elbsMap[elbNiceName]
 		return elbID
 	default:
-		fmt.Println("⚠️ Reliably encountered a problem. Please try again or use normal mode.")
+		fmt.Println(iconWarn, "Reliably encountered a problem. Please try again or use normal mode.")
 		return ""
 	}
 }
@@ -442,7 +444,7 @@ func handleGCPError(err error) {
 	errStringSlice := strings.Split(errString, ".,")
 	errStringNoSuffix := errStringSlice[0] + "."
 	cleanErrString := strings.TrimPrefix(errStringNoSuffix, "googleapi: ")
-	fmt.Println(color.Bold(color.Red("⚠️ GCP Error:")))
+	fmt.Println(color.Bold(color.Red(iconWarn, "GCP Error:")))
 	fmt.Printf("%s\n", cleanErrString)
 }
 
