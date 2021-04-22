@@ -13,7 +13,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
@@ -73,8 +72,6 @@ func runE(_ *cobra.Command, _ []string) error {
 
 		return errors.New("An error occured while attempting to load the manifest")
 	}
-
-	spew.Dump(m)
 
 	r, err := report.FromManifest(m)
 	if err != nil {
