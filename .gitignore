@@ -27,3 +27,6 @@ report.json
 
 # prevent reliably.yaml files being committed
 reliably.yaml
+
+# IDE folder
+.vscode/
