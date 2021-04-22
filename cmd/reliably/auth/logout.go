@@ -78,7 +78,7 @@ func logoutRun(opts *LogoutOptions) error {
 		err := survey.AskOne(&survey.Confirm{
 			Message: fmt.Sprintf("Are you sure you want to log out of %s%s?", hostname, usernameStr),
 			Default: true,
-		}, &keepGoing)
+		}, &keepGoing, survey.WithShowCursor(true))
 		if err != nil {
 			return fmt.Errorf("could not prompt: %w", err)
 		}

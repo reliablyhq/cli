@@ -17,7 +17,7 @@ func WithStringAnswer(questionText string) string {
 	for len(text) == 0 {
 		err := survey.AskOne(&survey.Input{
 			Message: questionText,
-		}, &text, survey.WithValidator(survey.Required))
+		}, &text, survey.WithValidator(survey.Required), survey.WithShowCursor(true))
 		if err == terminal.InterruptErr {
 			os.Exit(0)
 		}
@@ -79,7 +79,7 @@ func WithBoolAnswer(question string, yesno ...BoolAnswer) bool {
 	err := survey.AskOne(&survey.Confirm{
 		Message: question,
 		Default: defaultAnwser,
-	}, &b)
+	}, &b, survey.WithShowCursor(true))
 	if err == terminal.InterruptErr {
 		os.Exit(0)
 	}

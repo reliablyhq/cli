@@ -218,7 +218,7 @@ func promptToLoadMore(opts *HistoryOptions) error {
 	err := survey.AskOne(prompt, &null, survey.WithIcons(func(icons *survey.IconSet) {
 		icons.Question.Text = ">"
 		icons.Question.Format = "green"
-	}), survey.WithStdio(os.Stdin, os.Stderr, os.Stderr)) // we redirect prompt to stderr only !
+	}), survey.WithStdio(os.Stdin, os.Stderr, os.Stderr), survey.WithShowCursor(false)) // we redirect prompt to stderr only !
 	// i wanted to be able to use opts.IO.x but not same type for survey IO :(
 
 	if err == nil {

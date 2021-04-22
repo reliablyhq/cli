@@ -135,7 +135,7 @@ func loginRun(opts *LoginOptions) error {
 				hostname,
 				username),
 			Default: false,
-		}, &keepGoing)
+		}, &keepGoing, survey.WithShowCursor(true))
 		if err != nil {
 			return fmt.Errorf("could not prompt: %w", err)
 		}
@@ -197,7 +197,7 @@ func loginRun(opts *LoginOptions) error {
 		var token string
 		err := survey.AskOne(&survey.Password{
 			Message: "Paste your authentication token:",
-		}, &token, survey.WithValidator(survey.Required))
+		}, &token, survey.WithValidator(survey.Required), survey.WithShowCursor(true))
 		// forces start beginning on new line after prompt
 		fmt.Fprint(opts.IO.ErrOut, ResetLine)
 		if err != nil {
