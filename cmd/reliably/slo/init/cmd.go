@@ -17,11 +17,22 @@ var (
 	manifestPath        string
 	supportedExtensions = []string{".yaml", ".json"}
 	googleResourceTypes = []string{"Google Cloud Load Balancers"}
-	providersMap        = map[string]string{
+	awsPartitionsIDs    = []string{
+		"aws",
+		"aws-cn",
+		"aws-us-gov",
+	}
+	awsServicesMap = map[string]string{
+		"API Gateway":           "apigateway",
+		"Elastic Load Balancer": "elasticloadbalancing",
+	}
+	providersMap = map[string]string{
 		"Amazon Web Services":   "aws",
 		"Google Cloud Platform": "gcp",
 	}
 )
+
+const iconWarn = "⚠️ "
 
 func NewCommand() *cobra.Command {
 	cmd := cobra.Command{
@@ -82,8 +93,6 @@ func populateManifestInteractively(m *manifest.Manifest) {
 
 	var s manifest.Service
 
-	// s.Type = manifest.Service.Type{}
-
 	s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?")
 
 	declareSLOForService(&s)
@@ -123,10 +132,12 @@ func declareSLOForService(s *manifest.Service) {
 			provider := providersMap[providerFullName]
 			id := getResourceIDForProvider(provider)
 
-			sl.Indicators = append(sl.Indicators, manifest.ServiceLevelIndicator{
-				Provider: provider,
-				ID:       id,
-			})
+			if id != "" { // We're returning empty strings when something fails...
+				sl.Indicators = append(sl.Indicators, manifest.ServiceLevelIndicator{
+					Provider: provider,
+					ID:       id,
+				})
+			}
 
 			do = question.WithBoolAnswer("Do you want to add another resource for measuring your SLI?", question.WithNoAsDefault)
 		}
@@ -143,15 +154,9 @@ func declareSLOForService(s *manifest.Service) {
 func getResourceIDForProvider(provider string) string {
 	switch provider {
 	case "aws":
-		return question.WithStringAnswer("What is the ARN of the resource?")
+		return buildAWSArn()
 	case "gcp":
-		{
-			projectID := question.WithStringAnswer("What is the GCP project ID?")
-			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", googleResourceTypes...)
-			sanitizedResourceType := sanitizeString(resourceType)
-			resourceName := question.WithStringAnswer("What is the name of resource?")
-			return fmt.Sprintf("%s/%s/%s", projectID, sanitizedResourceType, resourceName)
-		}
+		return buildGCPResourceID()
 	default:
 		return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.")
 	}
