@@ -6,6 +6,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/terminal"
@@ -231,8 +232,12 @@ func getObservationWindow() core.Iso8601Duration {
 					if err != nil {
 						return fmt.Errorf("Unable to parse your string: %s", err)
 					}
-					if d.ToDuration() == 0 {
+					duration := d.ToDuration()
+					if duration == 0 {
 						return errors.New("Your duration cannot be zero. Please check your format.")
+					}
+					if duration > time.Hour*24*365 {
+						return errors.New("Your duration cannot exceed 1 year.")
 					}
 					return nil
 				}),
