@@ -81,15 +81,12 @@ github.com/aws/aws-sdk-go-v2 v1.3.0 h1:2B/SbB1oOJe8RSl/TIgE11BDE4sX7Z+JupLxTdA2R
 github.com/aws/aws-sdk-go-v2 v1.3.0/go.mod h1:hTQc/9pYq5bfFACIUY9tc/2SYWd9Vnmw+testmuQeRY=
 github.com/aws/aws-sdk-go-v2 v1.3.2 h1:RQj8l98yKUm0UV2Wd3w/Ms+TXV9Rs1E6Kr5tRRMfyU4=
 github.com/aws/aws-sdk-go-v2 v1.3.2/go.mod h1:7OaACgj2SX3XGWnrIjGlJM22h6yD6MEWKvm7levnnM8=
-github.com/aws/aws-sdk-go-v2 v1.3.3 h1:BKKakJ9v28yopLRF6bg6FAMbVKmcXuZe+r688XMsxtk=
 github.com/aws/aws-sdk-go-v2/config v1.1.3 h1:pYDr4DTr0w4GfweXhX2ns1ZGyH46nLP/ZeQQodl1s68=
 github.com/aws/aws-sdk-go-v2/config v1.1.3/go.mod h1:yf3tNRNqZKlylefSdp5R3v+sm1el90fhUTcSa/t69Ro=
 github.com/aws/aws-sdk-go-v2/credentials v1.1.3 h1:Q0S5OPP4l9kWrmPNK500pdQhg81x4E3UpvugYG5Wilc=
 github.com/aws/aws-sdk-go-v2/credentials v1.1.3/go.mod h1:afuzRuLhPEe08fePFh4gI9jnHuXd8AJDCYZNo3rKRKE=
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.0.4 h1:V7DbyJMo5kq31ZiyQMmjihjexftM1oJ6luRs09M5/Uc=
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.0.4/go.mod h1:BDw1ukadBHn//M/n7LqpEgimGS0QtiJePnygMsbuYMs=
-github.com/aws/aws-sdk-go-v2/service/apigateway v1.2.2 h1:U/33opBj4zJf667z1rei2x0VyA1szpxd/SFTHCTMXCk=
-github.com/aws/aws-sdk-go-v2/service/apigateway v1.2.2/go.mod h1:PG5C99oGw1oXybDMmuF8iAHtLT3Y9PfvRHT8uyCk5Vw=
 github.com/aws/aws-sdk-go-v2/service/apigatewayv2 v1.2.2 h1:DG/CMyWpGLjUZlP4R5cuihbfCjbzR7n4ntTXd/ACxX0=
 github.com/aws/aws-sdk-go-v2/service/apigatewayv2 v1.2.2/go.mod h1:gRrmvdpLpVqHkBT87QVd9XJkLNM7XzywuVe+KWNZvMc=
 github.com/aws/aws-sdk-go-v2/service/cloudwatch v1.2.0 h1:+QEKobG+Bl0aB9svUqPq1R4XrpybtD+omHjPcEadILU=
@@ -654,7 +651,6 @@ golang.org/x/sys v0.0.0-20210104204734-6f8348627aad/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210220050731-9a76102bfb43/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210305230114-8fe3ee5dd75b/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
-golang.org/x/sys v0.0.0-20210314195730-07df6a141424/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210315160823-c6e025ad8005/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 h1:F5Gozwx4I1xtr/sr/8CFbb57iKi3297KFs0QDbGN60A=
@@ -755,8 +751,6 @@ google.golang.org/api v0.35.0/go.mod h1:/XrVsuzM0rZmrsbjJutiuftIzeuTQcEeaYcSk/mQ
 google.golang.org/api v0.36.0/go.mod h1:+z5ficQTmoYpPn8LCUNVpK5I7hwkpjbcgqA7I34qYtE=
 google.golang.org/api v0.40.0/go.mod h1:fYKFpnQN0DsDSKRVRcQSDQNtqWPfM9i+zNPxepjRCQ8=
 google.golang.org/api v0.41.0/go.mod h1:RkxM5lITDfTzmyKFPt+wGrCJbVfniCr2ool8kTBzRTU=
-google.golang.org/api v0.42.0 h1:uqATLkpxiBrhrvFoebXUjvyzE9nQf+pVyy0Z0IHE+fc=
-google.golang.org/api v0.42.0/go.mod h1:+Oj4s6ch2SEGtPjGqfUfZonBH0GjQH89gTeKKAEGZKI=
 google.golang.org/api v0.43.0/go.mod h1:nQsDGjRXMo4lvh5hP0TKqF244gqhGcr/YSIykhUk/94=
 google.golang.org/api v0.44.0 h1:URs6qR1lAxDsqWITsQXI4ZkGiYJ5dHtRNiCpfs2OeKA=
 google.golang.org/api v0.44.0/go.mod h1:EBOGZqzyhtvMDoxwS97ctnh0zUmYY6CxqXsc1AvkYD8=
@@ -806,10 +800,7 @@ google.golang.org/genproto v0.0.0-20201214200347-8c77b98c765d/go.mod h1:FWY/as6D
 google.golang.org/genproto v0.0.0-20210222152913-aa3ee6e6a81c/go.mod h1:FWY/as6DDZQgahTzZj3fqbO1CbirC29ZNUFHwi0/+no=
 google.golang.org/genproto v0.0.0-20210303154014-9728d6b83eeb/go.mod h1:FWY/as6DDZQgahTzZj3fqbO1CbirC29ZNUFHwi0/+no=
 google.golang.org/genproto v0.0.0-20210310155132-4ce2db91004e/go.mod h1:FWY/as6DDZQgahTzZj3fqbO1CbirC29ZNUFHwi0/+no=
-google.golang.org/genproto v0.0.0-20210312152112-fc591d9ea70f/go.mod h1:FWY/as6DDZQgahTzZj3fqbO1CbirC29ZNUFHwi0/+no=
 google.golang.org/genproto v0.0.0-20210319143718-93e7006c17a6/go.mod h1:FWY/as6DDZQgahTzZj3fqbO1CbirC29ZNUFHwi0/+no=
-google.golang.org/genproto v0.0.0-20210322173543-5f0e89347f5a h1:qPl5LrjqtjpIzdHXcRiB3Uls67pHK2yRx/feFB/ILrw=
-google.golang.org/genproto v0.0.0-20210322173543-5f0e89347f5a/go.mod h1:FWY/as6DDZQgahTzZj3fqbO1CbirC29ZNUFHwi0/+no=
 google.golang.org/genproto v0.0.0-20210402141018-6c239bbf2bb1 h1:E7wSQBXkH3T3diucK+9Z1kjn4+/9tNG7lZLr75oOhh8=
 google.golang.org/genproto v0.0.0-20210402141018-6c239bbf2bb1/go.mod h1:9lPAdzaEmUacj36I+k7YKbEc5CXzPIeORRgDAUOu28A=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=

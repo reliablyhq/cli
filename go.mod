@@ -10,7 +10,6 @@ require (
 	github.com/aws/aws-sdk-go v1.38.20
 	github.com/aws/aws-sdk-go-v2 v1.3.2
 	github.com/aws/aws-sdk-go-v2/config v1.1.3
-	github.com/aws/aws-sdk-go-v2/service/apigateway v1.2.2
 	github.com/aws/aws-sdk-go-v2/service/apigatewayv2 v1.2.2
 	github.com/aws/aws-sdk-go-v2/service/cloudwatch v1.2.0
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.2.2
@@ -36,14 +35,11 @@ require (
 	github.com/olekukonko/tablewriter v0.0.1
 	github.com/open-policy-agent/opa v0.24.0
 	github.com/pkg/browser v0.0.0-20201207095918-0426ae3fba23
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
-	golang.org/x/net v0.0.0-20210316092652-d523dce5a7f4 // indirect
-	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 // indirect
 	golang.org/x/term v0.0.0-20210406210042-72f3dc4e9b72 // indirect
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/api v0.44.0
