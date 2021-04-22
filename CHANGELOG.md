@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Fixes missing SLOs without result in markdown report; [#208](https://github.com/reliablyhq/cli/issues/208)
+
 ## [0.11.0] - 2021-04-21
 ### Changed
 

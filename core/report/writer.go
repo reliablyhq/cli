@@ -168,11 +168,19 @@ func markdownFuncMap() template.FuncMap {
 			fmt.Fprint(&builder, "|")
 			fmt.Fprintf(&builder, "%s", sl.Name)
 			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%.2f%s", sl.Result.Actual, unit)
+			if sl.Result != nil {
+				fmt.Fprintf(&builder, "%.2f%s", sl.Result.Actual, unit)
+			} else {
+				fmt.Fprint(&builder, "---")
+			}
 			fmt.Fprint(&builder, "|")
 			fmt.Fprintf(&builder, "%v%s", sl.Objective, unit)
 			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%.2f%s", sl.Result.Delta, unit)
+			if sl.Result != nil {
+				fmt.Fprintf(&builder, "%.2f%s", sl.Result.Delta, unit)
+			} else {
+				fmt.Fprint(&builder, "---")
+			}
 			fmt.Fprint(&builder, "|")
 			fmt.Fprintf(&builder, "(last %s)", period)
 			fmt.Fprint(&builder, "|")
