@@ -7,6 +7,7 @@ package kubernetes
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -43,6 +44,8 @@ import (
 // 		} `yaml:"labels"`
 // 	} `yaml:"metadata"`
 // }
+
+var ctx = context.TODO()
 
 type KubernetesAPI struct {
 	APIVersion string `json:"apiVersion"`
@@ -161,7 +164,7 @@ func GetFormattedJSON(source string) (result string) {
 
 // GetPodSpec provide a list an of JSON Pod specs from the clientset
 func GetPodSpec(cs kubernetes.Clientset, namespace string) (po []string, err error) {
-	pods, err := cs.CoreV1().Pods(namespace).List(metav1.ListOptions{})
+	pods, err := cs.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return
 	}
@@ -175,7 +178,7 @@ func GetPodSpec(cs kubernetes.Clientset, namespace string) (po []string, err err
 
 // GetDeploymentSpec provide a list an of JSON Deployment specs from the clientset
 func GetDeploymentSpec(cs kubernetes.Clientset, namespace string) (deploy []string, err error) {
-	deployment, err := cs.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
+	deployment, err := cs.AppsV1().Deployments(namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return
 	}
@@ -189,7 +192,7 @@ func GetDeploymentSpec(cs kubernetes.Clientset, namespace string) (deploy []stri
 
 // GetClusterRoleBindingSpec provide a list an of JSON Cluster Role Binding specs from the clientset
 func GetClusterRoleBindingSpec(cs kubernetes.Clientset) (clusterRoleBinding []string, err error) {
-	crb, err := cs.RbacV1().ClusterRoleBindings().List(metav1.ListOptions{})
+	crb, err := cs.RbacV1().ClusterRoleBindings().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return
 	}
@@ -208,7 +211,7 @@ func GetClusterRoleBindingSpec(cs kubernetes.Clientset) (clusterRoleBinding []st
 // /!\ in only one namespace, passed as a parameter.
 // /!\ Probably a TODO here.
 func GetIngressSpec(cs kubernetes.Clientset, namespace string) (ingress []string, err error) {
-	ing, err := cs.NetworkingV1beta1().Ingresses(namespace).List(metav1.ListOptions{})
+	ing, err := cs.NetworkingV1beta1().Ingresses(namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return
 	}
@@ -222,7 +225,7 @@ func GetIngressSpec(cs kubernetes.Clientset, namespace string) (ingress []string
 
 // GetPodSecurityPolicySpec provide a list an of JSON Pod Security Policy specs from the clientset
 func GetPodSecurityPolicySpec(cs kubernetes.Clientset) (podSecPol []string, err error) {
-	secpol, err := cs.PolicyV1beta1().PodSecurityPolicies().List(metav1.ListOptions{})
+	secpol, err := cs.PolicyV1beta1().PodSecurityPolicies().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return
 	}
@@ -235,7 +238,7 @@ func GetPodSecurityPolicySpec(cs kubernetes.Clientset) (podSecPol []string, err 
 
 // GetNodeSpec returns the list of JSON Nodes specs from the clientset
 func GetNodeSpec(cs kubernetes.Clientset) (nodes []string, err error) {
-	np, err := cs.CoreV1().Nodes().List(metav1.ListOptions{})
+	np, err := cs.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return
 	}
