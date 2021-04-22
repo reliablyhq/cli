@@ -69,7 +69,7 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 		reportSimpleText(r, w)
 
 	case MARKDOWN:
-		reportMarkdown(r, w)
+		_ = reportMarkdown(r, w)
 
 	default:
 		tabbedoutput(r, w)
@@ -121,10 +121,10 @@ func reportMarkdown(r *Report, w io.Writer) error {
 
 Report time: {{ dateTime .Timestamp }}
 {{ range $index, $service := .Services }}
-## Service #({{ serviceNo $index}}): {{$service.Name}}
+## Service #{{ serviceNo $index}}: {{$service.Name}}
 
-|  |  Type    | Name          | Actual | Target | Delta  |
-|--| -------- | --------------| ------ | ------ | ------ | ---------------
+|  |  Type    | Name          | Actual | Target | Delta  | Time Window  |
+|--| -------- | --------------| ------ | ------ | ------ | ------------ |
 {{ range $ind, $sl := $service.ServiceLevels }}{{ serviceLevelRow $sl }}
 {{ end }}
 {{ end }}
@@ -189,7 +189,7 @@ func markdownFuncMap() template.FuncMap {
 				fmt.Fprint(&builder, "---")
 			}
 			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "(last %s)", period)
+			fmt.Fprint(&builder, core.HumanizeDuration(period))
 			fmt.Fprint(&builder, "|")
 
 			return builder.String()
@@ -221,7 +221,9 @@ func tabbedoutput(r *Report, w io.Writer) {
 	table.SetHeader([]string{"",
 		color.Bold(color.Magenta("Actual")),
 		color.Bold(color.Magenta("Target")),
-		color.Bold(color.Magenta("Delta")), ""})
+		color.Bold(color.Magenta("Delta")),
+		color.Bold(color.Magenta("Time Window")), // ! caution: we use non-breaking space to have header not on two lines !
+	})
 
 	emptyRow := []string{"", "", "", ""}
 
@@ -240,6 +242,8 @@ func tabbedoutput(r *Report, w io.Writer) {
 			unit := "%"
 			colorFunc := color.Green
 
+			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
+
 			if sl.Result == nil {
 				tick = iconUnknown
 
@@ -247,7 +251,9 @@ func tabbedoutput(r *Report, w io.Writer) {
 					fmt.Sprintf("%s %s", tick, sl.Name),
 					"---",
 					fmt.Sprintf("%v%s", sl.Objective, unit),
-					"---"}
+					"---",
+					core.HumanizeDuration(period),
+				}
 				table.Append(row)
 
 			} else {
@@ -261,7 +267,9 @@ func tabbedoutput(r *Report, w io.Writer) {
 					fmt.Sprintf("%s %s", tick, sl.Name),
 					color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))),
 					fmt.Sprintf("%v%s", sl.Objective, unit),
-					fmt.Sprintf("%.2f%s", sl.Result.Delta, unit)}
+					fmt.Sprintf("%.2f%s", sl.Result.Delta, unit),
+					core.HumanizeDuration(period),
+				}
 				table.Append(row)
 
 			}
