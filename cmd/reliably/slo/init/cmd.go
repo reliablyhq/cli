@@ -124,12 +124,12 @@ func declareSLOForService(s *manifest.Service) {
 	slType := question.WithSingleChoiceAnswer("What type of SLO do you want to declare?", "Availability", "Latency")
 	sl.Type = sanitizeString(slType)
 
-	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?", 0, 100)
-
 	if sl.Type == "latency" {
 		threshold := question.WithDurationAnswer("What is your latency threshold (in milliseconds)?")
 		sl.Criteria = &manifest.LatencyCriteria{Threshold: threshold}
 	}
+
+	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?", 0, 100)
 
 	do := question.WithBoolAnswer("Do you want to add a resource for measuring your SLI?", question.WithYesAsDefault)
 	if do {
@@ -145,7 +145,7 @@ func declareSLOForService(s *manifest.Service) {
 			id := getResourceIDForProvider(provider)
 
 			if id != "" { // We're returning empty strings when something fails...
-				s.Resources = append(s.Resources, manifest.ServiceResource{
+				sl.Indicators = append(sl.Indicators, manifest.ServiceLevelIndicator{
 					Provider: provider,
 					ID:       id,
 				})
@@ -292,10 +292,10 @@ func getResourceIDForProvider(provider string) string {
 			}
 			// TODO Handle empty list case
 			projectFullName := question.WithSingleChoiceAnswer("Select an Project.", projectsList...)
-			projectID := projectsMap[projectFullName]
+			projectID = projectsMap[projectFullName]
 
 			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", googleResourceTypes...)
-			sanitizedResourceType = sanitizeResourceType(resourceType)
+			sanitizedResourceType = sanitizeString(resourceType)
 
 			lbctx := context.Background()
 			computeService, err := compute.NewService(lbctx)
@@ -336,7 +336,7 @@ func getResourceIDForProvider(provider string) string {
 			} else {
 				projectID = question.WithStringAnswer("Enter the Project ID:")
 				resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", googleResourceTypes...)
-				sanitizedResourceType = sanitizeResourceType(resourceType)
+				sanitizedResourceType = sanitizeString(resourceType)
 				resourceName = question.WithStringAnswer("Enter the Resource name:")
 			}
 		}
@@ -446,6 +446,6 @@ func handleGCPError(err error) {
 	fmt.Printf("%s\n", cleanErrString)
 }
 
-func sanitizeResourceType(s string) string {
+func sanitizeString(s string) string {
 	return strings.ToLower(strings.ReplaceAll(s, " ", "-"))
 }
