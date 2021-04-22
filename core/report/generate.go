@@ -65,7 +65,12 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 			if duration == 0 {
 				// we use a default value, in case we did not found any
 				duration = oneDay
+			} else {
+				// We make sure to have duration rounded to 1-minute precision !!!
+				// important for AWS metrics period being multiple of 60 sec !!!
+				duration = duration.Truncate(time.Minute)
 			}
+
 			from := to.Add(-duration)
 
 			allValues := []float64{}

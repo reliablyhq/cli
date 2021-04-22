@@ -3,6 +3,7 @@ package init
 import (
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"sort"
 	"strings"
@@ -224,7 +225,7 @@ func getObservationWindow() core.Iso8601Duration {
 				Name: "window",
 				Prompt: &survey.Input{
 					Message: "Define your custom observation window",
-					Help:    "Must be an iso8601 duration with the following format: P[n]DT[n]H[n]M[n]S or P[n]W as (D)ays, (H)ours, (M)inutes, (S)econds, (W)eeks",
+					Help:    "Must be an iso8601 duration with the following format: P[n]DT[n]H[n]M or P[n]W as (D)ays, (H)ours, (M)inutes, (W)eeks",
 				},
 				Validate: survey.ComposeValidators(survey.Required, func(val interface{}) error {
 					str := strings.ToUpper(val.(string))
@@ -232,10 +233,14 @@ func getObservationWindow() core.Iso8601Duration {
 					if err != nil {
 						return fmt.Errorf("Unable to parse your string: %s", err)
 					}
+					if d.Seconds > 0 && math.Mod(float64(d.Seconds), 60) != 0 {
+						return fmt.Errorf("We only support precision to 1 minute. If used, seconds must be a multiple of 60.")
+					}
 					duration := d.ToDuration()
 					if duration == 0 {
 						return errors.New("Your duration cannot be zero. Please check your format.")
 					}
+
 					if duration > time.Hour*24*365 {
 						return errors.New("Your duration cannot exceed 1 year.")
 					}

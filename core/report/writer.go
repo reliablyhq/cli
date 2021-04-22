@@ -10,6 +10,7 @@ import (
 
 	consolesize "github.com/nathan-fiscaletti/consolesize-go"
 	"github.com/olekukonko/tablewriter"
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/sirupsen/logrus"
@@ -100,7 +101,7 @@ func reportSimpleText(r *Report, w io.Writer) {
 				fmt.Fprintf(w, "%s %s: %.2f%s (last %s) [objective: %v%s, delta: %.2f%s]\n",
 					tick, sl.Name,
 					sl.Result.Actual, unit,
-					sl.ObservationWindow.To.Sub(sl.ObservationWindow.From),
+					core.HumanizeDurationShort(sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)),
 					sl.Objective, unit,
 					sl.Result.Delta, unit)
 
