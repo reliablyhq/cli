@@ -27,7 +27,7 @@ type (
 	Service struct {
 		Name          string          `yaml:"name" json:"name"`
 		ServiceLevels []*ServiceLevel `yaml:"service-levels" json:"service-levels"`
-		Dependencies  []string        `yaml:"dependencies" json:"dependencies"`
+		Dependencies  []string        `yaml:"-" json:"-"`
 	}
 
 	ServiceLevel struct {
