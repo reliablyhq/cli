@@ -1,98 +1,102 @@
-# Reliably CLI
+<h2 align="center">
+  <br>
+  <p align="center"><img src="https://raw.githubusercontent.com/reliablyhq/cli/main/logo.png"></p>
+</h2>
 
-![Reliably](logo.png "Reliably CLI")
+<h4 align="center">Reliably CLI</h4>
 
-Reliability toolbox for developers from the command line.
+<p align="center">
+   <a href="https://github.com/reliablyhq/cli/releases">
+   <img alt="Release" src="https://img.shields.io/github/v/release/reliablyhq/cli">
+   <a href="https://goreportcard.com/report/github.com/reliablyhq/cli">
+   <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/reliablyhq/cli">
+   <a href="#">
+   <img alt="Build" src="https://github.com/reliablyhq/cli/actions/workflows/build.yaml/badge.svg">
+   <a href="https://github.com/reliablyhq/cli/issues">
+   
+   <img alt="GitHub issues" src="https://img.shields.io/github/issues/reliablyhq/cli?style=flat-square&logo=github&logoColor=white">
+   <a href="https://github.com/reliablyhq/cli/blob/master/LICENSE.md">
+   <img alt="License" src="https://img.shields.io/github/license/reliablyhq/cli">
+   <a href="#">
+   <img alt="Go Version" src="https://img.shields.io/github/go-mod/go-version/reliablyhq/cli">
+   <a href="https://pkg.go.dev/github.com/reliablyhq/cli">
+</p>
 
-### Installation
+<p align="center">
+  <a href="#installation">Installation</a> •
+  <a href="https://reliably.com/docs/">Documentation</a> •
+  <a href="https://github.com/reliablyhq/cli/blob/main/CHANGELOG.md">ChangeLog</a> •
+  <a href="#credits">Credits</a> •
+</p>
+
+---
+
+# What does Reliably do for you?
+
+Here is a really quick recap of the main features that will help you bringing
+reliability to your daily activities:
+
+* Declare and Report on your [SLO][slo]
+* Scan for reliability risks in your Kubernetes manifests
+* Run from anywhere, including your CI/CD so that you can run reliability checks
+
+[slo]: https://sre.google/sre-book/service-level-objectives/
+
+# Installation
 
 Reliably CLI is available for macOS, Linux and Windows as
 downloadable binaries from the [releases page][releases].
 
 [releases]: https://github.com/reliablyhq/cli/releases
 
-### Installation as a Krew plugin
+Reliably can also be installed as a [Krew plugin][krew].
 
-Reliably CLI can be used as a kubectl [Krew plugin][krew-home]
-for macOS and Linux.
+[krew]: https://reliably.dev/docs/guides/scan-infrastructure/kubectl-plugin/
 
-Once you have [Krew installed][krew-installation], install Reliably with the
-following command.
+Please see the [documentation][docs] for further details.
 
-```bash
-$ kubectl krew install reliably
+[docs]: https://reliably.com/docs/
+
+# Usage
+
+Reliably is a CLI and runs from anywhere you can execute its binary. From
+your terminal or embedded into a CI/CD pipeline for instance.
+
+```console
+$ reliably 
+The Reliably Command Line Interface (CLI).
+
+Usage:
+  reliably [command]
+
+Available Commands:
+  auth        Login, logout, and verify your authentication
+  completion  Generate shell completion scripts
+  history     Show your scan history
+  scan        Check for Reliably Suggestions
+  slo         service level objective commands
+  workflow    Setup your Reliably workflow
+
+Flags:
+  -h, --help       help for reliably
+      --no-color   Disable color output
+  -v, --verbose    verbose output
+      --version    version for reliably
+
+Use "reliably [command] --help" for more information about a command.
+
+Environment variables:
+  See 'reliably environment --help' for the list of supported environment variables.
+
+Feedback:
+  You can provide with feedback or report an issue at https://github.com/reliablyhq/cli/issues/new
 ```
 
-You can then use the CLI as a kubectl plugin:
+Please follow the [guidelines][] to walk you through Reliably's main features.
 
-```bash
-$ kubectl reliably
-```
-[krew-home]: (https://krew.sigs.k8s.io/)
-[krew-installation]: (https://krew.sigs.k8s.io/docs/user-guide/setup/install/)
+[guidelines]: https://reliably.dev/docs/guides/
 
-### Authentication
-
-Run `reliably auth login` to authenticate with your Reliably account.
-This will run the interactive authentication flow by default.
-
-You can also choose to login with an access token in a non-interactive mode:
-`reliably auth login --with-token < my-access-token.txt`
-
-Finally, `reliably` will respect tokens set as environment variable
-using `RELIABLY_TOKEN`.
-
-## Usage
-
-To check your Kubernetes manifests for Reliably Advice and Suggestions, simply run:
-
-```
-$ reliably scan kubernetes .
-```
-
-It will scan for manifests recursively in your current working directory.
-
-To indicate a specific file or folder, give it as a command argument:
-
-```
-$ reliably scan kubernetes manifest.yaml
-$ reliably scan kubernetes ./manifests
-```
-
-To run Reliably for suggestions against a Kubernetes cluster, run
-
-```
-$ reliably scan kubernetes --live
-```
-
-You can also pipe into `scan` command, as it can read from stdin using
-'-' as argument:
-
-```
-$ cat manifest.yaml | reliably scan kubernetes -
-```
-
-The CLI supports multiple output formats, such as `simple` *(default)*,
-`json`, `yaml`, `sarif`, `codeclimate`. To report in a specific format,
-you can use the `--format` or `-f` flag, as follow:
-
-```
-$ reliably scan kubernetes --format sarif .
-```
-
-The CLI prints out the report to the standard output, by default, but it can
-write the report to a local file. You can indicate the path of the report
-with the `--output` or `-o` flag, as follow:
-
-```
-$ reliably scan kubernetes --output ./report.txt .
-```
-
-Please read the [documentation][docs] for more information.
-
-[docs]: https://docs.reliably.com/
-
-## Credits
+# Credits
 
 This repository contains code from the Reliably CLI project as well as
 some open-source works:
