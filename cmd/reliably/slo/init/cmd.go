@@ -177,12 +177,6 @@ func getResourceIDForProvider(provider string) string {
 
 func getObservationWindow() core.Iso8601Duration {
 
-	/*
-		answers := struct {
-			Window string // survey will match the question and field names
-		}{}
-	*/
-
 	const (
 		oneHour  = "1 hour"
 		oneDay   = "1 day"
@@ -209,8 +203,6 @@ func getObservationWindow() core.Iso8601Duration {
 	err := survey.AskOne(p, &choice, survey.WithValidator(survey.Required))
 	checkPromptExit(err)
 
-	fmt.Println("chosen observ window is ", choice)
-
 	answers := struct {
 		Window core.Iso8601Duration
 	}{}
@@ -236,7 +228,6 @@ func getObservationWindow() core.Iso8601Duration {
 				Validate: survey.ComposeValidators(survey.Required, func(val interface{}) error {
 					str := strings.ToUpper(val.(string))
 					d, err := iso8601.FromString(str)
-					fmt.Println("Validate has error ?", err)
 					if err != nil {
 						return fmt.Errorf("Unable to parse your string: %s", err)
 					}
@@ -248,13 +239,7 @@ func getObservationWindow() core.Iso8601Duration {
 				Transform: survey.ComposeTransformers(
 					survey.TransformString(strings.ToUpper),
 					func(ans interface{}) interface{} {
-						fmt.Println("Hey this transform method- we convert string to duration ")
-						//str := strings.ToUpper(ans.(string))
-						d, err := iso8601.FromString(ans.(string))
-						fmt.Println("have we another error ? ", err)
-						fmt.Println("Duration parsed from string", ans, d)
-						fmt.Println(d.ToDuration())
-						fmt.Println("----")
+						d, _ := iso8601.FromString(ans.(string))
 						return core.Iso8601Duration{Duration: *d}
 					},
 				),
