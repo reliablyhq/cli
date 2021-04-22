@@ -35,7 +35,7 @@ var (
 		"aws-us-gov",
 	}
 	awsServicesMap = map[string]string{
-		"API Getaway":           "apigateway",
+		"API Gateway":           "apigateway",
 		"Elastic Load Balancer": "elasticloadbalancing",
 	}
 	providersMap = map[string]string{
