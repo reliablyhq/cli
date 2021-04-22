@@ -82,12 +82,10 @@ type Iso8601Duration struct {
 }
 
 func (d *Iso8601Duration) String() string {
-	fmt.Println("convert iso8601 wrapper to string", d.Duration.String())
 	return d.Duration.String()
 }
 
 func (d *Iso8601Duration) ToDuration() time.Duration {
-	fmt.Println("convert iso8601 wrapper to duration", d.Duration.ToDuration())
 	return d.Duration.ToDuration()
 }
 
@@ -117,12 +115,10 @@ func (d *Iso8601Duration) UnmarshalJSON(b []byte) error {
 }
 
 func (d Iso8601Duration) MarshalYAML() (interface{}, error) {
-	fmt.Println("marshall string to iso8601 struct", d)
 	return d.String(), nil
 }
 
 func (d *Iso8601Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	fmt.Println("unmarshall string to iso8601 struct")
 	var tmp interface{}
 	if err := unmarshal(&tmp); err != nil {
 		return err
