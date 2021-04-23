@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.12.0] - 2021-04-23
 ### Added
 - Added time observation window for SLO in manifest & prompt user in `slo init` generation; [#1681](https://github.com/reliablyhq/cli/issues/181)
 - `slo report` can now output the report into yaml format
@@ -105,7 +107,8 @@
 
 - Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/reliablyhq/cli/releases/tag/v0.12.0
 [0.11.0]: https://github.com/reliablyhq/cli/releases/tag/v0.11.0
 [0.10.0]: https://github.com/reliablyhq/cli/releases/tag/v0.10.0
 [0.9.0]: https://github.com/reliablyhq/cli/releases/tag/v0.9.0
