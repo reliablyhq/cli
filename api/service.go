@@ -8,23 +8,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 
 	"github.com/reliablyhq/cli/core/manifest"
-	"github.com/reliablyhq/cli/version"
 )
-
-var hostname = "https://api.reliably.com"
-
-func init() {
-	if version.IsDevVersion() {
-		hostname = "https://api.reliably.dev"
-	}
-
-	if x := os.Getenv("RELIABLY_HOST"); x != "" {
-		hostname = x
-	}
-}
 
 // PushServiceManifest - records the manifest via the API backend.
 func PushServiceManifest(org, service string, m *manifest.Manifest) error {
