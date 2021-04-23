@@ -6,9 +6,12 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -52,14 +55,34 @@ func NewCommand() *cobra.Command {
 }
 
 func runE(_ *cobra.Command, args []string) error {
-	var m manifest.Manifest
-	if _, err := os.Stat(manifestPath); err == nil {
-		if !question.WithBoolAnswer(fmt.Sprintf("Existing manifest detected (%s); Do you want to overwrite it?", manifestPath), question.WithNoAsDefault) {
-			return nil
-		}
+
+	hostname := core.Hostname()
+	client := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
+
+	// Sends the context to Reliably prior executing the command
+	orgID, err := api.CurrentUserOrganizationID(client, hostname)
+	if err != nil {
+		return err
+	}
+	log.Debug("fetching internal service manifest")
+	m, err := api.PullManifest(client, hostname, orgID)
+	if err != nil {
+		return err
 	}
 
-	populateManifestInteractively(&m)
+	if m == nil {
+		log.Debug("no services detected")
+		m = &manifest.Manifest{}
+	}
+
+	// var m manifest.Manifest
+	// if _, err := os.Stat(manifestPath); err == nil {
+	// 	if !question.WithBoolAnswer(fmt.Sprintf("Existing manifest detected (%s); Do you want to overwrite it?", manifestPath), question.WithNoAsDefault) {
+	// 		return nil
+	// 	}
+	// }
+
+	populateManifestInteractively(m)
 
 	// validate
 	if err := m.Validate(); err != nil {
@@ -72,8 +95,13 @@ func runE(_ *cobra.Command, args []string) error {
 	}
 	defer f.Close()
 
-	if err := yaml.NewEncoder(f).Encode(&m); err != nil {
+	if err := yaml.NewEncoder(f).Encode(m); err != nil {
 		return err
+	}
+
+	// push manifestto backend
+	if err := api.PushManifest(client, hostname, orgID, m); err != nil {
+		return fmt.Errorf("an error occurred while push manifest to reliably: %s", err)
 	}
 
 	return nil
