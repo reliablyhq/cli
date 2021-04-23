@@ -9,6 +9,7 @@ services:
     sli:
     - id: myprojectid/google-cloud-load-balancers/myloadbalancer-name
       provider: gcp
+    window: PT24H
   - name: 99th of requests response time under 500ms
     type: latency
     criteria:
@@ -17,9 +18,11 @@ services:
     sli:
     - id: myprojectid/google-cloud-load-balancers/myloadbalancer-name
       provider: gcp
+    window: PT24H
   - name: 99th of requests responses not 5xx
     type: availability
     slo: 99
     sli:
     - id: myprojectid/google-cloud-load-balancers/myloadbalancer-name
       provider: gcp
+    window: P7D

@@ -17,6 +17,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/iam v1.3.1
 	github.com/channelmeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61 // indirect
 	github.com/cli/safeexec v1.0.0
+	github.com/davecgh/go-spew v1.1.1
 	github.com/fatih/color v1.7.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/golang/protobuf v1.5.1
@@ -38,6 +39,7 @@ require (
 	github.com/open-policy-agent/opa v0.24.0
 	github.com/pkg/browser v0.0.0-20201207095918-0426ae3fba23
 	github.com/sirupsen/logrus v1.7.0
+	github.com/smartystreets/goconvey v1.6.4
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
