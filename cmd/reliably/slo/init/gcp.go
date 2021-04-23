@@ -11,6 +11,8 @@ import (
 	compute "google.golang.org/api/compute/v1"
 )
 
+var gcpOptions = []question.AskOpt{question.Subquestion}
+
 func buildGCPResourceID() string {
 	var projectID string
 	var sanitizedResourceType string
@@ -34,7 +36,7 @@ func buildGCPResourceID() string {
 			orgsList = append(orgsList, displayName)
 			orgsMap[displayName] = id
 		}
-		orgDisplayName := question.WithSingleChoiceAnswer("Select an Organization.", true, orgsList...)
+		orgDisplayName := question.WithSingleChoiceAnswer("Select an Organization.", gcpOptions, orgsList...)
 		orgID := orgsMap[orgDisplayName]
 
 		projectsService := crm.NewProjectsService(crmService)
@@ -57,10 +59,10 @@ func buildGCPResourceID() string {
 			projectsMap[fullName] = id
 		}
 		// TODO Handle empty list case
-		projectFullName := question.WithSingleChoiceAnswer("Select an Project.", true, projectsList...)
+		projectFullName := question.WithSingleChoiceAnswer("Select an Project.", gcpOptions, projectsList...)
 		projectID = projectsMap[projectFullName]
 
-		resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", true, googleResourceTypes...)
+		resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", gcpOptions, googleResourceTypes...)
 		sanitizedResourceType = sanitizeString(resourceType)
 
 		lbctx := context.Background()
@@ -77,7 +79,7 @@ func buildGCPResourceID() string {
 				name := lb.Name
 				lbsList = append(lbsList, name)
 			}
-			resourceName = question.WithSingleChoiceAnswer("Select a resource.", true, lbsList...)
+			resourceName = question.WithSingleChoiceAnswer("Select a resource.", gcpOptions, lbsList...)
 		} else {
 			fmt.Println(iconWarn, "Reliably couldn't find matching resources.")
 			fmt.Println("  Cancelling.")
@@ -95,15 +97,15 @@ func buildGCPResourceID() string {
 			"Manually add resource (you will be asked to provide the project ID and resource name",
 			"Cancel this resource",
 		}
-		insufficientGCPRights := question.WithSingleChoiceAnswer("What do you want to do now?", true, insufficientGCPRightsOptions...)
+		insufficientGCPRights := question.WithSingleChoiceAnswer("What do you want to do now?", gcpOptions, insufficientGCPRightsOptions...)
 
 		if insufficientGCPRights == "Cancel this resource" {
 			return ""
 		} else {
-			projectID = question.WithStringAnswer("Enter the Project ID:", true)
-			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", true, googleResourceTypes...)
+			projectID = question.WithStringAnswer("Enter the Project ID:", gcpOptions)
+			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", gcpOptions, googleResourceTypes...)
 			sanitizedResourceType = sanitizeString(resourceType)
-			resourceName = question.WithStringAnswer("Enter the Resource name:", true)
+			resourceName = question.WithStringAnswer("Enter the Resource name:", gcpOptions)
 		}
 	}
 
