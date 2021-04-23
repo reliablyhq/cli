@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/reliablyhq/cli/api"
-	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
@@ -19,6 +18,7 @@ import (
 var (
 	manifestPath        string
 	service             string
+	org                 string
 	supportedExtensions = []string{".yaml", ".json"}
 	googleResourceTypes = []string{"Google Cloud Load Balancers"}
 	awsPartitionsIDs    = []string{
@@ -44,29 +44,17 @@ func NewCommand() *cobra.Command {
 		Short:   "initialise the slo portion of the manifest",
 		Long:    longCommandDescription(),
 		Example: examples(),
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			return validateFilePath()
-		},
-		RunE: runE,
+		RunE:    runE,
 	}
 
-	cmd.Flags().StringVarP(&manifestPath, "path", "p", "", "the location of the manifest file")
-
+	cmd.Flags().StringVarP(&manifestPath, "output", "o", "", "store a local copy of the service manifest created")
+	cmd.Flags().StringVar(&org, "org", "", "the org that contains the service")
 	return &cmd
 }
 
 func runE(_ *cobra.Command, args []string) error {
-
-	hostname := core.Hostname()
-	client := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
-
-	// Sends the context to Reliably prior executing the command
-	orgID, err := api.CurrentUserOrganizationID(client, hostname)
-	if err != nil {
-		return err
-	}
 	log.Debug("fetching internal service manifest")
-	m, err := api.PullServiceManifest(orgID, service)
+	m, err := api.PullServiceManifest(org, service)
 	if err != nil {
 		return err
 	}
@@ -76,12 +64,6 @@ func runE(_ *cobra.Command, args []string) error {
 		m = &manifest.Manifest{}
 	}
 
-	if doesManifestExist(orgID, service) {
-		if !question.WithBoolAnswer(fmt.Sprintf("Existing manifest detected (%s); Do you want to overwrite it?", manifestPath), question.WithNoAsDefault) {
-			return nil
-		}
-	}
-
 	populateManifestInteractively(m)
 
 	// validate
@@ -89,19 +71,21 @@ func runE(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	f, err := os.Create(manifestPath)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	if err := yaml.NewEncoder(f).Encode(m); err != nil {
-		return err
-	}
-
 	// push manifestto backend
-	if err := api.PushServiceManifest(orgID, service, m); err != nil {
+	if err := api.PushServiceManifest(org, service, m); err != nil {
 		return fmt.Errorf("an error occurred while push manifest to reliably: %s", err)
+	}
+
+	if manifestPath != "" {
+		f, err := os.Create(manifestPath)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		if err := yaml.NewEncoder(f).Encode(&m); err != nil {
+			return err
+		}
 	}
 
 	return nil
