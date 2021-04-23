@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
@@ -25,6 +26,8 @@ var (
 	outputPath   string
 	outputFormat string
 	watchFlag    bool
+	org          string
+	service      string
 )
 
 func NewCommand() *cobra.Command {
@@ -38,6 +41,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
 	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", "specify the report format. Allowed Values: [json, simple, tabbed, markdown]")
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "continuously watch for changes in report output")
+	cmd.Flags().StringVar(&org, "org", "", "the org that contains the service")
 
 	return cmd
 }
@@ -49,7 +53,7 @@ func runE(_ *cobra.Command, _ []string) error {
 		return watch(manifestPath)
 	}
 
-	m, err := manifest.Load(manifestPath)
+	m, err := getManifest()
 	if err != nil {
 		log.Debug(err)
 
@@ -181,4 +185,12 @@ func clearScreen() {
 
 	c.Stdout = os.Stdout
 	c.Run()
+}
+
+func getManifest() (*manifest.Manifest, error) {
+	if org != "" && service != "" {
+		return api.PullManifest(org, service)
+	}
+
+	return manifest.Load(manifestPath)
 }
