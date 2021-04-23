@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -27,6 +28,14 @@ func init() {
 
 // PushServiceManifest - records the manifest via the API backend.
 func PushServiceManifest(org, service string, m *manifest.Manifest) error {
+	if org == "" {
+		return errors.New("org cannot be empty")
+	}
+
+	if service == "" {
+		return errors.New("service cannot be empty")
+	}
+
 	client := AuthHTTPClient(hostname)
 
 	var body bytes.Buffer
@@ -57,6 +66,14 @@ func PushServiceManifest(org, service string, m *manifest.Manifest) error {
 
 // PullServiceManifest - downloads current manifest
 func PullServiceManifest(org, service string) (*manifest.Manifest, error) {
+	if org == "" {
+		return nil, errors.New("org cannot be empty")
+	}
+
+	if service == "" {
+		return nil, errors.New("service cannot be empty")
+	}
+
 	client := AuthHTTPClient(hostname)
 
 	u, _ := url.Parse(hostname)
@@ -86,6 +103,14 @@ func PullServiceManifest(org, service string) (*manifest.Manifest, error) {
 }
 
 func ServiceExists(org, service string) (bool, error) {
+	if org == "" {
+		return false, errors.New("org cannot be empty")
+	}
+
+	if service == "" {
+		return false, errors.New("service cannot be empty")
+	}
+
 	client := AuthHTTPClient(hostname)
 
 	u, _ := url.Parse(hostname)
