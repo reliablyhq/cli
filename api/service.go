@@ -74,7 +74,7 @@ func PullServiceManifest(org, service string) (*manifest.Manifest, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("its dead, Jim! %s", res.Status)
+		return nil, fmt.Errorf("bad response from server %s", res.Status)
 	}
 
 	var m manifest.Manifest

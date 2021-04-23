@@ -42,6 +42,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", "specify the report format. Allowed Values: [json, simple, tabbed, markdown]")
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "continuously watch for changes in report output")
 	cmd.Flags().StringVar(&org, "org", "", "the org that contains the service")
+	cmd.Flags().StringVar(&service, "service", "", "the name of the service")
 
 	return cmd
 }
@@ -56,12 +57,7 @@ func runE(_ *cobra.Command, _ []string) error {
 	m, err := getManifest()
 	if err != nil {
 		log.Debug(err)
-
-		if os.IsNotExist(err) {
-			return errors.New("A manifest was not found. Please run `reliably slo init` to create one.")
-		}
-
-		return errors.New("An error occured while attempting to load the manifest")
+		return errors.New("an error occured while attempting to load the manifest")
 	}
 
 	r, err := report.FromManifest(m)
