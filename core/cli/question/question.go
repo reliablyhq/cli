@@ -79,7 +79,7 @@ func WithBoolAnswer(question string, subquestion bool, yesno ...BoolAnswer) bool
 	err := survey.AskOne(&survey.Confirm{
 		Message: question,
 		Default: defaultAnwser,
-	}, &b, SetIcon(subquestion)survey.WithShowCursor(true))
+	}, &b, SetIcon(subquestion), survey.WithShowCursor(true))
 	if err == terminal.InterruptErr {
 		os.Exit(0)
 	}
