@@ -65,9 +65,9 @@ func runE(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	// if err := sendReportToReliably(r); err != nil {
-	// 	log.Warn(err)
-	// }
+	if err := api.SendReport(org, service, r); err != nil {
+		log.Warn(err)
+	}
 
 	// set format
 	var format = report.TABBED
