@@ -1,9 +1,10 @@
 # Changelog
 
 ## [Unreleased]
-
 ### Added
+- Added time observation window for SLO in manifest & prompt user in `slo init` generation; [#1681](https://github.com/reliablyhq/cli/issues/181)
 - `slo report` can now output the report into yaml format
+
 ### Fixed
 - Fixes missing SLOs without result in markdown report; [#208](https://github.com/reliablyhq/cli/issues/208)
 

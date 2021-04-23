@@ -1,11 +1,18 @@
 package init
 
 import (
+	"errors"
 	"fmt"
+	"math"
 	"os"
 	"sort"
 	"strings"
+	"time"
 
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/AlecAivazis/survey/v2/terminal"
+	iso8601 "github.com/ChannelMeter/iso8601duration"
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
@@ -122,7 +129,10 @@ func declareSLOForService(s *manifest.Service) {
 		sl.Criteria = &manifest.LatencyCriteria{Threshold: threshold}
 	}
 
+	sl.ObservationWindow = getObservationWindow()
+
 	do := question.WithBoolAnswer("Do you want to add a resource for measuring your SLI?", emptyOptions, question.WithYesAsDefault)
+
 	if do {
 		providers := []string{}
 		for key := range providersMap {
@@ -167,6 +177,99 @@ func getResourceIDForProvider(provider string) string {
 	}
 }
 
+func getObservationWindow() core.Iso8601Duration {
+
+	const (
+		oneHour  = "1 hour"
+		oneDay   = "1 day"
+		oneWeek  = "1 week"
+		oneMonth = "1 month"
+		custom   = "custom"
+	)
+
+	choices := []string{
+		oneHour,
+		oneDay,
+		oneWeek,
+		oneMonth,
+		custom,
+	}
+
+	var choice string
+
+	p := &survey.Select{
+		Message: "What is your observation window for this SLO?",
+		Options: choices,
+	}
+
+	err := survey.AskOne(p, &choice, survey.WithValidator(survey.Required))
+	checkPromptExit(err)
+
+	answers := struct {
+		Window core.Iso8601Duration
+	}{}
+
+	switch choice {
+	case oneHour:
+		answers.Window = core.Iso8601Duration{Duration: iso8601.Duration{Hours: 1}}
+	case oneDay:
+		answers.Window = core.Iso8601Duration{Duration: iso8601.Duration{Hours: 24}}
+	case oneWeek:
+		answers.Window = core.Iso8601Duration{Duration: iso8601.Duration{Weeks: 1}}
+	case oneMonth:
+		answers.Window = core.Iso8601Duration{Duration: iso8601.Duration{Days: 30}}
+	case custom:
+
+		q := []*survey.Question{
+			{
+				Name: "window",
+				Prompt: &survey.Input{
+					Message: "Define your custom observation window",
+					Help:    "Must be an iso8601 duration with the following format: P[n]DT[n]H[n]M or P[n]W as (D)ays, (H)ours, (M)inutes, (W)eeks",
+				},
+				Validate: survey.ComposeValidators(survey.Required, func(val interface{}) error {
+					str := strings.ToUpper(val.(string))
+					d, err := iso8601.FromString(str)
+					if err != nil {
+						return fmt.Errorf("Unable to parse your string: %s", err)
+					}
+					if d.Seconds > 0 && math.Mod(float64(d.Seconds), 60) != 0 {
+						return fmt.Errorf("We only support precision to 1 minute. If used, seconds must be a multiple of 60.")
+					}
+					duration := d.ToDuration()
+					if duration == 0 {
+						return errors.New("Your duration cannot be zero. Please check your format.")
+					}
+
+					if duration > time.Hour*24*365 {
+						return errors.New("Your duration cannot exceed 1 year.")
+					}
+					return nil
+				}),
+				Transform: survey.ComposeTransformers(
+					survey.TransformString(strings.ToUpper),
+					func(ans interface{}) interface{} {
+						d, _ := iso8601.FromString(ans.(string))
+						return core.Iso8601Duration{Duration: *d}
+					},
+				),
+			},
+		}
+
+		err := survey.Ask(q, &answers)
+		checkPromptExit(err)
+
+	}
+
+	return answers.Window
+}
+
 func sanitizeString(s string) string {
 	return strings.ToLower(strings.ReplaceAll(s, " ", "-"))
+}
+
+func checkPromptExit(err error) {
+	if err == terminal.InterruptErr {
+		os.Exit(0)
+	}
 }

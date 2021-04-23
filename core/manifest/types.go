@@ -35,8 +35,9 @@ type (
 		Type     string      `yaml:"type" json:"type"`
 		Criteria interface{} `yaml:"criteria,omitempty" json:"criteria,omitempty"`
 		//Threshold  core.Duration           `yaml:"threshold,omitempty" json:"threshold,omitempty"`
-		Objective  float64                 `yaml:"slo" json:"slo"`
-		Indicators []ServiceLevelIndicator `yaml:"sli" json:"sli"`
+		Objective         float64                 `yaml:"slo" json:"slo"`
+		Indicators        []ServiceLevelIndicator `yaml:"sli" json:"sli"`
+		ObservationWindow core.Iso8601Duration    `yaml:"window" json:"window"`
 	}
 
 	Criteria struct {

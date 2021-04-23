@@ -5,7 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/reliablyhq/cli/core"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLoad(t *testing.T) {
@@ -207,4 +209,13 @@ func TestLoad(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestManifestExampleCanBeLoaded(t *testing.T) {
+	example := "../../examples/reliably.yaml"
+	got, err := Load(example)
+
+	assert.NoError(t, err, "Manifest example could not be loaded")
+	assert.NotEqual(t, nil, got, "Manifest should not be empty")
+	spew.Dump(got)
 }
