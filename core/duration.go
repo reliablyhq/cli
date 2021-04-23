@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,9 +17,9 @@ type Duration struct {
 	time.Duration
 }
 
-func (d Duration) MarhalJSON() ([]byte, error) {
-	s := fmt.Sprintf("%s", d.String())
-	return []byte(s), nil
+func (d Duration) MarshalJSON() ([]byte, error) {
+	val := strconv.Quote(d.String())
+	return []byte(val), nil
 }
 
 func (d *Duration) UnmarshalJSON(b []byte) error {
@@ -47,7 +48,7 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 }
 
 func (d Duration) MarshalYAML() (interface{}, error) {
-	return fmt.Sprintf("%s", d.String()), nil
+	return d.String(), nil
 }
 
 func (d *Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -82,16 +83,17 @@ type Iso8601Duration struct {
 	iso8601.Duration
 }
 
-func (d *Iso8601Duration) String() string {
+func (d Iso8601Duration) String() string {
 	return d.Duration.String()
 }
 
-func (d *Iso8601Duration) ToDuration() time.Duration {
+func (d Iso8601Duration) ToDuration() time.Duration {
 	return d.Duration.ToDuration()
 }
 
-func (d Iso8601Duration) MarhalJSON() ([]byte, error) {
-	return []byte(d.String()), nil
+func (d Iso8601Duration) MarshalJSON() ([]byte, error) {
+	val := strconv.Quote(d.String())
+	return []byte(val), nil
 }
 
 func (d *Iso8601Duration) UnmarshalJSON(b []byte) error {
@@ -151,6 +153,8 @@ const (
 // HumanizeDuration returns the time.Duration with better output format
 // including the number of years, days (rather than very long hours)
 // https://gist.github.com/harshavardhana/327e0577c4fed9211f65#gistcomment-2557682
+// NB: Small adjusmtents were made to now show optional trailing 0d0s
+// but not in the middle ie 1y0d3h will be kept as is
 func HumanizeDurationShort(d time.Duration) string {
 	if d < day {
 		return d.String()
@@ -164,9 +168,15 @@ func HumanizeDurationShort(d time.Duration) string {
 		d -= years * year
 	}
 
-	days := d / day
-	d -= days * day
-	fmt.Fprintf(&b, "%dd%s", days, d)
+	if d > 0 {
+		days := d / day
+		d -= days * day
+		fmt.Fprintf(&b, "%dd", days)
+	}
+
+	if d > 0 {
+		fmt.Fprintf(&b, "%s", d)
+	}
 
 	return b.String()
 }
