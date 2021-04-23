@@ -11,7 +11,10 @@ import (
 	compute "google.golang.org/api/compute/v1"
 )
 
-var gcpOptions = []question.AskOpt{question.Subquestion}
+var (
+	gcpOptions          = []question.AskOpt{question.Subquestion}
+	googleResourceTypes = []string{"Google Cloud Load Balancers"}
+)
 
 func buildGCPResourceID() string {
 	var projectID string
