@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+### Added
+- `slo report` can now output the report into yaml format
 ### Fixed
 - Fixes missing SLOs without result in markdown report; [#208](https://github.com/reliablyhq/cli/issues/208)
 

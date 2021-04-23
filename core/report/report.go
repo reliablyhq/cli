@@ -6,22 +6,22 @@ import (
 )
 
 type Report struct {
-	APIVersion string     `json:"api_version"`
-	Timestamp  time.Time  `json:"timestamp"`
-	Services   []*Service `json:"services"`
+	APIVersion string     `json:"api_version" yaml:"api_version"`
+	Timestamp  time.Time  `json:"timestamp" yaml:"timestamp"`
+	Services   []*Service `json:"services" yaml:"services"`
 }
 
 type Service struct {
-	Dependencies  []string        `json:"-"`
-	ServiceLevels []*ServiceLevel `json:"service_levels"`
-	Name          string          `json:"name"`
+	Dependencies  []string        `json:"-" yaml:"-"`
+	ServiceLevels []*ServiceLevel `json:"service_levels" yaml:"service_levels"`
+	Name          string          `json:"name" yaml:"name"`
 }
 
 type ServiceLevel struct {
-	Name      string              `json:"name"`
-	Type      string              `json:"type"`
-	Objective float64             `json:"objective"`
-	Result    *ServiceLevelResult `json:"result"`
+	Name      string              `json:"name" yaml:"name"`
+	Type      string              `json:"type" yaml:"type"`
+	Objective float64             `json:"objective" yaml:"objective"`
+	Result    *ServiceLevelResult `json:"result" yaml:"result"`
 
 	//Target *ServiceLevelIndicators `json:"target"`
 	//Actual *ServiceLevelIndicators `json:"actual"`
@@ -29,11 +29,11 @@ type ServiceLevel struct {
 
 	// TODO: decide whether this should be implemented as
 	// Observation Windor or Boundary
-	ObservationWindow Window `json:"window"`
+	ObservationWindow Window `json:"window" yaml:"window"`
 
 	// used to record whether a particular SLI had
 	// error in it's retrieval process
-	errored bool `json:"-"`
+	errored bool `json:"-" yaml:"-"`
 }
 
 type Window struct {

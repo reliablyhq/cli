@@ -13,6 +13,7 @@ import (
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 )
 
 /*
@@ -41,6 +42,7 @@ const (
 	TABBED     Format = "tabbed"
 	SimpleText Format = "simple"
 	MARKDOWN   Format = "markdown"
+	YAML       Format = "yaml"
 )
 
 // Write - write report based on given format
@@ -56,6 +58,10 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 	switch format {
 	case JSON:
 		b, _ := json.MarshalIndent(r, "", "  ")
+		fmt.Fprintln(w, string(b))
+
+	case YAML:
+		b, _ := yaml.Marshal(r)
 		fmt.Fprintln(w, string(b))
 
 	case SimpleText:
