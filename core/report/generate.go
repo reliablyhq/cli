@@ -34,8 +34,6 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 
 	to := time.Now()
 
-	//from := to.Add(-oneDay)
-
 	var services []*Service = make([]*Service, 0)
 	report = &Report{
 		APIVersion: apiVersion,
