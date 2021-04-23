@@ -18,7 +18,7 @@ import (
 )
 
 func buildAWSArn() string {
-	resourceArn := question.WithStringAnswer("Paste an AWS ARN, or type \"i\" for interactive mode.")
+	resourceArn := question.WithStringAnswer("Paste an AWS ARN, or type \"i\" for interactive mode.", true)
 	if resourceArn == "i" {
 		resolver := endpoints.DefaultResolver()
 		partitions := resolver.(endpoints.EnumPartitions).Partitions()
@@ -32,7 +32,7 @@ func buildAWSArn() string {
 		for _, p := range partitions {
 			partitionsIDs = append(partitionsIDs, p.ID())
 		}
-		partitionID := question.WithSingleChoiceAnswer("Select an AWS partition.", partitionsIDs...)
+		partitionID := question.WithSingleChoiceAnswer("Select an AWS partition.", true, partitionsIDs...)
 
 		var partition endpoints.Partition
 
@@ -53,11 +53,11 @@ func buildAWSArn() string {
 			regionsIDs = append(regionsIDs, id)
 		}
 		sort.Strings(regionsIDs)
-		regionID := question.WithSingleChoiceAnswer("Select an AWS region.", regionsIDs...)
+		regionID := question.WithSingleChoiceAnswer("Select an AWS region.", true, regionsIDs...)
 
 		cfgIAM, err := config.LoadDefaultConfig(context.TODO())
 		if err != nil {
-			fmt.Println("⚠️ Reliably encountered a problem. Please try again or use normal mode.")
+			fmt.Println(iconWarn, "Reliably encountered a problem. Please try again or use normal mode.")
 			return ""
 		}
 		clientIAM := iam.NewFromConfig(
@@ -85,7 +85,7 @@ func buildAWSArn() string {
 			awsServices = append(awsServices, key)
 		}
 		sort.Strings(awsServices) // sorts slice in-place
-		serviceFullName := question.WithSingleChoiceAnswer("Select an AWS service.", awsServices...)
+		serviceFullName := question.WithSingleChoiceAnswer("Select an AWS service.", true, awsServices...)
 		service := awsServicesMap[serviceFullName]
 
 		serviceID := selectAWSService(service, regionID)
@@ -136,7 +136,7 @@ func selectAWSService(serviceType string, region string) string {
 			agwApis = append(agwApis, niceName)
 			agwApisMap[niceName] = ID
 		}
-		apiNiceName := question.WithSingleChoiceAnswer("Select a Resource.", agwApis...)
+		apiNiceName := question.WithSingleChoiceAnswer("Select a Resource.", true, agwApis...)
 		apiID := agwApisMap[apiNiceName]
 
 		return "/apis/" + apiID
@@ -177,7 +177,7 @@ func selectAWSService(serviceType string, region string) string {
 			elbs = append(elbs, niceName)
 			elbsMap[niceName] = elbID
 		}
-		elbNiceName := question.WithSingleChoiceAnswer("Select a Resource.", elbs...)
+		elbNiceName := question.WithSingleChoiceAnswer("Select a Resource.", true, elbs...)
 		elbID := elbsMap[elbNiceName]
 		return elbID
 	default:
