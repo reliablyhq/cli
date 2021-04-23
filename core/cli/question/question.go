@@ -13,18 +13,6 @@ import (
 
 type AskOpt = survey.AskOpt
 
-type QuestionOptions struct {
-	Required    bool `json:"required,omitempty"`
-	Cursor      bool `json:"cursor,omitempty"`
-	Subquestion bool `json:"subquestion,omitempty"`
-}
-
-var defaultOpts = &QuestionOptions{
-	Required:    true,
-	Cursor:      true,
-	Subquestion: false,
-}
-
 var (
 	Required    = survey.WithValidator(survey.Required)
 	Cursor      = survey.WithShowCursor(true)
