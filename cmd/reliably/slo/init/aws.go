@@ -17,7 +17,13 @@ import (
 	"github.com/reliablyhq/cli/core/cli/question"
 )
 
-var awsOptions = []question.AskOpt{question.Subquestion}
+var (
+	awsOptions     = []question.AskOpt{question.Subquestion}
+	awsServicesMap = map[string]string{
+		"API Gateway":           "apigateway",
+		"Elastic Load Balancer": "elasticloadbalancing",
+	}
+)
 
 func buildAWSArn() string {
 	resourceArn := question.WithStringAnswer("Paste an AWS ARN, or type \"i\" for interactive mode.", awsOptions)

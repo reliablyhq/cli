@@ -23,17 +23,7 @@ import (
 var (
 	manifestPath        string
 	supportedExtensions = []string{".yaml", ".json"}
-	googleResourceTypes = []string{"Google Cloud Load Balancers"}
-	awsPartitionsIDs    = []string{
-		"aws",
-		"aws-cn",
-		"aws-us-gov",
-	}
-	awsServicesMap = map[string]string{
-		"API Gateway":           "apigateway",
-		"Elastic Load Balancer": "elasticloadbalancing",
-	}
-	providersMap = map[string]string{
+	providersMap        = map[string]string{
 		"Amazon Web Services":   "aws",
 		"Google Cloud Platform": "gcp",
 	}
