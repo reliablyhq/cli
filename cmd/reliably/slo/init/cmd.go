@@ -167,14 +167,7 @@ func declareSLOForService(s *manifest.Service) {
 		}
 	}
 
-	for {
-		sl.Name = question.WithStringAnswer("What is the name of this SLO?")
-		if err := validateSLOName(s.ServiceLevels, sl.Name); err != nil {
-			fmt.Println(err)
-			continue
-		}
-		break
-	}
+	sl.Name = question.WithStringAnswer("What is the name of this SLO?")
 
 	s.ServiceLevels = append(s.ServiceLevels, &sl)
 	fmt.Println(color.Green(fmt.Sprintf("SLO '%s' added to Service '%s'", sl.Name, s.Name)))
@@ -217,16 +210,5 @@ func validateServiceName(m *manifest.Manifest, name string) error {
 			return fmt.Errorf("service name [%s] already exists, please enter another", color.Red(name))
 		}
 	}
-	return nil
-}
-
-func validateSLOName(s []*manifest.ServiceLevel, name string) error {
-
-	for _, sl := range s {
-		if name == sl.Name {
-			return fmt.Errorf("slo name [%s] already exists, please enter another", color.Red(name))
-		}
-	}
-
 	return nil
 }
