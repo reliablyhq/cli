@@ -18,6 +18,7 @@ import (
 
 var (
 	manifestPath        string
+	service             string
 	supportedExtensions = []string{".yaml", ".json"}
 	googleResourceTypes = []string{"Google Cloud Load Balancers"}
 	awsPartitionsIDs    = []string{
@@ -49,7 +50,7 @@ func NewCommand() *cobra.Command {
 		RunE: runE,
 	}
 
-	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
+	cmd.Flags().StringVarP(&manifestPath, "path", "p", "", "the location of the manifest file")
 
 	return &cmd
 }
@@ -65,7 +66,7 @@ func runE(_ *cobra.Command, args []string) error {
 		return err
 	}
 	log.Debug("fetching internal service manifest")
-	m, err := api.PullManifest(client, hostname, orgID)
+	m, err := api.PullServiceManifest(orgID, service)
 	if err != nil {
 		return err
 	}
@@ -75,12 +76,11 @@ func runE(_ *cobra.Command, args []string) error {
 		m = &manifest.Manifest{}
 	}
 
-	// var m manifest.Manifest
-	// if _, err := os.Stat(manifestPath); err == nil {
-	// 	if !question.WithBoolAnswer(fmt.Sprintf("Existing manifest detected (%s); Do you want to overwrite it?", manifestPath), question.WithNoAsDefault) {
-	// 		return nil
-	// 	}
-	// }
+	if doesManifestExist(orgID, service) {
+		if !question.WithBoolAnswer(fmt.Sprintf("Existing manifest detected (%s); Do you want to overwrite it?", manifestPath), question.WithNoAsDefault) {
+			return nil
+		}
+	}
 
 	populateManifestInteractively(m)
 
@@ -100,7 +100,7 @@ func runE(_ *cobra.Command, args []string) error {
 	}
 
 	// push manifestto backend
-	if err := api.PushManifest(client, hostname, orgID, m); err != nil {
+	if err := api.PushServiceManifest(orgID, service, m); err != nil {
 		return fmt.Errorf("an error occurred while push manifest to reliably: %s", err)
 	}
 
@@ -211,4 +211,18 @@ func validateServiceName(m *manifest.Manifest, name string) error {
 		}
 	}
 	return nil
+}
+
+func doesManifestExist(org, service string) bool {
+	if found, _ := api.ServiceExists(org, service); found {
+		return true
+	}
+
+	if manifestPath != "" {
+		if _, err := os.Stat(manifestPath); err == nil {
+			return true
+		}
+	}
+
+	return false
 }

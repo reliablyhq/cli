@@ -25,8 +25,8 @@ func init() {
 	}
 }
 
-// PushManifest - records the manifest via the API backend.
-func PushManifest(org, service string, m *manifest.Manifest) error {
+// PushServiceManifest - records the manifest via the API backend.
+func PushServiceManifest(org, service string, m *manifest.Manifest) error {
 	client := AuthHTTPClient(hostname)
 
 	var body bytes.Buffer
@@ -55,8 +55,8 @@ func PushManifest(org, service string, m *manifest.Manifest) error {
 	return nil
 }
 
-// PullManifest - downloads current manifest
-func PullManifest(org, service string) (*manifest.Manifest, error) {
+// PullServiceManifest - downloads current manifest
+func PullServiceManifest(org, service string) (*manifest.Manifest, error) {
 	client := AuthHTTPClient(hostname)
 
 	u, _ := url.Parse(hostname)
@@ -83,4 +83,32 @@ func PullManifest(org, service string) (*manifest.Manifest, error) {
 	}
 
 	return &m, nil
+}
+
+func ServiceExists(org, service string) (bool, error) {
+	client := AuthHTTPClient(hostname)
+
+	u, _ := url.Parse(hostname)
+	u.Path = fmt.Sprintf("/api/v1/orgs/%s/services/%s", org, service)
+
+	req := http.Request{
+		URL:    u,
+		Method: http.MethodGet,
+	}
+
+	res, err := client.Do(&req)
+	if err != nil {
+		return false, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode >= 200 && res.StatusCode < 400 {
+		return true, nil
+	}
+
+	if res.StatusCode == 404 {
+		return false, nil
+	}
+
+	return false, fmt.Errorf("an error occured while retrieveing the serivce: %s", res.Status)
 }

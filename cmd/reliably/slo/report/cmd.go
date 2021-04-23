@@ -189,7 +189,7 @@ func clearScreen() {
 
 func getManifest() (*manifest.Manifest, error) {
 	if org != "" && service != "" {
-		return api.PullManifest(org, service)
+		return api.PullServiceManifest(org, service)
 	}
 
 	return manifest.Load(manifestPath)
