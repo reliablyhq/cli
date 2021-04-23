@@ -32,6 +32,8 @@ var (
 	}
 )
 
+var emptyOptions = []question.AskOpt{}
+
 const iconWarn = "⚠️ "
 
 func NewCommand() *cobra.Command {
@@ -54,7 +56,7 @@ func NewCommand() *cobra.Command {
 func runE(_ *cobra.Command, args []string) error {
 	var m manifest.Manifest
 	if _, err := os.Stat(manifestPath); err == nil {
-		if !question.WithBoolAnswer(fmt.Sprintf("Existing manifest detected (%s); Do you want to overwrite it?", manifestPath), question.WithNoAsDefault) {
+		if !question.WithBoolAnswer(fmt.Sprintf("Existing manifest detected (%s); Do you want to overwrite it?", manifestPath), emptyOptions, question.WithNoAsDefault) {
 			return nil
 		}
 	}
@@ -93,14 +95,15 @@ func populateManifestInteractively(m *manifest.Manifest) {
 
 	var s manifest.Service
 
-	s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?")
+	s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?", emptyOptions)
 
 	declareSLOForService(&s)
 
 	m.Services = append(m.Services, &s)
 	fmt.Println(color.Green(fmt.Sprintf("Service '%s' added", s.Name)))
 
-	if question.WithBoolAnswer("Do you want to add another Service?", question.WithNoAsDefault) {
+	fmt.Println()
+	if question.WithBoolAnswer("Do you want to add another Service?", emptyOptions, question.WithNoAsDefault) {
 		populateManifestInteractively(m)
 	}
 
@@ -109,17 +112,17 @@ func populateManifestInteractively(m *manifest.Manifest) {
 func declareSLOForService(s *manifest.Service) {
 	var sl manifest.ServiceLevel
 
-	slType := question.WithSingleChoiceAnswer("What type of SLO do you want to declare?", "Availability", "Latency")
+	slType := question.WithSingleChoiceAnswer("What type of SLO do you want to declare?", emptyOptions, "Availability", "Latency")
 	sl.Type = sanitizeString(slType)
 
-	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?", 0, 100)
+	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?", emptyOptions, 0, 100)
 
 	if sl.Type == "latency" {
-		threshold := question.WithDurationAnswer("What is your latency threshold (in milliseconds)?")
+		threshold := question.WithDurationAnswer("What is your latency threshold (in milliseconds)?", emptyOptions)
 		sl.Criteria = &manifest.LatencyCriteria{Threshold: threshold}
 	}
 
-	do := question.WithBoolAnswer("Do you want to add a resource for measuring your SLI?", question.WithYesAsDefault)
+	do := question.WithBoolAnswer("Do you want to add a resource for measuring your SLI?", emptyOptions, question.WithYesAsDefault)
 	if do {
 		providers := []string{}
 		for key := range providersMap {
@@ -128,7 +131,7 @@ func declareSLOForService(s *manifest.Service) {
 		sort.Strings(providers) // sorts slice in-place
 
 		for do {
-			providerFullName := question.WithSingleChoiceAnswer("On which cloud provider?", providers...)
+			providerFullName := question.WithSingleChoiceAnswer("On which cloud provider?", emptyOptions, providers...)
 			provider := providersMap[providerFullName]
 			id := getResourceIDForProvider(provider)
 
@@ -139,14 +142,16 @@ func declareSLOForService(s *manifest.Service) {
 				})
 			}
 
-			do = question.WithBoolAnswer("Do you want to add another resource for measuring your SLI?", question.WithNoAsDefault)
+			fmt.Println()
+			do = question.WithBoolAnswer("Do you want to add another resource for measuring your SLI?", emptyOptions, question.WithNoAsDefault)
 		}
 	}
-	sl.Name = question.WithStringAnswer("What is the name of this SLO?")
+	sl.Name = question.WithStringAnswer("What is the name of this SLO?", emptyOptions)
 	s.ServiceLevels = append(s.ServiceLevels, &sl)
 	fmt.Println(color.Green(fmt.Sprintf("SLO '%s' added to Service '%s'", sl.Name, s.Name)))
 
-	if question.WithBoolAnswer("Do you want to add another SLO?", question.WithNoAsDefault) {
+	fmt.Println()
+	if question.WithBoolAnswer("Do you want to add another SLO?", emptyOptions, question.WithNoAsDefault) {
 		declareSLOForService(s)
 	}
 }
@@ -158,7 +163,7 @@ func getResourceIDForProvider(provider string) string {
 	case "gcp":
 		return buildGCPResourceID()
 	default:
-		return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.")
+		return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.", emptyOptions)
 	}
 }
 

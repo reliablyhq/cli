@@ -11,13 +11,25 @@ import (
 	"github.com/reliablyhq/cli/core"
 )
 
-func WithStringAnswer(questionText string) string {
+type AskOpt = survey.AskOpt
+
+var (
+	Required    = survey.WithValidator(survey.Required)
+	Cursor      = survey.WithShowCursor(true)
+	Subquestion = survey.WithIcons(func(icons *survey.IconSet) {
+		icons.Question.Text = "|"
+		icons.Question.Format = "green+d"
+	})
+)
+
+func WithStringAnswer(questionText string, opts []survey.AskOpt) string {
 	var text string
+	opts = append(opts, Required, Cursor)
 
 	for len(text) == 0 {
 		err := survey.AskOne(&survey.Input{
 			Message: questionText,
-		}, &text, survey.WithValidator(survey.Required), survey.WithShowCursor(true))
+		}, &text, opts...)
 		if err == terminal.InterruptErr {
 			os.Exit(0)
 		}
@@ -26,9 +38,9 @@ func WithStringAnswer(questionText string) string {
 	return text
 }
 
-func WithFloat64Answer(question string, min, max float64) float64 {
+func WithFloat64Answer(question string, opts []survey.AskOpt, min, max float64) float64 {
 	for {
-		answer := WithStringAnswer(question)
+		answer := WithStringAnswer(question, opts)
 		if f, err := strconv.ParseFloat(answer, 64); err != nil {
 			fmt.Println("Please make sure you type a number")
 		} else {
@@ -41,9 +53,9 @@ func WithFloat64Answer(question string, min, max float64) float64 {
 	}
 }
 
-func WithInt64Answer(question string) int64 {
+func WithInt64Answer(question string, opts []survey.AskOpt) int64 {
 	for {
-		answer := WithStringAnswer(question)
+		answer := WithStringAnswer(question, opts)
 		if i, err := strconv.ParseInt(answer, 10, 64); err != nil {
 			fmt.Println("Please make sure you type a number")
 		} else {
@@ -52,9 +64,9 @@ func WithInt64Answer(question string) int64 {
 	}
 }
 
-func WithDurationAnswer(question string) core.Duration {
+func WithDurationAnswer(question string, opts []survey.AskOpt) core.Duration {
 	for {
-		answer := WithInt64Answer(question)
+		answer := WithInt64Answer(question, opts)
 		ms := answer * 1000000
 		return core.Duration{Duration: time.Duration(ms)}
 	}
@@ -67,7 +79,7 @@ const (
 	WithNoAsDefault  bool = false
 )
 
-func WithBoolAnswer(question string, yesno ...BoolAnswer) bool {
+func WithBoolAnswer(question string, opts []survey.AskOpt, yesno ...BoolAnswer) bool {
 	var b bool
 	var defaultAnwser bool = true
 
@@ -79,21 +91,21 @@ func WithBoolAnswer(question string, yesno ...BoolAnswer) bool {
 	err := survey.AskOne(&survey.Confirm{
 		Message: question,
 		Default: defaultAnwser,
-	}, &b, survey.WithShowCursor(true))
+	}, &b, opts...)
 	if err == terminal.InterruptErr {
 		os.Exit(0)
 	}
 	return b
 }
 
-func WithSingleChoiceAnswer(question string, choices ...string) string {
+func WithSingleChoiceAnswer(question string, opts []survey.AskOpt, choices ...string) string {
 	var answer string
 	prompt := survey.Select{
 		Options: choices,
 		Message: question,
 	}
 
-	if err := survey.AskOne(&prompt, &answer); err == terminal.InterruptErr {
+	if err := survey.AskOne(&prompt, &answer, opts...); err == terminal.InterruptErr {
 		os.Exit(0)
 	}
 
