@@ -49,6 +49,7 @@ func NewCommand() *cobra.Command {
 
 	cmd.Flags().StringVarP(&manifestPath, "output", "o", "", "store a local copy of the service manifest created")
 	cmd.Flags().StringVar(&org, "org", "", "the org that contains the service")
+	cmd.Flags().StringVarP(&service, "service", "s", "", "name of the service you want to create SLOs for")
 	return &cmd
 }
 
@@ -60,8 +61,14 @@ func runE(_ *cobra.Command, args []string) error {
 	}
 
 	if m == nil {
-		log.Debug("no services detected")
+		log.Debug("no service manifest detected, creating a new one")
 		m = &manifest.Manifest{}
+	} else {
+		if !question.WithBoolAnswer(
+			fmt.Sprintf("Existing manifest detected for service (%s); Do you want to overwrite it?", service),
+			question.WithNoAsDefault) {
+			return nil
+		}
 	}
 
 	populateManifestInteractively(m)
@@ -94,23 +101,16 @@ func runE(_ *cobra.Command, args []string) error {
 func populateManifestInteractively(m *manifest.Manifest) {
 
 	var s manifest.Service
-	for {
-		s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?")
-		if err := validateServiceName(m, s.Name); err != nil {
-			fmt.Println(err)
-			continue
-		}
-		break
-	}
+	s.Name = service
 
 	declareSLOForService(&s)
 
 	m.Services = append(m.Services, &s)
 	fmt.Println(color.Green(fmt.Sprintf("Service '%s' added", s.Name)))
 
-	if question.WithBoolAnswer("Do you want to add another Service?", question.WithNoAsDefault) {
-		populateManifestInteractively(m)
-	}
+	// if question.WithBoolAnswer("Do you want to add another Service?", question.WithNoAsDefault) {
+	// 	populateManifestInteractively(m)
+	// }
 
 }
 
@@ -186,27 +186,4 @@ func validateFilePath() error {
 	}
 
 	return fmt.Errorf("manifest file must have one of the these extensions: %v", supportedExtensions)
-}
-
-func validateServiceName(m *manifest.Manifest, name string) error {
-	for _, s := range m.Services {
-		if name == s.Name {
-			return fmt.Errorf("service name [%s] already exists, please enter another", color.Red(name))
-		}
-	}
-	return nil
-}
-
-func doesManifestExist(org, service string) bool {
-	if found, _ := api.ServiceExists(org, service); found {
-		return true
-	}
-
-	if manifestPath != "" {
-		if _, err := os.Stat(manifestPath); err == nil {
-			return true
-		}
-	}
-
-	return false
 }
