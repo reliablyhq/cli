@@ -107,21 +107,17 @@ func runE(_ *cobra.Command, args []string) error {
 	return nil
 }
 
-func validateFilePath() error {
-	for _, ext := range supportedExtensions {
-		if strings.HasSuffix(manifestPath, ext) {
-			return nil
-		}
-	}
-
-	return fmt.Errorf("manifest file must have one of the these extensions: %v", supportedExtensions)
-}
-
 func populateManifestInteractively(m *manifest.Manifest) {
 
 	var s manifest.Service
-
-	s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?")
+	for {
+		s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?")
+		if err := validateServiceName(m, s.Name); err != nil {
+			fmt.Println(err)
+			continue
+		}
+		break
+	}
 
 	declareSLOForService(&s)
 
@@ -170,7 +166,16 @@ func declareSLOForService(s *manifest.Service) {
 			do = question.WithBoolAnswer("Do you want to add another resource for measuring your SLI?", question.WithNoAsDefault)
 		}
 	}
-	sl.Name = question.WithStringAnswer("What is the name of this SLO?")
+
+	for {
+		sl.Name = question.WithStringAnswer("What is the name of this SLO?")
+		if err := validateSLOName(s.ServiceLevels, sl.Name); err != nil {
+			fmt.Println(err)
+			continue
+		}
+		break
+	}
+
 	s.ServiceLevels = append(s.ServiceLevels, &sl)
 	fmt.Println(color.Green(fmt.Sprintf("SLO '%s' added to Service '%s'", sl.Name, s.Name)))
 
@@ -192,4 +197,36 @@ func getResourceIDForProvider(provider string) string {
 
 func sanitizeString(s string) string {
 	return strings.ToLower(strings.ReplaceAll(s, " ", "-"))
+}
+
+// -- validation functions
+
+func validateFilePath() error {
+	for _, ext := range supportedExtensions {
+		if strings.HasSuffix(manifestPath, ext) {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("manifest file must have one of the these extensions: %v", supportedExtensions)
+}
+
+func validateServiceName(m *manifest.Manifest, name string) error {
+	for _, s := range m.Services {
+		if name == s.Name {
+			return fmt.Errorf("service name [%s] already exists, please enter another", color.Red(name))
+		}
+	}
+	return nil
+}
+
+func validateSLOName(s []*manifest.ServiceLevel, name string) error {
+
+	for _, sl := range s {
+		if name == sl.Name {
+			return fmt.Errorf("slo name [%s] already exists, please enter another", color.Red(name))
+		}
+	}
+
+	return nil
 }
