@@ -26,13 +26,11 @@ func WithStringAnswer(questionText string, opts []survey.AskOpt) string {
 	var text string
 	opts = append(opts, Required, Cursor)
 
-	for len(text) == 0 {
-		err := survey.AskOne(&survey.Input{
-			Message: questionText,
-		}, &text, opts...)
-		if err == terminal.InterruptErr {
-			os.Exit(0)
-		}
+	err := survey.AskOne(&survey.Input{
+		Message: questionText,
+	}, &text, opts...)
+	if err == terminal.InterruptErr {
+		os.Exit(0)
 	}
 
 	return text
