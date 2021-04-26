@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+## [0.12.1] - 2021-04-26
 ### Added
 - `NO_COLOR` environment variable for disabling colored output
 
@@ -115,7 +116,8 @@
 
 - Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/reliablyhq/cli/releases/tag/v0.12.1
 [0.12.0]: https://github.com/reliablyhq/cli/releases/tag/v0.12.0
 [0.11.0]: https://github.com/reliablyhq/cli/releases/tag/v0.11.0
 [0.10.0]: https://github.com/reliablyhq/cli/releases/tag/v0.10.0
