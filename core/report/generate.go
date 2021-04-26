@@ -32,7 +32,7 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 		return
 	}
 
-	to := time.Now()
+	to := time.Now().UTC()
 
 	var services []*Service = make([]*Service, 0)
 	report = &Report{
