@@ -27,7 +27,9 @@ var (
 	outputFormat string
 	watchFlag    bool
 	org          string
-	service      string
+
+	// TODO: Services is being ignored for now until the functionality exists in the API
+	service string
 )
 
 func NewCommand() *cobra.Command {
@@ -49,15 +51,19 @@ func NewCommand() *cobra.Command {
 
 func runE(_ *cobra.Command, _ []string) error {
 
-	// check for -w/--watch
-	if watchFlag {
-		return watch(manifestPath)
-	}
-
 	m, err := getManifest()
 	if err != nil {
 		log.Debug(err)
 		return errors.New("an error occured while attempting to load the manifest")
+	}
+
+	if m == nil {
+		return errors.New("no service manifest detected")
+	}
+
+	// check for -w/--watch
+	if watchFlag {
+		return watch(m)
 	}
 
 	r, err := report.FromManifest(m)
@@ -107,7 +113,7 @@ func sendReportToReliably(r *report.Report) error {
 
 // watch - continously fetch and update report
 // and output to terminal
-func watch(manifestPath string) error {
+func watch(m *manifest.Manifest) error {
 	rChan := make(chan *report.Report, 5)
 	errChan := make(chan error, 1)
 	done := make(chan struct{})
@@ -122,15 +128,15 @@ func watch(manifestPath string) error {
 	// refresh every 3 seconds
 	go func() {
 		for ch := time.Tick(time.Second * 3); ; <-ch {
-			m, err := manifest.Load(manifestPath)
-			if err != nil {
-				log.Debug(err)
-				if os.IsNotExist(err) {
-					errChan <- errors.New("A manifest was not found. Please run `reliably slo init` to create one.")
-					return
-				}
-				errChan <- errors.New("An error occured while attempting to load the manifest")
-			}
+			// m, err := manifest.Load(manifestPath)
+			// if err != nil {
+			// 	log.Debug(err)
+			// 	if os.IsNotExist(err) {
+			// 		errChan <- errors.New("A manifest was not found. Please run `reliably slo init` to create one.")
+			// 		return
+			// 	}
+			// 	errChan <- errors.New("An error occured while attempting to load the manifest")
+			// }
 
 			report, err := report.FromManifest(m)
 			if err != nil {
@@ -183,10 +189,9 @@ func clearScreen() {
 	c.Run()
 }
 
-func getManifest() (*manifest.Manifest, error) {
-	if org != "" && service != "" {
-		return api.PullServiceManifest(org, service)
-	}
+func getManifest() (m *manifest.Manifest, err error) {
 
-	return manifest.Load(manifestPath)
+	return api.PullServiceManifest(org, service)
+
+	// return manifest.Load(manifestPath)
 }
