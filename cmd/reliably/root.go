@@ -72,7 +72,7 @@ Environment variables:
 		if err := setUpVerboseLogLevel(verbose); err != nil {
 			return err
 		}
-		if noColor {
+		if noColor || os.Getenv("NO_COLOR") != "" {
 			disableColor()
 		}
 		return nil

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- `NO_COLOR` environment variable for disabling colored output
+
 ### Fixed
 - Fix bad prompt validation for some user inputs; [#219](https://github.com/reliablyhq/cli/issues/219)
 - Fix prompting for user does not respect the `--no-color` flag; [#221](https://github.com/reliablyhq/cli/issues/221)

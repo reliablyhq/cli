@@ -24,6 +24,9 @@ var HelpTopics = map[string]map[string]string{
 			{{bold "RELIABLY_NO_UPDATE_NOTIFIER:"}} set to any value to disable update notifications.
 			By default, reliably checks for new releases once every 24 hours and displays
 			an upgrade notice on standard error if a newer version was found.
+
+			{{bold "NO_COLOR:"}} set to any value to avoid printing ANSI escape sequences for color
+			output.
 		`),
 	},
 }
