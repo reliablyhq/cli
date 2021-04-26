@@ -64,11 +64,18 @@ func runE(_ *cobra.Command, args []string) error {
 		log.Debug("no service manifest detected, creating a new one")
 		m = &manifest.Manifest{}
 	} else {
-		if !question.WithBoolAnswer(
-			fmt.Sprintf("Existing manifest detected for service (%s); Do you want to overwrite it?", service),
-			question.WithNoAsDefault) {
-			return nil
+		for _, s := range m.Services {
+			if s.Name == service {
+				if !question.WithBoolAnswer(
+					fmt.Sprintf("Existing manifest detected for service (%s); Do you want to overwrite it?", service),
+					question.WithNoAsDefault) {
+					return nil
+				} else {
+					break
+				}
+			}
 		}
+
 	}
 
 	populateManifestInteractively(m)
