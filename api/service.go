@@ -16,7 +16,7 @@ import (
 
 const hostnameEnvVar = "RELIABLY_SERVER"
 
-var apiURL = &url.URL{Scheme: "https", Host: "api.reliably.com"}
+var apiURL = &url.URL{Scheme: "https", Host: "reliably.com"}
 
 func init() {
 	if h := os.Getenv(hostnameEnvVar); h != "" {
