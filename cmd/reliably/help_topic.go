@@ -27,6 +27,8 @@ var HelpTopics = map[string]map[string]string{
 
 			{{bold "NO_COLOR:"}} set to any value to avoid printing ANSI escape sequences for color
 			output.
+
+			{{bold "DEBUG:"}} set to any value to enable verbose output.
 		`),
 	},
 }
