@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+### Fixed
+- No SLI metrics found for latest hour on AWS; [#226](https://github.com/reliablyhq/cli/issues/226)
 ## [0.12.1] - 2021-04-26
 ### Added
 - `NO_COLOR` environment variable for disabling colored output
