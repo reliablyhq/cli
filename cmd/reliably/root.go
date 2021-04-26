@@ -6,11 +6,9 @@ import (
 	"path"
 	"path/filepath"
 
+	surveyCore "github.com/AlecAivazis/survey/v2/core"
 	"github.com/MakeNowJust/heredoc/v2"
 	fColor "github.com/fatih/color"
-
-	//homedir "github.com/mitchellh/go-homedir"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -34,6 +32,7 @@ type Choice = cmdutil.Choice
 
 var (
 	verbose     bool
+	noColor     bool
 	version     = v.Version
 	buildDate   = v.Date
 	updaterRepo = "reliablyhq/cli"
@@ -67,11 +66,14 @@ Environment variables:
 		&verbose, "verbose", "v", false, "verbose output")
 	// disable coloring directly in the dependency fatih/color package
 	cmd.PersistentFlags().BoolVarP(
-		&fColor.NoColor, "no-color", "", false, "Disable color output")
+		&noColor, "no-color", "", false, "Disable color output")
 	cmd.SetVersionTemplate(FormatVersion(version, buildDate))
 	cmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		if err := setUpVerboseLogLevel(verbose); err != nil {
 			return err
+		}
+		if noColor {
+			disableColor()
 		}
 		return nil
 	}
@@ -202,6 +204,12 @@ func setUpVerboseLogLevel(verbose bool) error {
 	}
 
 	return nil
+}
+
+// disableColor disables coloring prompt & output for dependency libs
+func disableColor() {
+	surveyCore.DisableColor = true
+	fColor.NoColor = true
 }
 
 /*

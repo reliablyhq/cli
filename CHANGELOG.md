@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fix bad prompt validation for some user inputs; [#219](https://github.com/reliablyhq/cli/issues/219)
+- Fix prompting for user does not respect the `--no-color` flag; [#221](https://github.com/reliablyhq/cli/issues/221)
 ## [0.12.0] - 2021-04-23
 ### Added
 - Added time observation window for SLO in manifest & prompt user in `slo init` generation; [#1681](https://github.com/reliablyhq/cli/issues/181)
