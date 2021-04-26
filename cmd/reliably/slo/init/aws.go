@@ -2,17 +2,19 @@ package init
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"sort"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewayv2"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
-	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/reliablyhq/cli/core/cli/question"
 )
@@ -26,7 +28,26 @@ var (
 )
 
 func buildAWSArn() string {
-	resourceArn := question.WithStringAnswer("Paste an AWS ARN, or type \"i\" for interactive mode.", awsOptions)
+	var resourceArn string
+
+	err := survey.AskOne(
+		&survey.Input{
+			Message: "Paste an AWS ARN, or type \"i\" for interactive mode.",
+			Help:    "See https://docs.aws.amazon.com/en_en/general/latest/gr/aws-arns-and-namespaces.html",
+		},
+		&resourceArn,
+		question.Required,
+		question.Cursor,
+		question.Subquestion,
+		survey.WithValidator(func(ans interface{}) error {
+			answer := ans.(string)
+			if answer != "i" && !arn.IsARN(answer) {
+				return errors.New("Please make sure you enter a valid ARN.")
+			}
+			return nil
+		}))
+	checkPromptExit(err)
+
 	if resourceArn == "i" {
 		resolver := endpoints.DefaultResolver()
 		partitions := resolver.(endpoints.EnumPartitions).Partitions()
