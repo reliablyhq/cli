@@ -116,6 +116,10 @@ func Execute() {
 		core.SetHostname(hostFromEnv)
 	}
 
+	if os.Getenv("DEBUG") != "" {
+		verbose = true
+	}
+
 	rootCmd := NewCmdRoot()
 	if err := rootCmd.Execute(); err != nil {
 		er(err)
@@ -197,7 +201,8 @@ func initConfig() {
 //set the log level to debug if verbose mode is on
 func setUpVerboseLogLevel(verbose bool) error {
 
-	if verbose {
+	// For now, we check env var here, but this should be done from outside
+	if verbose || os.Getenv("DEBUG") != "" {
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.InfoLevel)
