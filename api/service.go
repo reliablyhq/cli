@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
 
 	"github.com/reliablyhq/cli/core/manifest"
+	log "github.com/sirupsen/logrus"
 )
 
 const hostnameEnvVar = "RELIABLY_SERVER"
@@ -20,11 +20,13 @@ var apiURL = &url.URL{Scheme: "https", Host: "reliably.com"}
 
 func init() {
 	if h := os.Getenv(hostnameEnvVar); h != "" {
-		if u, err := url.Parse(h); err == nil {
-			apiURL = u
-		} else {
-			log.Fatalf("the %s environment variable '%s' is not a valid URL", hostnameEnvVar, h)
-		}
+		apiURL.Host = h
+
+		// if u, err := url.Parse(h); err == nil {
+		// 	apiURL = u
+		// } else {
+		// 	log.Fatalf("the %s environment variable '%s' is not a valid URL", hostnameEnvVar, h)
+		// }
 	}
 }
 
@@ -40,7 +42,7 @@ func PushServiceManifest(_, service string, m *manifest.Manifest) error {
 
 	client := AuthHTTPClient(apiURL.Host)
 
-	orgID, err := CurrentUserOrganizationID(NewClient(), apiURL.Host)
+	orgID, err := CurrentUserOrganizationID(&Client{http: client}, apiURL.Host)
 	if err != nil {
 		return err
 	}
@@ -51,7 +53,7 @@ func PushServiceManifest(_, service string, m *manifest.Manifest) error {
 	}
 
 	u, _ := url.Parse(apiURL.String())
-	u.Path = fmt.Sprintf("/api/v1/orgs/%s/services/%s", orgID, service)
+	u.Path = fmt.Sprintf("/api/v1/orgs/%s/services", orgID)
 
 	req := http.Request{
 		URL:    u,
@@ -59,6 +61,7 @@ func PushServiceManifest(_, service string, m *manifest.Manifest) error {
 		Body:   ioutil.NopCloser(&body),
 	}
 
+	log.Debugf("%s %s", req.Method, u)
 	res, err := client.Do(&req)
 	if err != nil {
 		return err
@@ -81,21 +84,23 @@ func PullServiceManifest(_, service string) (*manifest.Manifest, error) {
 		return nil, errors.New("service cannot be empty")
 	}
 
-	client := AuthHTTPClient(apiURL.String())
+	client := AuthHTTPClient(apiURL.Host)
 
-	orgID, err := CurrentUserOrganizationID(NewClient(), apiURL.Host)
+	orgID, err := CurrentUserOrganizationID(&Client{http: client}, apiURL.Host)
 	if err != nil {
 		return nil, err
 	}
 
 	u, _ := url.Parse(apiURL.String())
-	u.Path = fmt.Sprintf("/api/v1/orgs/%s/services/%s", orgID, service)
+	u.Path = fmt.Sprintf("/api/v1/orgs/%s/services", orgID) // get all by default
+	// u.Path = fmt.Sprintf("/api/v1/orgs/%s/services/%s", orgID, service)
 
 	req := http.Request{
 		URL:    u,
 		Method: http.MethodGet,
 	}
 
+	log.Debugf("%s %s", req.Method, u)
 	res, err := client.Do(&req)
 	if err != nil {
 		return nil, err
