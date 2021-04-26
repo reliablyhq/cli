@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"regexp"
 	"time"
 
@@ -16,21 +15,8 @@ import (
 
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/config"
-	"github.com/reliablyhq/cli/version"
 	v "github.com/reliablyhq/cli/version"
 )
-
-var hostname = "https://api.reliably.com"
-
-func init() {
-	if version.IsDevVersion() {
-		hostname = "https://api.reliably.dev"
-	}
-
-	if x := os.Getenv("RELIABLY_HOST"); x != "" {
-		hostname = x
-	}
-}
 
 // ClientOption represents an argument to NewClient
 type ClientOption = func(http.RoundTripper) http.RoundTripper

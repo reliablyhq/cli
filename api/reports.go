@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/report"
 )
 
@@ -25,8 +26,8 @@ func SendReport(org, service string, r *report.Report) error {
 		return errors.New("report cannot be nil")
 	}
 
-	client := AuthHTTPClient(hostname)
-	u, _ := url.Parse(hostname)
+	client := AuthHTTPClient(core.Hostname())
+	u, _ := url.Parse(core.Hostname())
 	u.Path = fmt.Sprintf("/api/v1/orgs/%s/services/%s/reports", org, service)
 
 	var body bytes.Buffer

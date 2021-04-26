@@ -6,31 +6,52 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 
 	"github.com/reliablyhq/cli/core/manifest"
 )
 
-// PushServiceManifest - records the manifest via the API backend.
-func PushServiceManifest(org, service string, m *manifest.Manifest) error {
-	if org == "" {
-		return errors.New("org cannot be empty")
+const hostnameEnvVar = "RELIABLY_SERVER"
+
+var apiURL = &url.URL{Scheme: "https", Host: "api.reliably.com"}
+
+func init() {
+	if h := os.Getenv(hostnameEnvVar); h != "" {
+		if u, err := url.Parse(h); err == nil {
+			apiURL = u
+		} else {
+			log.Fatalf("the %s environment variable '%s' is not a valid URL", hostnameEnvVar, h)
+		}
 	}
+}
+
+// PushServiceManifest - records the manifest via the API backend.
+func PushServiceManifest(_, service string, m *manifest.Manifest) error {
+	// if org == "" {
+	// 	return errors.New("org cannot be empty")
+	// }
 
 	if service == "" {
 		return errors.New("service cannot be empty")
 	}
 
-	client := AuthHTTPClient(hostname)
+	client := AuthHTTPClient(apiURL.Host)
+
+	orgID, err := CurrentUserOrganizationID(NewClient(), apiURL.Host)
+	if err != nil {
+		return err
+	}
 
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(m); err != nil {
 		return fmt.Errorf("failed to serialize: %s", err)
 	}
 
-	u, _ := url.Parse(hostname)
-	u.Path = fmt.Sprintf("/api/v1/orgs/%s/services/%s", org, service)
+	u, _ := url.Parse(apiURL.String())
+	u.Path = fmt.Sprintf("/api/v1/orgs/%s/services/%s", orgID, service)
 
 	req := http.Request{
 		URL:    u,
@@ -51,19 +72,24 @@ func PushServiceManifest(org, service string, m *manifest.Manifest) error {
 }
 
 // PullServiceManifest - downloads current manifest
-func PullServiceManifest(org, service string) (*manifest.Manifest, error) {
-	if org == "" {
-		return nil, errors.New("org cannot be empty")
-	}
+func PullServiceManifest(_, service string) (*manifest.Manifest, error) {
+	// if org == "" {
+	// 	return nil, errors.New("org cannot be empty")
+	// }
 
 	if service == "" {
 		return nil, errors.New("service cannot be empty")
 	}
 
-	client := AuthHTTPClient(hostname)
+	client := AuthHTTPClient(apiURL.String())
 
-	u, _ := url.Parse(hostname)
-	u.Path = fmt.Sprintf("/api/v1/orgs/%s/services/%s", org, service)
+	orgID, err := CurrentUserOrganizationID(NewClient(), apiURL.Host)
+	if err != nil {
+		return nil, err
+	}
+
+	u, _ := url.Parse(apiURL.String())
+	u.Path = fmt.Sprintf("/api/v1/orgs/%s/services/%s", orgID, service)
 
 	req := http.Request{
 		URL:    u,
@@ -92,19 +118,24 @@ func PullServiceManifest(org, service string) (*manifest.Manifest, error) {
 	return &m, nil
 }
 
-func ServiceExists(org, service string) (bool, error) {
-	if org == "" {
-		return false, errors.New("org cannot be empty")
-	}
+func ServiceExists(_, service string) (bool, error) {
+	// if org == "" {
+	// 	return false, errors.New("org cannot be empty")
+	// }
 
 	if service == "" {
 		return false, errors.New("service cannot be empty")
 	}
 
-	client := AuthHTTPClient(hostname)
+	client := AuthHTTPClient(apiURL.Host)
 
-	u, _ := url.Parse(hostname)
-	u.Path = fmt.Sprintf("/api/v1/orgs/%s/services/%s", org, service)
+	orgID, err := CurrentUserOrganizationID(NewClient(), apiURL.Host)
+	if err != nil {
+		return false, err
+	}
+
+	u, _ := url.Parse(apiURL.String())
+	u.Path = fmt.Sprintf("/api/v1/orgs/%s/services/%s", orgID, service)
 
 	req := http.Request{
 		URL:    u,
