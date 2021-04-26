@@ -1,6 +1,7 @@
 package question
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -37,29 +38,40 @@ func WithStringAnswer(questionText string, opts []survey.AskOpt) string {
 }
 
 func WithFloat64Answer(question string, opts []survey.AskOpt, min, max float64) float64 {
-	for {
-		answer := WithStringAnswer(question, opts)
-		if f, err := strconv.ParseFloat(answer, 64); err != nil {
-			fmt.Println("Please make sure you type a number")
+	validator := func(val interface{}) error {
+		if f, err := strconv.ParseFloat(val.(string), 64); err != nil {
+			return errors.New("Please make sure you type a number")
 		} else {
 			if f < min || f > max {
-				fmt.Printf("the value must be between %.2f and %.2f\n", min, max)
-			} else {
-				return f
+				return fmt.Errorf("Value must be between %.2f and %.2f", min, max)
 			}
 		}
+		return nil
 	}
+
+	opts = append(opts, survey.WithValidator(validator))
+	answer := WithStringAnswer(question, opts)
+
+	// we should refactor to be able to use question with transformer
+	f, _ := strconv.ParseFloat(answer, 64)
+	return f
 }
 
 func WithInt64Answer(question string, opts []survey.AskOpt) int64 {
-	for {
-		answer := WithStringAnswer(question, opts)
-		if i, err := strconv.ParseInt(answer, 10, 64); err != nil {
-			fmt.Println("Please make sure you type a number")
-		} else {
-			return i
+
+	validator := func(val interface{}) error {
+		if _, err := strconv.ParseInt(val.(string), 10, 64); err != nil {
+			return errors.New("Please make sure you type a number")
 		}
+		return nil
 	}
+
+	opts = append(opts, survey.WithValidator(validator))
+	answer := WithStringAnswer(question, opts)
+
+	// we should refactor to be able to use question with transformer
+	i, _ := strconv.ParseInt(answer, 10, 64)
+	return i
 }
 
 func WithDurationAnswer(question string, opts []survey.AskOpt) core.Duration {
