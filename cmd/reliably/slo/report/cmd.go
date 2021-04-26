@@ -50,6 +50,10 @@ func NewCommand() *cobra.Command {
 }
 
 func runE(_ *cobra.Command, _ []string) error {
+	// check for -w/--watch
+	if watchFlag {
+		return watch()
+	}
 
 	m, err := getManifest()
 	if err != nil {
@@ -61,19 +65,14 @@ func runE(_ *cobra.Command, _ []string) error {
 		return errors.New("no service manifest detected")
 	}
 
-	// check for -w/--watch
-	if watchFlag {
-		return watch(m)
-	}
-
 	r, err := report.FromManifest(m)
 	if err != nil {
 		return err
 	}
 
-	if err := api.SendReport(org, service, r); err != nil {
-		log.Warn(err)
-	}
+	// if err := api.SendReport(org, service, r); err != nil {
+	// 	log.Warn(err)
+	// }
 
 	// set format
 	var format = report.TABBED
@@ -107,13 +106,9 @@ func runE(_ *cobra.Command, _ []string) error {
 	return nil
 }
 
-func sendReportToReliably(r *report.Report) error {
-	return errors.New("Sending reports to Reliably is not available yet. Check back later :D")
-}
-
 // watch - continously fetch and update report
 // and output to terminal
-func watch(m *manifest.Manifest) error {
+func watch() error {
 	rChan := make(chan *report.Report, 5)
 	errChan := make(chan error, 1)
 	done := make(chan struct{})
@@ -137,6 +132,16 @@ func watch(m *manifest.Manifest) error {
 			// 	}
 			// 	errChan <- errors.New("An error occured while attempting to load the manifest")
 			// }
+
+			m, err := getManifest()
+			if err != nil {
+				log.Debug(err)
+				errChan <- errors.New("an error occured while attempting to load the manifest")
+			}
+
+			if m == nil {
+				errChan <- errors.New("no service manifest detected")
+			}
 
 			report, err := report.FromManifest(m)
 			if err != nil {
