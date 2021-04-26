@@ -36,9 +36,10 @@ func PushServiceManifest(_, service string, m *manifest.Manifest) error {
 	// 	return errors.New("org cannot be empty")
 	// }
 
-	if service == "" {
-		return errors.New("service cannot be empty")
-	}
+	// TODO: service specific endpoint not implemented
+	// if service == "" {
+	// 	return errors.New("service cannot be empty")
+	// }
 
 	client := AuthHTTPClient(apiURL.Host)
 
@@ -80,9 +81,9 @@ func PullServiceManifest(_, service string) (*manifest.Manifest, error) {
 	// 	return nil, errors.New("org cannot be empty")
 	// }
 
-	if service == "" {
-		return nil, errors.New("service cannot be empty")
-	}
+	// if service == "" {
+	// 	return nil, errors.New("service cannot be empty")
+	// }
 
 	client := AuthHTTPClient(apiURL.Host)
 
