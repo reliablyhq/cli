@@ -63,11 +63,9 @@ func WithInt64Answer(question string, opts []survey.AskOpt) int64 {
 }
 
 func WithDurationAnswer(question string, opts []survey.AskOpt) core.Duration {
-	for {
-		answer := WithInt64Answer(question, opts)
-		ms := answer * 1000000
-		return core.Duration{Duration: time.Duration(ms)}
-	}
+	answer := WithInt64Answer(question, opts)
+	ms := answer * 1000000
+	return core.Duration{Duration: time.Duration(ms)}
 }
 
 type BoolAnswer = bool
