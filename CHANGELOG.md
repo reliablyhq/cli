@@ -4,7 +4,7 @@
 
 ### Added
 - `DEBUG` environment variable for turning on debug/verbose mode
-- `slo init` now suggests a SLO title by default
+- `slo init` now suggests a SLO title by default; [#225](https://github.com/reliablyhq/cli/issues/225)
 
 ### Fixed
 - No SLI metrics found for latest hour on AWS; [#226](https://github.com/reliablyhq/cli/issues/226)

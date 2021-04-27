@@ -37,6 +37,22 @@ func WithStringAnswer(questionText string, opts []survey.AskOpt) string {
 	return text
 }
 
+func WithStringAnswerV2(questionText string, helpText string, defaultAnswser string, opts []survey.AskOpt) string {
+	var text string
+	opts = append(opts, Required, Cursor)
+
+	err := survey.AskOne(&survey.Input{
+		Message: questionText,
+		Help:    helpText,
+		Default: defaultAnswser,
+	}, &text, opts...)
+	if err == terminal.InterruptErr {
+		os.Exit(0)
+	}
+
+	return text
+}
+
 func WithFloat64Answer(question string, opts []survey.AskOpt, min, max float64) float64 {
 	validator := func(val interface{}) error {
 		if f, err := strconv.ParseFloat(val.(string), 64); err != nil {

@@ -1,11 +1,15 @@
 package init
 
 import (
+	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
 
 	"github.com/reliablyhq/cli/utils"
+
+	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/core/manifest"
 )
 
 func getDefaultAppName() string {
@@ -51,4 +55,25 @@ func getDefaultRepository() string {
 
 	cwd, _ := os.Getwd()
 	return cwd
+}
+
+func initDefaultSloName(sl *manifest.ServiceLevel) error {
+
+	var desc string
+	switch sl.Type {
+	case "latency":
+		c := sl.Criteria.(manifest.LatencyCriteria)
+		threshold := c.Threshold.Duration.Milliseconds()
+		desc = fmt.Sprintf("faster than %vms", threshold)
+	case "availability":
+		desc = "successful"
+	}
+
+	sl.Name = fmt.Sprintf("%v%% of requests %s over last %s",
+		sl.Objective,
+		desc,
+		core.HumanizeDuration(sl.ObservationWindow.ToDuration()),
+	)
+
+	return nil
 }
