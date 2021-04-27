@@ -9,6 +9,7 @@ import (
 	surveyCore "github.com/AlecAivazis/survey/v2/core"
 	"github.com/MakeNowJust/heredoc/v2"
 	fColor "github.com/fatih/color"
+	"github.com/mgutz/ansi"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -74,6 +75,8 @@ Environment variables:
 		}
 		if noColor || os.Getenv("NO_COLOR") != "" {
 			disableColor()
+		} else {
+			customizeColor()
 		}
 		return nil
 	}
@@ -215,6 +218,25 @@ func setUpVerboseLogLevel(verbose bool) error {
 func disableColor() {
 	surveyCore.DisableColor = true
 	fColor.NoColor = true
+}
+
+// customizeColor changes a default color style for survey
+// default anwsers will be non-bold light grey, instead of color too close
+// to the question color style (question & default answer look very alike)
+// -> override survey's color - code from GitHub CLI
+// https://github.com/cli/cli/blob/ac0fe6bf715537a5fb9b99f80344ea098134a335/cmd/gh/main.go#L68
+func customizeColor() {
+	surveyCore.TemplateFuncsWithColor["color"] = func(style string) string {
+		switch style {
+		case "white":
+			if color.Is256ColorSupported() {
+				return fmt.Sprintf("\x1b[%d;5;%dm", 38, 242)
+			}
+			return ansi.ColorCode("default")
+		default:
+			return ansi.ColorCode(style)
+		}
+	}
 }
 
 /*
