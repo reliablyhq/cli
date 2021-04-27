@@ -31,7 +31,7 @@ var (
 
 var emptyOptions = []question.AskOpt{}
 
-const iconWarn = "⚠️ "
+const iconWarn = "⚠️"
 
 func NewCommand() *cobra.Command {
 	cmd := cobra.Command{
