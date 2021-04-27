@@ -116,7 +116,7 @@ func declareSLOForService(s *manifest.Service) {
 
 	if sl.Type == "latency" {
 		threshold := question.WithDurationAnswer("What is your latency threshold (in milliseconds)?", emptyOptions)
-		sl.Criteria = &manifest.LatencyCriteria{Threshold: threshold}
+		sl.Criteria = manifest.LatencyCriteria{Threshold: threshold}
 	}
 
 	sl.ObservationWindow = getObservationWindow()
@@ -146,7 +146,8 @@ func declareSLOForService(s *manifest.Service) {
 			do = question.WithBoolAnswer("Do you want to add another resource for measuring your SLI?", emptyOptions, question.WithNoAsDefault)
 		}
 	}
-	sl.Name = question.WithStringAnswer("What is the name of this SLO?", emptyOptions)
+	_ = initDefaultSloName(&sl)
+	sl.Name = question.WithStringAnswerV2("What is the name of this SLO?", "", sl.Name, emptyOptions)
 	s.ServiceLevels = append(s.ServiceLevels, &sl)
 	fmt.Println(color.Green(fmt.Sprintf("SLO '%s' added to Service '%s'", sl.Name, s.Name)))
 
