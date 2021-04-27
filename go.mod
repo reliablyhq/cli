@@ -39,7 +39,6 @@ require (
 	github.com/open-policy-agent/opa v0.24.0
 	github.com/pkg/browser v0.0.0-20201207095918-0426ae3fba23
 	github.com/sirupsen/logrus v1.7.0
-	github.com/smartystreets/goconvey v1.6.4
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
