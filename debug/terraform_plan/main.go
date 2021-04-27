@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/terraform"
@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	data, err := ioutil.ReadFile("tfplan.json")
+	data, err := os.ReadFile("tfplan.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -20,7 +20,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	policy, err := ioutil.ReadFile("policy.rego")
+	policy, err := os.ReadFile("policy.rego")
 
 	resultSet := core.Eval(core.RegoModule{Name: "policy.rego", Raw: string(policy)}, &x)
 

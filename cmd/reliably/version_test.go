@@ -3,7 +3,7 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -46,7 +46,7 @@ func TestCmdVersion(t *testing.T) {
 
 	// back to normal state
 	w.Close()
-	captured, _ := ioutil.ReadAll(r)
+	captured, _ := io.ReadAll(r)
 	os.Stdout = rescueStdout // restoring the real stdout
 
 	assert.Equal(t, nil, fErr, "Unexpected error")

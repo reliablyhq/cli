@@ -2,7 +2,7 @@ package find
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"regexp"
 	"strings"
@@ -127,13 +127,13 @@ func ReadAndSplitKubernetesFile(file string) []string {
 
 	if file == "-" {
 		defer os.Stdin.Close()
-		c, err := ioutil.ReadAll(os.Stdin)
+		c, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			log.Fatalf("Failed reading from stdin : %v", err)
 		}
 		fileContent = c
 	} else {
-		c, err := ioutil.ReadFile(file)
+		c, err := os.ReadFile(file)
 		if err != nil {
 			log.Fatalf("Failed reading file %s : %v", file, err)
 		}

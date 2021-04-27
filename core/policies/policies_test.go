@@ -5,7 +5,7 @@ import ()
 /*
 func TestDownloadPodPolicy(t *testing.T) {
 
-	dir, _ := ioutil.TempDir(os.TempDir(), ".reliably")
+	dir, _ := os.MkdirTemp(os.TempDir(), ".reliably")
 	defer os.RemoveAll(dir)
 
 	fpath, err := downloadPolicyToCache(dir, "Kubernetes", "Pod")
@@ -22,7 +22,7 @@ func TestDownloadPodPolicy(t *testing.T) {
 /*
 func TestDownloadInvalidPolicy(t *testing.T) {
 
-	dir, _ := ioutil.TempDir(os.TempDir(), ".reliably")
+	dir, _ := os.MkdirTemp(os.TempDir(), ".reliably")
 	defer os.RemoveAll(dir)
 
 	fpath, err := downloadPolicyToCache(dir, "Kubernetes", "azertyuiop")
@@ -36,7 +36,7 @@ func TestDownloadInvalidPolicy(t *testing.T) {
 /*
 func TestFetchCachedPolicy(t *testing.T) {
 
-	dir, _ := ioutil.TempDir(os.TempDir(), ".reliably")
+	dir, _ := os.MkdirTemp(os.TempDir(), ".reliably")
 	defer os.RemoveAll(dir)
 
 	//First call, places policy in cache; second call uses cached policy

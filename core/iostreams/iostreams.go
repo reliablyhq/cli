@@ -3,7 +3,6 @@ package iostreams
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/reliablyhq/cli/core/color"
@@ -129,7 +128,7 @@ func Test() (*IOStreams, *bytes.Buffer, *bytes.Buffer, *bytes.Buffer) {
 	out := &bytes.Buffer{}
 	errOut := &bytes.Buffer{}
 	return &IOStreams{
-		In:     ioutil.NopCloser(in),
+		In:     io.NopCloser(in),
 		Out:    out,
 		ErrOut: errOut,
 	}, in, out, errOut

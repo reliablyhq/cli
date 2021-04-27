@@ -2,7 +2,6 @@ package terraform
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -81,7 +80,7 @@ func scanTF(args []string) {
 
 	// 2. Read and Unmarshal files in sequence
 	for _, f := range tfiles {
-		b, err := ioutil.ReadFile(f)
+		b, err := os.ReadFile(f)
 		if err != nil {
 			log.Debug(err)
 			log.Error("An error occurred while opening the file")
@@ -133,7 +132,7 @@ func scanTF(args []string) {
 // this function uses the -p/--plan flag explicitly
 func scanPlan() {
 	// 1: check for the file
-	b, err := ioutil.ReadFile(plan)
+	b, err := os.ReadFile(plan)
 	if err != nil {
 		log.Debug(err)
 		log.Error("An error occurred while opening the file")

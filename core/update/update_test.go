@@ -3,7 +3,7 @@ package update
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -113,7 +113,7 @@ func TestCheckForUpdate(t *testing.T) {
 
 				return &http.Response{
 					StatusCode: 200,
-					Body:       ioutil.NopCloser(bytes.NewBufferString(json)),
+					Body:       io.NopCloser(bytes.NewBufferString(json)),
 				}
 			})
 
@@ -143,7 +143,7 @@ func TestCheckForUpdate(t *testing.T) {
 }
 
 func tempFilePath() string {
-	file, err := ioutil.TempFile("", "")
+	file, err := os.CreateTemp("", "")
 	if err != nil {
 		log.Fatal(err)
 	}
