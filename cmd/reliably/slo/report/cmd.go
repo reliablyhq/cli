@@ -194,9 +194,24 @@ func clearScreen() {
 	c.Run()
 }
 
+// getManifest priority
+// 1. local file
+// 2. service manifest - if specified
+// 3 full manifest download
 func getManifest() (m *manifest.Manifest, err error) {
 
-	return api.PullServiceManifest(org, service)
+	m, err = manifest.Load(manifestPath)
+	if err == nil {
+		return
+	}
 
-	// return manifest.Load(manifestPath)
+	log.Debugf("unable to read manifest file: %s - %s", manifestPath, err)
+	log.Debug("attempting to retrieve manifest from reliably api")
+
+	if service == "" {
+		m, err = api.PullManifest()
+		return
+	}
+
+	return api.PullServiceManifest(service)
 }
