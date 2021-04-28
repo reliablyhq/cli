@@ -2,23 +2,52 @@ package init
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"sort"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewayv2"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
-	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/reliablyhq/cli/core/cli/question"
 )
 
+var (
+	awsOptions     = []question.AskOpt{question.Subquestion}
+	awsServicesMap = map[string]string{
+		"API Gateway":           "apigateway",
+		"Elastic Load Balancer": "elasticloadbalancing",
+	}
+)
+
 func buildAWSArn() string {
-	resourceArn := question.WithStringAnswer("Paste an AWS ARN, or type \"i\" for interactive mode.")
+	var resourceArn string
+
+	err := survey.AskOne(
+		&survey.Input{
+			Message: "Paste an AWS ARN, or type \"i\" for interactive mode.",
+			Help:    "See https://docs.aws.amazon.com/en_en/general/latest/gr/aws-arns-and-namespaces.html",
+		},
+		&resourceArn,
+		question.Required,
+		question.Cursor,
+		question.Subquestion,
+		survey.WithValidator(func(ans interface{}) error {
+			answer := ans.(string)
+			if answer != "i" && !arn.IsARN(answer) {
+				return errors.New("Please make sure you enter a valid ARN.")
+			}
+			return nil
+		}))
+	checkPromptExit(err)
+
 	if resourceArn == "i" {
 		resolver := endpoints.DefaultResolver()
 		partitions := resolver.(endpoints.EnumPartitions).Partitions()
@@ -32,7 +61,7 @@ func buildAWSArn() string {
 		for _, p := range partitions {
 			partitionsIDs = append(partitionsIDs, p.ID())
 		}
-		partitionID := question.WithSingleChoiceAnswer("Select an AWS partition.", partitionsIDs...)
+		partitionID := question.WithSingleChoiceAnswer("Select an AWS partition.", awsOptions, partitionsIDs...)
 
 		var partition endpoints.Partition
 
@@ -53,11 +82,11 @@ func buildAWSArn() string {
 			regionsIDs = append(regionsIDs, id)
 		}
 		sort.Strings(regionsIDs)
-		regionID := question.WithSingleChoiceAnswer("Select an AWS region.", regionsIDs...)
+		regionID := question.WithSingleChoiceAnswer("Select an AWS region.", awsOptions, regionsIDs...)
 
 		cfgIAM, err := config.LoadDefaultConfig(context.TODO())
 		if err != nil {
-			fmt.Println("⚠️ Reliably encountered a problem. Please try again or use normal mode.")
+			fmt.Println(iconWarn, "Reliably encountered a problem. Please try again or use normal mode.")
 			return ""
 		}
 		clientIAM := iam.NewFromConfig(
@@ -85,7 +114,7 @@ func buildAWSArn() string {
 			awsServices = append(awsServices, key)
 		}
 		sort.Strings(awsServices) // sorts slice in-place
-		serviceFullName := question.WithSingleChoiceAnswer("Select an AWS service.", awsServices...)
+		serviceFullName := question.WithSingleChoiceAnswer("Select an AWS service.", awsOptions, awsServices...)
 		service := awsServicesMap[serviceFullName]
 
 		serviceID := selectAWSService(service, regionID)
@@ -136,7 +165,7 @@ func selectAWSService(serviceType string, region string) string {
 			agwApis = append(agwApis, niceName)
 			agwApisMap[niceName] = ID
 		}
-		apiNiceName := question.WithSingleChoiceAnswer("Select a Resource.", agwApis...)
+		apiNiceName := question.WithSingleChoiceAnswer("Select a Resource.", awsOptions, agwApis...)
 		apiID := agwApisMap[apiNiceName]
 
 		return "/apis/" + apiID
@@ -177,7 +206,7 @@ func selectAWSService(serviceType string, region string) string {
 			elbs = append(elbs, niceName)
 			elbsMap[niceName] = elbID
 		}
-		elbNiceName := question.WithSingleChoiceAnswer("Select a Resource.", elbs...)
+		elbNiceName := question.WithSingleChoiceAnswer("Select a Resource.", awsOptions, elbs...)
 		elbID := elbsMap[elbNiceName]
 		return elbID
 	default:

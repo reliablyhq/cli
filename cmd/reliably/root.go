@@ -6,11 +6,10 @@ import (
 	"path"
 	"path/filepath"
 
+	surveyCore "github.com/AlecAivazis/survey/v2/core"
 	"github.com/MakeNowJust/heredoc/v2"
 	fColor "github.com/fatih/color"
-
-	//homedir "github.com/mitchellh/go-homedir"
-
+	"github.com/mgutz/ansi"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -34,6 +33,7 @@ type Choice = cmdutil.Choice
 
 var (
 	verbose     bool
+	noColor     bool
 	version     = v.Version
 	buildDate   = v.Date
 	updaterRepo = "reliablyhq/cli"
@@ -67,11 +67,16 @@ Environment variables:
 		&verbose, "verbose", "v", false, "verbose output")
 	// disable coloring directly in the dependency fatih/color package
 	cmd.PersistentFlags().BoolVarP(
-		&fColor.NoColor, "no-color", "", false, "Disable color output")
+		&noColor, "no-color", "", false, "Disable color output")
 	cmd.SetVersionTemplate(FormatVersion(version, buildDate))
 	cmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		if err := setUpVerboseLogLevel(verbose); err != nil {
 			return err
+		}
+		if noColor || os.Getenv("NO_COLOR") != "" {
+			disableColor()
+		} else {
+			customizeColor()
 		}
 		return nil
 	}
@@ -112,6 +117,10 @@ func Execute() {
 
 	if hostFromEnv := os.Getenv("RELIABLY_HOST"); hostFromEnv != "" {
 		core.SetHostname(hostFromEnv)
+	}
+
+	if os.Getenv("DEBUG") != "" {
+		verbose = true
 	}
 
 	rootCmd := NewCmdRoot()
@@ -195,13 +204,39 @@ func initConfig() {
 //set the log level to debug if verbose mode is on
 func setUpVerboseLogLevel(verbose bool) error {
 
-	if verbose {
+	// For now, we check env var here, but this should be done from outside
+	if verbose || os.Getenv("DEBUG") != "" {
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.InfoLevel)
 	}
 
 	return nil
+}
+
+// disableColor disables coloring prompt & output for dependency libs
+func disableColor() {
+	surveyCore.DisableColor = true
+	fColor.NoColor = true
+}
+
+// customizeColor changes a default color style for survey
+// default anwsers will be non-bold light grey, instead of color too close
+// to the question color style (question & default answer look very alike)
+// -> override survey's color - code from GitHub CLI
+// https://github.com/cli/cli/blob/ac0fe6bf715537a5fb9b99f80344ea098134a335/cmd/gh/main.go#L68
+func customizeColor() {
+	surveyCore.TemplateFuncsWithColor["color"] = func(style string) string {
+		switch style {
+		case "white":
+			if color.Is256ColorSupported() {
+				return fmt.Sprintf("\x1b[%d;5;%dm", 38, 242)
+			}
+			return ansi.ColorCode("default")
+		default:
+			return ansi.ColorCode(style)
+		}
+	}
 }
 
 /*

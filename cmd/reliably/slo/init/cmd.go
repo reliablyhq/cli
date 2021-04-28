@@ -1,12 +1,19 @@
 package init
 
 import (
+	"errors"
 	"fmt"
+	"math"
 	"os"
 	"sort"
 	"strings"
+	"time"
 
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/AlecAivazis/survey/v2/terminal"
+	iso8601 "github.com/ChannelMeter/iso8601duration"
 	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
@@ -20,23 +27,15 @@ var (
 	service             string
 	org                 string
 	supportedExtensions = []string{".yaml", ".json"}
-	googleResourceTypes = []string{"Google Cloud Load Balancers"}
-	awsPartitionsIDs    = []string{
-		"aws",
-		"aws-cn",
-		"aws-us-gov",
-	}
-	awsServicesMap = map[string]string{
-		"API Gateway":           "apigateway",
-		"Elastic Load Balancer": "elasticloadbalancing",
-	}
-	providersMap = map[string]string{
+	providersMap        = map[string]string{
 		"Amazon Web Services":   "aws",
 		"Google Cloud Platform": "gcp",
 	}
 )
 
-const iconWarn = "⚠️ "
+var emptyOptions = []question.AskOpt{}
+
+const iconWarn = "⚠️"
 
 func NewCommand() *cobra.Command {
 	cmd := cobra.Command{
@@ -55,27 +54,25 @@ func NewCommand() *cobra.Command {
 
 func runE(_ *cobra.Command, args []string) error {
 	log.Debug("fetching internal service manifest")
-	m, err := api.PullManifest()
+	if _, err := os.Stat(manifestPath); err == nil {
+		if !question.WithBoolAnswer(fmt.Sprintf("Existing local manifest detected (%s); Do you want to overwrite it?", manifestPath), emptyOptions, question.WithNoAsDefault) {
+			return nil
+		}
+	}
+
+	m, err := manifest.Load(manifestPath)
 	if err != nil {
-		return err
+		log.Debugf("error reading local manifest, attempting to retrieve from reliably: %s", err)
+		m, err = api.PullManifest()
+		if err != nil {
+			return err
+		}
+
 	}
 
 	if m == nil {
 		log.Debug("no service manifest detected, creating a new one")
 		m = &manifest.Manifest{}
-	} else {
-		for _, s := range m.Services {
-			if s.Name == service {
-				if !question.WithBoolAnswer(
-					fmt.Sprintf("Existing manifest detected for service (%s); Do you want to overwrite it?", service),
-					question.WithNoAsDefault) {
-					return nil
-				} else {
-					break
-				}
-			}
-		}
-
 	}
 
 	populateManifestInteractively(m)
@@ -110,16 +107,15 @@ func populateManifestInteractively(m *manifest.Manifest) {
 	var s manifest.Service
 	s.Name = service
 
-	if s.Name == "" {
-		s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?")
-	}
+	s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?", emptyOptions)
 
 	declareSLOForService(&s)
 
 	m.Services = append(m.Services, &s)
 	fmt.Println(color.Green(fmt.Sprintf("Service '%s' added", s.Name)))
 
-	if question.WithBoolAnswer("Do you want to add another Service?", question.WithNoAsDefault) {
+	fmt.Println()
+	if question.WithBoolAnswer("Do you want to add another Service?", emptyOptions, question.WithNoAsDefault) {
 		populateManifestInteractively(m)
 	}
 
@@ -128,17 +124,20 @@ func populateManifestInteractively(m *manifest.Manifest) {
 func declareSLOForService(s *manifest.Service) {
 	var sl manifest.ServiceLevel
 
-	slType := question.WithSingleChoiceAnswer("What type of SLO do you want to declare?", "Availability", "Latency")
+	slType := question.WithSingleChoiceAnswer("What type of SLO do you want to declare?", emptyOptions, "Availability", "Latency")
 	sl.Type = sanitizeString(slType)
 
-	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?", 0, 100)
+	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?", emptyOptions, 0, 100)
 
 	if sl.Type == "latency" {
-		threshold := question.WithDurationAnswer("What is your latency threshold (in milliseconds)?")
-		sl.Criteria = &manifest.LatencyCriteria{Threshold: threshold}
+		threshold := question.WithDurationAnswer("What is your latency threshold (in milliseconds)?", emptyOptions)
+		sl.Criteria = manifest.LatencyCriteria{Threshold: threshold}
 	}
 
-	do := question.WithBoolAnswer("Do you want to add a resource for measuring your SLI?", question.WithYesAsDefault)
+	sl.ObservationWindow = getObservationWindow()
+
+	do := question.WithBoolAnswer("Do you want to add a resource for measuring your SLI?", emptyOptions, question.WithYesAsDefault)
+
 	if do {
 		providers := []string{}
 		for key := range providersMap {
@@ -147,7 +146,7 @@ func declareSLOForService(s *manifest.Service) {
 		sort.Strings(providers) // sorts slice in-place
 
 		for do {
-			providerFullName := question.WithSingleChoiceAnswer("On which cloud provider?", providers...)
+			providerFullName := question.WithSingleChoiceAnswer("On which cloud provider?", emptyOptions, providers...)
 			provider := providersMap[providerFullName]
 			id := getResourceIDForProvider(provider)
 
@@ -158,16 +157,17 @@ func declareSLOForService(s *manifest.Service) {
 				})
 			}
 
-			do = question.WithBoolAnswer("Do you want to add another resource for measuring your SLI?", question.WithNoAsDefault)
+			fmt.Println()
+			do = question.WithBoolAnswer("Do you want to add another resource for measuring your SLI?", emptyOptions, question.WithNoAsDefault)
 		}
 	}
-
-	sl.Name = question.WithStringAnswer("What is the name of this SLO?")
-
+	_ = initDefaultSloName(&sl)
+	sl.Name = question.WithStringAnswerV2("What is the name of this SLO?", "", sl.Name, emptyOptions)
 	s.ServiceLevels = append(s.ServiceLevels, &sl)
 	fmt.Println(color.Green(fmt.Sprintf("SLO '%s' added to Service '%s'", sl.Name, s.Name)))
 
-	if question.WithBoolAnswer("Do you want to add another SLO?", question.WithNoAsDefault) {
+	fmt.Println()
+	if question.WithBoolAnswer("Do you want to add another SLO?", emptyOptions, question.WithNoAsDefault) {
 		declareSLOForService(s)
 	}
 }
@@ -179,22 +179,103 @@ func getResourceIDForProvider(provider string) string {
 	case "gcp":
 		return buildGCPResourceID()
 	default:
-		return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.")
+		return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.", emptyOptions)
 	}
+}
+
+func getObservationWindow() core.Iso8601Duration {
+
+	const (
+		oneHour  = "1 hour"
+		oneDay   = "1 day"
+		oneWeek  = "1 week"
+		oneMonth = "1 month"
+		custom   = "custom"
+	)
+
+	choices := []string{
+		oneHour,
+		oneDay,
+		oneWeek,
+		oneMonth,
+		custom,
+	}
+
+	var choice string
+
+	p := &survey.Select{
+		Message: "What is your observation window for this SLO?",
+		Options: choices,
+	}
+
+	err := survey.AskOne(p, &choice, survey.WithValidator(survey.Required))
+	checkPromptExit(err)
+
+	answers := struct {
+		Window core.Iso8601Duration
+	}{}
+
+	switch choice {
+	case oneHour:
+		answers.Window = core.Iso8601Duration{Duration: iso8601.Duration{Hours: 1}}
+	case oneDay:
+		answers.Window = core.Iso8601Duration{Duration: iso8601.Duration{Hours: 24}}
+	case oneWeek:
+		answers.Window = core.Iso8601Duration{Duration: iso8601.Duration{Weeks: 1}}
+	case oneMonth:
+		answers.Window = core.Iso8601Duration{Duration: iso8601.Duration{Days: 30}}
+	case custom:
+
+		q := []*survey.Question{
+			{
+				Name: "window",
+				Prompt: &survey.Input{
+					Message: "Define your custom observation window",
+					Help:    "Must be an iso8601 duration with the following format: P[n]DT[n]H[n]M or P[n]W as (D)ays, (H)ours, (M)inutes, (W)eeks",
+				},
+				Validate: survey.ComposeValidators(survey.Required, func(val interface{}) error {
+					str := strings.ToUpper(val.(string))
+					d, err := iso8601.FromString(str)
+					if err != nil {
+						return fmt.Errorf("Unable to parse your string: %s", err)
+					}
+					if d.Seconds > 0 && math.Mod(float64(d.Seconds), 60) != 0 {
+						return fmt.Errorf("We only support precision to 1 minute. If used, seconds must be a multiple of 60.")
+					}
+					duration := d.ToDuration()
+					if duration == 0 {
+						return errors.New("Your duration cannot be zero. Please check your format.")
+					}
+
+					if duration > time.Hour*24*365 {
+						return errors.New("Your duration cannot exceed 1 year.")
+					}
+					return nil
+				}),
+				Transform: survey.ComposeTransformers(
+					survey.TransformString(strings.ToUpper),
+					func(ans interface{}) interface{} {
+						d, _ := iso8601.FromString(ans.(string))
+						return core.Iso8601Duration{Duration: *d}
+					},
+				),
+			},
+		}
+
+		err := survey.Ask(q, &answers)
+		checkPromptExit(err)
+
+	}
+
+	return answers.Window
 }
 
 func sanitizeString(s string) string {
 	return strings.ToLower(strings.ReplaceAll(s, " ", "-"))
 }
 
-// -- validation functions
-
-func validateFilePath() error {
-	for _, ext := range supportedExtensions {
-		if strings.HasSuffix(manifestPath, ext) {
-			return nil
-		}
+func checkPromptExit(err error) {
+	if err == terminal.InterruptErr {
+		os.Exit(0)
 	}
-
-	return fmt.Errorf("manifest file must have one of the these extensions: %v", supportedExtensions)
 }

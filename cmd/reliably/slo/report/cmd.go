@@ -19,9 +19,15 @@ import (
 	"github.com/reliablyhq/cli/core/report"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 )
 
+type Choice = cmdutil.Choice
+
 var (
+	supportedFormats = Choice{"json", "yaml", "simple", "tabbed", "markdown"}
+
 	manifestPath string
 	outputPath   string
 	outputFormat string
@@ -36,12 +42,19 @@ func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "report",
 		Short: "Report my slo metrics",
-		RunE:  runE,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			// Validate command options
+			if outputFormat != "" && !supportedFormats.Has(outputFormat) {
+				return fmt.Errorf("Format '%v' is not valid. Use one of the supported formats: %v", outputFormat, supportedFormats)
+			}
+			return nil
+		},
+		RunE: runE,
 	}
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
-	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", "specify the report format. Allowed Values: [json, simple, tabbed, markdown]")
+	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", fmt.Sprintf("specify the report format. Allowed Values: %v", supportedFormats))
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "continuously watch for changes in report output")
 	cmd.Flags().StringVar(&org, "org", "", "the org that contains the service")
 	cmd.Flags().StringVar(&service, "service", "", "the name of the service")
@@ -83,6 +96,8 @@ func runE(_ *cobra.Command, _ []string) error {
 		format = report.SimpleText
 	case "markdown":
 		format = report.MARKDOWN
+	case "yaml":
+		format = report.YAML
 	}
 
 	report.Write(format, r, os.Stdout, log.StandardLogger())

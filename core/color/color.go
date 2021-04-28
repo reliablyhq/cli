@@ -2,6 +2,8 @@ package color
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/fatih/color"
 )
@@ -68,4 +70,16 @@ func IfTrueYellow(condition bool, a ...interface{}) string {
 	}
 
 	return fmt.Sprint(a...)
+}
+
+func Is256ColorSupported() bool {
+	term := os.Getenv("TERM")
+	colorterm := os.Getenv("COLORTERM")
+
+	return strings.Contains(term, "256") ||
+		strings.Contains(term, "24bit") ||
+		strings.Contains(term, "truecolor") ||
+		strings.Contains(colorterm, "256") ||
+		strings.Contains(colorterm, "24bit") ||
+		strings.Contains(colorterm, "truecolor")
 }

@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+### Added
+- `DEBUG` environment variable for turning on debug/verbose mode
+- `slo init` now suggests a SLO title by default; [#225](https://github.com/reliablyhq/cli/issues/225)
+
+### Fixed
+- No SLI metrics found for latest hour on AWS; [#226](https://github.com/reliablyhq/cli/issues/226)
+
+## [0.12.1] - 2021-04-26
+### Added
+- `NO_COLOR` environment variable for disabling colored output
+
+### Fixed
+- Fix bad prompt validation for some user inputs; [#219](https://github.com/reliablyhq/cli/issues/219)
+- Fix prompting for user does not respect the `--no-color` flag; [#221](https://github.com/reliablyhq/cli/issues/221)
+- Fix missing validation for AWS ARN value on `slo init`; [#223](https://github.com/reliablyhq/cli/issues/223)
+
+## [0.12.0] - 2021-04-23
+### Added
+- Added time observation window for SLO in manifest & prompt user in `slo init` generation; [#1681](https://github.com/reliablyhq/cli/issues/181)
+- `slo report` can now output the report into yaml format
+
 ### Fixed
 - Fixes missing SLOs without result in markdown report; [#208](https://github.com/reliablyhq/cli/issues/208)
 
@@ -102,7 +123,9 @@
 
 - Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/reliablyhq/cli/releases/tag/v0.12.1
+[0.12.0]: https://github.com/reliablyhq/cli/releases/tag/v0.12.0
 [0.11.0]: https://github.com/reliablyhq/cli/releases/tag/v0.11.0
 [0.10.0]: https://github.com/reliablyhq/cli/releases/tag/v0.10.0
 [0.9.0]: https://github.com/reliablyhq/cli/releases/tag/v0.9.0
