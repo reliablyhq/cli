@@ -36,7 +36,7 @@ func runE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := api.PushServiceManifest("", "", m); err != nil {
+	if err := api.PushManifest(m); err != nil {
 		return fmt.Errorf("an error occurred while push manifest to reliably: %s", err)
 	}
 	return nil
