@@ -4,12 +4,16 @@ import (
 	"os"
 
 	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/core/manifest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
 
-var output string
+var (
+	output  string
+	service string
+)
 
 func NewCommand() *cobra.Command {
 	cmd := cobra.Command{
@@ -21,12 +25,20 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&output, "output", "o", "reliably.yaml", "output path/location manifest file will be stored")
+	cmd.Flags().StringVarP(&service, "service", "s", "", "name of the service you want to create SLOs for")
 	return &cmd
 }
 
-func runE(cmd *cobra.Command, args []string) error {
+func runE(_ *cobra.Command, args []string) (err error) {
 	log.Debugf("pulling manifest to: [%s]", output)
-	m, err := api.PullServiceManifest("", "")
+	var m *manifest.Manifest
+	if service != "" {
+		m, err = api.PullServiceManifest(service)
+	} else {
+		// else pull all
+		m, err = api.PullManifest()
+	}
+
 	if err != nil {
 		return err
 	}
