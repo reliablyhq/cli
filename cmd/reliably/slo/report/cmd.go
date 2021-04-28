@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
@@ -21,14 +22,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	manifestPath string
-	outputPath   string
-	outputFormat string
-	watchFlag    bool
-	org          string
+type Choice = cmdutil.Choice
 
-	// TODO: Services is being ignored for now until the functionality exists in the API
+var (
+	supportedFormats = Choice{"json", "yaml", "simple", "tabbed", "markdown"}
+	manifestPath     string
+	outputPath       string
+	outputFormat     string
+	watchFlag        bool
+	org              string
+
 	service string
 )
 
@@ -36,12 +39,19 @@ func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "report",
 		Short: "Report my slo metrics",
-		RunE:  runE,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			// Validate command options
+			if outputFormat != "" && !supportedFormats.Has(outputFormat) {
+				return fmt.Errorf("Format '%v' is not valid. Use one of the supported formats: %v", outputFormat, supportedFormats)
+			}
+			return nil
+		},
+		RunE: runE,
 	}
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
-	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", "specify the report format. Allowed Values: [json, simple, tabbed, markdown]")
+	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", fmt.Sprintf("specify the report format. Allowed Values: %v", supportedFormats))
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "continuously watch for changes in report output")
 	cmd.Flags().StringVar(&org, "org", "", "the org that contains the service")
 	cmd.Flags().StringVar(&service, "service", "", "the name of the service")
@@ -123,16 +133,6 @@ func watch() error {
 	// refresh every 3 seconds
 	go func() {
 		for ch := time.Tick(time.Second * 3); ; <-ch {
-			// m, err := manifest.Load(manifestPath)
-			// if err != nil {
-			// 	log.Debug(err)
-			// 	if os.IsNotExist(err) {
-			// 		errChan <- errors.New("A manifest was not found. Please run `reliably slo init` to create one.")
-			// 		return
-			// 	}
-			// 	errChan <- errors.New("An error occured while attempting to load the manifest")
-			// }
-
 			m, err := getManifest()
 			if err != nil {
 				log.Debug(err)
