@@ -47,7 +47,7 @@ func NewCommand() *cobra.Command {
 		RunE:    runE,
 	}
 
-	cmd.Flags().StringVarP(&manifestPath, "output", "o", "", "store a local copy of the service manifest created")
+	cmd.Flags().StringVarP(&manifestPath, "output", "o", "./reliably.yaml", "store a local copy of the service manifest created")
 	cmd.Flags().StringVar(&org, "org", "", "the org that contains the service")
 	cmd.Flags().StringVarP(&service, "service", "s", "", "name of the service you want to create SLOs for")
 	return &cmd
@@ -55,7 +55,7 @@ func NewCommand() *cobra.Command {
 
 func runE(_ *cobra.Command, args []string) error {
 	log.Debug("fetching internal service manifest")
-	m, err := api.PullServiceManifest(org, service)
+	m, err := api.PullManifest()
 	if err != nil {
 		return err
 	}
@@ -86,22 +86,22 @@ func runE(_ *cobra.Command, args []string) error {
 	}
 
 	// push manifestto backend
-	if err := api.PushServiceManifest(org, service, m); err != nil {
+	if err := api.PushManifest(m); err != nil {
 		return fmt.Errorf("an error occurred while push manifest to reliably: %s", err)
 	}
 
-	if manifestPath != "" {
-		f, err := os.Create(manifestPath)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
+	// write file output
+	f, err := os.Create(manifestPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
 
-		if err := yaml.NewEncoder(f).Encode(&m); err != nil {
-			return err
-		}
+	if err := yaml.NewEncoder(f).Encode(&m); err != nil {
+		return err
 	}
 
+	log.Infof("service manifest created at: %s", manifestPath)
 	return nil
 }
 
@@ -110,14 +110,18 @@ func populateManifestInteractively(m *manifest.Manifest) {
 	var s manifest.Service
 	s.Name = service
 
+	if s.Name == "" {
+		s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?")
+	}
+
 	declareSLOForService(&s)
 
 	m.Services = append(m.Services, &s)
 	fmt.Println(color.Green(fmt.Sprintf("Service '%s' added", s.Name)))
 
-	// if question.WithBoolAnswer("Do you want to add another Service?", question.WithNoAsDefault) {
-	// 	populateManifestInteractively(m)
-	// }
+	if question.WithBoolAnswer("Do you want to add another Service?", question.WithNoAsDefault) {
+		populateManifestInteractively(m)
+	}
 
 }
 
