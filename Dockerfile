@@ -1,4 +1,4 @@
-FROM golang:1.15-alpine as build-env
+FROM golang:1.16-alpine as build-env
 
 ARG VERSION
 ARG BUILD_DATE
