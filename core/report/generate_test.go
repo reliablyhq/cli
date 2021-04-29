@@ -21,6 +21,10 @@ type dummyProvider struct {
 	resourceID          string
 }
 
+func (p *dummyProvider) Close() error {
+	return nil
+}
+
 func (p *dummyProvider) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
 	p.resourceID = resourceID
 	return p.latencyMetricValue, p.latencyError

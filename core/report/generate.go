@@ -78,6 +78,7 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 				if err != nil {
 					return nil, fmt.Errorf("an error occured while getting a provider for sli: %s => %s", sli.Provider, err)
 				}
+				defer provider.Close()
 
 				var val float64
 				switch sl.Type {

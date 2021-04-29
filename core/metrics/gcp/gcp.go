@@ -34,6 +34,12 @@ func NewGCP() (*GCP, error) {
 	}, nil
 }
 
+// Close closes the GCP monitoring client connection
+// See: https://pkg.go.dev/cloud.google.com/go@v0.81.0/monitoring/apiv3/v2#MetricClient.Close
+func (p *GCP) Close() error {
+	return p.client.Close()
+}
+
 // Get99PercentLatencyMetricForResource retrieves latency data for a resource on GCP
 // and returns the mean of the 99th Percentile latencies across regions of the given resource
 func (p *GCP) Get99PercentLatencyMetricForResource(resourceID string, from, to time.Time) (float64, error) {
