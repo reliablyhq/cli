@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Fixes GCP client not closed; [#236](https://github.com/reliablyhq/cli/issues/236)
+
 ## [0.13.0] - 2021-04-29
 
 ### Added
