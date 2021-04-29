@@ -30,7 +30,6 @@ var (
 	outputPath       string
 	outputFormat     string
 	watchFlag        bool
-	org              string
 
 	service string
 )
@@ -53,7 +52,6 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
 	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", fmt.Sprintf("specify the report format. Allowed Values: %v", supportedFormats))
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "continuously watch for changes in report output")
-	cmd.Flags().StringVar(&org, "org", "", "the org that contains the service")
 	cmd.Flags().StringVar(&service, "service", "", "the name of the service")
 
 	return cmd
