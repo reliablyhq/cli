@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -116,7 +115,7 @@ func (p *policy) find(path ...string) (err error) {
 }
 
 func (p policy) String() string {
-	s, _ := ioutil.ReadFile(p.filepath)
+	s, _ := os.ReadFile(p.filepath)
 	return string(s)
 }
 

@@ -2,7 +2,6 @@ package policies
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -52,7 +51,7 @@ func (fs *fsstore) ListPolicies() ([]string, error) {
 
 func (fs *fsstore) GetPolicy(id string) ([]byte, error) {
 	fpath := fs.PolicyPath(id)
-	bs, err := ioutil.ReadFile(fpath)
+	bs, err := os.ReadFile(fpath)
 	if err != nil {
 		return nil, ErrPolicyNotFound
 	}
@@ -73,7 +72,7 @@ func (fs *fsstore) UpsertPolicy(id string, bs []byte) error {
 		_ = os.MkdirAll(subfolders, 0700) // ensure to create sub-folders if not exist yet
 	}
 
-	err := ioutil.WriteFile(fpath, bs, 0644)
+	err := os.WriteFile(fpath, bs, 0644)
 	return err
 }
 

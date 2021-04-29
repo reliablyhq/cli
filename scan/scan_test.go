@@ -2,7 +2,7 @@ package scan
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/icza/dyno"
@@ -29,7 +29,7 @@ func TestTerraformEvaluate(t *testing.T) {
 	t.Parallel()
 
 	// read in terraform plan file
-	b, err := ioutil.ReadFile("../tests/terraform/plan.json")
+	b, err := os.ReadFile("../tests/terraform/plan.json")
 	assert.NoError(t, err)
 
 	var tfplan terraform.PlanRepresentation

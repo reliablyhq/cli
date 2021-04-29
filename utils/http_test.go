@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -13,7 +12,7 @@ func TestDownloadFile(t *testing.T) {
 	url := "https://raw.githubusercontent.com/reliablyhq/cli/main/README.md"
 
 	//content := []byte("temporary file's content")
-	tmpfile, err := ioutil.TempFile("", "readme")
+	tmpfile, err := os.CreateTemp("", "readme")
 	if err != nil {
 		t.Error("Couldn't create temporary file")
 	}
@@ -25,7 +24,7 @@ func TestDownloadFile(t *testing.T) {
 		t.Error("Couldn't download Pod policy")
 	}
 
-	content, err := ioutil.ReadFile(tmpfile.Name())
+	content, err := os.ReadFile(tmpfile.Name())
 	if err != nil {
 		t.Error("Couldn't read from downloaded file")
 	}

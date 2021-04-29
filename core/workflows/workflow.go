@@ -3,7 +3,6 @@ package workflows
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -141,7 +140,7 @@ func loadWorkflow(raw string) (workflow, error) {
 // the reliably workflow parts
 func loadWorkflowFile(path string) (workflow, error) {
 
-	raw, err := ioutil.ReadFile(path)
+	raw, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

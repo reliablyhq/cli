@@ -1,7 +1,6 @@
 package policies
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -10,7 +9,7 @@ import (
 
 func TestStorage(t *testing.T) {
 
-	dir, err := ioutil.TempDir("", "storage_")
+	dir, err := os.MkdirTemp("", "storage_")
 	if err != nil {
 		t.Error("Unable to create temporary folder")
 	}

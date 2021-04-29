@@ -1,7 +1,7 @@
 package core
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -15,12 +15,12 @@ func TestEval(t *testing.T) {
 
 	manifest := filepath.Join("..", "tests", "manifests", "ns.yaml")
 	policyPath := filepath.Join("..", "tests", "kubernetes.rego")
-	policy, _ := ioutil.ReadFile(policyPath)
+	policy, _ := os.ReadFile(policyPath)
 
 	// load manifest from file and unmarshall yaml
 	var input interface{}
 
-	fileContent, _ := ioutil.ReadFile(manifest)
+	fileContent, _ := os.ReadFile(manifest)
 	_ = yaml.Unmarshal([]byte(fileContent), &input)
 	input = dyno.ConvertMapI2MapS(input)
 

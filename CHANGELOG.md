@@ -6,6 +6,9 @@
 - `DEBUG` environment variable for turning on debug/verbose mode
 - `slo init` now suggests a SLO title by default; [#225](https://github.com/reliablyhq/cli/issues/225)
 
+### Changed
+- Go minimal version has been upgraded to 1.16
+
 ### Fixed
 - No SLI metrics found for latest hour on AWS; [#226](https://github.com/reliablyhq/cli/issues/226)
 

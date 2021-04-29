@@ -3,8 +3,8 @@ package update
 import (
 	"context"
 	"errors"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -53,7 +53,7 @@ func CheckForUpdate(client *http.Client, stateFilePath, repo string, currentVers
 }
 
 func getStateEntry(stateFilePath string) (*StateEntry, error) {
-	content, err := ioutil.ReadFile(stateFilePath)
+	content, err := os.ReadFile(stateFilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func setStateEntry(stateFilePath string, t time.Time, r ReleaseInfo) error {
 	if err != nil {
 		return err
 	}
-	_ = ioutil.WriteFile(stateFilePath, content, 0600)
+	_ = os.WriteFile(stateFilePath, content, 0600)
 
 	return nil
 }

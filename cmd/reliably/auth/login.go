@@ -3,7 +3,7 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -64,7 +64,7 @@ Alternatively, pass in a token on standard input by using '--with-token'.`,
 
 			if tokenStdin {
 				defer opts.IO.In.Close()
-				token, err := ioutil.ReadAll(opts.IO.In)
+				token, err := io.ReadAll(opts.IO.In)
 				if err != nil {
 					return fmt.Errorf("failed to read token from STDIN: %w", err)
 				}
