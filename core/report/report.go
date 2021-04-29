@@ -46,5 +46,5 @@ type ServiceLevelResult struct {
 	Delta  interface{} `json:"delta"`
 
 	// used to record whether the SLO is met or not
-	sloIsMet bool `json:"-"`
+	SloIsMet bool `json:"slo_is_met"`
 }

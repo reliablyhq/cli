@@ -31,7 +31,7 @@ func TestWritersOutputsContainSLOs(t *testing.T) {
 			slr: &ServiceLevelResult{
 				Actual:   100.0,
 				Delta:    1.0,
-				sloIsMet: true,
+				SloIsMet: true,
 			},
 		},
 		{
@@ -39,7 +39,7 @@ func TestWritersOutputsContainSLOs(t *testing.T) {
 			slr: &ServiceLevelResult{
 				Actual:   90.0,
 				Delta:    -9.0,
-				sloIsMet: false,
+				SloIsMet: false,
 			},
 		},
 	}

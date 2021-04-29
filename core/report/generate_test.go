@@ -156,7 +156,7 @@ func TestFromManifest(t *testing.T) {
 								Result: &ServiceLevelResult{
 									Actual:   93.0,
 									Delta:    -6.0,
-									sloIsMet: false,
+									SloIsMet: false,
 								},
 							},
 						},

@@ -11,6 +11,7 @@
 
 ### Fixed
 - No SLI metrics found for latest hour on AWS; [#226](https://github.com/reliablyhq/cli/issues/226)
+- Expose boolean if SLO is met as part of SLO result in the report; [#237](https://github.com/reliablyhq/cli/issues/237)
 
 ## [0.12.1] - 2021-04-26
 ### Added

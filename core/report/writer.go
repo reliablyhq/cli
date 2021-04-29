@@ -94,7 +94,7 @@ func reportSimpleText(r *Report, w io.Writer) {
 
 				unit := "%"
 
-				if !sl.Result.sloIsMet {
+				if !sl.Result.SloIsMet {
 					tick = iostreams.FailureIcon()
 				}
 
@@ -142,7 +142,7 @@ Report time: {{ dateTime .Timestamp }}
 func getStatusIcon(res *ServiceLevelResult) string {
 	if res == nil {
 		return iconUnknown
-	} else if res.sloIsMet {
+	} else if res.SloIsMet {
 		return iconTick
 	} else {
 		return iconEx
@@ -258,7 +258,7 @@ func tabbedoutput(r *Report, w io.Writer) {
 
 			} else {
 
-				if !sl.Result.sloIsMet {
+				if !sl.Result.SloIsMet {
 					tick = iconEx
 					colorFunc = color.Red
 				}
