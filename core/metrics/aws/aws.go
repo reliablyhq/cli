@@ -69,6 +69,12 @@ func tryGetClient(region string) (AwsCloudWatchClient, error) {
 	return client, nil
 }
 
+// Nothing to do for AWS...
+// We don't want to close anything as providers are cached.
+func (cw *AwsCloudWatch) Close() error {
+	return nil
+}
+
 func (cw *AwsCloudWatch) GetLatencyAboveThresholdPercentage(resourceID string, from, to time.Time, threshold int) (float64, error) {
 	res, err := parseResourceID(resourceID)
 	if err != nil {
