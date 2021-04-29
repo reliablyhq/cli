@@ -8,27 +8,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/manifest"
 	log "github.com/sirupsen/logrus"
 )
 
-const hostnameEnvVar = "RELIABLY_SERVER"
-
-var apiURL = &url.URL{Scheme: "https", Host: "reliably.com"}
-
-func init() {
-	if h := os.Getenv(hostnameEnvVar); h != "" {
-		apiURL.Host = h
-
-		// if u, err := url.Parse(h); err == nil {
-		// 	apiURL = u
-		// } else {
-		// 	log.Fatalf("the %s environment variable '%s' is not a valid URL", hostnameEnvVar, h)
-		// }
-	}
-}
+var apiURL = &url.URL{Scheme: "https", Host: core.Hostname()}
 
 // PushServiceManifest - records the manifest via the API backend for a given service
 // note that this will append the service to the main organisational manifest.
