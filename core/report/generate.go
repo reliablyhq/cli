@@ -109,7 +109,7 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 				result = &ServiceLevelResult{
 					Actual:   avg,
 					Delta:    delta,
-					sloIsMet: sloIsMet,
+					SloIsMet: sloIsMet,
 				}
 			}
 			rs.ServiceLevels = append(rs.ServiceLevels, &ServiceLevel{
