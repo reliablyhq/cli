@@ -59,7 +59,7 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ env.RELEASE_VERSION }}
           body_path: version-changes.txt
-          draft: false
+          draft: true
           prerelease: false
       - name: Output Release URL File
         run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
@@ -68,6 +68,14 @@ jobs:
         with:
           name: release_url
           path: release_url.txt
+          retention-days: 1
+      - name: Output Release ID File
+        run: echo "${{ steps.create_release.outputs.id }}" > release_id.txt
+      - name: Save Release ID File for publish
+        uses: actions/upload-artifact@v2
+        with:
+          name: release_id
+          path: release_id.txt
           retention-days: 1
 
   build-and-upload-cli:
@@ -235,18 +243,43 @@ jobs:
       - build-and-publish-docker
     runs-on: ubuntu-latest
     steps:
-      - name: Clean up
+      - run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
+
+      - name: Load Release ID File from create release job
+        uses: actions/download-artifact@v2
+        with:
+          name: release_id
+          path: release_id
+      - name: Get Draft Release ID
+        id: get_release_info
+        run: |
+          value=`cat release_id/release_id.txt`
+          echo ::set-output name=id::$value
+      - name: Un-Draft the release
+        run: |
+          curl \
+          -XPATCH \
+          -H"Accept: application/vnd.github.v3+json" \
+          -H"authorization: Bearer ${{ secrets.GH_PAT }}" \
+          "https://api.github.com/repos/reliablyhq/cli/releases/${{ steps.get_release_info.outputs.id }}" \
+          -d '{"draft":false, "tag_name": "${{ env.RELEASE_VERSION }}"}'
+        # NB: tag name is required at release patch or loses it
+
+      - name: Clean up artifacts
         uses: geekyeggo/delete-artifact@v1
         with:
-          name: release_url
+          name: |
+            release_id
+            release_url
           failOnError: false
+
       - name: Checkout tagged source code
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
       - name: Update new version in krew-index
         uses: rajatjindal/krew-release-bot@v0.0.39
-      - run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
+
       - name: Notify to slack
         uses: Ilshidur/action-slack@master
         env:
