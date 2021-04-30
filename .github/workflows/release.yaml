@@ -156,11 +156,39 @@ jobs:
           asset_name: reliably-${{matrix.goos}}-${{matrix.goarch}}.md5
           asset_content_type: text/plain
 
+  make-release-public:
+    name: Switch draft release to public
+    needs:
+      - build-and-upload-cli
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
+      - name: Load Release ID File from create release job
+        uses: actions/download-artifact@v2
+        with:
+          name: release_id
+          path: release_id
+      - name: Get Draft Release ID
+        id: get_release_info
+        run: |
+          value=`cat release_id/release_id.txt`
+          echo ::set-output name=id::$value
+      - name: Un-Draft the release
+        run: |
+          curl \
+          -XPATCH \
+          -H"Accept: application/vnd.github.v3+json" \
+          -H"authorization: Bearer ${{ secrets.GH_PAT }}" \
+          "https://api.github.com/repos/reliablyhq/cli/releases/${{ steps.get_release_info.outputs.id }}" \
+          -d '{"draft":false, "tag_name": "${{ env.RELEASE_VERSION }}"}'
+        # NB: tag name is required at release patch or loses it
+
   # @TODO - make it work with windows at some point or maybe a specific job ?!
   check-cli-available:
     name: Check CLI is available
     needs:
       - build-and-upload-cli
+      - make-release-public
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest]
@@ -239,31 +267,12 @@ jobs:
     needs:
       - create-gh-release
       - build-and-upload-cli
+      - make-release-public
       - check-cli-available
       - build-and-publish-docker
     runs-on: ubuntu-latest
     steps:
       - run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
-
-      - name: Load Release ID File from create release job
-        uses: actions/download-artifact@v2
-        with:
-          name: release_id
-          path: release_id
-      - name: Get Draft Release ID
-        id: get_release_info
-        run: |
-          value=`cat release_id/release_id.txt`
-          echo ::set-output name=id::$value
-      - name: Un-Draft the release
-        run: |
-          curl \
-          -XPATCH \
-          -H"Accept: application/vnd.github.v3+json" \
-          -H"authorization: Bearer ${{ secrets.GH_PAT }}" \
-          "https://api.github.com/repos/reliablyhq/cli/releases/${{ steps.get_release_info.outputs.id }}" \
-          -d '{"draft":false, "tag_name": "${{ env.RELEASE_VERSION }}"}'
-        # NB: tag name is required at release patch or loses it
 
       - name: Clean up artifacts
         uses: geekyeggo/delete-artifact@v1
