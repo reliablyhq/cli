@@ -1,9 +1,9 @@
 package report
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -94,23 +94,19 @@ func runE(_ *cobra.Command, _ []string) error {
 		format = report.YAML
 	}
 
-	report.Write(format, r, os.Stdout, log.StandardLogger())
-
+	var w io.Writer = os.Stdout
 	if outputPath != "" {
-		if !strings.HasSuffix(outputPath, ".json") {
-			log.Warn("output file should have a .json extension")
-			return nil
-		}
-
-		bytes, err := json.Marshal(r)
+		outfile, err := os.Create(outputPath) // creates or truncates with O_RDWR mode
 		if err != nil {
-			return nil
-		}
-
-		if err := os.WriteFile(outputPath, bytes, 0666); err != nil {
+			log.Error("error creating output file")
+			log.Error(err)
 			return err
 		}
+		w = outfile
+		defer outfile.Close()
 	}
+
+	report.Write(format, r, w, log.StandardLogger())
 
 	return nil
 }

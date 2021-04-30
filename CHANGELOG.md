@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Fixes SLO report `--format` & `--output` combined flags; [#241](https://github.com/reliablyhq/cli/issues/241)
+
 ## [0.13.1] - 2021-04-30
 ### Fixed
 - Fixes GCP client not closed; [#236](https://github.com/reliablyhq/cli/issues/236)
