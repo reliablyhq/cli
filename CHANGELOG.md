@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+## [0.13.2] - 2021-04-30
 ### Fixed
 - Fixes SLO report `--format` & `--output` combined flags; [#241](https://github.com/reliablyhq/cli/issues/241)
 
@@ -136,7 +137,8 @@
 
 - Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.13.1...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.13.2...HEAD
+[0.13.2]: https://github.com/reliablyhq/cli/releases/tag/v0.13.2
 [0.13.1]: https://github.com/reliablyhq/cli/releases/tag/v0.13.1
 [0.13.0]: https://github.com/reliablyhq/cli/releases/tag/v0.13.0
 [0.12.1]: https://github.com/reliablyhq/cli/releases/tag/v0.12.1
