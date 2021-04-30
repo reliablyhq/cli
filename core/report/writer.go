@@ -109,7 +109,7 @@ func reportSimpleText(r *Report, w io.Writer) {
 		}
 
 		if i < len(r.Services)-1 {
-			fmt.Println() // empty lines between services except last one
+			fmt.Fprintln(w) // empty lines between services except last one
 		}
 
 	}
