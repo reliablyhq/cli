@@ -27,3 +27,6 @@ report.json
 
 # prevent reliably.yaml files being committed
 reliably.yaml
+
+# ignore delve(dlv) debug directory
+__debug_bin
