@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/manifest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -42,8 +43,8 @@ func NewCommand() *cobra.Command {
 func runE(_ *cobra.Command, args []string) error {
 	tmpfilePath := fmt.Sprintf(".manifest-edit-%d.yaml", time.Now().Unix())
 	defer os.Remove(tmpfilePath)
-
-	m, err := api.PullManifest()
+	client := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
+	m, err := api.PullManifest(client)
 	if err != nil {
 		return err
 	}
@@ -81,5 +82,5 @@ func runE(_ *cobra.Command, args []string) error {
 	// are made
 
 	// finally push to api
-	return api.PushManifest(m)
+	return api.PushManifest(client, m)
 }

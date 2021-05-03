@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/manifest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -36,7 +37,9 @@ func runE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := api.PushManifest(m); err != nil {
+	client := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
+	api.NewClient()
+	if err := api.PushManifest(client, m); err != nil {
 		return fmt.Errorf("an error occurred while push manifest to reliably: %s", err)
 	}
 	return nil

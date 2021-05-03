@@ -15,6 +15,7 @@ import (
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
@@ -218,10 +219,11 @@ func getManifest() (m *manifest.Manifest, err error) {
 	log.Debugf("unable to read manifest file: %s - %s", manifestPath, err)
 	log.Debug("attempting to retrieve manifest from reliably api")
 
+	client := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
 	if service == "" {
-		m, err = api.PullManifest()
+		m, err = api.PullManifest(client)
 		return
 	}
 
-	return api.PullServiceManifest(service)
+	return api.PullServiceManifest(client, service)
 }

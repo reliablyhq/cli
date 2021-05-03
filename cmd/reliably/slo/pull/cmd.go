@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/manifest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -32,11 +33,12 @@ func NewCommand() *cobra.Command {
 func runE(_ *cobra.Command, args []string) (err error) {
 	log.Debugf("pulling manifest to: [%s]", output)
 	var m *manifest.Manifest
+	client := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
 	if service != "" {
-		m, err = api.PullServiceManifest(service)
+		m, err = api.PullServiceManifest(client, service)
 	} else {
 		// else pull all
-		m, err = api.PullManifest()
+		m, err = api.PullManifest(client)
 	}
 
 	if err != nil {

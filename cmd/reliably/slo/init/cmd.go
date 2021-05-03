@@ -59,9 +59,10 @@ func runE(_ *cobra.Command, args []string) error {
 	}
 
 	m, err := manifest.Load(manifestPath)
+	client := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
 	if err != nil {
 		log.Debugf("error reading local manifest, attempting to retrieve from reliably: %s", err)
-		m, err = api.PullManifest()
+		m, err = api.PullManifest(client)
 		if err != nil {
 			return err
 		}
@@ -81,7 +82,7 @@ func runE(_ *cobra.Command, args []string) error {
 	}
 
 	// push manifestto backend
-	if err := api.PushManifest(m); err != nil {
+	if err := api.PushManifest(client, m); err != nil {
 		return fmt.Errorf("an error occurred while push manifest to reliably: %s", err)
 	}
 
