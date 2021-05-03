@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/manifest"
@@ -18,13 +19,12 @@ import (
 var editor string
 
 func longCommandDescription() string {
-	return `
-The edit command pulls a copy of the organization service manifest
-and opens the default text editor. Once the file is save and the
-editor is closed. The resulting file is applied to the organization
+	return heredoc.Doc(`
+	The edit command pulls a copy of the organization service manifest
+	and opens the default text editor. Once the file is saved and the
+	editor is closed. The resulting file is applied to the organization
 
-NOTE: This feature only supports terminal based text editors
-`
+	NOTE: This feature only supports terminal based text editors`)
 }
 
 func NewCommand() *cobra.Command {

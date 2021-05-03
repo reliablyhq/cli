@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/manifest"
@@ -17,7 +18,7 @@ func NewCommand() *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "apply",
 		Short: "Apply a service manifest to organization by filename",
-		// Long:    longCommandDescription(),
+		Long:  longCommandDescription(),
 		// Example: examples(),
 		RunE: runE,
 	}
@@ -43,4 +44,12 @@ func runE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("an error occurred while push manifest to reliably: %s", err)
 	}
 	return nil
+}
+
+func longCommandDescription() string {
+	return heredoc.Doc(`
+	The apply command pushes a locally defined service manifest to reliably.
+
+	NOTE: currently, this feature will override any existing organisational
+	service manifest"`)
 }
