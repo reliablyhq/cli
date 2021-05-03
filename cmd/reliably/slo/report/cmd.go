@@ -91,6 +91,8 @@ func runE(_ *cobra.Command, _ []string) error {
 		format = report.SimpleText
 	case "markdown":
 		format = report.MARKDOWN
+	case "yaml":
+		format = report.YAML
 	}
 
 	report.Write(format, r, os.Stdout, log.StandardLogger())
