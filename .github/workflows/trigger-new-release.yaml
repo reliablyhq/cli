@@ -11,6 +11,8 @@ jobs:
   draft-new-release:
     name: "Trigger a new release"
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_PAT }}
     steps:
       - uses: actions/checkout@v2
       - name: Update changelog
