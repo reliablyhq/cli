@@ -12,24 +12,26 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-
-	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 )
 
 type Choice = cmdutil.Choice
 
 var (
 	supportedFormats = Choice{"json", "yaml", "simple", "tabbed", "markdown"}
+	manifestPath     string
+	outputPath       string
+	outputFormat     string
+	watchFlag        bool
 
-	manifestPath string
-	outputPath   string
-	outputFormat string
-	watchFlag    bool
+	service string
 )
 
 func NewCommand() *cobra.Command {
@@ -50,26 +52,25 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
 	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", fmt.Sprintf("specify the report format. Allowed Values: %v", supportedFormats))
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "continuously watch for changes in report output")
+	cmd.Flags().StringVar(&service, "service", "", "the name of the service")
 
 	return cmd
 }
 
 func runE(_ *cobra.Command, _ []string) error {
-
 	// check for -w/--watch
 	if watchFlag {
-		return watch(manifestPath)
+		return watch()
 	}
 
-	m, err := manifest.Load(manifestPath)
+	m, err := getManifest()
 	if err != nil {
 		log.Debug(err)
+		return errors.New("an error occured while attempting to load the manifest")
+	}
 
-		if os.IsNotExist(err) {
-			return errors.New("A manifest was not found. Please run `reliably slo init` to create one.")
-		}
-
-		return errors.New("An error occured while attempting to load the manifest")
+	if m == nil {
+		return errors.New("no service manifest detected")
 	}
 
 	r, err := report.FromManifest(m)
@@ -77,7 +78,7 @@ func runE(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	// if err := sendReportToReliably(r); err != nil {
+	// if err := api.SendReport(org, service, r); err != nil {
 	// 	log.Warn(err)
 	// }
 
@@ -111,13 +112,9 @@ func runE(_ *cobra.Command, _ []string) error {
 	return nil
 }
 
-func sendReportToReliably(r *report.Report) error {
-	return errors.New("Sending reports to Reliably is not available yet. Check back later :D")
-}
-
 // watch - continously fetch and update report
 // and output to terminal
-func watch(manifestPath string) error {
+func watch() error {
 	rChan := make(chan *report.Report, 5)
 	errChan := make(chan error, 1)
 	done := make(chan struct{})
@@ -132,14 +129,14 @@ func watch(manifestPath string) error {
 	// refresh every 3 seconds
 	go func() {
 		for ch := time.Tick(time.Second * 3); ; <-ch {
-			m, err := manifest.Load(manifestPath)
+			m, err := getManifest()
 			if err != nil {
 				log.Debug(err)
-				if os.IsNotExist(err) {
-					errChan <- errors.New("A manifest was not found. Please run `reliably slo init` to create one.")
-					return
-				}
-				errChan <- errors.New("An error occured while attempting to load the manifest")
+				errChan <- errors.New("an error occured while attempting to load the manifest")
+			}
+
+			if m == nil {
+				errChan <- errors.New("no service manifest detected")
 			}
 
 			report, err := report.FromManifest(m)
@@ -191,4 +188,37 @@ func clearScreen() {
 
 	c.Stdout = os.Stdout
 	c.Run()
+}
+
+// getManifest priority
+// 1. local file
+// 2. service manifest - if specified
+// 3 full manifest download
+func getManifest() (m *manifest.Manifest, err error) {
+
+	m, err = manifest.Load(manifestPath)
+	if err == nil {
+		if service != "" {
+			var services []*manifest.Service
+			for _, s := range m.Services {
+				if s.Name == service {
+					services = append(services, s)
+				}
+			}
+
+			m.Services = services
+		}
+		return
+	}
+
+	log.Debugf("unable to read manifest file: %s - %s", manifestPath, err)
+	log.Debug("attempting to retrieve manifest from reliably api")
+
+	client := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
+	if service == "" {
+		m, err = api.PullManifest(client)
+		return
+	}
+
+	return api.PullServiceManifest(client, service)
 }

@@ -12,16 +12,19 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/terminal"
 	iso8601 "github.com/ChannelMeter/iso8601duration"
+	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/manifest"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
 
 var (
 	manifestPath        string
+	service             string
 	supportedExtensions = []string{".yaml", ".json"}
 	providersMap        = map[string]string{
 		"Amazon Web Services":   "aws",
@@ -39,32 +42,51 @@ func NewCommand() *cobra.Command {
 		Short:   "initialise the slo portion of the manifest",
 		Long:    longCommandDescription(),
 		Example: examples(),
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			return validateFilePath()
-		},
-		RunE: runE,
+		RunE:    runE,
 	}
 
-	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
-
+	cmd.Flags().StringVarP(&manifestPath, "output", "o", "./reliably.yaml", "store a local copy of the service manifest created")
+	cmd.Flags().StringVarP(&service, "service", "s", "", "name of the service you want to create SLOs for")
 	return &cmd
 }
 
 func runE(_ *cobra.Command, args []string) error {
-	var m manifest.Manifest
+	log.Debug("fetching internal service manifest")
 	if _, err := os.Stat(manifestPath); err == nil {
-		if !question.WithBoolAnswer(fmt.Sprintf("Existing manifest detected (%s); Do you want to overwrite it?", manifestPath), emptyOptions, question.WithNoAsDefault) {
+		if !question.WithBoolAnswer(fmt.Sprintf("Existing local manifest detected (%s); Do you want to overwrite it?", manifestPath), emptyOptions, question.WithNoAsDefault) {
 			return nil
 		}
 	}
 
-	populateManifestInteractively(&m)
+	m, err := manifest.Load(manifestPath)
+	client := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
+	if err != nil {
+		log.Debugf("error reading local manifest, attempting to retrieve from reliably: %s", err)
+		m, err = api.PullManifest(client)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	if m == nil {
+		log.Debug("no service manifest detected, creating a new one")
+		m = &manifest.Manifest{}
+	}
+
+	populateManifestInteractively(m)
 
 	// validate
 	if err := m.Validate(); err != nil {
 		return err
 	}
 
+	// push manifestto backend
+	if err := api.PushManifest(client, m); err != nil {
+		return fmt.Errorf("an error occurred while push manifest to reliably: %s", err)
+	}
+
+	// write file output
 	f, err := os.Create(manifestPath)
 	if err != nil {
 		return err
@@ -75,22 +97,14 @@ func runE(_ *cobra.Command, args []string) error {
 		return err
 	}
 
+	log.Infof("service manifest created at: %s", manifestPath)
 	return nil
-}
-
-func validateFilePath() error {
-	for _, ext := range supportedExtensions {
-		if strings.HasSuffix(manifestPath, ext) {
-			return nil
-		}
-	}
-
-	return fmt.Errorf("manifest file must have one of the these extensions: %v", supportedExtensions)
 }
 
 func populateManifestInteractively(m *manifest.Manifest) {
 
 	var s manifest.Service
+	s.Name = service
 
 	s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?", emptyOptions)
 
