@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+- `help` is now a command; help can be displayed for any command using either
+  the `help` command or the `--help` flag
+
 ## [0.13.2] - 2021-04-30
 ### Fixed
 - Fixes SLO report `--format` & `--output` combined flags; [#241](https://github.com/reliablyhq/cli/issues/241)

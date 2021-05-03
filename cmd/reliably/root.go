@@ -80,11 +80,8 @@ Environment variables:
 		}
 		return nil
 	}
-	// help will not be indicated as command but only flag
-	cmd.SetHelpCommand(&cobra.Command{
-		Use:    "no-help",
-		Hidden: true,
-	})
+	cmd.Flags().Bool("help", false, "help for reliably")
+	cmd.Flags().Bool("version", false, "version for reliably") // requires explicit or not shown with `reliably help`
 
 	// Add commands
 	cmd.AddCommand(NewCmdAuth())
