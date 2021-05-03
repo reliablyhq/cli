@@ -13,12 +13,11 @@ import (
 
 // PushServiceManifest - records the manifest via the API backend for a given service
 // note that this will append the service to the main organisational manifest.
-func PushServiceManifest(service string, m *manifest.Manifest) error {
+func PushServiceManifest(client *Client, service string, m *manifest.Manifest) error {
 	if service == "" {
 		return errors.New("service cannot be empty")
 	}
 
-	client := &Client{http: AuthHTTPClient(core.Hostname())}
 	orgID, err := CurrentUserOrganizationID(client, core.Hostname())
 	if err != nil {
 		return err
@@ -34,8 +33,7 @@ func PushServiceManifest(service string, m *manifest.Manifest) error {
 }
 
 // PushManifest - push entire manifest
-func PushManifest(m *manifest.Manifest) error {
-	client := &Client{http: AuthHTTPClient(core.Hostname())}
+func PushManifest(client *Client, m *manifest.Manifest) error {
 	orgID, err := CurrentUserOrganizationID(client, core.Hostname())
 	if err != nil {
 		return err
@@ -51,12 +49,11 @@ func PushManifest(m *manifest.Manifest) error {
 }
 
 // PullServiceManifest - downloads current manifest
-func PullServiceManifest(service string) (*manifest.Manifest, error) {
+func PullServiceManifest(client *Client, service string) (*manifest.Manifest, error) {
 	if service == "" {
 		return nil, errors.New("service cannot be empty")
 	}
 
-	client := &Client{http: AuthHTTPClient(core.Hostname())}
 	orgID, err := CurrentUserOrganizationID(client, core.Hostname())
 	if err != nil {
 		return nil, err
@@ -74,8 +71,7 @@ func PullServiceManifest(service string) (*manifest.Manifest, error) {
 }
 
 // PullServiceManifest - downloads current manifest
-func PullManifest() (*manifest.Manifest, error) {
-	client := &Client{http: AuthHTTPClient(core.Hostname())}
+func PullManifest(client *Client) (*manifest.Manifest, error) {
 	orgID, err := CurrentUserOrganizationID(client, core.Hostname())
 	if err != nil {
 		return nil, err

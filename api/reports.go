@@ -10,8 +10,7 @@ import (
 	"github.com/reliablyhq/cli/core/report"
 )
 
-func SendReport(org, service string, r *report.Report) error {
-	client := &Client{http: AuthHTTPClient(core.Hostname())}
+func SendReport(client *Client, org, service string, r *report.Report) error {
 	orgID, err := CurrentUserOrganizationID(client, core.Hostname())
 	if err != nil {
 		return err
