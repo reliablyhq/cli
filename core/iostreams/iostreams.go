@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"io"
 	"os"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/reliablyhq/cli/core/color"
 
 	"github.com/mattn/go-isatty"
@@ -41,6 +43,9 @@ type IOStreams struct {
 	stderrIsTTY       bool
 
 	neverPrompt bool
+
+	progressIndicatorEnabled bool
+	progressIndicator        *spinner.Spinner
 }
 
 func (s *IOStreams) SetStdinTTY(isTTY bool) {
@@ -110,6 +115,10 @@ func System() *IOStreams {
 		ErrOut: os.Stderr,
 	}
 
+	if stdoutIsTTY && stderrIsTTY {
+		io.progressIndicatorEnabled = true
+	}
+
 	// prevent duplicate isTerminal queries now that we know the answer
 	io.SetStdoutTTY(stdoutIsTTY)
 	io.SetStderrTTY(stderrIsTTY)
@@ -136,4 +145,22 @@ func Test() (*IOStreams, *bytes.Buffer, *bytes.Buffer, *bytes.Buffer) {
 		Out:    out,
 		ErrOut: errOut,
 	}, in, out, errOut
+}
+
+func (s *IOStreams) StartProgressIndicator() {
+	if !s.progressIndicatorEnabled {
+		return
+	}
+	sp := spinner.New(spinner.CharSets[11], 200*time.Millisecond, spinner.WithWriter(s.ErrOut))
+	sp.Reverse() // make it spin clockwise
+	sp.Start()
+	s.progressIndicator = sp
+}
+
+func (s *IOStreams) StopProgressIndicator() {
+	if s.progressIndicator == nil {
+		return
+	}
+	s.progressIndicator.Stop()
+	s.progressIndicator = nil
 }
