@@ -24,6 +24,10 @@ func UnknownIcon() string {
 	return color.Magenta("?")
 }
 
+func WarningIcon() string {
+	return color.Yellow("!")
+}
+
 type IOStreams struct {
 	In     io.ReadCloser
 	Out    io.Writer
