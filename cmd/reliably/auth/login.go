@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -216,6 +217,11 @@ func loginRun(opts *LoginOptions) error {
 
 		username, err := api.CurrentUsername(apiClient, hostname)
 		if err != nil {
+			if apiError, ok := err.(api.HTTPError); ok {
+				if apiError.StatusCode == http.StatusUnauthorized {
+					return fmt.Errorf("We were not able to identify you using the information you provided. Please make sure your token is valid.")
+				}
+			}
 			return fmt.Errorf("error using api to retrieve user info: %w", err)
 		}
 
