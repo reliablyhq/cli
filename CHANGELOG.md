@@ -4,6 +4,7 @@
 
 ### Fixed
 - Users with an invalid token in config can now re-authenticate with `auth login`; [#246](https://github.com/reliablyhq/cli/issues/246)
+- Validate user input when user authenticate with token in interactive mode; [#248](https://github.com/reliablyhq/cli/issues/248)
 
 ## [v0.13.3] - 2021-05-03
 
