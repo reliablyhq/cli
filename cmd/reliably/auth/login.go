@@ -121,29 +121,29 @@ func loginRun(opts *LoginOptions) error {
 	tokenKey := fmt.Sprintf("auths::%s::token", hostname)
 	existingToken := config.Viper.GetString(tokenKey)
 	if existingToken != "" && opts.Interactive {
+		// We display the confirmation only if the user is authenticated
+		// otherwise, possibly an invalid token, we let user continue without prompt
 
 		apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
 		username, err := api.CurrentUsername(apiClient, hostname)
-		if err != nil {
-			return fmt.Errorf("error using api: %w", err)
-		}
 
-		var keepGoing bool
-		err = survey.AskOne(&survey.Confirm{
-			Message: fmt.Sprintf(
-				"You're already logged into %s as %s. Do you want to re-authenticate?",
-				hostname,
-				username),
-			Default: false,
-		}, &keepGoing, survey.WithShowCursor(true))
-		if err != nil {
-			return fmt.Errorf("could not prompt: %w", err)
-		}
+		if err == nil {
+			var keepGoing bool
+			err = survey.AskOne(&survey.Confirm{
+				Message: fmt.Sprintf(
+					"You're already logged into %s as %s. Do you want to re-authenticate?",
+					hostname,
+					username),
+				Default: false,
+			}, &keepGoing, survey.WithShowCursor(true))
+			if err != nil {
+				return fmt.Errorf("could not prompt: %w", err)
+			}
 
-		if !keepGoing {
-			return nil
+			if !keepGoing {
+				return nil
+			}
 		}
-
 	}
 
 	var authMode int
