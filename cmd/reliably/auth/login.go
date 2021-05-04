@@ -196,33 +196,48 @@ func loginRun(opts *LoginOptions) error {
 		//fmt.Fprintln(opts.IO.ErrOut, heredoc.Doc(getAccessTokenTip(hostname)))
 
 		var token string
+		var username string
 		err := survey.AskOne(&survey.Password{
 			Message: "Paste your authentication token:",
-		}, &token, survey.WithValidator(survey.Required), survey.WithShowCursor(true))
+		},
+			&token,
+			survey.WithShowCursor(true),
+			survey.WithValidator(
+				survey.ComposeValidators(
+					survey.Required,
+					func(val interface{}) error {
+						// put token validation as part of the prompt,
+						// user cannot pass the question with an invalid token
+
+						token = val.(string)
+
+						authForHost := map[string]interface{}{
+							"token": token,
+						}
+
+						authKey := fmt.Sprintf("auths::%s", hostname)
+						config.Viper.Set(authKey, authForHost)
+
+						// creates a new client that will use the token from config for hostname
+						apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
+
+						username, err = api.CurrentUsername(apiClient, hostname)
+						if err != nil {
+							if apiError, ok := err.(api.HTTPError); ok {
+								if apiError.StatusCode == http.StatusUnauthorized {
+									return fmt.Errorf("We were not able to identify you using the information you provided. Please make sure your token is valid.")
+								}
+							}
+							return fmt.Errorf("error using api to retrieve user info: %w", err)
+						}
+
+						return nil
+					},
+				)))
 		// forces start beginning on new line after prompt
 		fmt.Fprint(opts.IO.ErrOut, ResetLine)
 		if err != nil {
 			return fmt.Errorf("could not prompt: %w", err)
-		}
-
-		authForHost := map[string]interface{}{
-			"token": token,
-		}
-
-		authKey := fmt.Sprintf("auths::%s", hostname)
-		config.Viper.Set(authKey, authForHost)
-
-		// creates a new client that will use the token from config for hostname
-		apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
-
-		username, err := api.CurrentUsername(apiClient, hostname)
-		if err != nil {
-			if apiError, ok := err.(api.HTTPError); ok {
-				if apiError.StatusCode == http.StatusUnauthorized {
-					return fmt.Errorf("We were not able to identify you using the information you provided. Please make sure your token is valid.")
-				}
-			}
-			return fmt.Errorf("error using api to retrieve user info: %w", err)
 		}
 
 		usernameKey := fmt.Sprintf("auths::%s::username", hostname)
