@@ -15,6 +15,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/cloudwatch v1.2.0
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.2.2
 	github.com/aws/aws-sdk-go-v2/service/iam v1.3.1
+	github.com/briandowns/spinner v1.12.0 // indirect
 	github.com/channelmeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61 // indirect
 	github.com/cli/safeexec v1.0.0
 	github.com/davecgh/go-spew v1.1.1
