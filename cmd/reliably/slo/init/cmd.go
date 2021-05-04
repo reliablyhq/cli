@@ -34,7 +34,7 @@ var (
 
 var emptyOptions = []question.AskOpt{}
 
-const iconWarn = "⚠️"
+var iconWarn = iostreams.WarningIcon()
 
 func NewCommand() *cobra.Command {
 	cmd := cobra.Command{
