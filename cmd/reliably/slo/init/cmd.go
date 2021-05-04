@@ -24,7 +24,6 @@ import (
 
 var (
 	manifestPath        string
-	service             string
 	supportedExtensions = []string{".yaml", ".json"}
 	providersMap        = map[string]string{
 		"Amazon Web Services":   "aws",
@@ -46,7 +45,6 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&manifestPath, "output", "o", "./reliably.yaml", "store a local copy of the service manifest created")
-	cmd.Flags().StringVarP(&service, "service", "s", "", "name of the service you want to create SLOs for")
 	return &cmd
 }
 
@@ -104,7 +102,6 @@ func runE(_ *cobra.Command, args []string) error {
 func populateManifestInteractively(m *manifest.Manifest) {
 
 	var s manifest.Service
-	s.Name = service
 
 	s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?", emptyOptions)
 
