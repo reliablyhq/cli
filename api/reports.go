@@ -10,12 +10,8 @@ import (
 	"github.com/reliablyhq/cli/core/report"
 )
 
-func SendReport(client *Client, org, service string, r *report.Report) error {
-	orgID, err := CurrentUserOrganizationID(client, core.Hostname())
-	if err != nil {
-		return err
-	}
-	path := fmt.Sprintf("orgs/%s/services/%s/reports", orgID, service)
+func SendReport(client *Client, orgID string, r *report.Report) error {
+	path := fmt.Sprintf("orgs/%s/reports", orgID)
 
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(r); err != nil {

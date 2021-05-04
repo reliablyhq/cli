@@ -78,9 +78,11 @@ func runE(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	// if err := api.SendReport(org, service, r); err != nil {
-	// 	log.Warn(err)
-	// }
+	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
+	orgID, _ := api.CurrentUserOrganizationID(apiClient, core.Hostname())
+	if err := api.SendReport(apiClient, orgID, r); err != nil {
+		log.Debugf("Error while sending report to reliably: %s", err)
+	}
 
 	// set format
 	var format = report.TABBED
