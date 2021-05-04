@@ -16,6 +16,7 @@ import (
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/color"
+	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/manifest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -95,7 +96,9 @@ func runE(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	log.Infof("service manifest created at: %s", manifestPath)
+	fmt.Println()
+	fmt.Println(iostreams.SuccessIcon(), "Your manifests has been saved to", manifestPath)
+	log.Debugf("service manifest created at: %s", manifestPath)
 	return nil
 }
 
