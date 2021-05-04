@@ -81,7 +81,7 @@ func runE(_ *cobra.Command, args []string) error {
 
 	// push manifestto backend
 	if err := api.PushManifest(client, m); err != nil {
-		return fmt.Errorf("an error occurred while push manifest to reliably: %s", err)
+		return fmt.Errorf("an error occurred while pushing manifest to reliably: %s", err)
 	}
 
 	// write file output
