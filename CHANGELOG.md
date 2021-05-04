@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Users with an invalid token in config can now re-authenticate with `auth login`; [#246](https://github.com/reliablyhq/cli/issues/246)
+
 ## [v0.13.3] - 2021-05-03
 
 ### Added
