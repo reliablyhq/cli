@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Added
+- New commands for SLO manifest management: `slo edit`, `slo apply`, `slo pull`. The manifest is now centralized and backed up on Reliably's servers.
+
+### Changed
+- `slo init` now sends the newly generated manifest to Reliably's API
+- `slo report` now uses the centralized manifest to generate the report. If a local manifest is found, `slo report` uses that local file in precedence over the remote one.
+
 ### Fixed
 - Users with an invalid token in config can now re-authenticate with `auth login`; [#246](https://github.com/reliablyhq/cli/issues/246)
 - Validate user input when user authenticate with token in interactive mode; [#248](https://github.com/reliablyhq/cli/issues/248)
