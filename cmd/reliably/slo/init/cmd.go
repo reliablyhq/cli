@@ -16,6 +16,7 @@ import (
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/color"
+	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/manifest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -24,7 +25,6 @@ import (
 
 var (
 	manifestPath        string
-	service             string
 	supportedExtensions = []string{".yaml", ".json"}
 	providersMap        = map[string]string{
 		"Amazon Web Services":   "aws",
@@ -46,7 +46,6 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&manifestPath, "output", "o", "./reliably.yaml", "store a local copy of the service manifest created")
-	cmd.Flags().StringVarP(&service, "service", "s", "", "name of the service you want to create SLOs for")
 	return &cmd
 }
 
@@ -83,7 +82,7 @@ func runE(_ *cobra.Command, args []string) error {
 
 	// push manifestto backend
 	if err := api.PushManifest(client, m); err != nil {
-		return fmt.Errorf("an error occurred while push manifest to reliably: %s", err)
+		return fmt.Errorf("an error occurred while pushing manifest to reliably: %s", err)
 	}
 
 	// write file output
@@ -97,14 +96,15 @@ func runE(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	log.Infof("service manifest created at: %s", manifestPath)
+	fmt.Println()
+	fmt.Println(iostreams.SuccessIcon(), "Your manifests has been saved to", manifestPath)
+	log.Debugf("service manifest created at: %s", manifestPath)
 	return nil
 }
 
 func populateManifestInteractively(m *manifest.Manifest) {
 
 	var s manifest.Service
-	s.Name = service
 
 	s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?", emptyOptions)
 
