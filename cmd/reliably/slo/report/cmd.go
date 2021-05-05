@@ -12,17 +12,23 @@ import (
 	"syscall"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
+	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
 type Choice = cmdutil.Choice
+
+type ReportOptions struct {
+	IO *iostreams.IOStreams
+}
 
 var (
 	supportedFormats = Choice{"json", "yaml", "simple", "tabbed", "markdown"}
@@ -35,6 +41,10 @@ var (
 )
 
 func NewCommand() *cobra.Command {
+	opts := &ReportOptions{
+		IO: iostreams.System(),
+	}
+
 	cmd := &cobra.Command{
 		Use:   "report",
 		Short: "Report my slo metrics",
@@ -45,7 +55,9 @@ func NewCommand() *cobra.Command {
 			}
 			return nil
 		},
-		RunE: runE,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return reportRun(opts)
+		},
 	}
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
@@ -57,11 +69,13 @@ func NewCommand() *cobra.Command {
 	return cmd
 }
 
-func runE(_ *cobra.Command, _ []string) error {
+func reportRun(opts *ReportOptions) error {
 	// check for -w/--watch
 	if watchFlag {
 		return watch()
 	}
+
+	opts.IO.StartProgressIndicator()
 
 	m, err := getManifest()
 	if err != nil {
@@ -108,6 +122,8 @@ func runE(_ *cobra.Command, _ []string) error {
 		w = outfile
 		defer outfile.Close()
 	}
+
+	opts.IO.StopProgressIndicator()
 
 	report.Write(format, r, w, log.StandardLogger())
 
