@@ -6,7 +6,7 @@ import (
 )
 
 type Report struct {
-	APIVersion string     `json:"api_version" yaml:"api_version"`
+	APIVersion string     `json:"-" yaml:"-"`
 	Timestamp  time.Time  `json:"timestamp" yaml:"timestamp"`
 	Services   []*Service `json:"services" yaml:"services"`
 }
