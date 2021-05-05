@@ -1,11 +1,13 @@
 package pull
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/manifest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -13,8 +15,9 @@ import (
 )
 
 var (
-	output  string
-	service string
+	output       string
+	service      string
+	emptyOptions []question.AskOpt
 )
 
 func NewCommand() *cobra.Command {
@@ -32,6 +35,12 @@ func NewCommand() *cobra.Command {
 }
 
 func runE(_ *cobra.Command, args []string) (err error) {
+	if _, err := os.Stat(output); err == nil {
+		if !question.WithBoolAnswer(fmt.Sprintf("Existing local manifest detected in output path (%s); Do you want to overwrite it?", output), emptyOptions, question.WithNoAsDefault) {
+			return nil
+		}
+	}
+
 	log.Debugf("pulling manifest to: [%s]", output)
 	var m *manifest.Manifest
 	client := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
