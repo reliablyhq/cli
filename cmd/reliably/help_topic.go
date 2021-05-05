@@ -29,8 +29,6 @@ var HelpTopics = map[string]map[string]string{
 			output.
 
 			{{bold "DEBUG:"}} set to any value to enable verbose output.
-
-			{{bold "EDITOR:"}} set default text editor to be used by reliably cli
 		`),
 	},
 }
