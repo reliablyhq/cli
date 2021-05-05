@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- `slo report` now sends the generated report to Reliably
+
 ## [v0.14.0] - 2021-05-04
 
 ### Added
