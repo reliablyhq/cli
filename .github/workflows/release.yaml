@@ -48,8 +48,7 @@ jobs:
           ref: ${{ github.ref }}
       - name: Extract changes for version from changelog
         run: |
-          export VERSION=$(echo ${RELEASE_VERSION} | sed 's/v//')
-          awk -f ./extract-version-changes.awk -v v=$VERSION CHANGELOG.md > version-changes.txt
+          awk -f ./extract-version-changes.awk -v v=$RELEASE_VERSION CHANGELOG.md > version-changes.txt
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
