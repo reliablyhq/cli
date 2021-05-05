@@ -24,7 +24,9 @@ func longCommandDescription() string {
 	and opens the default text editor. Once the file is saved and the
 	editor is closed. The resulting file is applied to the organization
 
-	NOTE: This feature only supports terminal based text editors`)
+	NOTE:
+	- This feature only supports terminal based text editors
+	- The EDITOR environment varible can be used to set a default text editor`)
 }
 
 func NewCommand() *cobra.Command {
@@ -41,6 +43,10 @@ func NewCommand() *cobra.Command {
 }
 
 func runE(_ *cobra.Command, args []string) error {
+	if editor == "" {
+		return fmt.Errorf("no text editor detected. please use -e/--editor to specify text editor binary or set the EDITOR env variable")
+	}
+
 	tmpfilePath := fmt.Sprintf(".manifest-edit-%d.yaml", time.Now().Unix())
 	defer os.Remove(tmpfilePath)
 	client := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
