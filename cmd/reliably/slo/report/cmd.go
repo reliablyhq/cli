@@ -94,7 +94,7 @@ func reportRun(opts *ReportOptions) error {
 
 	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
 	orgID, _ := api.CurrentUserOrganizationID(apiClient, core.Hostname())
-	if err := api.SendReport(apiClient, orgID, r); err != nil {
+	if _, err := api.SendReport(apiClient, orgID, r); err != nil {
 		log.Debugf("Error while sending report to reliably: %s", err)
 	}
 
