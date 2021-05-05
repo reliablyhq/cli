@@ -48,6 +48,12 @@ func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "report",
 		Short: "Report my slo metrics",
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			if !cmdutil.CheckAuth() {
+				cmdutil.PrintRequireAuthMsg()
+				os.Exit(1)
+			}
+		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			// Validate command options
 			if outputFormat != "" && !supportedFormats.Has(outputFormat) {
