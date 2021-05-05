@@ -193,7 +193,7 @@
 
 [v0.14.0]: https://github.com/reliablyhq/cli/compare/v0.13.3...v0.14.0
 
-[v0.13.3]: https://github.com/reliablyhq/cli/compare/0.13.2...v0.13.3
+[v0.13.3]: https://github.com/reliablyhq/cli/compare/v0.13.2...v0.13.3
 
 [0.13.2]: https://github.com/reliablyhq/cli/releases/tag/v0.13.2
 
