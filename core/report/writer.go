@@ -275,16 +275,18 @@ func tabbedoutput(r *Report, w io.Writer, last *Report) {
 				// it could break entire rendering -> we need to check for type
 				// ?? shall we round up to the same precision of the SLO objective ??
 				var trend string
-				switch diff := sl.Result.Actual.(float64) - lastReportResult.Actual.(float64); {
-				case diff == 0:
-					trend = "="
-					//trend = "←→"
-				case diff < 0:
-					trend = color.Red("↓")
-				case diff > 0:
-					trend = color.Green("↑")
-				default:
-					trend = ""
+				if lastReportResult != nil {
+					switch diff := sl.Result.Actual.(float64) - lastReportResult.Actual.(float64); {
+					case diff == 0:
+						trend = "="
+						//trend = "←→"
+					case diff < 0:
+						trend = color.Red("↓")
+					case diff > 0:
+						trend = color.Green("↑")
+					default:
+						trend = ""
+					}
 				}
 
 				if !sl.Result.SloIsMet {
