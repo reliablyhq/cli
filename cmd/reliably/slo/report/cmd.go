@@ -194,12 +194,14 @@ func watch() error {
 	}()
 
 	// print stuff
+	var last *report.Report
 	for {
 		select {
 		case r := <-rChan:
 			clearScreen()
 			fmt.Println(color.Magenta("Refreshing SLO report every 3 seconds."), "Press CTRL+C to quit.")
-			report.Write(report.TABBED, r, os.Stdout, log.StandardLogger(), nil)
+			report.Write(report.TABBED, r, os.Stdout, log.StandardLogger(), last)
+			last = r
 
 		case err := <-errChan:
 			return err
