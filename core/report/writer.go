@@ -47,7 +47,7 @@ const (
 )
 
 // Write - write report based on given format
-func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
+func Write(format Format, r *Report, w io.Writer, l *logrus.Logger, lr *Report) {
 	if r == nil {
 		return
 	}
@@ -72,7 +72,7 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 		_ = reportMarkdown(r, w)
 
 	default:
-		tabbedoutput(r, w)
+		tabbedoutput(r, w, lr)
 	}
 
 }
@@ -197,7 +197,7 @@ func markdownFuncMap() template.FuncMap {
 	}
 }
 
-func tabbedoutput(r *Report, w io.Writer) {
+func tabbedoutput(r *Report, w io.Writer, last *Report) {
 
 	cols, _ := consolesize.GetConsoleSize()
 
@@ -223,6 +223,7 @@ func tabbedoutput(r *Report, w io.Writer) {
 		color.Bold(color.Magenta("Target")),
 		color.Bold(color.Magenta("Delta")),
 		color.Bold(color.Magenta("Time Window")), // ! caution: we use non-breaking space to have header not on two lines !
+		color.Bold(color.Magenta("Trend")),
 	})
 
 	emptyRow := []string{"", "", "", ""}
@@ -236,7 +237,7 @@ func tabbedoutput(r *Report, w io.Writer) {
 		//  color.Yellow(fmt.Sprintf("Service #%d: %s", i+1, svc.Name))}
 		//table.Append(svcRowHeader)
 
-		for _, sl := range svc.ServiceLevels {
+		for j, sl := range svc.ServiceLevels {
 
 			tick := iconTick
 			unit := "%"
@@ -258,6 +259,34 @@ func tabbedoutput(r *Report, w io.Writer) {
 
 			} else {
 
+				var lastReportResult *ServiceLevelResult
+				// NB: current limitation, we find last/previous result at same
+				// indexes than the current one
+				if last != nil {
+					lsvc := last.Services[i]
+					if svc.Name == lsvc.Name {
+						lsl := lsvc.ServiceLevels[j]
+						if sl.Name == lsl.Name {
+							lastReportResult = lsl.Result
+						}
+					}
+				}
+				// we need to be cautious with type assert here,
+				// it could break entire rendering -> we need to check for type
+				// ?? shall we round up to the same precision of the SLO objective ??
+				var trend string
+				switch diff := sl.Result.Actual.(float64) - lastReportResult.Actual.(float64); {
+				case diff == 0:
+					trend = "="
+					//trend = "←→"
+				case diff < 0:
+					trend = color.Red("↓")
+				case diff > 0:
+					trend = color.Green("↑")
+				default:
+					trend = ""
+				}
+
 				if !sl.Result.SloIsMet {
 					tick = iconEx
 					colorFunc = color.Red
@@ -269,6 +298,7 @@ func tabbedoutput(r *Report, w io.Writer) {
 					fmt.Sprintf("%v%s", sl.Objective, unit),
 					fmt.Sprintf("%.2f%s", sl.Result.Delta, unit),
 					core.HumanizeDuration(period),
+					trend,
 				}
 				table.Append(row)
 

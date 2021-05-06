@@ -71,7 +71,7 @@ func TestWritersOutputsContainSLOs(t *testing.T) {
 				}
 
 				var buf bytes.Buffer
-				Write(format, r, &buf, log.StandardLogger())
+				Write(format, r, &buf, log.StandardLogger(), nil)
 				//t.Log(buf.String())
 
 				// assert the SLO line is renderded - by checking its name existence
