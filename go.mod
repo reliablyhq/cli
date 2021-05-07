@@ -21,6 +21,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fatih/color v1.7.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/go-echarts/go-echarts/v2 v2.2.4 // indirect
 	github.com/golang/protobuf v1.5.1
 	github.com/google/go-github/v33 v33.0.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
