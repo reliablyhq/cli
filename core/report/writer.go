@@ -220,6 +220,7 @@ func tabbedoutput(r *Report, w io.Writer, last *Report) {
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetHeader([]string{"",
 		color.Bold(color.Magenta("Current")),
+		color.Bold(color.Magenta("Mov.")),
 		color.Bold(color.Magenta("Target")),
 		color.Bold(color.Magenta("Delta")),
 		color.Bold(color.Magenta("Time Window")), // ! caution: we use non-breaking space to have header not on two lines !
@@ -251,9 +252,11 @@ func tabbedoutput(r *Report, w io.Writer, last *Report) {
 				row := []string{
 					fmt.Sprintf("%s %s", tick, sl.Name),
 					"---",
+					"",
 					fmt.Sprintf("%v%s", sl.Objective, unit),
 					"---",
 					core.HumanizeDuration(period),
+					"",
 				}
 				table.Append(row)
 
@@ -297,10 +300,11 @@ func tabbedoutput(r *Report, w io.Writer, last *Report) {
 				row := []string{
 					fmt.Sprintf("%s %s", tick, sl.Name),
 					color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))),
+					fmt.Sprintf(" %s ", trend),
 					fmt.Sprintf("%v%s", sl.Objective, unit),
 					fmt.Sprintf("%.2f%s", sl.Result.Delta, unit),
 					core.HumanizeDuration(period),
-					trend,
+					"",
 				}
 				table.Append(row)
 
