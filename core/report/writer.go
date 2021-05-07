@@ -47,7 +47,7 @@ const (
 )
 
 // Write - write report based on given format
-func Write(format Format, r *Report, w io.Writer, l *logrus.Logger, lr *Report) {
+func Write(format Format, r *Report, w io.Writer, l *logrus.Logger, lr *Report, lrs *[]Report) {
 	if r == nil {
 		return
 	}
@@ -72,7 +72,7 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger, lr *Report) 
 		_ = reportMarkdown(r, w)
 
 	default:
-		tabbedoutput(r, w, lr)
+		tabbedoutput(r, w, lr, lrs)
 	}
 
 }
@@ -197,7 +197,7 @@ func markdownFuncMap() template.FuncMap {
 	}
 }
 
-func tabbedoutput(r *Report, w io.Writer, last *Report) {
+func tabbedoutput(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 	cols, _ := consolesize.GetConsoleSize()
 
@@ -277,19 +277,49 @@ func tabbedoutput(r *Report, w io.Writer, last *Report) {
 				// we need to be cautious with type assert here,
 				// it could break entire rendering -> we need to check for type
 				// ?? shall we round up to the same precision of the SLO objective ??
-				var trend string
+				var mov string
 				if lastReportResult != nil {
 					switch diff := sl.Result.Actual.(float64) - lastReportResult.Actual.(float64); {
 					case diff == 0:
-						trend = "="
+						mov = "="
 						//trend = "←→"
 					case diff < 0:
-						trend = color.Red("↓")
+						mov = color.Red("↓")
 					case diff > 0:
-						trend = color.Green("↑")
+						mov = color.Green("↑")
 					default:
-						trend = ""
+						mov = ""
 					}
+				}
+
+				var trends string
+				if lrs != nil {
+					l := len(*lrs)
+					var slosAreMet = make([]string, l, l)
+
+					for lastIndex, r := range *lrs {
+						var wasMet string
+
+						lsvc := r.Services[i]
+						if svc.Name == lsvc.Name {
+							lsl := lsvc.ServiceLevels[j]
+							if sl.Name == lsl.Name {
+								if lsl.Result != nil {
+									switch lsl.Result.SloIsMet {
+									case true:
+										wasMet = iostreams.SuccessIcon()
+									case false:
+										wasMet = iostreams.FailureIcon()
+									}
+								}
+							}
+						}
+
+						slosAreMet[l-lastIndex-1] = wasMet // in reversed order, from oldest to most recent
+					}
+
+					trends = strings.Join(slosAreMet, " ") // Using non-breaking space here !!!
+					//trends = fmt.Sprintf("%s-%s", slosAreMet[0], slosAreMet[1])
 				}
 
 				if !sl.Result.SloIsMet {
@@ -300,11 +330,12 @@ func tabbedoutput(r *Report, w io.Writer, last *Report) {
 				row := []string{
 					fmt.Sprintf("%s %s", tick, sl.Name),
 					color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))),
-					fmt.Sprintf(" %s ", trend),
+					//fmt.Sprintf(" %s ", mov),
+					mov,
 					fmt.Sprintf("%v%s", sl.Objective, unit),
 					fmt.Sprintf("%.2f%s", sl.Result.Delta, unit),
 					core.HumanizeDuration(period),
-					"",
+					trends,
 				}
 				table.Append(row)
 

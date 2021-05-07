@@ -92,7 +92,9 @@ func reportRun(opts *ReportOptions) error {
 
 	// ! we need to fetch the last report before pushing the new one !
 	var lr *report.Report
-	if reports, err := api.GetReports(apiClient, hostname, orgID, 1); err == nil {
+	var reports []report.Report
+	var err error
+	if reports, err = api.GetReports(apiClient, hostname, orgID, 5); err == nil {
 		if len(reports) > 0 {
 			lr = &reports[0]
 		}
@@ -146,7 +148,7 @@ func reportRun(opts *ReportOptions) error {
 
 	opts.IO.StopProgressIndicator()
 
-	report.Write(format, r, w, log.StandardLogger(), lr)
+	report.Write(format, r, w, log.StandardLogger(), lr, &reports)
 
 	return nil
 }
@@ -200,7 +202,7 @@ func watch() error {
 		case r := <-rChan:
 			clearScreen()
 			fmt.Println(color.Magenta("Refreshing SLO report every 3 seconds."), "Press CTRL+C to quit.")
-			report.Write(report.TABBED, r, os.Stdout, log.StandardLogger(), last)
+			report.Write(report.TABBED, r, os.Stdout, log.StandardLogger(), last, nil)
 			last = r
 
 		case err := <-errChan:
