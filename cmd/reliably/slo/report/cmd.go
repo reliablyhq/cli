@@ -94,7 +94,7 @@ func reportRun(opts *ReportOptions) error {
 	var lr *report.Report
 	var reports []report.Report
 	var err error
-	if reports, err = api.GetReports(apiClient, hostname, orgID, 5); err == nil {
+	if reports, err = api.GetReports(apiClient, hostname, orgID, 4); err == nil {
 		if len(reports) > 0 {
 			lr = &reports[0]
 		}

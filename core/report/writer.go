@@ -294,8 +294,9 @@ func tabbedoutput(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 				var trends string
 				if lrs != nil {
+
 					l := len(*lrs)
-					var slosAreMet = make([]string, l, l)
+					var slosAreMet = make([]string, l, l+1)
 
 					for lastIndex, r := range *lrs {
 						var wasMet string
@@ -318,13 +319,19 @@ func tabbedoutput(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 						slosAreMet[l-lastIndex-1] = wasMet // in reversed order, from oldest to most recent
 					}
 
-					trends = strings.Join(slosAreMet, " ") // Using non-breaking space here !!!
-					//trends = fmt.Sprintf("%s-%s", slosAreMet[0], slosAreMet[1])
-				}
+					// we now append the current result SLO value to the trend
+					if sl.Result.SloIsMet {
+						slosAreMet = append(slosAreMet, iostreams.SuccessIcon())
+					} else {
+						slosAreMet = append(slosAreMet, iostreams.FailureIcon())
+					}
 
-				if !sl.Result.SloIsMet {
-					tick = iconEx
-					colorFunc = color.Red
+					if !sl.Result.SloIsMet {
+						tick = iconEx
+						colorFunc = color.Red
+					}
+
+					trends = strings.Join(slosAreMet, " ") // Using non-breaking space here !!!
 				}
 
 				row := []string{
