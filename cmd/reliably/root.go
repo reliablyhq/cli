@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 
 	surveyCore "github.com/AlecAivazis/survey/v2/core"
 	"github.com/MakeNowJust/heredoc/v2"
@@ -128,11 +129,13 @@ func Execute() {
 	newRelease := <-updateMessageChan
 	if newRelease != nil {
 		color.Cyan()
-		msg := fmt.Sprintf("%s %s → %s\n%s",
+		upgradeCommand := getUpgradeCommand()
+		msg := fmt.Sprintf("%s %s → %s\n\n%s\n%s%s",
 			color.Yellow("A new release of reliably is available:"),
 			color.Cyan(version),
 			color.Cyan(newRelease.Version),
-			newRelease.URL)
+			color.Yellow("Details of the new release can be found here:"),
+			newRelease.URL, upgradeCommand)
 
 		fmt.Fprintf(os.Stderr, "\n\n%s\n\n", msg)
 	}
@@ -234,6 +237,24 @@ func customizeColor() {
 			return ansi.ColorCode(style)
 		}
 	}
+}
+
+func getUpgradeCommand() string {
+	bin, _ := os.Executable()
+	OS := runtime.GOOS
+	var message string
+	switch OS {
+	case "darwin":
+		upgradeUrl := "https://github.com/reliablyhq/cli/releases/latest/download/reliably-darwin-amd64"
+		message = fmt.Sprintf("\n\n%s\n$ curl -L %s -o %s", color.Yellow("To upgrade on your system run:"), upgradeUrl, bin)
+	case "linux":
+		upgradeUrl := "https://github.com/reliablyhq/cli/releases/latest/download/reliably-linux-amd64"
+		message = fmt.Sprintf("\n\n%s \n$ curl -L %s -o %s", color.Yellow("To upgrade on your system run:"), upgradeUrl, bin)
+	default:
+		message = ""
+	}
+
+	return message
 }
 
 /*
