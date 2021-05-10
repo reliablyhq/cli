@@ -219,7 +219,7 @@ func tabbedoutput(r *Report, w io.Writer) {
 	table.SetColWidth(maxColWidth)
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetHeader([]string{"",
-		color.Bold(color.Magenta("Actual")),
+		color.Bold(color.Magenta("Current")),
 		color.Bold(color.Magenta("Target")),
 		color.Bold(color.Magenta("Delta")),
 		color.Bold(color.Magenta("Time Window")), // ! caution: we use non-breaking space to have header not on two lines !
