@@ -220,10 +220,10 @@ func tabbedoutput(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetHeader([]string{"",
 		color.Bold(color.Magenta("Current")),
-		color.Bold(color.Magenta("Mov.")),
 		color.Bold(color.Magenta("Target")),
+		color.Bold(color.Magenta(" ")),
 		color.Bold(color.Magenta("Delta")),
-		color.Bold(color.Magenta("Time Window")), // ! caution: we use non-breaking space to have header not on two lines !
+		//color.Bold(color.Magenta("Time Window")), // ! caution: we use non-breaking space to have header not on two lines !
 		color.Bold(color.Magenta("Trend")),
 	})
 
@@ -252,10 +252,10 @@ func tabbedoutput(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 				row := []string{
 					fmt.Sprintf("%s %s", tick, sl.Name),
 					"---",
-					"",
-					fmt.Sprintf("%v%s", sl.Objective, unit),
+					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
+					" ",
 					"---",
-					core.HumanizeDuration(period),
+					//core.HumanizeDuration(period),
 					"",
 				}
 				table.Append(row)
@@ -284,9 +284,11 @@ func tabbedoutput(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 						mov = "="
 						//trend = "←→"
 					case diff < 0:
-						mov = color.Red("↓")
+						// mov = color.Red("↓")
+						mov = "↓"
 					case diff > 0:
-						mov = color.Green("↑")
+						// mov = color.Green("↑")
+						mov = "↑"
 					default:
 						mov = ""
 					}
@@ -336,12 +338,11 @@ func tabbedoutput(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 				row := []string{
 					fmt.Sprintf("%s %s", tick, sl.Name),
-					color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))),
-					//fmt.Sprintf(" %s ", mov),
-					mov,
-					fmt.Sprintf("%v%s", sl.Objective, unit),
+					fmt.Sprintf("%s %s", color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))), mov),
+					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
+					" ",
 					fmt.Sprintf("%.2f%s", sl.Result.Delta, unit),
-					core.HumanizeDuration(period),
+					//core.HumanizeDuration(period),
 					trends,
 				}
 				table.Append(row)
