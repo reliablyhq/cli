@@ -88,7 +88,7 @@ func reportSimpleText(r *Report, w io.Writer) {
 
 			if sl.Result == nil {
 				tick = iostreams.UnknownIcon()
-				fmt.Fprintf(w, "%s %s\n", tick, sl.Name)
+				fmt.Fprintf(w, "%s %s\n", tick, color.Grey(sl.Name))
 
 			} else {
 

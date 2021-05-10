@@ -23,7 +23,7 @@ func FailureIcon() string {
 }
 
 func UnknownIcon() string {
-	return color.Magenta("?")
+	return color.Grey("?")
 }
 
 func WarningIcon() string {

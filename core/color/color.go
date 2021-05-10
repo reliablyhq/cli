@@ -23,6 +23,8 @@ var (
 	Cyan = color.New(color.FgCyan).SprintFunc()
 	// Underline returns an underline string
 	Underline = color.New(color.Underline).SprintFunc()
+	// Grey returns a dark grey-colored string
+	Grey = color.New(color.FgHiBlack).SprintFunc()
 
 	// Background colored string
 	BgYellow  = color.New(color.BgYellow).SprintFunc()
