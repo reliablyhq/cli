@@ -6,6 +6,10 @@
 
 - `slo report` now sends the generated report to Reliably
 
+### Changed
+
+- `simple` & `tabbed` output formats for `slo report` command have been deprecated, use `text` & `table` in replacement. The deprecated ones will soon be removed without notice.; [#257](https://github.com/reliablyhq/cli/issues/257)
+
 ## [v0.14.0] - 2021-05-04
 
 ### Added
