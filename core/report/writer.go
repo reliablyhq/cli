@@ -72,7 +72,7 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger, lr *Report, 
 		_ = reportMarkdown(r, w)
 
 	default:
-		tabbedoutput(r, w, lr, lrs)
+		reportTable(r, w, lr, lrs)
 	}
 
 }
@@ -197,7 +197,7 @@ func markdownFuncMap() template.FuncMap {
 	}
 }
 
-func tabbedoutput(r *Report, w io.Writer, last *Report, lrs *[]Report) {
+func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 	cols, _ := consolesize.GetConsoleSize()
 
