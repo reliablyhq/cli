@@ -31,11 +31,12 @@ type ReportOptions struct {
 }
 
 var (
-	supportedFormats = Choice{"json", "yaml", "simple", "tabbed", "markdown"}
-	manifestPath     string
-	outputPath       string
-	outputFormat     string
-	watchFlag        bool
+	supportedFormats  = Choice{"json", "yaml", "text", "table", "markdown"}
+	deprecatedFormats = Choice{"simple", "tabbed"}
+	manifestPath      string
+	outputPath        string
+	outputFormat      string
+	watchFlag         bool
 
 	service string
 )
@@ -56,7 +57,7 @@ func NewCommand() *cobra.Command {
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			// Validate command options
-			if outputFormat != "" && !supportedFormats.Has(outputFormat) {
+			if outputFormat != "" && !(supportedFormats.Has(outputFormat) || deprecatedFormats.Has(outputFormat)) {
 				return fmt.Errorf("Format '%v' is not valid. Use one of the supported formats: %v", outputFormat, supportedFormats)
 			}
 			return nil
@@ -68,7 +69,7 @@ func NewCommand() *cobra.Command {
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
-	cmd.Flags().StringVarP(&outputFormat, "format", "f", "tabbed", fmt.Sprintf("specify the report format. Allowed Values: %v", supportedFormats))
+	cmd.Flags().StringVarP(&outputFormat, "format", "f", "table", fmt.Sprintf("specify the report format. Allowed Values: %v", supportedFormats))
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "continuously watch for changes in report output")
 	cmd.Flags().StringVar(&service, "service", "", "the name of the service")
 
@@ -79,6 +80,10 @@ func reportRun(opts *ReportOptions) error {
 	// check for -w/--watch
 	if watchFlag {
 		return watch()
+	}
+
+	if outputFormat != "" && deprecatedFormats.Has(outputFormat) {
+		log.Warnf("Format '%v' is now deprecated and soon be to removed. Use one of the supported formats: %v", outputFormat, supportedFormats)
 	}
 
 	opts.IO.StartProgressIndicator()
@@ -109,7 +114,7 @@ func reportRun(opts *ReportOptions) error {
 	switch strings.ToLower(outputFormat) {
 	case "json":
 		format = report.JSON
-	case "simple":
+	case "simple", "text":
 		format = report.SimpleText
 	case "markdown":
 		format = report.MARKDOWN
