@@ -134,7 +134,7 @@ func Execute() {
 			color.Yellow("A new release of reliably is available:"),
 			color.Cyan(version),
 			color.Cyan(newRelease.Version),
-			color.Yellow("Details of the new release is here:"),
+			color.Yellow("Details of the new release can be found here:"),
 			newRelease.URL, upgradeCommand)
 
 		fmt.Fprintf(os.Stderr, "\n\n%s\n\n", msg)
