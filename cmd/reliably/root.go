@@ -250,6 +250,9 @@ func getUpgradeCommand() string {
 	case "linux":
 		upgradeUrl := "https://github.com/reliablyhq/cli/releases/latest/download/reliably-linux-amd64"
 		message = fmt.Sprintf("\n\n%s \n$ curl -L %s -o %s", color.Yellow("To upgrade on your system run:"), upgradeUrl, bin)
+	case "windows":
+		upgradeUrl := "https://github.com/reliablyhq/cli/releases/download/v0.14.0/reliably-windows-amd64"
+		message = fmt.Sprintf("\n\n%s \n$ curl -L %s -o %s", color.Yellow("To upgrade on your system run:"), upgradeUrl, bin)
 	default:
 		message = ""
 	}
