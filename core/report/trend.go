@@ -15,27 +15,6 @@ func GetSLOTrend(svcName string, sloName string, reports []Report) []bool {
 			trend = append(trend, res.SloIsMet)
 		}
 	}
-	/*
-		for _, r := range reports {
-			for _, svc := range r.Services {
-				if svc.Name != svcName {
-					continue
-				}
-
-				for _, slo := range svc.ServiceLevels {
-					if slo.Name != sloName {
-						continue
-					}
-
-					// we found the matching (service name , slo name)
-					if slo.Result != nil {
-						trend = append(trend, slo.Result.SloIsMet)
-					}
-				}
-			}
-		}
-
-	*/
 
 	return trend
 }
