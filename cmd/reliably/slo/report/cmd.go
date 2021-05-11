@@ -22,6 +22,7 @@ import (
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
+	"github.com/reliablyhq/cli/utils"
 )
 
 type Choice = cmdutil.Choice
@@ -88,6 +89,23 @@ func reportRun(opts *ReportOptions) error {
 
 	opts.IO.StartProgressIndicator()
 
+	hostname := core.Hostname()
+	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
+	orgID, _ := api.CurrentUserOrganizationID(apiClient, hostname)
+
+	// TODO refactoring, this is very sequential right now, we could
+	// improve by using a bit of paralellism with goroutines
+
+	// ! we need to fetch the last report before pushing the new one !
+	var lr *report.Report
+	var reports []report.Report
+	var err error
+	if reports, err = api.GetReports(apiClient, hostname, orgID, 4); err == nil {
+		if len(reports) > 0 {
+			lr = &reports[0]
+		}
+	}
+
 	m, err := getManifest()
 	if err != nil {
 		log.Debug(err)
@@ -103,8 +121,12 @@ func reportRun(opts *ReportOptions) error {
 		return err
 	}
 
-	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
-	orgID, _ := api.CurrentUserOrganizationID(apiClient, core.Hostname())
+	// reverse last reports - oldest to most recent - append current at the end
+	utils.Reverse(reports)
+	reports = append(reports, *r)
+
+	//apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
+	//orgID, _ := api.CurrentUserOrganizationID(apiClient, core.Hostname())
 	if _, err := api.SendReport(apiClient, orgID, r); err != nil {
 		log.Debugf("Error while sending report to reliably: %s", err)
 	}
@@ -136,7 +158,7 @@ func reportRun(opts *ReportOptions) error {
 
 	opts.IO.StopProgressIndicator()
 
-	report.Write(format, r, w, log.StandardLogger())
+	report.Write(format, r, w, log.StandardLogger(), lr, &reports)
 
 	return nil
 }
@@ -184,12 +206,14 @@ func watch() error {
 	}()
 
 	// print stuff
+	var last *report.Report
 	for {
 		select {
 		case r := <-rChan:
 			clearScreen()
 			fmt.Println(color.Magenta("Refreshing SLO report every 3 seconds."), "Press CTRL+C to quit.")
-			report.Write(report.TABBED, r, os.Stdout, log.StandardLogger())
+			report.Write(report.TABBED, r, os.Stdout, log.StandardLogger(), last, nil)
+			last = r
 
 		case err := <-errChan:
 			return err

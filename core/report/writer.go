@@ -47,7 +47,7 @@ const (
 )
 
 // Write - write report based on given format
-func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
+func Write(format Format, r *Report, w io.Writer, l *logrus.Logger, lr *Report, lrs *[]Report) {
 	if r == nil {
 		return
 	}
@@ -72,7 +72,7 @@ func Write(format Format, r *Report, w io.Writer, l *logrus.Logger) {
 		_ = reportMarkdown(r, w)
 
 	default:
-		tabbedoutput(r, w)
+		reportTable(r, w, lr, lrs)
 	}
 
 }
@@ -88,7 +88,7 @@ func reportSimpleText(r *Report, w io.Writer) {
 
 			if sl.Result == nil {
 				tick = iostreams.UnknownIcon()
-				fmt.Fprintf(w, "%s %s\n", tick, sl.Name)
+				fmt.Fprintf(w, "%s %s\n", tick, color.Grey(sl.Name))
 
 			} else {
 
@@ -98,13 +98,12 @@ func reportSimpleText(r *Report, w io.Writer) {
 					tick = iostreams.FailureIcon()
 				}
 
-				fmt.Fprintf(w, "%s %s: %.2f%s (last %s) [objective: %v%s, delta: %.2f%s]\n",
+				fmt.Fprintf(w, "%s %s: %.2f%s [objective: %v%s / %s, delta: %.2f%s]\n",
 					tick, sl.Name,
 					sl.Result.Actual, unit,
-					core.HumanizeDurationShort(sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)),
 					sl.Objective, unit,
+					core.HumanizeDurationShort(sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)),
 					sl.Result.Delta, unit)
-
 			}
 		}
 
@@ -197,7 +196,7 @@ func markdownFuncMap() template.FuncMap {
 	}
 }
 
-func tabbedoutput(r *Report, w io.Writer) {
+func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 	cols, _ := consolesize.GetConsoleSize()
 
@@ -218,23 +217,33 @@ func tabbedoutput(r *Report, w io.Writer) {
 	table.SetHeaderLine(false)
 	table.SetColWidth(maxColWidth)
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetHeader([]string{"",
-		color.Bold(color.Magenta("Current")),
+	var optTrendHeader string = ""
+	if lrs != nil && len(*lrs) > 0 {
+		optTrendHeader = "Trend"
+	}
+	table.SetHeader([]string{
+		"",
+		color.Bold(color.Magenta("  Current")), // non-breaking spaces to align right
 		color.Bold(color.Magenta("Target")),
-		color.Bold(color.Magenta("Delta")),
-		color.Bold(color.Magenta("Time Window")), // ! caution: we use non-breaking space to have header not on two lines !
+		color.Bold(color.Magenta(" ")),       // empty separator column
+		color.Bold(color.Magenta("  Delta")), // non-breaking spaces to align right
+		//color.Bold(color.Magenta("Time Window")), // ! caution: we use non-breaking space to have header not on two lines !
+		color.Bold(color.Magenta(optTrendHeader)),
+	})
+	table.SetColumnAlignment([]int{
+		tablewriter.ALIGN_LEFT,
+		tablewriter.ALIGN_RIGHT,
+		tablewriter.ALIGN_LEFT,
+		tablewriter.ALIGN_CENTER,
+		tablewriter.ALIGN_RIGHT,
+		tablewriter.ALIGN_LEFT,
 	})
 
-	emptyRow := []string{"", "", "", ""}
+	emptyRow := []string{"", "", "", "", "", ""}
 
 	for i, svc := range r.Services {
 		svcRowHeader := []string{fmt.Sprintf("Service #%d: %s", i+1, svc.Name)}
 		table.Append(svcRowHeader)
-
-		// Using color breaks autowrap text to have weird behavior with unnecessary line return
-		//svcRowHeader = []string{
-		//  color.Yellow(fmt.Sprintf("Service #%d: %s", i+1, svc.Name))}
-		//table.Append(svcRowHeader)
 
 		for _, sl := range svc.ServiceLevels {
 
@@ -245,30 +254,47 @@ func tabbedoutput(r *Report, w io.Writer) {
 			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
 
 			if sl.Result == nil {
-				tick = iconUnknown
-
+				tick = "?"
 				row := []string{
 					fmt.Sprintf("%s %s", tick, sl.Name),
-					"---",
-					fmt.Sprintf("%v%s", sl.Objective, unit),
-					"---",
-					core.HumanizeDuration(period),
+					"---   ",
+					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
+					" ",
+					"--- ",
+					"",
 				}
-				table.Append(row)
+
+				table.Rich(
+					row,
+					[]tablewriter.Colors{{tablewriter.FgHiBlackColor}, {tablewriter.FgHiBlackColor}, {tablewriter.FgHiBlackColor}, {}, {tablewriter.FgHiBlackColor}},
+				)
 
 			} else {
 
-				if !sl.Result.SloIsMet {
-					tick = iconEx
-					colorFunc = color.Red
+				var mov string = " " // progression compared to last report
+				if last != nil {
+					lastReportResult := last.GetResult(svc.Name, sl.Name)
+					if lastReportResult != nil {
+						mov = sloMovement(*sl.Result, *lastReportResult)
+					}
+
+				}
+
+				var trends string
+				if lrs != nil && len(*lrs) > 0 {
+					slosAreMet := GetSLOTrend(svc.Name, sl.Name, *lrs)
+					ticks := trendToTicks(slosAreMet)
+					trends = strings.Join(ticks, " ") // Using non-breaking space here !!!
 				}
 
 				row := []string{
 					fmt.Sprintf("%s %s", tick, sl.Name),
-					color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))),
-					fmt.Sprintf("%v%s", sl.Objective, unit),
+					fmt.Sprintf("%s %s", color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))), mov),
+					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
+					" ",
 					fmt.Sprintf("%.2f%s", sl.Result.Delta, unit),
-					core.HumanizeDuration(period),
+					//core.HumanizeDuration(period),
+					trends,
 				}
 				table.Append(row)
 
@@ -283,4 +309,46 @@ func tabbedoutput(r *Report, w io.Writer) {
 
 	// render table
 	table.Render()
+}
+
+// trend to ticks is a utility function that iterate over trending
+// for SLO met/unmet and returns a list of ticks accordingly
+func trendToTicks(trend []bool) []string {
+	var ticks []string = make([]string, 0)
+
+	for _, t := range trend {
+		switch t {
+		case true:
+			ticks = append(ticks, iostreams.SuccessIcon())
+		case false:
+			ticks = append(ticks, iostreams.FailureIcon())
+		}
+
+	}
+
+	return ticks
+}
+
+// sloMovement returns the progression icon of the SLO current value
+// compared to the value from the previous report
+func sloMovement(current ServiceLevelResult, previous ServiceLevelResult) (mov string) {
+
+	if _, ok := current.Actual.(float64); !ok {
+		return
+	}
+	if _, ok := previous.Actual.(float64); !ok {
+		return
+	}
+
+	switch diff := current.Actual.(float64) - previous.Actual.(float64); {
+	case diff == 0:
+		mov = "="
+	case diff < 0:
+		mov = "↓"
+	case diff > 0:
+		mov = "↑"
+	default:
+		mov = " " // non-breaking space by default, we don't want to have it stripped
+	}
+	return
 }

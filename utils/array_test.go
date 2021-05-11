@@ -89,3 +89,35 @@ func TestSumFloat64(t *testing.T) {
 	sum := SumFloat64(a)
 	assert.Equal(t, 15.5, sum, "Sum is not expected value")
 }
+
+func TestReverseSlice(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		slice interface{}
+		wants interface{}
+	}{
+		{
+			name:  "empty slice",
+			slice: []int{},
+			wants: []int{},
+		},
+		{
+			name:  "reverse a slice of integer",
+			slice: []int{1, 2, 3, 4, 5},
+			wants: []int{5, 4, 3, 2, 1},
+		},
+		{
+			name:  "reverse a slice of float",
+			slice: []float64{1.0, 2.0, 3.0, 4.0, 5.0},
+			wants: []float64{5.0, 4.0, 3.0, 2.0, 1.0},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			Reverse(tt.slice)
+			assert.Equal(t, tt.wants, tt.slice, "Reversing slice did not work as expected")
+		})
+	}
+}

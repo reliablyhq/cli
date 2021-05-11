@@ -48,3 +48,23 @@ type ServiceLevelResult struct {
 	// used to record whether the SLO is met or not
 	SloIsMet bool `json:"slo_is_met"`
 }
+
+// GetResult returns the result for a given service & slo name
+func (r *Report) GetResult(svcName string, sloName string) *ServiceLevelResult {
+
+	for _, svc := range r.Services {
+		if svc.Name != svcName {
+			continue
+		}
+
+		for _, slo := range svc.ServiceLevels {
+			if slo.Name != sloName {
+				continue
+			}
+
+			return slo.Result
+		}
+	}
+
+	return nil
+}
