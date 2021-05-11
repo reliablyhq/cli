@@ -23,7 +23,7 @@ func NewCommand() *cobra.Command {
 		RunE: runE,
 	}
 
-	cmd.Flags().StringVarP(&manifestPath, "file", "f", "", "store a local copy of the service manifest created")
+	cmd.Flags().StringVarP(&manifestPath, "file", "f", "", "the input path and filename that will be uploaded to reliably")
 	return &cmd
 }
 
