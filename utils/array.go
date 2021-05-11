@@ -45,3 +45,12 @@ func SumFloat64(array []float64) float64 {
 	}
 	return result
 }
+
+// Reverse a slice
+func Reverse(s interface{}) {
+	n := reflect.ValueOf(s).Len()
+	swap := reflect.Swapper(s)
+	for i, j := 0, n-1; i < j; i, j = i+1, j-1 {
+		swap(i, j)
+	}
+}
