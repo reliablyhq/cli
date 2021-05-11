@@ -13,11 +13,11 @@ and communicate with the maintainer.`)
 
 func examples() string {
 	return heredoc.Doc(`
-$ reliably init:
+$ reliably slo init:
   this method interactively creates a manifest file, asking you questions
   on the command line and adding your answers to the manifest file.
 
-$ realibly init -f <path>:
+$ realibly slo init -f <path>:
   this method works the same as reliably init, but allows you to specify
   the location of the file. This is useful if you use a multi-repo approach
   to source control.`)
