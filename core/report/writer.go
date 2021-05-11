@@ -218,6 +218,10 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 	table.SetHeaderLine(false)
 	table.SetColWidth(maxColWidth)
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	var optTrendHeader string = ""
+	if lrs != nil && len(*lrs) > 0 {
+		optTrendHeader = "Trend"
+	}
 	table.SetHeader([]string{
 		"",
 		color.Bold(color.Magenta("  Current")), // non-breaking spaces to align right
@@ -225,7 +229,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 		color.Bold(color.Magenta(" ")),       // empty separator column
 		color.Bold(color.Magenta("  Delta")), // non-breaking spaces to align right
 		//color.Bold(color.Magenta("Time Window")), // ! caution: we use non-breaking space to have header not on two lines !
-		color.Bold(color.Magenta("Trend")),
+		color.Bold(color.Magenta(optTrendHeader)),
 	})
 	table.SetColumnAlignment([]int{
 		tablewriter.ALIGN_LEFT,
