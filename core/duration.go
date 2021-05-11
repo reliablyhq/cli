@@ -84,6 +84,9 @@ type Iso8601Duration struct {
 }
 
 func (d Iso8601Duration) String() string {
+	if d.ToDuration() == 0 {
+		return ""
+	}
 	return d.Duration.String()
 }
 
@@ -92,7 +95,13 @@ func (d Iso8601Duration) ToDuration() time.Duration {
 }
 
 func (d Iso8601Duration) MarshalJSON() ([]byte, error) {
-	val := strconv.Quote(d.String())
+
+	var durationStr string = ""
+	if d.ToDuration() > 0 {
+		durationStr = d.String()
+	}
+
+	val := strconv.Quote(durationStr)
 	return []byte(val), nil
 }
 
