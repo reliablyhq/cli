@@ -3,6 +3,8 @@ package report
 import (
 	//"fmt"
 	"time"
+
+	"github.com/reliablyhq/cli/core"
 )
 
 type Report struct {
@@ -18,10 +20,11 @@ type Service struct {
 }
 
 type ServiceLevel struct {
-	Name      string              `json:"name" yaml:"name"`
-	Type      string              `json:"type" yaml:"type"`
-	Objective float64             `json:"objective" yaml:"objective"`
-	Result    *ServiceLevelResult `json:"result" yaml:"result"`
+	Name      string               `json:"name" yaml:"name"`
+	Type      string               `json:"type" yaml:"type"`
+	Objective float64              `json:"objective" yaml:"objective"`
+	Period    core.Iso8601Duration `yaml:"period,omitempty" json:"period,omitempty"`
+	Result    *ServiceLevelResult  `json:"result" yaml:"result"`
 
 	//Target *ServiceLevelIndicators `json:"target"`
 	//Actual *ServiceLevelIndicators `json:"actual"`
