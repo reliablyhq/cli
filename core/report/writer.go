@@ -98,13 +98,12 @@ func reportSimpleText(r *Report, w io.Writer) {
 					tick = iostreams.FailureIcon()
 				}
 
-				fmt.Fprintf(w, "%s %s: %.2f%s (last %s) [objective: %v%s, delta: %.2f%s]\n",
+				fmt.Fprintf(w, "%s %s: %.2f%s [objective: %v%s / %s, delta: %.2f%s]\n",
 					tick, sl.Name,
 					sl.Result.Actual, unit,
-					core.HumanizeDurationShort(sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)),
 					sl.Objective, unit,
+					core.HumanizeDurationShort(sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)),
 					sl.Result.Delta, unit)
-
 			}
 		}
 

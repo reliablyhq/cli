@@ -47,11 +47,6 @@ type ServiceLevelResult struct {
 
 	// used to record whether the SLO is met or not
 	SloIsMet bool `json:"slo_is_met"`
-
-	// slo trend indicates how the SLO behaved over the last N values
-	sloTrend []bool
-	// diff between the current actual value and the previous report - optional -
-	actualVsPrevious *float64
 }
 
 // GetResult returns the result for a given service & slo name
