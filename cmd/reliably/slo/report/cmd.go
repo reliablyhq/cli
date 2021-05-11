@@ -22,6 +22,7 @@ import (
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
+	"github.com/reliablyhq/cli/utils"
 )
 
 type Choice = cmdutil.Choice
@@ -114,6 +115,10 @@ func reportRun(opts *ReportOptions) error {
 	if err != nil {
 		return err
 	}
+
+	// reverse last reports - oldest to most recent - append current at the end
+	utils.Reverse(reports)
+	reports = append(reports, *r)
 
 	//apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
 	//orgID, _ := api.CurrentUserOrganizationID(apiClient, core.Hostname())

@@ -246,12 +246,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 		svcRowHeader := []string{fmt.Sprintf("Service #%d: %s", i+1, svc.Name)}
 		table.Append(svcRowHeader)
 
-		// Using color breaks autowrap text to have weird behavior with unnecessary line return
-		//svcRowHeader = []string{
-		//  color.Yellow(fmt.Sprintf("Service #%d: %s", i+1, svc.Name))}
-		//table.Append(svcRowHeader)
-
-		for j, sl := range svc.ServiceLevels {
+		for _, sl := range svc.ServiceLevels {
 
 			tick := iconTick
 			unit := "%"
@@ -260,96 +255,37 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
 
 			if sl.Result == nil {
-				//tick = iconUnknown
 				tick = "?"
-
 				row := []string{
 					fmt.Sprintf("%s %s", tick, sl.Name),
-					"---  ",
+					"---   ",
 					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
 					" ",
-					"---",
-					//core.HumanizeDuration(period),
+					"--- ",
 					"",
 				}
 
-				table.Rich(row, []tablewriter.Colors{{tablewriter.FgHiBlackColor}, {tablewriter.FgHiBlackColor}, {tablewriter.FgHiBlackColor}, {}, {tablewriter.FgHiBlackColor}})
-				//table.Append(row)
+				table.Rich(
+					row,
+					[]tablewriter.Colors{{tablewriter.FgHiBlackColor}, {tablewriter.FgHiBlackColor}, {tablewriter.FgHiBlackColor}, {}, {tablewriter.FgHiBlackColor}},
+				)
 
 			} else {
 
-				var lastReportResult *ServiceLevelResult
-				// NB: current limitation, we find last/previous result at same
-				// indexes than the current one
+				var mov string = " " // progression compared to last report
 				if last != nil {
-					lsvc := last.Services[i]
-					if svc.Name == lsvc.Name {
-						lsl := lsvc.ServiceLevels[j]
-						if sl.Name == lsl.Name {
-							lastReportResult = lsl.Result
-						}
+					lastReportResult := last.GetResult(svc.Name, sl.Name)
+					if lastReportResult != nil {
+						mov = sloMovement(*sl.Result, *lastReportResult)
 					}
-				}
-				// we need to be cautious with type assert here,
-				// it could break entire rendering -> we need to check for type
-				// ?? shall we round up to the same precision of the SLO objective ??
-				var mov string
-				if lastReportResult != nil {
-					switch diff := sl.Result.Actual.(float64) - lastReportResult.Actual.(float64); {
-					case diff == 0:
-						mov = "="
-						//trend = "←→"
-					case diff < 0:
-						// mov = color.Red("↓")
-						mov = "↓"
-					case diff > 0:
-						// mov = color.Green("↑")
-						mov = "↑"
-					default:
-						mov = " "
-					}
+
 				}
 
 				var trends string
-				if lrs != nil {
-
-					l := len(*lrs)
-					var slosAreMet = make([]string, l, l+1)
-
-					for lastIndex, r := range *lrs {
-						var wasMet string
-
-						lsvc := r.Services[i]
-						if svc.Name == lsvc.Name {
-							lsl := lsvc.ServiceLevels[j]
-							if sl.Name == lsl.Name {
-								if lsl.Result != nil {
-									switch lsl.Result.SloIsMet {
-									case true:
-										wasMet = iostreams.SuccessIcon()
-									case false:
-										wasMet = iostreams.FailureIcon()
-									}
-								}
-							}
-						}
-
-						slosAreMet[l-lastIndex-1] = wasMet // in reversed order, from oldest to most recent
-					}
-
-					// we now append the current result SLO value to the trend
-					if sl.Result.SloIsMet {
-						slosAreMet = append(slosAreMet, iostreams.SuccessIcon())
-					} else {
-						slosAreMet = append(slosAreMet, iostreams.FailureIcon())
-					}
-
-					if !sl.Result.SloIsMet {
-						tick = iconEx
-						colorFunc = color.Red
-					}
-
-					trends = strings.Join(slosAreMet, " ") // Using non-breaking space here !!!
+				if lrs != nil && len(*lrs) > 0 {
+					slosAreMet := GetSLOTrend(svc.Name, sl.Name, *lrs)
+					ticks := trendToTicks(slosAreMet)
+					trends = strings.Join(ticks, " ") // Using non-breaking space here !!!
 				}
 
 				row := []string{
@@ -374,4 +310,46 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 	// render table
 	table.Render()
+}
+
+// trend to ticks is a utility function that iterate over trending
+// for SLO met/unmet and returns a list of ticks accordingly
+func trendToTicks(trend []bool) []string {
+	var ticks []string = make([]string, 0)
+
+	for _, t := range trend {
+		switch t {
+		case true:
+			ticks = append(ticks, iostreams.SuccessIcon())
+		case false:
+			ticks = append(ticks, iostreams.FailureIcon())
+		}
+
+	}
+
+	return ticks
+}
+
+// sloMovement returns the progression icon of the SLO current value
+// compared to the value from the previous report
+func sloMovement(current ServiceLevelResult, previous ServiceLevelResult) (mov string) {
+
+	if _, ok := current.Actual.(float64); !ok {
+		return
+	}
+	if _, ok := previous.Actual.(float64); !ok {
+		return
+	}
+
+	switch diff := current.Actual.(float64) - previous.Actual.(float64); {
+	case diff == 0:
+		mov = "="
+	case diff < 0:
+		mov = "↓"
+	case diff > 0:
+		mov = "↑"
+	default:
+		mov = " " // non-breaking space by default, we don't want to have it stripped
+	}
+	return
 }
