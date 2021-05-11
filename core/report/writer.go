@@ -218,16 +218,25 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 	table.SetHeaderLine(false)
 	table.SetColWidth(maxColWidth)
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetHeader([]string{"",
-		color.Bold(color.Magenta("Current")),
+	table.SetHeader([]string{
+		"",
+		color.Bold(color.Magenta("  Current")), // non-breaking spaces to align right
 		color.Bold(color.Magenta("Target")),
-		color.Bold(color.Magenta(" ")),
-		color.Bold(color.Magenta("Delta")),
+		color.Bold(color.Magenta(" ")),       // empty separator column
+		color.Bold(color.Magenta("  Delta")), // non-breaking spaces to align right
 		//color.Bold(color.Magenta("Time Window")), // ! caution: we use non-breaking space to have header not on two lines !
 		color.Bold(color.Magenta("Trend")),
 	})
+	table.SetColumnAlignment([]int{
+		tablewriter.ALIGN_LEFT,
+		tablewriter.ALIGN_RIGHT,
+		tablewriter.ALIGN_LEFT,
+		tablewriter.ALIGN_CENTER,
+		tablewriter.ALIGN_RIGHT,
+		tablewriter.ALIGN_LEFT,
+	})
 
-	emptyRow := []string{"", "", "", ""}
+	emptyRow := []string{"", "", "", "", "", ""}
 
 	for i, svc := range r.Services {
 		svcRowHeader := []string{fmt.Sprintf("Service #%d: %s", i+1, svc.Name)}
@@ -293,7 +302,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 						// mov = color.Green("↑")
 						mov = "↑"
 					default:
-						mov = ""
+						mov = " "
 					}
 				}
 
