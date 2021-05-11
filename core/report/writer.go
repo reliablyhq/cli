@@ -247,7 +247,8 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
 
 			if sl.Result == nil {
-				tick = iconUnknown
+				//tick = iconUnknown
+				tick = "?"
 
 				row := []string{
 					fmt.Sprintf("%s %s", tick, sl.Name),
@@ -258,7 +259,9 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 					//core.HumanizeDuration(period),
 					"",
 				}
-				table.Append(row)
+
+				table.Rich(row, []tablewriter.Colors{{tablewriter.FgHiBlackColor}, {tablewriter.FgHiBlackColor}, {tablewriter.FgHiBlackColor}, {}, {tablewriter.FgHiBlackColor}})
+				//table.Append(row)
 
 			} else {
 
