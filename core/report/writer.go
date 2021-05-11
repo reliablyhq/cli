@@ -261,7 +261,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 				row := []string{
 					fmt.Sprintf("%s %s", tick, sl.Name),
-					"---",
+					"---  ",
 					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
 					" ",
 					"---",
