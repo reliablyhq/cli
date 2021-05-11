@@ -117,6 +117,7 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 				Name:      sl.Name,
 				Type:      sl.Type,
 				Objective: objective,
+				Period:    sl.ObservationWindow,
 				Result:    result,
 				ObservationWindow: Window{
 					To:   to,
