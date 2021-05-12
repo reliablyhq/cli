@@ -97,12 +97,12 @@ func reportRun(opts *ReportOptions) error {
 	// improve by using a bit of paralellism with goroutines
 
 	// ! we need to fetch the last report before pushing the new one !
-	var lr *report.Report
+	var lr report.Report
 	var reports []report.Report
 	var err error
 	if reports, err = api.GetReports(apiClient, hostname, orgID, 4); err == nil {
 		if len(reports) > 0 {
-			lr = &reports[0]
+			lr = reports[0]
 		}
 	}
 
@@ -158,7 +158,7 @@ func reportRun(opts *ReportOptions) error {
 
 	opts.IO.StopProgressIndicator()
 
-	report.Write(format, r, w, log.StandardLogger(), lr, &reports)
+	report.Write(format, r, w, log.StandardLogger(), &lr, &reports)
 
 	return nil
 }
