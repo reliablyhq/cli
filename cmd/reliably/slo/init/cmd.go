@@ -106,11 +106,20 @@ func populateManifestInteractively(m *manifest.Manifest) {
 
 	var s manifest.Service
 	s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?", emptyOptions)
-	for checkServiceExists(s.Name, m) {
-		s.Name = question.WithStringAnswer(
-			fmt.Sprintf("Service definition for [%s] already exists, please enter another name:",
-				color.Red(s.Name)), emptyOptions)
-	}
+
+	serviceNameValidator := survey.WithValidator(func(v interface{}) error {
+		for _, s := range m.Services {
+			if s.Name == v.(string) {
+				return fmt.Errorf("service mame [%v] already exists", v)
+			}
+		}
+		return nil
+	})
+
+	s.Name = question.WithStringAnswerV2(
+		"What is the name of the service you want to declare SLOs for?", "",
+		s.Name, []survey.AskOpt{serviceNameValidator})
+
 	declareSLOForService(&s)
 
 	m.Services = append(m.Services, &s)
@@ -280,13 +289,4 @@ func checkPromptExit(err error) {
 	if err == terminal.InterruptErr {
 		os.Exit(0)
 	}
-}
-
-func checkServiceExists(name string, m *manifest.Manifest) bool {
-	for _, s := range m.Services {
-		if s.Name == name {
-			return true
-		}
-	}
-	return false
 }
