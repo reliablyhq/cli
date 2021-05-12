@@ -175,34 +175,6 @@ func (c Client) REST(hostname string, method string, p string, body io.Reader, d
 	return nil
 }
 
-// RESTResponse performs a REST request and returns reponse body
-func (c Client) RESTResponse(hostname string, method string, p string, body io.Reader) (io.ReadCloser, error) {
-	url := core.RESTPrefix(hostname) + p
-	log.Debugf("[api.REST] %s %s", method, url)
-	req, err := http.NewRequest(method, url, body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-
-	resp, err := c.http.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	success := resp.StatusCode >= 200 && resp.StatusCode < 300
-	if !success {
-		return nil, HandleHTTPError(resp)
-	}
-
-	if resp.StatusCode == http.StatusNoContent {
-		return nil, nil
-	}
-
-	return resp.Body, nil
-}
-
 var jsonTypeRE = regexp.MustCompile(`[/+]json($|;)`)
 
 // UnsecureHTTPClient returns a non-authenticated HTTP client

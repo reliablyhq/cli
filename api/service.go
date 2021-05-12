@@ -9,7 +9,6 @@ import (
 
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/manifest"
-	"gopkg.in/yaml.v2"
 )
 
 // PushServiceManifest - records the manifest via the API backend for a given service
@@ -60,19 +59,13 @@ func PullServiceManifest(client *Client, service string) (*manifest.Manifest, er
 		return nil, err
 	}
 
-	path := fmt.Sprintf("orgs/%s/services/%s", orgID, service) // get all by default
-	body, err := client.RESTResponse(core.Hostname(), http.MethodGet, path, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	defer body.Close()
-	var m manifest.Manifest
 	var s manifest.Service
-	if err := yaml.NewDecoder(body).Decode(&s); err != nil {
+	path := fmt.Sprintf("orgs/%s/services/%s", orgID, service) // get all by default
+	if err := client.REST(core.Hostname(), http.MethodGet, path, nil, &s); err != nil {
 		return nil, err
 	}
 
+	var m manifest.Manifest
 	m.Services = append(m.Services, &s)
 	return &m, nil
 }
@@ -85,12 +78,6 @@ func PullManifest(client *Client) (*manifest.Manifest, error) {
 	}
 
 	path := fmt.Sprintf("orgs/%s/services", orgID) // get all by default
-
-	body, err := client.RESTResponse(core.Hostname(), http.MethodGet, path, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer body.Close()
 	var m manifest.Manifest
-	return &m, yaml.NewDecoder(body).Decode(&m)
+	return &m, client.REST(core.Hostname(), http.MethodGet, path, nil, &m)
 }
