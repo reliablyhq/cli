@@ -105,8 +105,6 @@ func runE(_ *cobra.Command, args []string) error {
 func populateManifestInteractively(m *manifest.Manifest) {
 
 	var s manifest.Service
-	s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?", emptyOptions)
-
 	serviceNameValidator := survey.WithValidator(func(v interface{}) error {
 		for _, s := range m.Services {
 			if s.Name == v.(string) {
