@@ -1,6 +1,7 @@
 package manifest
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/reliablyhq/cli/core"
@@ -123,10 +124,50 @@ func (sl *ServiceLevel) UnmarshalYAML(unmarshal func(v interface{}) error) error
 	case "latency":
 
 		lc := struct {
-			Criteria LatencyCriteria `json:"criteria"`
+			Criteria LatencyCriteria `yaml:"criteria"`
 		}{}
 
 		if err := unmarshal(&lc); err == nil {
+			criteria = lc.Criteria
+		}
+
+	case "availability":
+	default:
+	}
+
+	// assign the parsed criteria to the current service level
+	sl.Criteria = criteria
+
+	return nil
+}
+
+func (sl *ServiceLevel) UnmarshalJSON(b []byte) error {
+
+	type Alias ServiceLevel
+
+	// We unmarshal the ServiceLevel into the object
+	var asl Alias
+
+	if err := json.Unmarshal(b, &asl); err != nil {
+		fmt.Println("error unmarshall")
+		return err
+	}
+
+	// assign the unmarshaled content to the current service level pointer
+	*sl = ServiceLevel(asl)
+
+	// Then we make a second unmarshalling
+	// to create the right Criteria structure
+	// depending on the service level type
+	var criteria interface{}
+	switch sl.Type {
+	case "latency":
+
+		lc := struct {
+			Criteria LatencyCriteria `json:"criteria"`
+		}{}
+
+		if err := json.Unmarshal(b, &lc); err == nil {
 			criteria = lc.Criteria
 		}
 
