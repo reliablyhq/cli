@@ -170,8 +170,6 @@ func (c Client) REST(hostname string, method string, p string, body io.Reader, d
 		return err
 	}
 
-	// return yaml.NewDecoder(resp.Body).Decode(&data)
-
 	return nil
 }
 
