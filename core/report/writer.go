@@ -225,9 +225,16 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 		"",
 		color.Bold(color.Magenta("  Current")), // non-breaking spaces to align right
 		color.Bold(color.Magenta("Target")),
+		
+		//color.Bold(color.Magenta("  Delta")), // non-breaking spaces to align right
+
+		color.Bold(color.Magenta("Err.Budget")),
 		color.Bold(color.Magenta(" ")),       // empty separator column
-		color.Bold(color.Magenta("  Delta")), // non-breaking spaces to align right
+		color.Bold(color.Magenta("Consum./Remain.")),
+
 		//color.Bold(color.Magenta("Time Window")), // ! caution: we use non-breaking space to have header not on two lines !
+
+		color.Bold(color.Magenta(" ")), // empty separator column
 		color.Bold(color.Magenta(optTrendHeader)),
 	})
 	table.SetColumnAlignment([]int{
@@ -245,7 +252,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 		svcRowHeader := []string{fmt.Sprintf("Service #%d: %s", i+1, svc.Name)}
 		table.Append(svcRowHeader)
 
-		for _, sl := range svc.ServiceLevels {
+		for j, sl := range svc.ServiceLevels {
 
 			tick := iconTick
 			unit := "%"
@@ -261,7 +268,6 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
 					" ",
 					"--- ",
-					"",
 				}
 
 				table.Rich(
@@ -285,6 +291,18 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 				}
 
+				// HACK - DEV
+				if i == 0 && j == 1 {
+
+					sl.Result.Actual = float64(93)
+					sl.Result.Delta = float64(2) 
+					sl.Result.SloIsMet = false
+
+
+				}
+
+
+
 				var trends string
 				if lrs != nil && len(*lrs) > 0 {
 					slosAreMet := GetSLOTrend(svc.Name, sl.Name, *lrs)
@@ -292,13 +310,58 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 					trends = strings.Join(ticks, " ") // Using non-breaking space here !!!
 				}
 
+				errBudget := ErrorBudgetAsPercentage(sl.Objective)
+				allowedDowntime := DowntimePerPeriod(errBudget, sl.Period.ToDuration())
+
+				//deltaDowntime := DowntimePerPeriod(sl.Result.Delta.(float64), sl.Period)
+
+				c, r := ComsumedRemainingBudget(float64(100) - sl.Result.Actual.(float64), errBudget)
+				//c, r := ComsumedRemainingBudget(sl.Result.Delta.(float64), errBudget)
+
+
+				
+				//c2, r2 := DowntimePerPeriod(c, allowedDowntime), DowntimePerPeriod(float64(100) - r, sl.Period.ToDuration())
+				c2, r2 := todo(c, allowedDowntime), todo(r, allowedDowntime)
+
+
+				// 5% -> 100 % =  21minutes
+				// 7% ->
+
+
+				/// double check the original PR that removed those two lines
+
+					if !sl.Result.SloIsMet {
+						tick  = iconEx
+						colorFunc = color.Red
+					}
+
+
+				//consumed := fmt.Sprintf("%.2f%s (%s)", c, unit, core.HumanizeDurationShort(c2))
+				//remained := fmt.Sprintf("%.2f%s (%s)", r, unit, core.HumanizeDurationShort(r2))
+
+
+				consumedVsAllowed := c2 - allowedDowntime
+
+
+				consumed := fmt.Sprintf("%s", core.HumanizeDurationShort(c2))
+if consumedVsAllowed > 0 {
+	consumed = fmt.Sprintf("%s (+%s)", consumed, core.HumanizeDurationShort(consumedVsAllowed))
+}
+
+				remained := fmt.Sprintf("%s", core.HumanizeDurationShort(r2))
+
 				row := []string{
 					fmt.Sprintf("%s %s", tick, sl.Name),
 					fmt.Sprintf("%s %s", color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))), mov),
 					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
+					
+					//fmt.Sprintf("%.2f%s (%s)", sl.Result.Delta, unit, deltaDowntime),
+					fmt.Sprintf("%.2f%s (%s)", errBudget, unit, core.HumanizeDurationShort(allowedDowntime)),
 					" ",
-					fmt.Sprintf("%.2f%s", sl.Result.Delta, unit),
-					//core.HumanizeDuration(period),
+
+					colorFunc(fmt.Sprintf("%s / %s", consumed, remained)),
+					//core.HumanizeDuration(period),, 
+					" ",
 					trends,
 				}
 				table.Append(row)
@@ -356,4 +419,58 @@ func sloMovement(current ServiceLevelResult, previous ServiceLevelResult) (mov s
 		mov = " " // non-breaking space by default, we don't want to have it stripped
 	}
 	return
+}
+
+func ErrorBudgetAsPercentage(slo float64) float64 {
+	return (1 - slo/100) * 100
+}
+
+func DowntimePerPeriod(percent float64, period time.Duration) time.Duration {
+
+	//func ErrorBudgetAsDuration(slo float64, period core.Iso8601Duration) time.Duration {
+	//errBudget := ErrorBudgetAsPercentage(slo)
+
+	p := period.Milliseconds()
+
+	d := int64(percent * float64(p))
+
+	fmt.Println("percent", percent, " / period", period, p, " -> ", int64(d*1000), time.Duration(d * 1000))
+
+
+	//d := errBudget * float64(p)
+	return time.Duration(d * 1000 ).Truncate(time.Second)
+}
+
+func todo(percent float64, allowed time.Duration) time.Duration {
+	d := percent * float64(allowed.Milliseconds()) / float64(100)
+	return time.Duration(d * 1000 * 1000 ).Truncate(time.Second)
+}
+
+func ComsumedRemainingBudget(delta float64, errBudget float64) (float64, float64) {
+
+	fmt.Println(delta, errBudget)
+
+	/*
+	if delta >= 0 { // if delta is positive, we are still above the error budget, nothing has been consumed
+		return 0, errBudget
+	}
+	*/
+
+	c := ufloat64(delta) * 100 / ufloat64(errBudget)
+
+	var r float64
+	if c < 100 {
+		r = 100 - ufloat64(c)
+	}
+
+	return c, r
+}
+
+// ufloat64 returns an unsigned float64
+func ufloat64(f float64) float64 {
+	if f < 0 {
+		return -f
+	}
+
+	return f
 }
