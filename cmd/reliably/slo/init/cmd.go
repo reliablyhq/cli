@@ -105,8 +105,18 @@ func runE(_ *cobra.Command, args []string) error {
 func populateManifestInteractively(m *manifest.Manifest) {
 
 	var s manifest.Service
+	serviceNameValidator := survey.WithValidator(func(v interface{}) error {
+		for _, s := range m.Services {
+			if s.Name == v.(string) {
+				return fmt.Errorf("service mame [%v] already exists", v)
+			}
+		}
+		return nil
+	})
 
-	s.Name = question.WithStringAnswer("What is the name of the service you want to declare SLOs for?", emptyOptions)
+	s.Name = question.WithStringAnswerV2(
+		"What is the name of the service you want to declare SLOs for?", "",
+		s.Name, []survey.AskOpt{serviceNameValidator})
 
 	declareSLOForService(&s)
 
