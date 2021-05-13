@@ -271,6 +271,11 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 			} else {
 
+				if !sl.Result.SloIsMet {
+					tick = iconEx
+					colorFunc = color.Red
+				}
+
 				var mov string = " " // progression compared to last report
 				if last != nil {
 					lastReportResult := last.GetResult(svc.Name, sl.Name)
