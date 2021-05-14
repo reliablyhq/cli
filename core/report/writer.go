@@ -10,11 +10,13 @@ import (
 
 	consolesize "github.com/nathan-fiscaletti/consolesize-go"
 	"github.com/olekukonko/tablewriter"
+	"github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
+
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
-	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	"github.com/reliablyhq/cli/utils"
 )
 
 /*
@@ -225,14 +227,11 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 		"",
 		color.Bold(color.Magenta("  Current")), // non-breaking spaces to align right
 		color.Bold(color.Magenta("Target")),
-		
-		//color.Bold(color.Magenta("  Delta")), // non-breaking spaces to align right
 
-		color.Bold(color.Magenta("Err.Budget")),
-		color.Bold(color.Magenta(" ")),       // empty separator column
+		color.Bold(color.Magenta(" ")), // empty separator column
+
+		color.Bold(color.Magenta("Err. Budget")),
 		color.Bold(color.Magenta("Consum./Remain.")),
-
-		//color.Bold(color.Magenta("Time Window")), // ! caution: we use non-breaking space to have header not on two lines !
 
 		color.Bold(color.Magenta(" ")), // empty separator column
 		color.Bold(color.Magenta(optTrendHeader)),
@@ -243,6 +242,8 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 		tablewriter.ALIGN_LEFT,
 		tablewriter.ALIGN_CENTER,
 		tablewriter.ALIGN_RIGHT,
+		tablewriter.ALIGN_LEFT,
+		tablewriter.ALIGN_CENTER,
 		tablewriter.ALIGN_LEFT,
 	})
 
@@ -260,10 +261,12 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
 
+			tuncatedSLName := utils.TruncateString(sl.Name, 78) // 80 chars max with tick
+
 			if sl.Result == nil {
 				tick = "?"
 				row := []string{
-					fmt.Sprintf("%s %s", tick, sl.Name),
+					fmt.Sprintf("%s %s", tick, tuncatedSLName),
 					"---   ",
 					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
 					" ",
@@ -295,13 +298,10 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 				if i == 0 && j == 1 {
 
 					sl.Result.Actual = float64(93)
-					sl.Result.Delta = float64(2) 
+					sl.Result.Delta = float64(2)
 					sl.Result.SloIsMet = false
 
-
 				}
-
-
 
 				var trends string
 				if lrs != nil && len(*lrs) > 0 {
@@ -315,52 +315,45 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 				//deltaDowntime := DowntimePerPeriod(sl.Result.Delta.(float64), sl.Period)
 
-				c, r := ComsumedRemainingBudget(float64(100) - sl.Result.Actual.(float64), errBudget)
+				c, r := ComsumedRemainingBudget(float64(100)-sl.Result.Actual.(float64), errBudget)
 				//c, r := ComsumedRemainingBudget(sl.Result.Delta.(float64), errBudget)
 
-
-				
 				//c2, r2 := DowntimePerPeriod(c, allowedDowntime), DowntimePerPeriod(float64(100) - r, sl.Period.ToDuration())
-				c2, r2 := todo(c, allowedDowntime), todo(r, allowedDowntime)
-
+				c2, r2 := ruleOfThreeDuration(c, allowedDowntime, 100), ruleOfThreeDuration(r, allowedDowntime, 100)
 
 				// 5% -> 100 % =  21minutes
 				// 7% ->
 
-
 				/// double check the original PR that removed those two lines
 
-					if !sl.Result.SloIsMet {
-						tick  = iconEx
-						colorFunc = color.Red
-					}
-
+				if !sl.Result.SloIsMet {
+					tick = iconEx
+					colorFunc = color.Red
+				}
 
 				//consumed := fmt.Sprintf("%.2f%s (%s)", c, unit, core.HumanizeDurationShort(c2))
 				//remained := fmt.Sprintf("%.2f%s (%s)", r, unit, core.HumanizeDurationShort(r2))
 
-
 				consumedVsAllowed := c2 - allowedDowntime
 
-
 				consumed := fmt.Sprintf("%s", core.HumanizeDurationShort(c2))
-if consumedVsAllowed > 0 {
-	consumed = fmt.Sprintf("%s (+%s)", consumed, core.HumanizeDurationShort(consumedVsAllowed))
-}
+				if consumedVsAllowed > 0 {
+					consumed = fmt.Sprintf("%s (+%s)", consumed, core.HumanizeDurationShort(consumedVsAllowed))
+				}
 
 				remained := fmt.Sprintf("%s", core.HumanizeDurationShort(r2))
 
 				row := []string{
-					fmt.Sprintf("%s %s", tick, sl.Name),
+					fmt.Sprintf("%s %s", tick, tuncatedSLName),
 					fmt.Sprintf("%s %s", color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))), mov),
 					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
-					
-					//fmt.Sprintf("%.2f%s (%s)", sl.Result.Delta, unit, deltaDowntime),
-					fmt.Sprintf("%.2f%s (%s)", errBudget, unit, core.HumanizeDurationShort(allowedDowntime)),
-					" ",
 
+					//fmt.Sprintf("%.2f%s (%s)", sl.Result.Delta, unit, deltaDowntime),
+					" ",
+					fmt.Sprintf("%s (%.2f%s)", core.HumanizeDurationShort(allowedDowntime), errBudget, unit),
 					colorFunc(fmt.Sprintf("%s / %s", consumed, remained)),
-					//core.HumanizeDuration(period),, 
+
+					//core.HumanizeDuration(period),,
 					" ",
 					trends,
 				}
@@ -434,26 +427,26 @@ func DowntimePerPeriod(percent float64, period time.Duration) time.Duration {
 
 	d := int64(percent * float64(p))
 
-	fmt.Println("percent", percent, " / period", period, p, " -> ", int64(d*1000), time.Duration(d * 1000))
-
+	fmt.Println("percent", percent, " / period", period, p, " -> ", int64(d*1000), time.Duration(d*1000))
 
 	//d := errBudget * float64(p)
-	return time.Duration(d * 1000 ).Truncate(time.Second)
+	return time.Duration(d * 1000).Truncate(time.Second)
 }
 
-func todo(percent float64, allowed time.Duration) time.Duration {
-	d := percent * float64(allowed.Milliseconds()) / float64(100)
-	return time.Duration(d * 1000 * 1000 ).Truncate(time.Second)
+// ruleOfThreeDuration computes the rule of three of a duration related to a given percentage's duration
+func ruleOfThreeDuration(percent float64, allowed time.Duration, targetPercent float64) time.Duration {
+	d := percent * float64(allowed.Milliseconds()) / float64(targetPercent)
+	return time.Duration(d * 1000 * 1000).Truncate(time.Second)
 }
 
 func ComsumedRemainingBudget(delta float64, errBudget float64) (float64, float64) {
 
-	fmt.Println(delta, errBudget)
+	//	fmt.Println(delta, errBudget)
 
 	/*
-	if delta >= 0 { // if delta is positive, we are still above the error budget, nothing has been consumed
-		return 0, errBudget
-	}
+		if delta >= 0 { // if delta is positive, we are still above the error budget, nothing has been consumed
+			return 0, errBudget
+		}
 	*/
 
 	c := ufloat64(delta) * 100 / ufloat64(errBudget)
