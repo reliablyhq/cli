@@ -228,6 +228,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 		color.Bold(color.Magenta(" ")),         // empty separator column
 		color.Bold(color.Magenta("  Current")), // non-breaking spaces to align right
 		color.Bold(color.Magenta("Objective")),
+		color.Bold(color.Magenta("/ Time Window")),
 		color.Bold(color.Magenta(" ")), // empty separator column
 		color.Bold(color.Magenta("Type")),
 		color.Bold(color.Magenta(" ")), // empty separator column
@@ -236,6 +237,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 	table.SetColumnAlignment([]int{
 		tablewriter.ALIGN_LEFT,
 		tablewriter.ALIGN_CENTER,
+		tablewriter.ALIGN_RIGHT,
 		tablewriter.ALIGN_RIGHT,
 		tablewriter.ALIGN_LEFT,
 		tablewriter.ALIGN_CENTER,
@@ -272,10 +274,11 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 			if sl.Result == nil {
 				tick = "?"
 				row := []string{
-					fmt.Sprintf("%s  %s", tick, tuncatedSLName),
+					fmt.Sprintf("%s %s", tick, tuncatedSLName),
 					"",
-					"---  ",
-					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
+					"--- ",
+					fmt.Sprintf("%v%s", sl.Objective, unit),
+					fmt.Sprintf("/ %s", core.HumanizeDurationShort(period)),
 					"",
 					strings.Title(sl.Type),
 				}
@@ -285,7 +288,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 					[]tablewriter.Colors{
 						{tablewriter.FgHiBlackColor},
 						{},
-						{},
+						{tablewriter.FgHiBlackColor},
 						{tablewriter.FgHiBlackColor},
 						{tablewriter.FgHiBlackColor},
 						{},
@@ -338,7 +341,8 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 					fmt.Sprintf("%s %s", tick, tuncatedSLName),
 					"",
 					color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))),
-					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
+					fmt.Sprintf("%v%s", sl.Objective, unit),
+					fmt.Sprintf("/ %s", core.HumanizeDurationShort(period)),
 					"",
 					strings.Title(sl.Type),
 					"",
