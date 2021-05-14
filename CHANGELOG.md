@@ -5,7 +5,6 @@
 ### Added
 
 - `slo report` sends the generated report to Reliably
-- `slo report` shows the current SLO value progression, compared to the previous report; [#255](https://github.com/reliablyhq/cli/issues/255)
 - `slo report` shows the SLO trend for the last 5 reports; [#255](https://github.com/reliablyhq/cli/issues/255)
 - the time period defined for an SLO is exported into the report; [#262](https://github.com/reliablyhq/cli/issues/262)
 
