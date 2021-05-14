@@ -10,7 +10,7 @@ import (
 
 	consolesize "github.com/nathan-fiscaletti/consolesize-go"
 	"github.com/olekukonko/tablewriter"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
 	"github.com/reliablyhq/cli/core"
@@ -50,7 +50,7 @@ const (
 )
 
 // Write - write report based on given format
-func Write(format Format, r *Report, w io.Writer, l *logrus.Logger, lr *Report, lrs *[]Report) {
+func Write(format Format, r *Report, w io.Writer, l *log.Logger, lr *Report, lrs *[]Report) {
 	if r == nil {
 		return
 	}
@@ -226,18 +226,23 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 	}
 	table.SetHeader([]string{
 		"",
-		color.Bold(color.Magenta("  Current")), // non-breaking spaces to align right
-		color.Bold(color.Magenta("Target")),
-
-		color.Bold(color.Magenta(" ")), // empty separator column
-
-		color.Bold(color.Magenta("Consumed EB")),
-		color.Bold(color.Magenta("Error Budget")),
-
 		color.Bold(color.Magenta(" ")), // empty separator column
 		color.Bold(color.Magenta(optTrendHeader)),
+
+		color.Bold(color.Magenta("  Current")), // non-breaking spaces to align right
+		color.Bold(color.Magenta("Objective")),
+
+		color.Bold(color.Magenta(" ")), // empty separator column
+
+		//color.Bold(color.Magenta("Consumed Errors")),
+		//color.Bold(color.Magenta("Allowed Errors")),
+
+		color.Bold(color.Magenta(" ")), // empty separator column
+		color.Bold(color.Magenta("Type")),
 	})
 	table.SetColumnAlignment([]int{
+		tablewriter.ALIGN_LEFT,
+		tablewriter.ALIGN_CENTER,
 		tablewriter.ALIGN_LEFT,
 		tablewriter.ALIGN_RIGHT,
 		tablewriter.ALIGN_LEFT,
@@ -256,7 +261,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 		for j, sl := range svc.ServiceLevels {
 
-			tick := iconTick
+			//tick := iconTick
 			unit := "%"
 			colorFunc := color.Green
 
@@ -272,27 +277,35 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 			errBudget := ErrorBudgetAsPercentage(sl.Objective)
 			allowedDowntime := DowntimePerPeriod(errBudget, period)
 
-			fmt.Println(tuncatedSLName, errBudget, allowedDowntime, sl.Objective, period)
+			//fmt.Println(tuncatedSLName, errBudget, allowedDowntime, sl.Objective, period)
 
 			if sl.Result == nil {
-				tick = "?"
+				//tick = "?"
 				row := []string{
-					fmt.Sprintf("%s %s", tick, tuncatedSLName),
-					"---   ",
+					fmt.Sprintf("  %s", tuncatedSLName),
+					"",
+					"",
+					"---",
 					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
 					" ",
-					"--- ",
-					fmt.Sprintf("%s (%.2f%s)", allowedDowntime, errBudget, unit),
+					//"---",
+					//fmt.Sprintf("%s (%.2f%s)", allowedDowntime, errBudget, unit),
+					"",
+					strings.Title(sl.Type),
 				}
 
 				table.Rich(
 					row,
 					[]tablewriter.Colors{
 						{tablewriter.FgHiBlackColor},
+						{},
+						{},
 						{tablewriter.FgHiBlackColor},
 						{tablewriter.FgHiBlackColor},
 						{},
 						{tablewriter.FgHiBlackColor},
+						{tablewriter.FgHiBlackColor},
+						{},
 						{tablewriter.FgHiBlackColor},
 					},
 				)
@@ -312,6 +325,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 					}
 
 				}
+				_ = mov //
 
 				// HACK - DEV
 				if i == 0 && j == 1 && version.IsDevVersion() {
@@ -341,7 +355,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 				/// double check the original PR that removed those two lines
 
 				if !sl.Result.SloIsMet {
-					tick = iconEx
+					//tick = iconEx
 					colorFunc = color.Red
 				}
 
@@ -358,22 +372,27 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 				*/
 
 				consumedAsPercent := float64(100) - sl.Result.Actual.(float64)
-
 				//remained := fmt.Sprintf("%s", core.HumanizeDurationShort(r2))
 
+				log.Debugf("%s (%.2f%s)", consumed, consumedAsPercent, unit)
+				log.Debugf("%s (%.2f%s)", core.HumanizeDurationShort(allowedDowntime), errBudget, unit)
+
 				row := []string{
-					fmt.Sprintf("%s %s", tick, tuncatedSLName),
-					fmt.Sprintf("%s %s", color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))), mov),
+					fmt.Sprintf("  %s", tuncatedSLName),
+					" ",
+					trends,
+
+					color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))),
 					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
 
 					//fmt.Sprintf("%.2f%s (%s)", sl.Result.Delta, unit, deltaDowntime),
 					" ",
-					colorFunc(fmt.Sprintf("%s (%.2f%s)", consumed, consumedAsPercent, unit)),
-					fmt.Sprintf("%s (%.2f%s)", core.HumanizeDurationShort(allowedDowntime), errBudget, unit),
+					//fmt.Sprintf("%s (%.2f%s)", consumed, consumedAsPercent, unit),
+					//fmt.Sprintf("%s (%.2f%s)", core.HumanizeDurationShort(allowedDowntime), errBudget, unit),
 
 					//core.HumanizeDuration(period),,
-					" ",
-					trends,
+					"",
+					strings.Title(sl.Type),
 				}
 				table.Append(row)
 
@@ -445,7 +464,7 @@ func DowntimePerPeriod(percent float64, period time.Duration) time.Duration {
 
 	d := int64(percent * float64(p))
 
-	fmt.Println("percent", percent, " / period", period, p, " -> ", int64(d*1000), time.Duration(d*1000))
+	//fmt.Println("percent", percent, " / period", period, p, " -> ", int64(d*1000), time.Duration(d*1000))
 
 	//d := errBudget * float64(p)
 	return time.Duration(d * 1000).Truncate(time.Second)
