@@ -261,9 +261,10 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 		for j, sl := range svc.ServiceLevels {
 
-			//tick := iconTick
+			tick := iconTick
 			unit := "%"
 			colorFunc := color.Green
+			_ = tick // make it does not complain about not-used variable ! hack
 
 			// we compute the period between the real observation window time stamp
 			// if no observed, we use the user defined time period
@@ -280,7 +281,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 			//fmt.Println(tuncatedSLName, errBudget, allowedDowntime, sl.Objective, period)
 
 			if sl.Result == nil {
-				//tick = "?"
+				tick = "?"
 				row := []string{
 					fmt.Sprintf("  %s", tuncatedSLName),
 					"",
@@ -325,7 +326,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 					}
 
 				}
-				_ = mov //
+				_ = mov // hack force not to complain about not-used var
 
 				// HACK - DEV
 				if i == 0 && j == 1 && version.IsDevVersion() {
