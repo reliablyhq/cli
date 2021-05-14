@@ -38,6 +38,8 @@ var (
 	outputPath        string
 	outputFormat      string
 	watchFlag         bool
+	outputPaths       []string
+	outputFormats     []string
 
 	service string
 )
@@ -58,9 +60,31 @@ func NewCommand() *cobra.Command {
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			// Validate command options
-			if outputFormat != "" && !(supportedFormats.Has(outputFormat) || deprecatedFormats.Has(outputFormat)) {
-				return fmt.Errorf("Format '%v' is not valid. Use one of the supported formats: %v", outputFormat, supportedFormats)
+
+			if outputFormat != "" {
+				outputFormats = strings.Split(outputFormat, ",")
 			}
+
+			if len(outputFormats) > 0 {
+				for _, of := range outputFormats {
+					if of != "" && !(supportedFormats.Has(of) || deprecatedFormats.Has(of)) {
+						return fmt.Errorf("Format '%v' is not valid. Use one of the supported formats: %v", of, supportedFormats)
+					}
+				}
+			}
+
+			if outputPath != "" {
+				outputPaths = strings.Split(outputPath, ",")
+			}
+
+			fmt.Println("FORMATS", len(outputFormats), outputFormats)
+			fmt.Println("PATHS", len(outputPaths), outputPaths)
+
+			if len(outputFormats) > 0 && len(outputPaths) > 0 &&
+				len(outputFormats) != len(outputPaths) {
+				return errors.New("Flags '--format' and '--output' must have same number of values when combined")
+			}
+
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -83,8 +107,10 @@ func reportRun(opts *ReportOptions) error {
 		return watch()
 	}
 
-	if outputFormat != "" && deprecatedFormats.Has(outputFormat) {
-		log.Warnf("Format '%v' is now deprecated and soon be to removed. Use one of the supported formats: %v", outputFormat, supportedFormats)
+	for _, of := range outputFormats {
+		if of != "" && deprecatedFormats.Has(of) {
+			log.Warnf("Format '%v' is now deprecated and soon be to removed. Use one of the supported formats: %v", of, supportedFormats)
+		}
 	}
 
 	opts.IO.StartProgressIndicator()
@@ -131,34 +157,48 @@ func reportRun(opts *ReportOptions) error {
 		log.Debugf("Error while sending report to reliably: %s", err)
 	}
 
-	// set format
-	var format = report.TABBED
-	switch strings.ToLower(outputFormat) {
-	case "json":
-		format = report.JSON
-	case "simple", "text":
-		format = report.SimpleText
-	case "markdown":
-		format = report.MARKDOWN
-	case "yaml":
-		format = report.YAML
-	}
-
-	var w io.Writer = os.Stdout
-	if outputPath != "" {
-		outfile, err := os.Create(outputPath) // creates or truncates with O_RDWR mode
-		if err != nil {
-			log.Error("error creating output file")
-			log.Error(err)
-			return err
-		}
-		w = outfile
-		defer outfile.Close()
-	}
-
 	opts.IO.StopProgressIndicator()
 
-	report.Write(format, r, w, log.StandardLogger(), &lr, &reports)
+	for fIdx, of := range outputFormats {
+		// set format
+		var format = report.TABBED
+		switch strings.ToLower(of) {
+		case "json":
+			format = report.JSON
+		case "simple", "text":
+			format = report.SimpleText
+		case "markdown":
+			format = report.MARKDOWN
+		case "yaml":
+			format = report.YAML
+		}
+
+		fmt.Println(fIdx, of, format, len(outputPaths), fIdx, len(outputPaths) > fIdx, fIdx+1, len(outputPaths) > fIdx+1)
+
+		// here we use a go routine to have the defer working within the for loop
+		var w io.Writer = os.Stdout
+		//var op string
+		if len(outputPaths) > fIdx {
+			op := outputPaths[fIdx]
+			fmt.Print("output paht ->", op)
+			if op != "" {
+				outfile, e := os.Create(op) // creates or truncates with O_RDWR mode
+				if e != nil {
+					log.Error("error creating output file")
+					log.Error(err)
+					err = e
+				}
+				w = outfile
+				//defer outfile.Close()
+			}
+		}
+		report.Write(format, r, w, log.StandardLogger(), &lr, &reports)
+
+		if outfile, ok := w.(*os.File); ok {
+			outfile.Close() // explicitly closing the file handle
+		}
+
+	}
 
 	return nil
 }
