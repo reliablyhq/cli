@@ -17,6 +17,7 @@ import (
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/utils"
+	"github.com/reliablyhq/cli/version"
 )
 
 /*
@@ -230,8 +231,8 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 		color.Bold(color.Magenta(" ")), // empty separator column
 
-		color.Bold(color.Magenta("Err. Budget")),
-		color.Bold(color.Magenta("Consum./Remain.")),
+		color.Bold(color.Magenta("Consumed EB")),
+		color.Bold(color.Magenta("Error Budget")),
 
 		color.Bold(color.Magenta(" ")), // empty separator column
 		color.Bold(color.Magenta(optTrendHeader)),
@@ -259,9 +260,19 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 			unit := "%"
 			colorFunc := color.Green
 
+			// we compute the period between the real observation window time stamp
+			// if no observed, we use the user defined time period
 			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
+			if period == 0 {
+				period = sl.Period.ToDuration()
+			}
 
 			tuncatedSLName := utils.TruncateString(sl.Name, 78) // 80 chars max with tick
+
+			errBudget := ErrorBudgetAsPercentage(sl.Objective)
+			allowedDowntime := DowntimePerPeriod(errBudget, period)
+
+			fmt.Println(tuncatedSLName, errBudget, allowedDowntime, sl.Objective, period)
 
 			if sl.Result == nil {
 				tick = "?"
@@ -271,11 +282,19 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
 					" ",
 					"--- ",
+					fmt.Sprintf("%s (%.2f%s)", allowedDowntime, errBudget, unit),
 				}
 
 				table.Rich(
 					row,
-					[]tablewriter.Colors{{tablewriter.FgHiBlackColor}, {tablewriter.FgHiBlackColor}, {tablewriter.FgHiBlackColor}, {}, {tablewriter.FgHiBlackColor}},
+					[]tablewriter.Colors{
+						{tablewriter.FgHiBlackColor},
+						{tablewriter.FgHiBlackColor},
+						{tablewriter.FgHiBlackColor},
+						{},
+						{tablewriter.FgHiBlackColor},
+						{tablewriter.FgHiBlackColor},
+					},
 				)
 
 			} else {
@@ -295,7 +314,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 				}
 
 				// HACK - DEV
-				if i == 0 && j == 1 {
+				if i == 0 && j == 1 && version.IsDevVersion() {
 
 					sl.Result.Actual = float64(93)
 					sl.Result.Delta = float64(2)
@@ -310,19 +329,14 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 					trends = strings.Join(ticks, " ") // Using non-breaking space here !!!
 				}
 
-				errBudget := ErrorBudgetAsPercentage(sl.Objective)
-				allowedDowntime := DowntimePerPeriod(errBudget, sl.Period.ToDuration())
+				//errBudget := ErrorBudgetAsPercentage(sl.Objective)
+				//allowedDowntime := DowntimePerPeriod(errBudget, sl.Period.ToDuration())
 
 				//deltaDowntime := DowntimePerPeriod(sl.Result.Delta.(float64), sl.Period)
 
 				c, r := ComsumedRemainingBudget(float64(100)-sl.Result.Actual.(float64), errBudget)
-				//c, r := ComsumedRemainingBudget(sl.Result.Delta.(float64), errBudget)
 
-				//c2, r2 := DowntimePerPeriod(c, allowedDowntime), DowntimePerPeriod(float64(100) - r, sl.Period.ToDuration())
-				c2, r2 := ruleOfThreeDuration(c, allowedDowntime, 100), ruleOfThreeDuration(r, allowedDowntime, 100)
-
-				// 5% -> 100 % =  21minutes
-				// 7% ->
+				c2, _ := ruleOfThreeDuration(c, allowedDowntime, 100), ruleOfThreeDuration(r, allowedDowntime, 100)
 
 				/// double check the original PR that removed those two lines
 
@@ -334,24 +348,28 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 				//consumed := fmt.Sprintf("%.2f%s (%s)", c, unit, core.HumanizeDurationShort(c2))
 				//remained := fmt.Sprintf("%.2f%s (%s)", r, unit, core.HumanizeDurationShort(r2))
 
-				consumedVsAllowed := c2 - allowedDowntime
+				//consumedVsAllowed := c2 - allowedDowntime
 
-				consumed := fmt.Sprintf("%s", core.HumanizeDurationShort(c2))
-				if consumedVsAllowed > 0 {
-					consumed = fmt.Sprintf("%s (+%s)", consumed, core.HumanizeDurationShort(consumedVsAllowed))
-				}
+				consumed := core.HumanizeDurationShort(c2)
+				/*
+					if consumedVsAllowed > 0 {
+						consumed = fmt.Sprintf("%s (+%s)", consumed, core.HumanizeDurationShort(consumedVsAllowed))
+					}
+				*/
 
-				remained := fmt.Sprintf("%s", core.HumanizeDurationShort(r2))
+				consumedAsPercent := float64(100) - sl.Result.Actual.(float64)
+
+				//remained := fmt.Sprintf("%s", core.HumanizeDurationShort(r2))
 
 				row := []string{
-					fmt.Sprintf("%s %s", tick, tuncatedSLName),
+					fmt.Sprintf("%s %s", tick, tuncatedSLName),
 					fmt.Sprintf("%s %s", color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))), mov),
 					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
 
 					//fmt.Sprintf("%.2f%s (%s)", sl.Result.Delta, unit, deltaDowntime),
 					" ",
-					fmt.Sprintf("%s (%.2f%s)", core.HumanizeDurationShort(allowedDowntime), errBudget, unit),
-					colorFunc(fmt.Sprintf("%s / %s", consumed, remained)),
+					colorFunc(fmt.Sprintf("%s (%.2f%s)", consumed, consumedAsPercent, unit)),
+					fmt.Sprintf("%s (%.2f%s)", core.HumanizeDurationShort(allowedDowntime), errBudget, unit),
 
 					//core.HumanizeDuration(period),,
 					" ",
