@@ -17,7 +17,6 @@ import (
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/utils"
-	"github.com/reliablyhq/cli/version"
 )
 
 /*
@@ -225,18 +224,11 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 		optTrendHeader = "Trend"
 	}
 	table.SetHeader([]string{
-		"",
+		"",                             //SLO name
 		color.Bold(color.Magenta(" ")), // empty separator column
 		color.Bold(color.Magenta(optTrendHeader)),
-
 		color.Bold(color.Magenta("  Current")), // non-breaking spaces to align right
 		color.Bold(color.Magenta("Objective")),
-
-		color.Bold(color.Magenta(" ")), // empty separator column
-
-		//color.Bold(color.Magenta("Consumed Errors")),
-		//color.Bold(color.Magenta("Allowed Errors")),
-
 		color.Bold(color.Magenta(" ")), // empty separator column
 		color.Bold(color.Magenta("Type")),
 	})
@@ -247,19 +239,16 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 		tablewriter.ALIGN_RIGHT,
 		tablewriter.ALIGN_LEFT,
 		tablewriter.ALIGN_CENTER,
-		tablewriter.ALIGN_RIGHT,
-		tablewriter.ALIGN_LEFT,
-		tablewriter.ALIGN_CENTER,
 		tablewriter.ALIGN_LEFT,
 	})
 
-	emptyRow := []string{"", "", "", "", "", ""}
+	emptyRow := []string{""}
 
 	for i, svc := range r.Services {
 		svcRowHeader := []string{fmt.Sprintf("Service #%d: %s", i+1, svc.Name)}
 		table.Append(svcRowHeader)
 
-		for j, sl := range svc.ServiceLevels {
+		for _, sl := range svc.ServiceLevels {
 
 			tick := iconTick
 			unit := "%"
@@ -275,10 +264,8 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 			tuncatedSLName := utils.TruncateString(sl.Name, 78) // 80 chars max with tick
 
-			errBudget := ErrorBudgetAsPercentage(sl.Objective)
-			allowedDowntime := DowntimePerPeriod(errBudget, period)
-
-			//fmt.Println(tuncatedSLName, errBudget, allowedDowntime, sl.Objective, period)
+			//errBudget := ErrorBudgetAsPercentage(sl.Objective)
+			//allowedDowntime := DowntimePerPeriod(errBudget, period)
 
 			if sl.Result == nil {
 				tick = "?"
@@ -286,11 +273,8 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 					fmt.Sprintf("  %s", tuncatedSLName),
 					"",
 					"",
-					"---",
+					"---  ",
 					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
-					" ",
-					//"---",
-					//fmt.Sprintf("%s (%.2f%s)", allowedDowntime, errBudget, unit),
 					"",
 					strings.Title(sl.Type),
 				}
@@ -300,9 +284,6 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 					[]tablewriter.Colors{
 						{tablewriter.FgHiBlackColor},
 						{},
-						{},
-						{tablewriter.FgHiBlackColor},
-						{tablewriter.FgHiBlackColor},
 						{},
 						{tablewriter.FgHiBlackColor},
 						{tablewriter.FgHiBlackColor},
@@ -328,15 +309,6 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 				}
 				_ = mov // hack force not to complain about not-used var
 
-				// HACK - DEV
-				if i == 0 && j == 1 && version.IsDevVersion() {
-
-					sl.Result.Actual = float64(93)
-					sl.Result.Delta = float64(2)
-					sl.Result.SloIsMet = false
-
-				}
-
 				var trends string
 				if lrs != nil && len(*lrs) > 0 {
 					slosAreMet := GetSLOTrend(svc.Name, sl.Name, *lrs)
@@ -344,54 +316,29 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 					trends = strings.Join(ticks, " ") // Using non-breaking space here !!!
 				}
 
-				//errBudget := ErrorBudgetAsPercentage(sl.Objective)
-				//allowedDowntime := DowntimePerPeriod(errBudget, sl.Period.ToDuration())
-
-				//deltaDowntime := DowntimePerPeriod(sl.Result.Delta.(float64), sl.Period)
-
-				c, r := ComsumedRemainingBudget(float64(100)-sl.Result.Actual.(float64), errBudget)
-
-				c2, _ := ruleOfThreeDuration(c, allowedDowntime, 100), ruleOfThreeDuration(r, allowedDowntime, 100)
-
-				/// double check the original PR that removed those two lines
-
-				if !sl.Result.SloIsMet {
-					//tick = iconEx
-					colorFunc = color.Red
-				}
-
-				//consumed := fmt.Sprintf("%.2f%s (%s)", c, unit, core.HumanizeDurationShort(c2))
-				//remained := fmt.Sprintf("%.2f%s (%s)", r, unit, core.HumanizeDurationShort(r2))
-
-				//consumedVsAllowed := c2 - allowedDowntime
-
-				consumed := core.HumanizeDurationShort(c2)
 				/*
+					deltaDowntime := DowntimePerPeriod(sl.Result.Delta.(float64), sl.Period)
+
+					c, r := ComsumedRemainingBudget(float64(100)-sl.Result.Actual.(float64), errBudget)
+					c2, r2 := ruleOfThreeDuration(c, allowedDowntime, 100), ruleOfThreeDuration(r, allowedDowntime, 100)
+					consumedVsAllowed := c2 - allowedDowntime
+					consumed := core.HumanizeDurationShort(c2)
 					if consumedVsAllowed > 0 {
 						consumed = fmt.Sprintf("%s (+%s)", consumed, core.HumanizeDurationShort(consumedVsAllowed))
 					}
+					consumedAsPercent := float64(100) - sl.Result.Actual.(float64)
+					remained := fmt.Sprintf("%s", core.HumanizeDurationShort(r2))
+
+					log.Debugf("%s (%.2f%s)", consumed, consumedAsPercent, unit)
+					log.Debugf("%s (%.2f%s)", core.HumanizeDurationShort(allowedDowntime), errBudget, unit)
 				*/
-
-				consumedAsPercent := float64(100) - sl.Result.Actual.(float64)
-				//remained := fmt.Sprintf("%s", core.HumanizeDurationShort(r2))
-
-				log.Debugf("%s (%.2f%s)", consumed, consumedAsPercent, unit)
-				log.Debugf("%s (%.2f%s)", core.HumanizeDurationShort(allowedDowntime), errBudget, unit)
 
 				row := []string{
 					fmt.Sprintf("  %s", tuncatedSLName),
-					" ",
+					"",
 					trends,
-
 					color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))),
 					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
-
-					//fmt.Sprintf("%.2f%s (%s)", sl.Result.Delta, unit, deltaDowntime),
-					" ",
-					//fmt.Sprintf("%s (%.2f%s)", consumed, consumedAsPercent, unit),
-					//fmt.Sprintf("%s (%.2f%s)", core.HumanizeDurationShort(allowedDowntime), errBudget, unit),
-
-					//core.HumanizeDuration(period),,
 					"",
 					strings.Title(sl.Type),
 				}
@@ -452,22 +399,16 @@ func sloMovement(current ServiceLevelResult, previous ServiceLevelResult) (mov s
 	return
 }
 
+// ErrorBudgetAsPercentage returns the error budget for a SLO as percentage
 func ErrorBudgetAsPercentage(slo float64) float64 {
 	return (1 - slo/100) * 100
 }
 
+// DowntimePerPeriod computes the duration of allowed downtime for a
+// given SLO percentage over a time period
 func DowntimePerPeriod(percent float64, period time.Duration) time.Duration {
-
-	//func ErrorBudgetAsDuration(slo float64, period core.Iso8601Duration) time.Duration {
-	//errBudget := ErrorBudgetAsPercentage(slo)
-
 	p := period.Milliseconds()
-
 	d := int64(percent * float64(p))
-
-	//fmt.Println("percent", percent, " / period", period, p, " -> ", int64(d*1000), time.Duration(d*1000))
-
-	//d := errBudget * float64(p)
 	return time.Duration(d * 1000).Truncate(time.Second)
 }
 
@@ -477,15 +418,8 @@ func ruleOfThreeDuration(percent float64, allowed time.Duration, targetPercent f
 	return time.Duration(d * 1000 * 1000).Truncate(time.Second)
 }
 
+// ComsumedRemainingBudget computes the consumed & remaining error budget percentages
 func ComsumedRemainingBudget(delta float64, errBudget float64) (float64, float64) {
-
-	//	fmt.Println(delta, errBudget)
-
-	/*
-		if delta >= 0 { // if delta is positive, we are still above the error budget, nothing has been consumed
-			return 0, errBudget
-		}
-	*/
 
 	c := ufloat64(delta) * 100 / ufloat64(errBudget)
 
