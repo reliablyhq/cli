@@ -13,6 +13,10 @@
 
 - `simple` & `tabbed` output formats for `slo report` command have been deprecated, use `text` & `table` in replacement. The deprecated ones will soon be removed without notice.; [#257](https://github.com/reliablyhq/cli/issues/257)
 
+- Removed SLO manifest management commands, `reliably slo pull/apply/edit`
+- `reliably slo report` now explicitly requires the user to provide a manifest file
+- `reliably slo init` now only creates a new manifest file or overrides an existing one
+
 ## [v0.14.0] - 2021-05-04
 
 ### Added
