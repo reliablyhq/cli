@@ -97,7 +97,7 @@ func runE(_ *cobra.Command, args []string) error {
 	}
 
 	fmt.Println()
-	fmt.Println(iostreams.SuccessIcon(), "Your manifests has been saved to", manifestPath)
+	fmt.Println(iostreams.SuccessIcon(), "Your manifest has been saved to", manifestPath)
 	log.Debugf("service manifest created at: %s", manifestPath)
 	return nil
 }
