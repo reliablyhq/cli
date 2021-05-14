@@ -246,7 +246,6 @@ func clearScreen() {
 // getManifest priority
 // 1. local file
 // 2. service manifest - if specified
-// 3 full manifest download
 func getManifest() (m *manifest.Manifest, err error) {
 
 	m, err = manifest.Load(manifestPath)
@@ -264,14 +263,5 @@ func getManifest() (m *manifest.Manifest, err error) {
 		return
 	}
 
-	log.Debugf("unable to read manifest file: %s - %s", manifestPath, err)
-	log.Debug("attempting to retrieve manifest from reliably api")
-
-	client := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
-	if service == "" {
-		m, err = api.PullManifest(client)
-		return
-	}
-
-	return api.PullServiceManifest(client, service)
+	return
 }
