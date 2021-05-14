@@ -2,18 +2,20 @@
 
 ## [Unreleased]
 
+## [v0.15.0] - 2021-05-14
+
 ### Added
 
-- `slo report` sends the generated report to Reliably
-- `slo report` shows the SLO trend for the last 5 reports; [#255](https://github.com/reliablyhq/cli/issues/255)
-- the time period defined for an SLO is exported into the report; [#262](https://github.com/reliablyhq/cli/issues/262)
+-   `slo report` sends the generated report to Reliably
+-   `slo report` shows the SLO trend for the last 5 reports; [#255](https://github.com/reliablyhq/cli/issues/255)
+-   the time period defined for an SLO is exported into the report; [#262](https://github.com/reliablyhq/cli/issues/262)
 
 ### Changed
 
-- `simple` & `tabbed` output formats for `slo report` command have been deprecated, use `text` & `table` in replacement. The deprecated ones will soon be removed without notice.; [#257](https://github.com/reliablyhq/cli/issues/257)
-- Removed SLO manifest management commands, `reliably slo pull/apply/edit`
-- `reliably slo report` now explicitly requires the user to provide a manifest file
-- `reliably slo init` now only creates a new manifest file or overrides an existing one
+-   `simple` & `tabbed` output formats for `slo report` command have been deprecated, use `text` & `table` in replacement. The deprecated ones will soon be removed without notice.; [#257](https://github.com/reliablyhq/cli/issues/257)
+-   Removed SLO manifest management commands, `reliably slo pull/apply/edit`
+-   `reliably slo report` now explicitly requires the user to provide a manifest file
+-   `reliably slo init` now only creates a new manifest file or overrides an existing one
 
 ## [v0.14.0] - 2021-05-04
 
@@ -202,7 +204,9 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.15.0...HEAD
+
+[v0.15.0]: https://github.com/reliablyhq/cli/compare/v0.14.0...v0.15.0
 
 [v0.14.0]: https://github.com/reliablyhq/cli/compare/v0.13.3...v0.14.0
 
