@@ -12,7 +12,6 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/terminal"
 	iso8601 "github.com/ChannelMeter/iso8601duration"
-	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/color"
@@ -50,39 +49,19 @@ func NewCommand() *cobra.Command {
 }
 
 func runE(_ *cobra.Command, args []string) error {
-	log.Debug("fetching internal service manifest")
+	log.Debugf("checking for existing service manifest: %s", manifestPath)
 	if _, err := os.Stat(manifestPath); err == nil {
 		if !question.WithBoolAnswer(fmt.Sprintf("Existing local manifest detected (%s); Do you want to overwrite it?", manifestPath), emptyOptions, question.WithNoAsDefault) {
 			return nil
 		}
 	}
 
-	m, err := manifest.Load(manifestPath)
-	client := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
-	if err != nil {
-		log.Debugf("error reading local manifest, attempting to retrieve from reliably: %s", err)
-		m, err = api.PullManifest(client)
-		if err != nil {
-			return err
-		}
-
-	}
-
-	if m == nil {
-		log.Debug("no service manifest detected, creating a new one")
-		m = &manifest.Manifest{}
-	}
-
-	populateManifestInteractively(m)
+	var m manifest.Manifest
+	populateManifestInteractively(&m)
 
 	// validate
 	if err := m.Validate(); err != nil {
 		return err
-	}
-
-	// push manifestto backend
-	if err := api.PushManifest(client, m); err != nil {
-		return fmt.Errorf("an error occurred while pushing manifest to reliably: %s", err)
 	}
 
 	// write file output
