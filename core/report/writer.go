@@ -224,19 +224,21 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 		optTrendHeader = "Trend"
 	}
 	table.SetHeader([]string{
-		"",                             //SLO name
-		color.Bold(color.Magenta(" ")), // empty separator column
-		color.Bold(color.Magenta(optTrendHeader)),
+		"",                                     //SLO name
+		color.Bold(color.Magenta(" ")),         // empty separator column
 		color.Bold(color.Magenta("  Current")), // non-breaking spaces to align right
 		color.Bold(color.Magenta("Objective")),
 		color.Bold(color.Magenta(" ")), // empty separator column
 		color.Bold(color.Magenta("Type")),
+		color.Bold(color.Magenta(" ")), // empty separator column
+		color.Bold(color.Magenta(optTrendHeader)),
 	})
 	table.SetColumnAlignment([]int{
 		tablewriter.ALIGN_LEFT,
 		tablewriter.ALIGN_CENTER,
-		tablewriter.ALIGN_LEFT,
 		tablewriter.ALIGN_RIGHT,
+		tablewriter.ALIGN_LEFT,
+		tablewriter.ALIGN_CENTER,
 		tablewriter.ALIGN_LEFT,
 		tablewriter.ALIGN_CENTER,
 		tablewriter.ALIGN_LEFT,
@@ -253,7 +255,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 			tick := iconTick
 			unit := "%"
 			colorFunc := color.Green
-			_ = tick // make it does not complain about not-used variable ! hack
+			//_ = tick // make it does not complain about not-used variable ! hack
 
 			// we compute the period between the real observation window time stamp
 			// if no observed, we use the user defined time period
@@ -270,8 +272,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 			if sl.Result == nil {
 				tick = "?"
 				row := []string{
-					fmt.Sprintf("  %s", tuncatedSLName),
-					"",
+					fmt.Sprintf("%s  %s", tick, tuncatedSLName),
 					"",
 					"---  ",
 					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
@@ -334,13 +335,14 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 				*/
 
 				row := []string{
-					fmt.Sprintf("  %s", tuncatedSLName),
+					fmt.Sprintf("%s %s", tick, tuncatedSLName),
 					"",
-					trends,
 					color.Bold(colorFunc(fmt.Sprintf("%.2f%s", sl.Result.Actual, unit))),
 					fmt.Sprintf("%v%s / %s", sl.Objective, unit, core.HumanizeDurationShort(period)),
 					"",
 					strings.Title(sl.Type),
+					"",
+					trends,
 				}
 				table.Append(row)
 
