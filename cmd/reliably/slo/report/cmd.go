@@ -27,9 +27,16 @@ import (
 
 type Choice = cmdutil.Choice
 
+type ReportOutput struct {
+	format string
+	path   string
+}
+
 type ReportOptions struct {
 	IO *iostreams.IOStreams
 }
+
+const defaultFormat = "table"
 
 var (
 	supportedFormats  = Choice{"json", "yaml", "text", "table", "markdown"}
@@ -73,12 +80,28 @@ func NewCommand() *cobra.Command {
 				}
 			}
 
+			for _, of := range outputFormats {
+				if of != "" && deprecatedFormats.Has(of) {
+					log.Warnf("Format '%v' is now deprecated and soon be to removed. Use one of the supported formats: %v", of, supportedFormats)
+				}
+			}
+
 			if outputPath != "" {
 				outputPaths = strings.Split(outputPath, ",")
 			}
 
+			////
 			fmt.Println("FORMATS", len(outputFormats), outputFormats)
 			fmt.Println("PATHS", len(outputPaths), outputPaths)
+			///
+
+			if len(outputFormats) > 1 && len(outputPaths) == 0 {
+				return errors.New("Multiple output formats must be used in combination with multiple output path '--output o1,o2,...' flag")
+			}
+
+			if len(outputFormats) == 1 && outputFormat == defaultFormat && len(outputPaths) > 1 {
+				return errors.New("Each output file specified with '--output' must have a format defined with '--format f1,f2,...'")
+			}
 
 			if len(outputFormats) > 0 && len(outputPaths) > 0 &&
 				len(outputFormats) != len(outputPaths) {
@@ -88,6 +111,9 @@ func NewCommand() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			return errors.New("Dev - skipped report ")
+
 			return reportRun(opts)
 		},
 	}
@@ -105,12 +131,6 @@ func reportRun(opts *ReportOptions) error {
 	// check for -w/--watch
 	if watchFlag {
 		return watch()
-	}
-
-	for _, of := range outputFormats {
-		if of != "" && deprecatedFormats.Has(of) {
-			log.Warnf("Format '%v' is now deprecated and soon be to removed. Use one of the supported formats: %v", of, supportedFormats)
-		}
 	}
 
 	opts.IO.StartProgressIndicator()
@@ -182,14 +202,14 @@ func reportRun(opts *ReportOptions) error {
 			op := outputPaths[fIdx]
 			fmt.Print("output paht ->", op)
 			if op != "" {
-				outfile, e := os.Create(op) // creates or truncates with O_RDWR mode
-				if e != nil {
+				outfile, err := os.Create(op) // creates or truncates with O_RDWR mode
+				if err != nil {
 					log.Error("error creating output file")
 					log.Error(err)
-					err = e
+					return err
 				}
 				w = outfile
-				//defer outfile.Close()
+				// we cannot defer outfile closing here as we are in a for-loop
 			}
 		}
 		report.Write(format, r, w, log.StandardLogger(), &lr, &reports)
