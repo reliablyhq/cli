@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
@@ -61,6 +62,15 @@ func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "report",
 		Short: "Report my slo metrics",
+		Long: heredoc.Doc(`Generates a report of your SLOs.
+
+It is also possible to generate the report to different files &
+formats at once, with using '--format' and '--output' flags with
+comma-separated list as values.`),
+		Example: `  $ reliably slo report
+  $ reliably slo report -f text
+  $ reliably slo report -f markdown -o report.md
+  $ reliably slo report -f yaml,json -o o.yaml,o.json`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if !cmdutil.CheckAuth() {
 				cmdutil.PrintRequireAuthMsg()
