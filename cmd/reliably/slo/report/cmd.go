@@ -111,9 +111,6 @@ func NewCommand() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-
-			return errors.New("Dev - skipped report ")
-
 			return reportRun(opts)
 		},
 	}
