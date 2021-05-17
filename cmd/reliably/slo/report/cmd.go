@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
@@ -27,9 +28,18 @@ import (
 
 type Choice = cmdutil.Choice
 
+type ReportOutput struct {
+	Format report.Format
+	Path   string
+}
+
 type ReportOptions struct {
 	IO *iostreams.IOStreams
+
+	Outputs []ReportOutput
 }
+
+const defaultFormat = "table"
 
 var (
 	supportedFormats  = Choice{"json", "yaml", "text", "table", "markdown"}
@@ -38,6 +48,8 @@ var (
 	outputPath        string
 	outputFormat      string
 	watchFlag         bool
+	outputPaths       []string
+	outputFormats     []string
 
 	service string
 )
@@ -50,6 +62,15 @@ func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "report",
 		Short: "Report my slo metrics",
+		Long: heredoc.Doc(`Generates a report of your SLOs.
+
+It is also possible to generate the report to different files &
+formats at once, with using '--format' and '--output' flags with
+comma-separated list as values.`),
+		Example: `  $ reliably slo report
+  $ reliably slo report -f text
+  $ reliably slo report -f markdown -o report.md
+  $ reliably slo report -f yaml,json -o o.yaml,o.json`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if !cmdutil.CheckAuth() {
 				cmdutil.PrintRequireAuthMsg()
@@ -58,12 +79,75 @@ func NewCommand() *cobra.Command {
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			// Validate command options
-			if outputFormat != "" && !(supportedFormats.Has(outputFormat) || deprecatedFormats.Has(outputFormat)) {
-				return fmt.Errorf("Format '%v' is not valid. Use one of the supported formats: %v", outputFormat, supportedFormats)
+
+			if outputFormat != "" {
+				outputFormats = strings.Split(outputFormat, ",")
 			}
+
+			if len(outputFormats) > 0 {
+				for _, of := range outputFormats {
+					if of != "" && !(supportedFormats.Has(of) || deprecatedFormats.Has(of)) {
+						return fmt.Errorf("Format '%v' is not valid. Use one of the supported formats: %v", of, supportedFormats)
+					}
+				}
+			}
+
+			for _, of := range outputFormats {
+				if of != "" && deprecatedFormats.Has(of) {
+					log.Warnf("Format '%v' is now deprecated and soon be to removed. Use one of the supported formats: %v", of, supportedFormats)
+				}
+			}
+
+			if outputPath != "" {
+				outputPaths = strings.Split(outputPath, ",")
+			}
+
+			if len(outputFormats) > 1 && len(outputPaths) == 0 {
+				return errors.New("Multiple output formats must be used in combination with multiple output path '--output o1,o2,...' flag")
+			}
+
+			if len(outputFormats) == 1 && outputFormat == defaultFormat && len(outputPaths) > 1 {
+				return errors.New("Each output file specified with '--output' must have a format defined with '--format f1,f2,...'")
+			}
+
+			if len(outputFormats) > 0 && len(outputPaths) > 0 &&
+				len(outputFormats) != len(outputPaths) {
+				return errors.New("Flags '--format' and '--output' must have same number of values when combined")
+			}
+
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			// given the list of formats & outputs,
+			// create the list of ReportOutput structs to combine a format and (optional) path
+			// --format f1,f2 --output o1,o2 should be associated as (f1, o1) & (f2, o2)
+			for fIdx, of := range outputFormats {
+				var format = report.TABBED
+				switch strings.ToLower(of) {
+				case "json":
+					format = report.JSON
+				case "simple", "text":
+					format = report.SimpleText
+				case "markdown":
+					format = report.MARKDOWN
+				case "yaml":
+					format = report.YAML
+				}
+
+				// get the output path at same index
+				var path string
+				if len(outputPaths) > fIdx {
+					path = outputPaths[fIdx]
+				}
+
+				opts.Outputs = append(opts.Outputs, ReportOutput{
+					Format: format,
+					Path:   path,
+				})
+
+			}
+
 			return reportRun(opts)
 		},
 	}
@@ -81,10 +165,6 @@ func reportRun(opts *ReportOptions) error {
 	// check for -w/--watch
 	if watchFlag {
 		return watch()
-	}
-
-	if outputFormat != "" && deprecatedFormats.Has(outputFormat) {
-		log.Warnf("Format '%v' is now deprecated and soon be to removed. Use one of the supported formats: %v", outputFormat, supportedFormats)
 	}
 
 	opts.IO.StartProgressIndicator()
@@ -131,34 +211,28 @@ func reportRun(opts *ReportOptions) error {
 		log.Debugf("Error while sending report to reliably: %s", err)
 	}
 
-	// set format
-	var format = report.TABBED
-	switch strings.ToLower(outputFormat) {
-	case "json":
-		format = report.JSON
-	case "simple", "text":
-		format = report.SimpleText
-	case "markdown":
-		format = report.MARKDOWN
-	case "yaml":
-		format = report.YAML
-	}
-
-	var w io.Writer = os.Stdout
-	if outputPath != "" {
-		outfile, err := os.Create(outputPath) // creates or truncates with O_RDWR mode
-		if err != nil {
-			log.Error("error creating output file")
-			log.Error(err)
-			return err
-		}
-		w = outfile
-		defer outfile.Close()
-	}
-
 	opts.IO.StopProgressIndicator()
 
-	report.Write(format, r, w, log.StandardLogger(), &lr, &reports)
+	for _, out := range opts.Outputs {
+
+		var w io.Writer = os.Stdout
+		if out.Path != "" {
+			outfile, err := os.Create(out.Path) // creates or truncates with O_RDWR mode
+			if err != nil {
+				log.Error("error creating output file")
+				log.Error(err)
+				return err
+			}
+			w = outfile
+			// we cannot defer outfile closing here as we are in a for-loop
+		}
+		report.Write(out.Format, r, w, log.StandardLogger(), &lr, &reports)
+
+		if outfile, ok := w.(*os.File); ok {
+			outfile.Close() // explicitly closing the file handle
+		}
+
+	}
 
 	return nil
 }
