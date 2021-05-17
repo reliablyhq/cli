@@ -28,12 +28,14 @@ import (
 type Choice = cmdutil.Choice
 
 type ReportOutput struct {
-	format string
-	path   string
+	Format report.Format
+	Path   string
 }
 
 type ReportOptions struct {
 	IO *iostreams.IOStreams
+
+	Outputs []ReportOutput
 }
 
 const defaultFormat = "table"
@@ -90,11 +92,6 @@ func NewCommand() *cobra.Command {
 				outputPaths = strings.Split(outputPath, ",")
 			}
 
-			////
-			fmt.Println("FORMATS", len(outputFormats), outputFormats)
-			fmt.Println("PATHS", len(outputPaths), outputPaths)
-			///
-
 			if len(outputFormats) > 1 && len(outputPaths) == 0 {
 				return errors.New("Multiple output formats must be used in combination with multiple output path '--output o1,o2,...' flag")
 			}
@@ -111,6 +108,36 @@ func NewCommand() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			// given the list of formats & outputs,
+			// create the list of ReportOutput structs to combine a format and (optional) path
+			// --format f1,f2 --output o1,o2 should be associated as (f1, o1) & (f2, o2)
+			for fIdx, of := range outputFormats {
+				var format = report.TABBED
+				switch strings.ToLower(of) {
+				case "json":
+					format = report.JSON
+				case "simple", "text":
+					format = report.SimpleText
+				case "markdown":
+					format = report.MARKDOWN
+				case "yaml":
+					format = report.YAML
+				}
+
+				// get the output path at same index
+				var path string
+				if len(outputPaths) > fIdx {
+					path = outputPaths[fIdx]
+				}
+
+				opts.Outputs = append(opts.Outputs, ReportOutput{
+					Format: format,
+					Path:   path,
+				})
+
+			}
+
 			return reportRun(opts)
 		},
 	}
@@ -176,40 +203,20 @@ func reportRun(opts *ReportOptions) error {
 
 	opts.IO.StopProgressIndicator()
 
-	for fIdx, of := range outputFormats {
-		// set format
-		var format = report.TABBED
-		switch strings.ToLower(of) {
-		case "json":
-			format = report.JSON
-		case "simple", "text":
-			format = report.SimpleText
-		case "markdown":
-			format = report.MARKDOWN
-		case "yaml":
-			format = report.YAML
-		}
+	for _, out := range opts.Outputs {
 
-		fmt.Println(fIdx, of, format, len(outputPaths), fIdx, len(outputPaths) > fIdx, fIdx+1, len(outputPaths) > fIdx+1)
-
-		// here we use a go routine to have the defer working within the for loop
 		var w io.Writer = os.Stdout
-		//var op string
-		if len(outputPaths) > fIdx {
-			op := outputPaths[fIdx]
-			fmt.Print("output paht ->", op)
-			if op != "" {
-				outfile, err := os.Create(op) // creates or truncates with O_RDWR mode
-				if err != nil {
-					log.Error("error creating output file")
-					log.Error(err)
-					return err
-				}
-				w = outfile
-				// we cannot defer outfile closing here as we are in a for-loop
+		if out.Path != "" {
+			outfile, err := os.Create(out.Path) // creates or truncates with O_RDWR mode
+			if err != nil {
+				log.Error("error creating output file")
+				log.Error(err)
+				return err
 			}
+			w = outfile
+			// we cannot defer outfile closing here as we are in a for-loop
 		}
-		report.Write(format, r, w, log.StandardLogger(), &lr, &reports)
+		report.Write(out.Format, r, w, log.StandardLogger(), &lr, &reports)
 
 		if outfile, ok := w.(*os.File); ok {
 			outfile.Close() // explicitly closing the file handle
