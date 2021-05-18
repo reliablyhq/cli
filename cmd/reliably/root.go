@@ -87,6 +87,7 @@ Environment variables:
 	cmd.AddCommand(NewCmdWorkflow())
 	cmd.AddCommand(NewCmdHistory())
 	cmd.AddCommand(NewCmdScan(cmd))
+	cmd.AddCommand(NewCmdUpdate())
 
 	cmd.AddCommand(slo.NewCommand())
 
@@ -137,8 +138,8 @@ func Execute() {
 		upgradeCommand := getUpgradeCommand()
 		msg := fmt.Sprintf("%s %s → %s\n\n%s\n%s%s",
 			color.Yellow("A new release of reliably is available:"),
-			color.Cyan(version),
-			color.Cyan(newRelease.Version),
+			color.Cyan(strings.TrimPrefix(version, "v")),
+			color.Cyan(strings.TrimPrefix(newRelease.Version, "v")),
 			color.Yellow("Details of the new release can be found here:"),
 			newRelease.URL, upgradeCommand)
 
@@ -245,19 +246,11 @@ func customizeColor() {
 }
 
 func getUpgradeCommand() string {
-	bin, _ := os.Executable()
-	OS := runtime.GOOS
 	var message string
-	switch OS {
-	case "darwin":
-		upgradeUrl := "https://github.com/reliablyhq/cli/releases/latest/download/reliably-darwin-amd64"
-		message = fmt.Sprintf("\n\n%s\n$ curl -L %s -o %s", color.Yellow("To upgrade on your system run:"), upgradeUrl, bin)
-	case "linux":
-		upgradeUrl := "https://github.com/reliablyhq/cli/releases/latest/download/reliably-linux-amd64"
-		message = fmt.Sprintf("\n\n%s \n$ curl -L %s -o %s", color.Yellow("To upgrade on your system run:"), upgradeUrl, bin)
-	case "windows":
-		upgradeUrl := "https://github.com/reliablyhq/cli/releases/latest/download/reliably-windows-amd64"
-		message = fmt.Sprintf("\n\n%s \n$ curl -L %s -o %s", color.Yellow("To upgrade on your system run:"), upgradeUrl, bin)
+	switch runtime.GOOS {
+	case "darwin", "linux", "windows":
+		cmd := "$ reliably update"
+		message = fmt.Sprintf("\n\n%s\n%s", color.Yellow("To upgrade on your system run:"), cmd)
 	default:
 		message = ""
 	}
@@ -340,7 +333,8 @@ func shouldCheckForUpdate() bool {
 	}
 
 	return updaterRepo != "" && version != "DEV" &&
-		!ctx.IsCI() && !isCompletionCommand() && utils.IsTerminal(os.Stderr)
+		!ctx.IsCI() && !isCompletionCommand() && !isUpdateCommand() &&
+		utils.IsTerminal(os.Stderr)
 }
 
 func checkForUpdate(currentVersion string) (*update.ReleaseInfo, error) {
@@ -355,4 +349,8 @@ func checkForUpdate(currentVersion string) (*update.ReleaseInfo, error) {
 
 func isCompletionCommand() bool {
 	return len(os.Args) > 1 && os.Args[1] == "completion"
+}
+
+func isUpdateCommand() bool {
+	return len(os.Args) > 1 && os.Args[1] == "update"
 }

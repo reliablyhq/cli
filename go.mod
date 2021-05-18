@@ -29,6 +29,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0
 	github.com/icza/dyno v0.0.0-20200205103839-49cb13720835
 	github.com/imdario/mergo v0.3.11 // indirect
+	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf // indirect
 	github.com/karrick/godirwalk v1.16.1
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect

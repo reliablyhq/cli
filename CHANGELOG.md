@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- `update` command for installing the latest version of the CLI, or a specific one; [#289](https://github.com/reliablyhq/cli/issues/289)
+
 ### Changed
 - `slo report` now supports multiple outputs '--output' & formats '--format', with comma-seperated values; [#287](https://github.com/reliablyhq/cli/issues/287)
 

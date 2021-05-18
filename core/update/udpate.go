@@ -3,6 +3,8 @@ package update
 import (
 	"context"
 	"errors"
+	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"regexp"
@@ -45,7 +47,7 @@ func CheckForUpdate(client *http.Client, stateFilePath, repo string, currentVers
 		return nil, err
 	}
 
-	if versionGreaterThan(releaseInfo.Version, currentVersion) {
+	if VersionGreaterThan(releaseInfo.Version, currentVersion) {
 		return releaseInfo, nil
 	}
 
@@ -78,7 +80,7 @@ func setStateEntry(stateFilePath string, t time.Time, r ReleaseInfo) error {
 	return nil
 }
 
-func versionGreaterThan(v, w string) bool {
+func VersionGreaterThan(v, w string) bool {
 	w = gitDescribeSuffixRE.ReplaceAllStringFunc(w, func(m string) string {
 		// removes the git suffix (eg -37-g66bdb2f) from a dev version
 		return ""
@@ -110,4 +112,115 @@ func getLatestReleaseInfo(client *http.Client, repo string) (*ReleaseInfo, error
 		URL:     string(*release.HTMLURL),
 	}
 	return latest, nil
+}
+
+func GetLatestRelease(client *http.Client, repo string) (*github.RepositoryRelease, error) {
+	if repo == "" {
+		return nil, errors.New("Missing github repository as 'owner/repo'")
+	}
+
+	s := strings.Split(repo, "/")
+	owner, repo := s[0], s[1]
+
+	ghClient := github.NewClient(client)
+	ctx := context.Background()
+	latest, _, err := ghClient.Repositories.GetLatestRelease(ctx, owner, repo)
+	return latest, err
+}
+
+func GetLatestReleaseAsset(client *http.Client, repo string, goos string) (*github.ReleaseAsset, error) {
+
+	r, err := GetLatestRelease(client, repo)
+	if err != nil {
+		return nil, err
+	}
+
+	var bin string = fmt.Sprintf("reliably-%s-amd64", goos)
+
+	for _, asset := range r.Assets {
+		if *asset.Name == bin {
+			return asset, nil
+		}
+	}
+
+	return nil, fmt.Errorf("No asset found for your platform '%s' in the latest release", goos)
+
+}
+
+func DownloadLatestReleaseAsset(client *http.Client, repo string, goos string) (io.ReadCloser, error) {
+	a, err := GetLatestReleaseAsset(client, repo, goos)
+	if err != nil {
+		return nil, err
+	}
+
+	s := strings.Split(repo, "/")
+	owner, repo := s[0], s[1]
+
+	ghClient := github.NewClient(client)
+	ctx := context.Background()
+
+	if client == nil {
+		// we want to follow redirect for downloading, requires an explicit http client
+		client = http.DefaultClient
+	}
+	// return (rc io.ReadCloser, redirectURL string, err error)
+	rc, _, err := ghClient.Repositories.DownloadReleaseAsset(ctx, owner, repo, *a.ID, client)
+
+	return rc, err
+}
+
+func GetRelease(client *http.Client, repo string, tag string) (*github.RepositoryRelease, error) {
+	if repo == "" {
+		return nil, errors.New("Missing github repository as 'owner/repo'")
+	}
+
+	s := strings.Split(repo, "/")
+	owner, repo := s[0], s[1]
+
+	ghClient := github.NewClient(client)
+	ctx := context.Background()
+	r, _, err := ghClient.Repositories.GetReleaseByTag(ctx, owner, repo, tag)
+
+	return r, err
+}
+
+func GetReleaseAsset(client *http.Client, repo string, goos string, tag string) (*github.ReleaseAsset, error) {
+
+	r, err := GetRelease(client, repo, tag)
+	if err != nil {
+		return nil, err
+	}
+
+	var bin string = fmt.Sprintf("reliably-%s-amd64", goos)
+
+	for _, asset := range r.Assets {
+		if *asset.Name == bin {
+			return asset, nil
+		}
+	}
+
+	return nil, fmt.Errorf("No asset found for your platform '%s' in the release '%s'", goos, tag)
+
+}
+
+func DownloadReleaseAsset(client *http.Client, repo string, goos string, tag string) (io.ReadCloser, error) {
+	a, err := GetReleaseAsset(client, repo, goos, tag)
+	if err != nil {
+		return nil, err
+	}
+
+	s := strings.Split(repo, "/")
+	owner, repo := s[0], s[1]
+
+	ghClient := github.NewClient(client)
+	ctx := context.Background()
+
+	if client == nil {
+		// we want to follow redirect for downloading, requires an explicit http client
+		client = http.DefaultClient
+	}
+	// return (rc io.ReadCloser, redirectURL string, err error)
+	rc, _, err := ghClient.Repositories.DownloadReleaseAsset(ctx, owner, repo, *a.ID, client)
+
+	return rc, err
 }
