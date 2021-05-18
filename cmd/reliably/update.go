@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"crypto"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"runtime"
@@ -108,13 +110,22 @@ func runUpdate(opts *UpdateOptions) (err error) {
 	fmt.Fprintln(opts.IO.ErrOut, color.Grey("Please wait while we download and install the new version..."))
 	opts.IO.StartProgressIndicator()
 
-	rc, err := up.DownloadReleaseAsset(nil, updaterRepo, runtime.GOOS, *rel.TagName)
+	rc, checksum, err := up.DownloadReleaseAsset(nil, updaterRepo, runtime.GOOS, *rel.TagName)
 	if err != nil {
 		return err
 	}
 	defer rc.Close()
 
-	err = update.Apply(rc, update.Options{})
+	updateOpts := update.Options{}
+
+	if checksum != "" {
+		updateOpts.Hash = crypto.MD5
+		// ! we need to decode the checksum into bytes !
+		check, _ := hex.DecodeString(checksum)
+		updateOpts.Checksum = check
+	}
+
+	err = update.Apply(rc, updateOpts)
 	if err != nil {
 		return err
 	}
