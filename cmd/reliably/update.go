@@ -1,11 +1,10 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
-
-	"strings"
-	//"os"
 	"runtime"
+	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/google/go-github/v33/github"
@@ -13,7 +12,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	//"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
 	up "github.com/reliablyhq/cli/core/update"
@@ -54,6 +52,10 @@ Please note that downgrade is also supported by setting the version.`,
 }
 
 func runUpdate(opts *UpdateOptions) (err error) {
+
+	if v.IsDevVersion() {
+		return errors.New("This command cannot be run in dev mode")
+	}
 
 	current := strings.TrimPrefix(v.Version, "v")
 	downgrade := strings.TrimPrefix(v.Version, "v")
@@ -103,6 +105,7 @@ func runUpdate(opts *UpdateOptions) (err error) {
 		}
 	}
 
+	fmt.Fprintln(opts.IO.ErrOut, color.Grey("Please wait while we download and install the new version..."))
 	opts.IO.StartProgressIndicator()
 
 	rc, err := up.DownloadReleaseAsset(nil, updaterRepo, runtime.GOOS, *rel.TagName)
@@ -117,6 +120,7 @@ func runUpdate(opts *UpdateOptions) (err error) {
 	}
 
 	opts.IO.StopProgressIndicator()
+	fmt.Fprint(opts.IO.ErrOut, ClearPreviousLine) // we also clear the "please wait..." message
 
 	fmt.Fprintln(opts.IO.ErrOut)
 	if opts.Version == "" {
