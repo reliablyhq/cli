@@ -1,6 +1,7 @@
 package update
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -203,10 +204,10 @@ func GetReleaseAsset(client *http.Client, repo string, goos string, tag string) 
 
 }
 
-func DownloadReleaseAsset(client *http.Client, repo string, goos string, tag string) (io.ReadCloser, error) {
+func DownloadReleaseAsset(client *http.Client, repo string, goos string, tag string) (io.ReadCloser, string, error) {
 	a, err := GetReleaseAsset(client, repo, goos, tag)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	s := strings.Split(repo, "/")
@@ -222,5 +223,34 @@ func DownloadReleaseAsset(client *http.Client, repo string, goos string, tag str
 	// return (rc io.ReadCloser, redirectURL string, err error)
 	rc, _, err := ghClient.Repositories.DownloadReleaseAsset(ctx, owner, repo, *a.ID, client)
 
-	return rc, err
+	// we need to pass either the client from args or the default one - same as follow redirect one
+	checksum, _ := getReleaseAssetChecksum(client, a)
+
+	return rc, checksum, err
+}
+
+// GetReleaseAssetChecksum downloads the md5 file from GH for a specific
+// release asset. It downloads the .md5 file, reads it and extracts the
+// checksum value.
+func getReleaseAssetChecksum(client *http.Client, ra *github.ReleaseAsset) (string, error) {
+	// download the associated md5 file to extract the checksum for downloaded asset
+	var checksum string
+
+	md5Url := fmt.Sprintf("%s.md5", *ra.BrowserDownloadURL)
+	resp, err := client.Get(md5Url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	buf := new(bytes.Buffer)
+	_, _ = buf.ReadFrom(resp.Body)
+	line := buf.String()
+
+	parts := strings.Split(line, " ")
+	if len(parts) > 0 {
+		checksum = parts[0]
+	}
+
+	return checksum, nil
 }
