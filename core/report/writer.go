@@ -274,7 +274,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 			if sl.Result == nil {
 				tick = "?"
 				row := []string{
-					fmt.Sprintf("%s %s", tick, tuncatedSLName),
+					fmt.Sprintf("%s %s", tick, tuncatedSLName),
 					"",
 					"--- ",
 					fmt.Sprintf("%v%s", sl.Objective, unit),
