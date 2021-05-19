@@ -2,16 +2,20 @@
 
 ## [Unreleased]
 
+## [v0.16.0] - 2021-05-19
+
 ### Added
 
-- `update` command for installing the latest version of the CLI, or a specific one; [#289](https://github.com/reliablyhq/cli/issues/289)
+-   `update` command for installing the latest version of the CLI, or a specific one; [#289](https://github.com/reliablyhq/cli/issues/289)
 
 ### Changed
-- `slo report` now supports multiple outputs '--output' & formats '--format', with comma-seperated values; [#287](https://github.com/reliablyhq/cli/issues/287)
-- `slo report` table output has been improved with some UX changes
+
+-   `slo report` now supports multiple outputs '--output' & formats '--format', with comma-seperated values; [#287](https://github.com/reliablyhq/cli/issues/287)
+-   `slo report` table output has been improved with some UX changes
 
 ### Fixed
-- no color output was not working for some subcommands; [#291](https://github.com/reliablyhq/cli/issues/291)
+
+-   no color output was not working for some subcommands; [#291](https://github.com/reliablyhq/cli/issues/291)
 
 ## [v0.15.0] - 2021-05-14
 
@@ -215,7 +219,9 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.16.0...HEAD
+
+[v0.16.0]: https://github.com/reliablyhq/cli/compare/v0.15.0...v0.16.0
 
 [v0.15.0]: https://github.com/reliablyhq/cli/compare/v0.14.0...v0.15.0
 
