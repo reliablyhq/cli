@@ -8,6 +8,7 @@
 
 ### Changed
 - `slo report` now supports multiple outputs '--output' & formats '--format', with comma-seperated values; [#287](https://github.com/reliablyhq/cli/issues/287)
+- `slo report` table output has been improved with some UX changes
 
 ### Fixed
 - no color output was not working for some subcommands; [#291](https://github.com/reliablyhq/cli/issues/291)
