@@ -164,3 +164,10 @@ func (s *IOStreams) StopProgressIndicator() {
 	s.progressIndicator.Stop()
 	s.progressIndicator = nil
 }
+
+func (s *IOStreams) SetProgessMessage(msg string) {
+	if s.progressIndicator == nil {
+		return
+	}
+	s.progressIndicator.Suffix = msg
+}

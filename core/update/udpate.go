@@ -204,10 +204,10 @@ func GetReleaseAsset(client *http.Client, repo string, goos string, tag string) 
 
 }
 
-func DownloadReleaseAsset(client *http.Client, repo string, goos string, tag string) (io.ReadCloser, string, error) {
+func DownloadReleaseAsset(client *http.Client, repo string, goos string, tag string) (io.ReadCloser, string, int, error) {
 	a, err := GetReleaseAsset(client, repo, goos, tag)
 	if err != nil {
-		return nil, "", err
+		return nil, "", 0, err
 	}
 
 	s := strings.Split(repo, "/")
@@ -226,7 +226,7 @@ func DownloadReleaseAsset(client *http.Client, repo string, goos string, tag str
 	// we need to pass either the client from args or the default one - same as follow redirect one
 	checksum, _ := getReleaseAssetChecksum(client, a)
 
-	return rc, checksum, err
+	return rc, checksum, *a.Size, err
 }
 
 // GetReleaseAssetChecksum downloads the md5 file from GH for a specific

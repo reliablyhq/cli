@@ -1,16 +1,19 @@
 package cmd
 
 import (
+	"context"
 	"crypto"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/google/go-github/v33/github"
 	"github.com/inconshreveable/go-update"
+	"github.com/machinebox/progress"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
@@ -108,13 +111,25 @@ func runUpdate(opts *UpdateOptions) (err error) {
 	}
 
 	fmt.Fprintln(opts.IO.ErrOut, color.Grey("Please wait while we download and install the new version..."))
-	opts.IO.StartProgressIndicator()
 
-	rc, checksum, err := up.DownloadReleaseAsset(nil, updaterRepo, runtime.GOOS, *rel.TagName)
+	opts.IO.StartProgressIndicator() // Use
+	rc, checksum, size, err := up.DownloadReleaseAsset(nil, updaterRepo, runtime.GOOS, *rel.TagName)
 	if err != nil {
 		return err
 	}
 	defer rc.Close()
+
+	ctx := context.Background()
+	r := progress.NewReader(rc) // we tunnel the http response body reader into the progress tracker
+	go func() {                 // Async we show the download progress
+		progressChan := progress.NewTicker(ctx, r, int64(size), time.Second)
+		for p := range progressChan {
+			msg := fmt.Sprintf(" %.0f%% Complete - %v remaining", p.Percent(), p.Remaining().Round(time.Second))
+			opts.IO.SetProgessMessage(msg)
+			//fmt.Printf("\r%.0f%% Complete - %v remaining...", p.Percent(), p.Remaining().Round(time.Second))
+		}
+		//fmt.Println("\rdownload is complete") // this does not get printed
+	}()
 
 	updateOpts := update.Options{}
 
@@ -125,7 +140,7 @@ func runUpdate(opts *UpdateOptions) (err error) {
 		updateOpts.Checksum = check
 	}
 
-	err = update.Apply(rc, updateOpts)
+	err = update.Apply(r, updateOpts) // This will trigger the read on the response body - forwarded by the progress -
 	if err != nil {
 		return err
 	}
