@@ -72,6 +72,10 @@ comma-separated list as values.`),
   $ reliably slo report -f markdown -o report.md
   $ reliably slo report -f yaml,json -o o.yaml,o.json`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			// when overridding, we explictely run parents/root pre-run
+			root := cmd.Root()
+			_ = root.PersistentPreRunE(cmd, args)
+
 			if !cmdutil.CheckAuth() {
 				cmdutil.PrintRequireAuthMsg()
 				os.Exit(1)
