@@ -6,6 +6,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	surveyCore "github.com/AlecAivazis/survey/v2/core"
 	"github.com/MakeNowJust/heredoc/v2"
@@ -66,18 +67,12 @@ Environment variables:
 
 	cmd.PersistentFlags().BoolVarP(
 		&verbose, "verbose", "v", false, "verbose output")
-	// disable coloring directly in the dependency fatih/color package
-	cmd.PersistentFlags().BoolVarP(
-		&noColor, "no-color", "", false, "Disable color output")
+	cmd.PersistentFlags().BoolVar(
+		&noColor, "no-color", false, "Disable color output")
 	cmd.SetVersionTemplate(FormatVersion(version, buildDate))
 	cmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		if err := setUpVerboseLogLevel(verbose); err != nil {
 			return err
-		}
-		if noColor || os.Getenv("NO_COLOR") != "" {
-			disableColor()
-		} else {
-			customizeColor()
 		}
 		return nil
 	}
@@ -97,6 +92,16 @@ Environment variables:
 
 	//Help topics
 	cmd.AddCommand(NewHelpTopic("environment"))
+
+	noColor := strings.Contains(strings.Join(os.Args, " "), "--no-color")
+	// force disabling coloring before we render the template or
+	// help will always be colored even when flag is set - but not parsed yet -
+	// because when using --help , persistent pre run is not yet executed
+	if noColor || os.Getenv("NO_COLOR") != "" {
+		disableColor()
+	} else {
+		customizeColor()
+	}
 
 	// Uses a custom usage template - for adding feedback section to help -
 	template := cmdutil.CustomUsageTemplate(cmd)

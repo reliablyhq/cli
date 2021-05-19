@@ -50,6 +50,10 @@ func NewCmdHistory() *cobra.Command {
 		Short: "Show your scan history",
 		Long:  `Show your entire history of executions and found suggestions.`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			// when overridding, we explictely run parents/root pre-run
+			root := cmd.Root()
+			_ = root.PersistentPreRunE(cmd, args)
+
 			if !cmdutil.CheckAuth() {
 				cmdutil.PrintRequireAuthMsg()
 				os.Exit(1)
