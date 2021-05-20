@@ -14,7 +14,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/reliablyhq/cli/api"
-	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
 	ctx "github.com/reliablyhq/cli/core/context"
@@ -49,16 +48,6 @@ func NewCmdHistory() *cobra.Command {
 		Use:   "history",
 		Short: "Show your scan history",
 		Long:  `Show your entire history of executions and found suggestions.`,
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			// when overridding, we explictely run parents/root pre-run
-			root := cmd.Root()
-			_ = root.PersistentPreRunE(cmd, args)
-
-			if !cmdutil.CheckAuth() {
-				cmdutil.PrintRequireAuthMsg()
-				os.Exit(1)
-			}
-		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			apiClient := api.NewClientFromHTTP(opts.HttpClient())

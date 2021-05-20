@@ -71,9 +71,24 @@ Environment variables:
 		&noColor, "no-color", false, "Disable color output")
 	cmd.SetVersionTemplate(FormatVersion(version, buildDate))
 	cmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		// This prerun hook is inherited by subcommands if not overridden
+		// If this hook is needed by a subcommand, makes sure to excplicitely
+		// call that root hook as:
+		// cmd.Root().PersistentPreRunE(cmd, args)
+
 		if err := setUpVerboseLogLevel(verbose); err != nil {
 			return err
 		}
+
+		// any command should be run with authentication unless explicitely disabled
+		doCheck := cmd != nil && cmd.Name() != "help" && cmdutil.IsAuthCheckEnabled(cmd)
+		if doCheck && !cmdutil.CheckAuth() {
+			cmdutil.PrintRequireAuthMsg()
+			// force exit not to have colored error message,
+			// as we handle more user-friendly message
+			os.Exit(1)
+		}
+
 		return nil
 	}
 	cmd.Flags().Bool("help", false, "help for reliably")
@@ -88,11 +103,13 @@ Environment variables:
 	cmd.AddCommand(NewCmdHistory())
 	cmd.AddCommand(NewCmdScan(cmd))
 	cmd.AddCommand(NewCmdUpdate())
-
 	cmd.AddCommand(slo.NewCommand())
 
 	//Help topics
 	cmd.AddCommand(NewHelpTopic("environment"))
+
+	// disable auth chekc for root command itself
+	cmdutil.DisableAuthCheck(cmd)
 
 	noColor := strings.Contains(strings.Join(os.Args, " "), "--no-color")
 	// force disabling coloring before we render the template or

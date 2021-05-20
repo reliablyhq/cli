@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+
+	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 )
 
 func NewCmdVersion() *cobra.Command {
@@ -17,6 +19,8 @@ func NewCmdVersion() *cobra.Command {
 		},
 		Hidden: true, // version will not be indicated as command but only flag
 	}
+
+	cmdutil.DisableAuthCheck(cmd)
 
 	return cmd
 }

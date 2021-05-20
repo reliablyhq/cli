@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 
 	authCmd "github.com/reliablyhq/cli/cmd/reliably/auth"
+	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 )
 
 func NewCmdAuth() *cobra.Command {
@@ -12,6 +13,8 @@ func NewCmdAuth() *cobra.Command {
 		Short: "Login, logout, and verify your authentication",
 		Long:  `Manage Reliably's authentication state.`,
 	}
+
+	cmdutil.DisableAuthCheck(cmd)
 
 	cmd.AddCommand(authCmd.NewCmdLogin())
 	cmd.AddCommand(authCmd.NewCmdLogout())

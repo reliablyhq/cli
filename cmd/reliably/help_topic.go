@@ -7,6 +7,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
+	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/core/color"
 )
 
@@ -48,6 +49,8 @@ func NewHelpTopic(topic string) *cobra.Command {
 
 	cmd.SetHelpFunc(helpTopicHelpFunc)
 	cmd.SetUsageFunc(helpTopicUsageFunc)
+
+	cmdutil.DisableAuthCheck(cmd)
 
 	return cmd
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/core/iostreams"
 )
 
@@ -57,6 +58,8 @@ For example, for bash you could add this to your '~/.bash_profile':
 	}
 
 	cmd.Flags().StringVarP(&shellType, "shell", "s", "", "Shell type: {bash|zsh|fish|powershell}")
+
+	cmdutil.DisableAuthCheck(cmd)
 
 	return cmd
 }

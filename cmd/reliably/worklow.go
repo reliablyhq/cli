@@ -10,6 +10,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
+	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/core/iostreams"
 	wf "github.com/reliablyhq/cli/core/workflows"
 	"github.com/reliablyhq/cli/utils"
@@ -79,6 +80,9 @@ It runs in an interactive mode by default.`,
 	cmd.Flags().BoolVar(
 		&opts.Stdout, "stdout", false,
 		"Generate the workflow to standard output rather than file")
+
+	cmdutil.DisableAuthCheck(cmd)
+
 	return cmd
 }
 
