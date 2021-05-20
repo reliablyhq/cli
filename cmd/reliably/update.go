@@ -17,6 +17,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
 	up "github.com/reliablyhq/cli/core/update"
@@ -52,6 +53,8 @@ Please note that downgrade is also supported by setting the version.`,
 
 	cmd.Flags().StringVar(&opts.Version, "version", "", "Update to a specific version")
 	cmd.Flags().BoolVarP(&opts.NoConfirm, "yes", "y", false, "Don't ask for update confirmation")
+
+	cmdutil.DisableAuthCheck(cmd)
 
 	return cmd
 }

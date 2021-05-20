@@ -3,6 +3,8 @@ package cmdutil
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/config"
@@ -33,4 +35,25 @@ func PrintRequireAuthMsg() {
 	fmt.Println(color.Bold("Welcome to Reliably CLI!"))
 	fmt.Println()
 	fmt.Println("To authenticate, please run `reliably auth login`.")
+}
+
+func DisableAuthCheck(cmd *cobra.Command) {
+	if cmd.Annotations == nil {
+		cmd.Annotations = map[string]string{}
+	}
+
+	cmd.Annotations["skipAuthCheck"] = "true"
+}
+
+func IsAuthCheckEnabled(cmd *cobra.Command) bool {
+	if !cmd.Runnable() {
+		return false
+	}
+	for c := cmd; c.Parent() != nil; c = c.Parent() {
+		if c.Annotations != nil && c.Annotations["skipAuthCheck"] == "true" {
+			return false
+		}
+	}
+
+	return true
 }
