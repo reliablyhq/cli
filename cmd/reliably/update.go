@@ -39,13 +39,27 @@ func NewCmdUpdate() *cobra.Command {
 		UpdaterRepo: updaterRepo,
 	}
 
+	vFlag := color.Bold("--version")
 	cmd := &cobra.Command{
 		Use:   "update",
 		Short: "Updates Reliably CLI",
-		Long: `Updates Reliably CLI to the latest version.
+		Long: fmt.Sprintf(`Ensure the latest version of Reliably CLI is installed.
 
-It is also possible to update the CLI to a specific version.
-Please note that downgrade is also supported by setting the version.`,
+The command will indicate the current and latest versions, and asks for
+confirmation before proceeding.
+
+By default, this command will update the CLI to the latest version.
+This can be configured by using the %s flag to choose a specific version
+to update to. This version may also be a version older than the one that is
+currently installed, thus allowing you to downgrade.
+
+If you run this command without the %s flag and you already have the
+latest version installed, no update will be performed.`, vFlag, vFlag),
+		Example: `To update to the latest version:
+  $ reliably update
+
+To update to version 1.2.3
+  $ reliably update --version 1.2.3`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runUpdate(opts)
 		},
