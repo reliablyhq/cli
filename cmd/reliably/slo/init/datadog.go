@@ -104,6 +104,7 @@ func GetSLOHistory(sloId string, from time.Time, to time.Time, target float64) (
 
 	// Investigate, when using target as optional param,
 	// we get an error from api: custom is not a valid SLOTimeframe
+	// raised an issue on DD : https://github.com/DataDog/datadog-api-client-go/issues/951
 	/*
 		optionalParams := datadog.GetSLOHistoryOptionalParameters{
 			Target: &target,

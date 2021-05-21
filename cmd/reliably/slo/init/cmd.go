@@ -120,10 +120,15 @@ func runE(_ *cobra.Command, args []string) error {
 			sli := slo.Indicators[0]
 
 			to := time.Now()
+
 			from := to.Add(-slo.ObservationWindow.ToDuration())
 
-			fmt.Println("GetSLOHistory (sloId, from, to, target)")
-			fmt.Println(sli.ID, from.UTC().Unix(), to.UTC().Unix(), slo.Objective)
+			//from := to.Add(-time.Hour * 24 * 7)
+
+			dur := to.Sub(from).Hours()
+
+			fmt.Println("GetSLOHistory (sloId, from, to, target) - duration in hours")
+			fmt.Println(sli.ID, from, to, slo.Objective, dur, from.UTC().Unix(), to.UTC().Unix())
 
 			if sloHist, err := GetSLOHistory(sli.ID, from, to, slo.Objective); err != nil {
 				fmt.Println("Unable to fetch SLO history", err)
