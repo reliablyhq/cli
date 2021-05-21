@@ -102,7 +102,7 @@ func runE(_ *cobra.Command, args []string) error {
 	var mDD manifest.Manifest = manifest.Manifest{
 
 		Services: []*manifest.Service{
-			&manifest.Service{
+			{
 				Name:          "datadog imported SLOs",
 				ServiceLevels: slosDD,
 			},
@@ -111,6 +111,47 @@ func runE(_ *cobra.Command, args []string) error {
 
 	fmt.Println("Manifest with SLOs imported from datadog")
 	spew.Dump(mDD)
+
+	fmt.Println("Get SLO history from datadog")
+	for _, svc := range mDD.Services {
+		fmt.Println("###", svc.Name)
+		for _, slo := range svc.ServiceLevels {
+			fmt.Println(">>>", slo.Name, slo.Objective, slo.ObservationWindow)
+			sli := slo.Indicators[0]
+
+			to := time.Now()
+			from := to.Add(-slo.ObservationWindow.ToDuration())
+
+			fmt.Println("GetSLOHistory (sloId, from, to, target)")
+			fmt.Println(sli.ID, from.UTC().Unix(), to.UTC().Unix(), slo.Objective)
+
+			if sloHist, err := GetSLOHistory(sli.ID, from, to, slo.Objective); err != nil {
+				fmt.Println("Unable to fetch SLO history", err)
+			} else {
+				fmt.Println("we found the history -->")
+				data := sloHist.GetData()
+				var sliValue float64
+				if data.Overall.SliValue != nil {
+					sliValue = *data.Overall.SliValue
+					fmt.Println("SLI", "=", sliValue, "%")
+
+					if data.Overall.ErrorBudgetRemaining != nil {
+						for k, v := range *data.Overall.ErrorBudgetRemaining {
+							fmt.Println("Error budget for ", k, v, "%")
+						}
+					} else {
+						fmt.Println("error budget is not available")
+					}
+
+				} else {
+					fmt.Println("No SLI value computed ! ")
+				}
+
+				//spew.Dump(data)
+			}
+
+		}
+	}
 
 	return fmt.Errorf("Skip")
 
