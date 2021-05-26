@@ -2,10 +2,7 @@
 
 ## [Unreleased]
 
-### Changed
-
-- changes format and content of the SLO Markdown Report - 2021-05-26
-- added the type of the sli to the text format report - 2021-05-26
+### Changed format and content of the SLO Markdown Report - 2021-05-26
 
 ## [v0.16.0] - 2021-05-19
 
