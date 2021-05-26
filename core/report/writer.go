@@ -209,46 +209,36 @@ func markdownFuncMap() template.FuncMap {
 			}
 			return trends
 		},
-		"serviceLevelRow": func(svcName string, sl ServiceLevel, lrs *[]Report) string {
-			var builder strings.Builder
-			statusIcon := getStatusIcon(sl.Result)
+		"errBudgetPercentage": func(sl ServiceLevel) string {
 			unit := "%"
-			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
+			errBudget := ErrorBudgetAsPercentage(sl.Objective)
+			return fmt.Sprintf("%.2f %s", errBudget, unit)
+		},
+		"errBudgetAllowedDownTime": func(sl ServiceLevel) string {
 
-			var trends string = "n/a"
-			if lrs != nil && len(*lrs) > 0 {
-				slosAreMet := GetSLOTrend(svcName, sl.Name, *lrs)
-				ticks := trendToTicks(slosAreMet)
-				trends = strings.Join(ticks, " ") // Using non-breaking space here !!!
-			}
+			errBudget := ErrorBudgetAsPercentage(sl.Objective)
+			period := getObservationWindow(&sl)
+			allowedDowntime := DowntimePerPeriod(errBudget, period)
 
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", statusIcon)
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", sl.Name)
-			fmt.Fprint(&builder, "|")
-			if sl.Result != nil {
-				fmt.Fprintf(&builder, "%.2f%s", sl.Result.Actual, unit)
-			} else {
-				fmt.Fprint(&builder, "---")
-			}
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%v%s", sl.Objective, unit)
-			fmt.Fprint(&builder, "|")
-			// if sl.Result != nil {
-			// 	fmt.Fprintf(&builder, "%.2f%s", sl.Result.Delta, unit)
-			// } else {
-			// 	fmt.Fprint(&builder, "---")
-			// }
-			// fmt.Fprint(&builder, "|")
-			fmt.Fprint(&builder, core.HumanizeDuration(period))
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", sl.Type)
-			fmt.Fprint(&builder, "|")
-			fmt.Fprint(&builder, trends)
-			fmt.Fprint(&builder, "|")
+			return fmt.Sprintf("%v", allowedDowntime)
+		},
+		"errBudgetConsumed": func(sl ServiceLevel) string {
 
-			return builder.String()
+			errBudget := ErrorBudgetAsPercentage(sl.Objective)
+			period := getObservationWindow(&sl)
+			allowedDowntime := DowntimePerPeriod(errBudget, period)
+			consumed, _ := getConsumedRemain(sl, errBudget, allowedDowntime)
+
+			return fmt.Sprintf("%s", consumed)
+		},
+		"errBudgetRemain": func(sl ServiceLevel) string {
+
+			errBudget := ErrorBudgetAsPercentage(sl.Objective)
+			period := getObservationWindow(&sl)
+			allowedDowntime := DowntimePerPeriod(errBudget, period)
+			_, remain := getConsumedRemain(sl, errBudget, allowedDowntime)
+
+			return fmt.Sprintf("%s", remain)
 		},
 		"errorBudgetRow": func(sl ServiceLevel) string {
 			var builder strings.Builder
