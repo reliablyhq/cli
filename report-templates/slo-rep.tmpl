@@ -51,9 +51,16 @@ Report time: {{ dateTime $report.Timestamp }}
 
 The Error Budget metrics are:
 
-|  Type    | Name          |ErrorBudget(%)|Downtime|Consumed|Remain
-| -------- | --------------|--------------|--------|--------|--------|
-{{ range $ind, $sl := $service.ServiceLevels }}{{ errorBudgetRow $sl }}
+|  Type    | Name          |ErrorBudget(%)|Time Window|Downtime|Consumed|Remain
+| -------- | --------------|--------------|-----------|--------|--------|--------|
+{{ range $ind, $sl := $service.ServiceLevels -}}
+|{{- svcLevelGetType $sl -}}|
+{{- svcLevelGetName $sl}}|
+{{- svcLevelGetTimeWindow $sl }}|
+{{- errBudgetPercentage $sl }}|
+{{- errBudgetAllowedDownTime $sl }}|
+{{- errBudgetConsumed $sl }}|
+{{- errBudgetRemain $sl }}|
 {{ end }}
 
 
