@@ -1,6 +1,4 @@
-package report
-
-const SLOTemplate = `# Reliably SLO Report
+# Reliably SLO Report
 
 Service Level Objectives identify what you should care about on your system. They are what good looks like for the users of your system. If an SLO is underperforming, it will be impacting your users in some way.
 
@@ -37,9 +35,9 @@ For more details of an SLO report, see the Reliably documentation on [How the Re
 
 {{ $report := .Rep }}
 
-Report time: {{ dateTime .Rep.Timestamp }}
+Report time: {{ dateTime $report.Timestamp }}
 {{ $reps := .Lreps }}
-{{ range $index, $service := .Rep.Services }}
+{{ range $index, $service := $report.Services }}
 ## Service #{{ serviceNo $index}}: {{$service.Name}}
 
 |  | Name                            | Current | Objective| Time Window | Type  | Trend |
@@ -61,5 +59,4 @@ The Error Budget metrics are:
 
 {{ end }}
 
-<sub>Generating with: The Reliably CLI Version {{ version }}</sub>
-`
+<sub>Generating with: The Reliably CLI Version {{ reliablyVersion }}</sub>

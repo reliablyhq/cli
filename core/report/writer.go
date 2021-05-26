@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"text/template"
 	"time"
@@ -127,12 +128,22 @@ func reportMarkdown(r *Report, w io.Writer, lrs *[]Report) error {
 	// create report data from report & lrs
 	rd := ReportData{r, lrs}
 
-	t, err := template.New("SLOTemplate").Funcs(markdownFuncMap()).Parse(SLOTemplate)
+	cwd, err := os.Getwd()
+	templatePath := "/report-templates/"
+	templateName := "slo-rep.tmpl"
+
+	// t, err := template.New("SLOTemplate").Funcs(markdownFuncMap()).Parse(SLOTemplate)
+	t, err := template.New(templateName).Funcs(markdownFuncMap()).ParseFiles(cwd + templatePath + templateName)
 	if err != nil {
 		panic(err)
 	}
 
-	return t.Execute(w, rd)
+	err = t.Execute(w, rd)
+	if err != nil {
+		panic(err)
+	}
+
+	return err
 }
 
 func getStatusIcon(res *ServiceLevelResult) string {
@@ -149,7 +160,7 @@ func getStatusIcon(res *ServiceLevelResult) string {
 func markdownFuncMap() template.FuncMap {
 	// by default those functions return the given content untouched
 	return template.FuncMap{
-		"version": func() string {
+		"reliablyVersion": func() string {
 			return v.Version + " built on: " + v.Date
 		},
 		"dateTime": func(t time.Time) string {
