@@ -16,7 +16,7 @@ Service Level Objectives identify what you should care about on your system. The
 </details>
 
 ### Error Budget
-When you defiine and SLO for you system, you include a target percentage for that SLO. An example target could be 95%. That leaves 5%, that is your error budget for your SLO.
+When you define an SLO for your system, you include a target percentage for that SLO. An example target could be 95%. That leaves 5%, which is your error budget for your SLO.
 
 <details>
   <summary>Expand for further inforamtion on Error Bugets with Reliably</summary>
