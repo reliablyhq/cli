@@ -127,7 +127,7 @@ func reportMarkdown(r *Report, w io.Writer, lrs *[]Report) error {
 	// create report data from report & lrs
 	rd := ReportData{r, lrs}
 
-	t, err := template.New("SLOTemplate").Funcs(markdownFuncMap()).Parse(SLOTemplate)
+	t, err := template.New("sloTemplate").Funcs(markdownFuncMap()).Parse(sloTemplate)
 	if err != nil {
 		panic(err)
 	}
