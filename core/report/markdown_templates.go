@@ -19,7 +19,7 @@ Service Level Objectives identify what you should care about on your system. The
 When you define an SLO for your system, you include a target percentage for that SLO. An example target could be 95%. That leaves 5%, which is your error budget for your SLO.
 
 <details>
-  <summary>Expand for further inforamtion on Error Bugets with Reliably</summary>
+  <summary>Expand for further information on Error Bugets with Reliably</summary>
 
 
   When you define an SLO with the Reliably CLI you specify a target percentage for the Availability or Latency for that SLO.
