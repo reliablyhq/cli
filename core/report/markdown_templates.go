@@ -1,0 +1,61 @@
+package report
+
+const SLOTemplate = `# Reliably SLO Report
+
+Service Level Objectives identify what you should care about on your system. They are what good looks like for the users of your system. If an SLO is underperforming, it will be impacting your users in some way.
+
+<details>
+  <summary>Expand for further SLOs with Reliably</summary>
+
+
+  The Reliably CLI allows you to define SLOs for Availability and Latency.
+
+  An Availability SLO allows you to specify a target availability percentage for a Service.
+
+  A Latency SLO allows you to specify a threshold latency for a service and a target percentage. The percentage gives the target percentage of responses within that threshold latency.
+</details>
+
+### Error Budget
+When you defiine and SLO for you system, you include a target percentage for that SLO. An example target could be 95%. That leaves 5%, that is your error budget for your SLO.
+
+<details>
+  <summary>Expand for further inforamtion on Error Bugets with Reliably</summary>
+
+
+  When you define an SLO with the Reliably CLI you specify a target percentage for the Availability or Latency for that SLO.
+
+The expectation is over a time window, the responses for the Serice will be within that target percentage.
+
+An example could be 99.5% available over a period of 7 days. The target availability is less than 100% so this leaves a margin for error. This can be considered the Error Budget.
+
+</details>
+
+
+For more details of an SLO report, see the Reliably documentation on [How the Reliably CLI works]
+
+[How the Reliably CLI works]:https://reliably.com/docs/guides/how-it-works/slo-reports/
+
+Report time: {{ dateTime .Rep.Timestamp }}
+{{ $reps := .Lreps }}
+{{ range $index, $service := .Rep.Services }}
+## Service #{{ serviceNo $index}}: {{$service.Name}}
+
+|  | Name               | Current | Objective| Time Window | Type  | Trend  |
+|--|------------------- | ------- | -------- |------------ |-------|-------|
+{{ range $ind, $sl := $service.ServiceLevels }}{{ serviceLevelRow $service.Name $sl $reps }}
+{{ end }}
+
+
+
+The Error Budget metrics are:
+
+|  Type    | Name          |ErrorBudget(%)|Downtime|Consumed|Remain
+| -------- | --------------|--------------|--------|--------|--------|
+{{ range $ind, $sl := $service.ServiceLevels }}{{ errorBudgetRow $sl }}
+{{ end }}
+
+
+{{ end }}
+
+<sub>Generating with: The Reliably CLI Version {{ version }}</sub>
+`

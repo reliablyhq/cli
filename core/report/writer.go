@@ -17,6 +17,7 @@ import (
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/utils"
+	v "github.com/reliablyhq/cli/version"
 )
 
 /*
@@ -71,7 +72,7 @@ func Write(format Format, r *Report, w io.Writer, l *log.Logger, lr *Report, lrs
 		reportSimpleText(r, w)
 
 	case MARKDOWN:
-		_ = reportMarkdown(r, w)
+		_ = reportMarkdown(r, w, lrs)
 
 	default:
 		reportTable(r, w, lr, lrs)
@@ -116,28 +117,22 @@ func reportSimpleText(r *Report, w io.Writer) {
 	}
 }
 
-func reportMarkdown(r *Report, w io.Writer) error {
+func reportMarkdown(r *Report, w io.Writer, lrs *[]Report) error {
 
-	mdTemplate := `# SLO Report
+	// combines the report and report history for use in the markdown report
+	type ReportData struct {
+		Rep   *Report
+		Lreps *[]Report
+	}
+	// create report data from report & lrs
+	rd := ReportData{r, lrs}
 
-Report time: {{ dateTime .Timestamp }}
-{{ range $index, $service := .Services }}
-## Service #{{ serviceNo $index}}: {{$service.Name}}
-
-|  |  Type    | Name          | Actual | Target | Delta  | Time Window  |
-|--| -------- | --------------| ------ | ------ | ------ | ------------ |
-{{ range $ind, $sl := $service.ServiceLevels }}{{ serviceLevelRow $sl }}
-{{ end }}
-{{ end }}
-
-
-`
-
-	t, err := template.New("slo-report").Funcs(markdownFuncMap()).Parse(mdTemplate)
+	t, err := template.New("SLOTemplate").Funcs(markdownFuncMap()).Parse(SLOTemplate)
 	if err != nil {
 		panic(err)
 	}
-	return t.Execute(w, r)
+
+	return t.Execute(w, rd)
 }
 
 func getStatusIcon(res *ServiceLevelResult) string {
@@ -154,6 +149,9 @@ func getStatusIcon(res *ServiceLevelResult) string {
 func markdownFuncMap() template.FuncMap {
 	// by default those functions return the given content untouched
 	return template.FuncMap{
+		"version": func() string {
+			return v.Version + " built on: " + v.Date
+		},
 		"dateTime": func(t time.Time) string {
 			return t.Format(time.RFC1123) + "  "
 		},
@@ -163,16 +161,20 @@ func markdownFuncMap() template.FuncMap {
 		"serviceNo": func(i int) int {
 			return i + 1
 		},
-		"serviceLevelRow": func(sl ServiceLevel) string {
+		"serviceLevelRow": func(svcName string, sl ServiceLevel, lrs *[]Report) string {
 			var builder strings.Builder
 			statusIcon := getStatusIcon(sl.Result)
 			unit := "%"
 			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
 
+			var trends string
+			slosAreMet := GetSLOTrend(svcName, sl.Name, *lrs)
+			// slosAreMet := []bool{true, false, true}
+			ticks := trendToTicks(slosAreMet)
+			trends = strings.Join(ticks, " ") // Using non-breaking space here !!!
+
 			fmt.Fprint(&builder, "|")
 			fmt.Fprintf(&builder, "%s", statusIcon)
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", sl.Type)
 			fmt.Fprint(&builder, "|")
 			fmt.Fprintf(&builder, "%s", sl.Name)
 			fmt.Fprint(&builder, "|")
@@ -184,13 +186,42 @@ func markdownFuncMap() template.FuncMap {
 			fmt.Fprint(&builder, "|")
 			fmt.Fprintf(&builder, "%v%s", sl.Objective, unit)
 			fmt.Fprint(&builder, "|")
-			if sl.Result != nil {
-				fmt.Fprintf(&builder, "%.2f%s", sl.Result.Delta, unit)
-			} else {
-				fmt.Fprint(&builder, "---")
-			}
-			fmt.Fprint(&builder, "|")
+			// if sl.Result != nil {
+			// 	fmt.Fprintf(&builder, "%.2f%s", sl.Result.Delta, unit)
+			// } else {
+			// 	fmt.Fprint(&builder, "---")
+			// }
+			// fmt.Fprint(&builder, "|")
 			fmt.Fprint(&builder, core.HumanizeDuration(period))
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%s", sl.Type)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprint(&builder, trends)
+			fmt.Fprint(&builder, "|")
+
+			return builder.String()
+		},
+		"errorBudgetRow": func(sl ServiceLevel) string {
+			var builder strings.Builder
+
+			errBudget := ErrorBudgetAsPercentage(sl.Objective)
+			period := getObservationWindow(&sl)
+			allowedDowntime := DowntimePerPeriod(errBudget, period)
+			consumed, remain := getConsumedRemain(sl, errBudget, allowedDowntime)
+
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%s", sl.Type)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%s", sl.Name)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%.2f", errBudget)
+			fmt.Fprintf(&builder, "%s", "%")
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%v", allowedDowntime)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%s", consumed)
+			fmt.Fprint(&builder, "|")
+			fmt.Fprintf(&builder, "%s", remain)
 			fmt.Fprint(&builder, "|")
 
 			return builder.String()
@@ -261,10 +292,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 			// we compute the period between the real observation window time stamp
 			// if no observed, we use the user defined time period
-			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
-			if period == 0 {
-				period = sl.Period.ToDuration()
-			}
+			period := getObservationWindow(sl)
 
 			tuncatedSLName := utils.TruncateString(sl.Name, 78) // 80 chars max with tick
 
@@ -361,6 +389,32 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 	// render table
 	table.Render()
+}
+
+func getConsumedRemain(sl ServiceLevel, errBudget float64, allowedDowntime time.Duration) (string, string) {
+
+	c, r := ComsumedRemainingBudget(float64(100)-sl.Result.Actual.(float64), errBudget)
+
+	c2, r2 := ruleOfThreeDuration(c, allowedDowntime, 100), ruleOfThreeDuration(r, allowedDowntime, 100)
+	consumedVsAllowed := c2 - allowedDowntime
+	consumed := core.HumanizeDurationShort(c2)
+	if consumedVsAllowed > 0 {
+		consumed = fmt.Sprintf("%s (+%s)", consumed, core.HumanizeDurationShort(consumedVsAllowed))
+	}
+
+	remain := fmt.Sprintf("%s", core.HumanizeDurationShort(r2))
+
+	return consumed, remain
+}
+
+// compute the period between the real observation window time stamp
+// if not observed, we use the user defined time period
+func getObservationWindow(sl *ServiceLevel) time.Duration {
+	period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
+	if period == 0 {
+		period = sl.Period.ToDuration()
+	}
+	return period
 }
 
 // trend to ticks is a utility function that iterate over trending
