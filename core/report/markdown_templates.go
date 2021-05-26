@@ -40,9 +40,9 @@ Report time: {{ dateTime .Rep.Timestamp }}
 {{ range $index, $service := .Rep.Services }}
 ## Service #{{ serviceNo $index}}: {{$service.Name}}
 
-|  | Name               | Current | Objective| Time Window | Type  | Trend  |
-|--|------------------- | ------- | -------- |------------ |-------|-------|
-{{ range $ind, $sl := $service.ServiceLevels }}{{ serviceLevelRow $service.Name $sl $reps }}
+|  | Name                            | Current | Objective| Time Window | Type  | Trend |
+|--|-------------------------------- | ------- | -------- |------------ |-------|-------|
+{{ range $ind, $sl := $service.ServiceLevels }}|{{ svcLevelGetStatusIcon $sl}}|{{svcLevelGetName $sl}}|{{svcLevelGetActualResult $sl}}|{{ svcLevelGetObjective $sl }}|{{ svcLevelGetTimeWindow $sl }}|{{ svcLevelGetType $sl }}|{{ svcLevelGetTrends $service.Name $sl $reps }}
 {{ end }}
 
 

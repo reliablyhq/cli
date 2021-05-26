@@ -161,6 +161,43 @@ func markdownFuncMap() template.FuncMap {
 		"serviceNo": func(i int) int {
 			return i + 1
 		},
+		"svcLevelGetStatusIcon": func(sl ServiceLevel) string {
+			statusIcon := getStatusIcon(sl.Result)
+			return statusIcon
+		},
+		"svcLevelGetName": func(sl ServiceLevel) string {
+			return sl.Name
+		},
+		"svcLevelGetActualResult": func(sl ServiceLevel) string {
+			var result string
+			unit := "%"
+			if sl.Result != nil {
+				result = fmt.Sprintf("%.2f%s", sl.Result.Actual, unit)
+			} else {
+				result = "---"
+			}
+			return result
+		},
+		"svcLevelGetObjective": func(sl ServiceLevel) string {
+			unit := "%"
+			return fmt.Sprintf("%v%s", sl.Objective, unit)
+		},
+		"svcLevelGetTimeWindow": func(sl ServiceLevel) string {
+			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
+			return core.HumanizeDuration(period)
+		},
+		"svcLevelGetType": func(sl ServiceLevel) string {
+			return sl.Type
+		},
+		"svcLevelGetTrends": func(svcName string, sl ServiceLevel, lrs *[]Report) string {
+			var trends string = "n/a"
+			if lrs != nil && len(*lrs) > 0 {
+				slosAreMet := GetSLOTrend(svcName, sl.Name, *lrs)
+				ticks := trendToTicks(slosAreMet)
+				trends = strings.Join(ticks, " ") // Using non-breaking space here !!!
+			}
+			return trends
+		},
 		"serviceLevelRow": func(svcName string, sl ServiceLevel, lrs *[]Report) string {
 			var builder strings.Builder
 			statusIcon := getStatusIcon(sl.Result)
