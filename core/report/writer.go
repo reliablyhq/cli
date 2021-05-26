@@ -167,11 +167,12 @@ func markdownFuncMap() template.FuncMap {
 			unit := "%"
 			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
 
-			var trends string
-			slosAreMet := GetSLOTrend(svcName, sl.Name, *lrs)
-			// slosAreMet := []bool{true, false, true}
-			ticks := trendToTicks(slosAreMet)
-			trends = strings.Join(ticks, " ") // Using non-breaking space here !!!
+			var trends string = "n/a"
+			if lrs != nil && len(*lrs) > 0 {
+				slosAreMet := GetSLOTrend(svcName, sl.Name, *lrs)
+				ticks := trendToTicks(slosAreMet)
+				trends = strings.Join(ticks, " ") // Using non-breaking space here !!!
+			}
 
 			fmt.Fprint(&builder, "|")
 			fmt.Fprintf(&builder, "%s", statusIcon)
