@@ -240,31 +240,6 @@ func markdownFuncMap() template.FuncMap {
 
 			return fmt.Sprintf("%s", remain)
 		},
-		"errorBudgetRow": func(sl ServiceLevel) string {
-			var builder strings.Builder
-
-			errBudget := ErrorBudgetAsPercentage(sl.Objective)
-			period := getObservationWindow(&sl)
-			allowedDowntime := DowntimePerPeriod(errBudget, period)
-			consumed, remain := getConsumedRemain(sl, errBudget, allowedDowntime)
-
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", sl.Type)
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", sl.Name)
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%.2f", errBudget)
-			fmt.Fprintf(&builder, "%s", "%")
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%v", allowedDowntime)
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", consumed)
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", remain)
-			fmt.Fprint(&builder, "|")
-
-			return builder.String()
-		},
 	}
 }
 
