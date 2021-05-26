@@ -26,7 +26,7 @@ When you define an SLO for your system, you include a target percentage for that
 
 The expectation is over a time window, the responses for the Serice will be within that target percentage.
 
-An example could be 99.5% available over a period of 7 days. The target availability is less than 100% so this leaves a margin for error. This can be considered the Error Budget.
+An example could be 99.5% available over a period of 7 days. The target availability is less than 100% so this leaves a margin for error. This is the Error Budget.
 
 </details>
 
