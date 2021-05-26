@@ -5,7 +5,7 @@ const sloTemplate = `# Reliably SLO Report
 Service Level Objectives identify what you should care about on your system. They are what good looks like for the users of your system. If an SLO is underperforming, it will be impacting your users in some way.
 
 <details>
-  <summary>Expand for further SLOs with Reliably</summary>
+  <summary>Expand for further information on SLOs with Reliably</summary>
 
 
   The Reliably CLI allows you to define SLOs for Availability and Latency.
