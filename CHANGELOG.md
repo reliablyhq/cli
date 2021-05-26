@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+### Changed format and content of the SLO Markdown Report - 2021-05-26
+
 ## [v0.16.0] - 2021-05-19
 
 ### Added
