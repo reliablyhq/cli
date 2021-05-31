@@ -17,6 +17,8 @@ jobs:
       - uses: actions/checkout@v2
         with:
           token: ${{ secrets.GH_PAT }}
+      - name: Create release branch
+        run: git checkout -b release/${{ github.event.inputs.version }}
       - name: Update changelog
         uses: thomaseizinger/keep-a-changelog-new-release@1.1.0
         with:
@@ -31,5 +33,23 @@ jobs:
         run: |
           git add CHANGELOG.md
           git commit -s --message "Prepare release ${{ github.event.inputs.version }}"
-          git tag ${{ github.event.inputs.version }}
-          git push && git push --tags
+
+          echo "::set-output name=commit::$(git rev-parse HEAD)"
+
+      - name: Push new branch
+        run: git push origin release/${{ github.event.inputs.version }}
+
+      - name: Create pull request
+        uses: thomaseizinger/create-pull-request@1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        with:
+          head: release/${{ github.event.inputs.version }}
+          base: main
+          title: Release version ${{ github.event.inputs.version }}
+          reviewers: ${{ github.actor }} # By default, we request a review from the person who triggered the workflow.
+          body: |
+            Hi @${{ github.actor }}!
+            This PR was created in response to a manual trigger of the release workflow here: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}.
+            I've updated the changelog in this commit: ${{ steps.make-commit.outputs.commit }}.
+            Merging this PR will create a new tag on main branch that will create/build the release of the CLI.

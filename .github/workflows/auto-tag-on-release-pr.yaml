@@ -1,0 +1,34 @@
+name: "Tag main branch to trigger the CLI build & public release"
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  release:
+    name: Publish new release
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+    if: github.event.pull_request.merged == true # only merged pull requests must trigger this job
+    steps:
+      - name: Extract version from branch name (for release branches)
+        if: startsWith(github.event.pull_request.head.ref, 'release/')
+        run: |
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          VERSION=${BRANCH_NAME#release/}
+          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GH_PAT }}
+      - name: Initialize mandatory git config
+        run: |
+          git config user.email "74009226+reliably-ci@users.noreply.github.com"
+          git config user.name "CI at Reliably"
+      - name: Automatically create the tag to trigger release build workflow
+        run: |
+          git tag $RELEASE_VERSION
+          git push && git push --tags
