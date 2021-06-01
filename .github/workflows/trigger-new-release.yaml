@@ -46,7 +46,7 @@ jobs:
           body: |
             This PR was created in response to a manual trigger by @${{ github.actor }} of the release workflow here: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}.
             I've updated the changelog in this commit: ${{ steps.make-commit.outputs.commit }}.
-            This PR will be automatically merged by @github-actions.
+            This PR will be automatically merged by @github-actions bot.
             Then a new tag on main branch will be pushed to trigger the release of the CLI.
       - name: Find pull request
         uses: juliangruber/find-pull-request-action@v1
