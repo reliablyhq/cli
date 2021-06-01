@@ -62,7 +62,7 @@ jobs:
         uses: juliangruber/merge-pull-request-action@v1
         with:
           github-token: ${{ secrets.GH_PAT }}
-          number: 1
+          number: ${{ steps.find-pull-request.outputs.number }}
           method: squash
       - name: switch back to main branch to pull after pr merge
         uses: actions/checkout@v2
