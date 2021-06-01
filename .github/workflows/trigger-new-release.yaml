@@ -42,12 +42,12 @@ jobs:
           head: release/${{ github.event.inputs.version }}
           base: main
           title: Release version ${{ github.event.inputs.version }}
-          reviewers: ${{ github.actor }} # By default, we request a review from the person who triggered the workflow.
+          # reviewers: ${{ github.actor }} # We do not set explicit reviewer as it will be automatically approved by GH-actions bot
           body: |
-            Hi @${{ github.actor }}!
-            This PR was created in response to a manual trigger of the release workflow here: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}.
+            This PR was created in response to a manual trigger by @${{ github.actor }} of the release workflow here: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}.
             I've updated the changelog in this commit: ${{ steps.make-commit.outputs.commit }}.
-            Merging this PR will create a new tag on main branch that will create/build the release of the CLI.
+            This PR will be automatically merged by @github-actions bot.
+            Then a new tag on main branch will be pushed to trigger the release of the CLI.
       - name: Find pull request
         uses: juliangruber/find-pull-request-action@v1
         id: find-pull-request
@@ -63,12 +63,14 @@ jobs:
         with:
           github-token: ${{ secrets.GH_PAT }}
           number: ${{ steps.find-pull-request.outputs.number }}
-          method: squash
-      - name: switch back to main branch to pull after pr merge
-        uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.GH_PAT }}
+          method: rebase
+      - name: Delete release branch
+        run: |
+          git push origin --delete release/${{ github.event.inputs.version }}
       - name: Create the git tag (trigger release build)
         run: |
+          git checkout main
+          git pull
           git tag ${{ github.event.inputs.version }}
+          git log --name-status HEAD^..HEAD
           git push --tags
