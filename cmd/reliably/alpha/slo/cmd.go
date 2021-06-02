@@ -1,10 +1,12 @@
-package slo
+package sloAlpha
 
 import (
 	"github.com/MakeNowJust/heredoc/v2"
-	init_cmd "github.com/reliablyhq/cli/cmd/reliably/slo/init"
-	"github.com/reliablyhq/cli/cmd/reliably/slo/report"
 	"github.com/spf13/cobra"
+
+	//init_cmd "github.com/reliablyhq/cli/cmd/reliably/slo/init"
+	"github.com/reliablyhq/cli/cmd/reliably/alpha/slo/report"
+	"github.com/reliablyhq/cli/cmd/reliably/slo/report"
 )
 
 func NewCommand() *cobra.Command {
@@ -14,8 +16,8 @@ func NewCommand() *cobra.Command {
 		Long:  longDescription(),
 	}
 
-	cmd.AddCommand(init_cmd.NewCommand())
-	cmd.AddCommand(report.NewCommand(nil))
+	//cmd.AddCommand(init_cmd.NewCommand())
+	cmd.AddCommand(report.NewCommand(reportAlpha.AlpaReportRun))
 	return &cmd
 }
 

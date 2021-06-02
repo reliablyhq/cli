@@ -54,7 +54,7 @@ var (
 	service string
 )
 
-func NewCommand() *cobra.Command {
+func NewCommand(runF func(*ReportOptions) error) *cobra.Command {
 	opts := &ReportOptions{
 		IO: iostreams.System(),
 	}
@@ -140,6 +140,10 @@ comma-separated list as values.`),
 					Path:   path,
 				})
 
+			}
+
+			if runF != nil {
+				return runF(opts)
 			}
 
 			return reportRun(opts)

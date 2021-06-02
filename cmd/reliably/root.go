@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/reliablyhq/cli/cmd/reliably/alpha"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/cmd/reliably/slo"
 	"github.com/reliablyhq/cli/core"
@@ -104,6 +105,10 @@ Environment variables:
 	cmd.AddCommand(NewCmdScan(cmd))
 	cmd.AddCommand(NewCmdUpdate())
 	cmd.AddCommand(slo.NewCommand())
+
+	if v.IsDevVersion() {
+		cmd.AddCommand(alpha.NewCommand())
+	}
 
 	//Help topics
 	cmd.AddCommand(NewHelpTopic("environment"))
