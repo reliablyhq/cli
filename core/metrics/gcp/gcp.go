@@ -250,7 +250,7 @@ func parseStatusErrors(it []*monitoringpb.TimeSeries) (float64, error) {
 
 	responseTotal := 0
 	errorCount := 0
-	var errorPercentage float64 = 0
+	var errorPercentage float64
 
 	for _, resp := range it {
 		if resp.GetMetric().GetLabels()["response_code_class"] == "500" {
