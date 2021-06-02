@@ -76,7 +76,7 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 			for _, sli := range sl.Indicators {
 				provider, err := getProviderForResource(sli.Provider)
 				if err != nil {
-					return nil, fmt.Errorf("an error occured while getting a provider for sli: %s => %s", sli.Provider, err)
+					return nil, fmt.Errorf("an error occurred while getting a provider for sli: %s => %s", sli.Provider, err)
 				}
 				defer provider.Close()
 
@@ -95,7 +95,7 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 				if err == nil {
 					allValues = append(allValues, val)
 				} else {
-					log.Debugf("an error occured while getting %s data for resource: %s-%s => %v ", sl.Type, sli.Provider, sli.ID, err)
+					log.Debugf("an error occurred while getting %s data for resource: %s-%s => %v ", sl.Type, sli.Provider, sli.ID, err)
 					valuesHasError = true
 				}
 			}

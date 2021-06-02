@@ -204,7 +204,7 @@ func GetClusterRoleBindingSpec(cs kubernetes.Clientset) (clusterRoleBinding []st
 // GetIngressSpec provide a list an of JSON Ingress specs from the clientset
 // /!\ The only rule we currently have doesn't seem to be triggerable
 // /!\ K8S-IN-0001: https://github.com/reliablyhq/opa-policies/blob/main/kubernetes/ingress.rego
-// /!\ It looks for indentical Ingress hosts in different namespaces, and we are currently working
+// /!\ It looks for identical Ingress hosts in different namespaces, and we are currently working
 // /!\ in only one namespace, passed as a parameter.
 // /!\ Probably a TODO here.
 func GetIngressSpec(cs kubernetes.Clientset, namespace string) (ingress []string, err error) {

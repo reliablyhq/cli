@@ -80,7 +80,7 @@ Environment variables:
 			return err
 		}
 
-		// any command should be run with authentication unless explicitely disabled
+		// any command should be run with authentication unless explicitly disabled
 		doCheck := cmd != nil && cmd.Name() != "help" && cmdutil.IsAuthCheckEnabled(cmd)
 		if doCheck && !cmdutil.CheckAuth() {
 			cmdutil.PrintRequireAuthMsg()
@@ -244,7 +244,7 @@ func disableColor() {
 }
 
 // customizeColor changes a default color style for survey
-// default anwsers will be non-bold light grey, instead of color too close
+// default answers will be non-bold light grey, instead of color too close
 // to the question color style (question & default answer look very alike)
 // -> override survey's color - code from GitHub CLI
 // https://github.com/cli/cli/blob/ac0fe6bf715537a5fb9b99f80344ea098134a335/cmd/gh/main.go#L68

@@ -18,7 +18,7 @@ type File struct {
 }
 
 // Resource is a resource to analyze from a file.
-// A file can contain mutliple resource, indicated by the startingLine
+// A file can contain multiple resource, indicated by the startingLine
 // The platform indicates the platform on which the resource belongs to
 // The kind indicates the type of the resource
 type Resource struct {
@@ -53,7 +53,7 @@ type Result struct {
 }
 
 // ResultSet is a list of results after analysis
-// It can contain results for mutliple resources for mutliple files
+// It can contain results for multiple resources for multiple files
 type ResultSet []Result
 
 // SafeWriter allows to safely output to writer until an error occurs
@@ -64,13 +64,13 @@ type SafeWriter struct {
 }
 
 // Writeln safewrite writes a string with the inner io writer
-// If an error occured on previous write, the next strings will be ignored
+// If an error occurred on previous write, the next strings will be ignored
 // The string will always be terminated by a line return char, ie. it will
 // be written if the given string does not termiate with a CRLF
 func (sw *SafeWriter) Writeln(s string) {
 
 	if sw.err != nil {
-		// does not write if an error already occured
+		// does not write if an error already occurred
 		return
 	}
 	//_, sw.err = fmt.Fprintln(sw.w, s)

@@ -170,7 +170,7 @@ func editWorkflowInPlace(platform string) error {
 	return fmt.Errorf("Unable to edit the workflow file in place for %s", platform)
 }
 
-// marshalWorkflow retuns a yaml formatted string of a workflow map
+// marshalWorkflow returns a yaml formatted string of a workflow map
 func marshalWorkflow(wf workflow) (string, error) {
 	s, err := yaml.Marshal(&wf)
 	if err != nil {

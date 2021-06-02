@@ -182,13 +182,13 @@ func TestParsedServerFromGitURL(t *testing.T) {
 		},
 
 		{
-			name:  "ssh url wiht custom server & port",
+			name:  "ssh url with custom server & port",
 			url:   "ssh://login@server.com:12345/repository.git",
 			wants: "server.com:12345",
 		},
 
 		{
-			name:  "ssh url wiht custom server & port",
+			name:  "ssh url with custom server & port",
 			url:   "me@myserver.example.com:repos/myrepo.git",
 			wants: "myserver.example.com",
 		},

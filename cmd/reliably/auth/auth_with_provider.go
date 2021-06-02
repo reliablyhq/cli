@@ -210,7 +210,7 @@ func authFlow(hostname string, provider AuthProvider) (accessToken string, usern
 	// Proxying authorization code to API
 	// - for oauth access token validation,
 	// - retrieval of user info from OAuth provider
-	// - new user account creation, whith default org & api access token
+	// - new user account creation, with default org & api access token
 	// -> returns API access token & current reliably username
 	accessToken, username, err = authorizeToAPI(hostname, provider, state, code)
 

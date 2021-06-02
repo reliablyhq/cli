@@ -67,7 +67,7 @@ func (s Suggestion) FileLocation() string {
 // As better explained in the SARIF spec:
 // This value shall be the same for results that are logically identical,
 // and distinct for any two suggestions that are logically distinct.
-// It must be resistent to changes that do not affect the logical identity
+// It must be resistant to changes that do not affect the logical identity
 // of the result, such as location whithin a source file.
 func (s Suggestion) Fingerprint() string {
 

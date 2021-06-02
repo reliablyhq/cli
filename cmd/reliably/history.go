@@ -125,7 +125,7 @@ func historyRun(opts *HistoryOptions) (err error) {
 				currentExec = exec.ID
 				currentCount = len(exec.Suggestions)
 			} else {
-				// we're continuing the exection on a different cursor/page
+				// we're continuing the execution on a different cursor/page
 				currentCount = currentCount + len(exec.Suggestions)
 			}
 
