@@ -163,7 +163,7 @@ func declareSLOForService(s *manifest.Service) {
 func getResourceIDForProvider(provider string) string {
 	switch provider {
 	case "aws":
-		return buildAWSArn()
+		return promptAWSArn()
 	case "gcp":
 		return buildGCPResourceID()
 	default:

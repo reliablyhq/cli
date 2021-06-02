@@ -27,7 +27,7 @@ var (
 	}
 )
 
-func buildAWSArn() string {
+func promptAWSArn() string {
 	var resourceArn string
 
 	err := survey.AskOne(
@@ -49,83 +49,93 @@ func buildAWSArn() string {
 	checkPromptExit(err)
 
 	if resourceArn == "i" {
-		resolver := endpoints.DefaultResolver()
-		partitions := resolver.(endpoints.EnumPartitions).Partitions()
+		return buildAWSArn()
+	}
 
+	return resourceArn
+}
+
+func buildAWSArn() string {
+	var resourceArn string
+
+	resolver := endpoints.DefaultResolver()
+	partitions := resolver.(endpoints.EnumPartitions).Partitions()
+
+	if len(partitions) == 0 {
+		fmt.Println(iconWarn, "Reliably couldn't query AWS. Please try again or use normal mode.")
+		return ""
+	}
+
+	var partitionsIDs = []string{}
+	for _, p := range partitions {
+		partitionsIDs = append(partitionsIDs, p.ID())
+	}
+	partitionID := question.WithSingleChoiceAnswer("Select an AWS partition.", awsOptions, partitionsIDs...)
+
+	var partition endpoints.Partition
+
+	for _, p := range partitions {
+		if p.ID() == partitionID {
+			partition = p
+		}
+	}
+
+	if len(partition.Regions()) == 0 {
 		if len(partitions) == 0 {
 			fmt.Println(iconWarn, "Reliably couldn't query AWS. Please try again or use normal mode.")
 			return ""
 		}
-
-		var partitionsIDs = []string{}
-		for _, p := range partitions {
-			partitionsIDs = append(partitionsIDs, p.ID())
-		}
-		partitionID := question.WithSingleChoiceAnswer("Select an AWS partition.", awsOptions, partitionsIDs...)
-
-		var partition endpoints.Partition
-
-		for _, p := range partitions {
-			if p.ID() == partitionID {
-				partition = p
-			}
-		}
-
-		if len(partition.Regions()) == 0 {
-			if len(partitions) == 0 {
-				fmt.Println(iconWarn, "Reliably couldn't query AWS. Please try again or use normal mode.")
-				return ""
-			}
-		}
-		var regionsIDs = []string{}
-		for id := range partition.Regions() {
-			regionsIDs = append(regionsIDs, id)
-		}
-		sort.Strings(regionsIDs)
-		regionID := question.WithSingleChoiceAnswer("Select an AWS region.", awsOptions, regionsIDs...)
-
-		cfgIAM, err := config.LoadDefaultConfig(context.TODO())
-		if err != nil {
-			fmt.Println(iconWarn, "Reliably encountered a problem. Please try again or use normal mode.")
-			return ""
-		}
-		clientIAM := iam.NewFromConfig(
-			cfgIAM,
-			func(opt *iam.Options) {
-				opt.Region = regionID
-			},
-		)
-		iamParams := &iam.GetUserInput{}
-		user, err := clientIAM.GetUser(context.TODO(), iamParams)
-		if err != nil {
-			fmt.Println(iconWarn, "Reliably couldn't authenticate you with AWS. Make sure you are logged in to AWS.")
-			return ""
-		}
-		userArnStr := aws.ToString(user.User.Arn)
-		userArn, err := arn.Parse(userArnStr)
-		if err != nil {
-			fmt.Println(iconWarn, "Reliably encountered a problem. Please try again or use normal mode.")
-			return ""
-		}
-		accountID := userArn.AccountID
-
-		awsServices := []string{}
-		for key := range awsServicesMap {
-			awsServices = append(awsServices, key)
-		}
-		sort.Strings(awsServices) // sorts slice in-place
-		serviceFullName := question.WithSingleChoiceAnswer("Select an AWS service.", awsOptions, awsServices...)
-		service := awsServicesMap[serviceFullName]
-
-		serviceID := selectAWSService(service, regionID)
-
-		if serviceID == "" {
-			return ""
-		} else {
-			resourceArn = "arn:" + partitionID + ":" + service + ":" + regionID + ":" + accountID + ":" + serviceID
-		}
 	}
+	var regionsIDs = []string{}
+	for id := range partition.Regions() {
+		regionsIDs = append(regionsIDs, id)
+	}
+	sort.Strings(regionsIDs)
+	regionID := question.WithSingleChoiceAnswer("Select an AWS region.", awsOptions, regionsIDs...)
+
+	cfgIAM, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		fmt.Println(iconWarn, "Reliably encountered a problem. Please try again or use normal mode.")
+		return ""
+	}
+	clientIAM := iam.NewFromConfig(
+		cfgIAM,
+		func(opt *iam.Options) {
+			opt.Region = regionID
+		},
+	)
+	iamParams := &iam.GetUserInput{}
+	user, err := clientIAM.GetUser(context.TODO(), iamParams)
+	if err != nil {
+		fmt.Println(iconWarn, "Reliably couldn't authenticate you with AWS. Make sure you are logged in to AWS.")
+		return ""
+	}
+	userArnStr := aws.ToString(user.User.Arn)
+	userArn, err := arn.Parse(userArnStr)
+	if err != nil {
+		fmt.Println(iconWarn, "Reliably encountered a problem. Please try again or use normal mode.")
+		return ""
+	}
+	accountID := userArn.AccountID
+
+	awsServices := []string{}
+	for key := range awsServicesMap {
+		awsServices = append(awsServices, key)
+	}
+	sort.Strings(awsServices) // sorts slice in-place
+	serviceFullName := question.WithSingleChoiceAnswer("Select an AWS service.", awsOptions, awsServices...)
+	service := awsServicesMap[serviceFullName]
+
+	serviceID := selectAWSService(service, regionID)
+
+	if serviceID == "" {
+		resourceArn = ""
+	} else {
+		resourceArn = "arn:" + partitionID + ":" + service + ":" + regionID + ":" + accountID + ":" + serviceID
+	}
+
 	return resourceArn
+
 }
 
 func selectAWSService(serviceType string, region string) string {
