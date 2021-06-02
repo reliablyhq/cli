@@ -183,7 +183,7 @@ func reportRun(opts *ReportOptions) error {
 	m, err := getManifest()
 	if err != nil {
 		log.Debug(err)
-		return errors.New("an error occured while attempting to load the manifest")
+		return errors.New("an error occurred while attempting to load the manifest")
 	}
 
 	if m == nil {
@@ -231,7 +231,7 @@ func reportRun(opts *ReportOptions) error {
 	return nil
 }
 
-// watch - continously fetch and update report
+// watch - continuously fetch and update report
 // and output to terminal
 func watch() error {
 	rChan := make(chan *report.Report, 5)
@@ -251,7 +251,7 @@ func watch() error {
 			m, err := getManifest()
 			if err != nil {
 				log.Debug(err)
-				errChan <- errors.New("an error occured while attempting to load the manifest")
+				errChan <- errors.New("an error occurred while attempting to load the manifest")
 			}
 
 			if m == nil {

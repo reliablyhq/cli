@@ -22,7 +22,7 @@ func buildGCPResourceID() string {
 	var resourceName string
 
 	ctx := context.Background()
-	crmService, err := crm.NewService(ctx)
+	crmService, _ := crm.NewService(ctx)
 	orgsService := crm.NewOrganizationsService(crmService)
 	orgs, err := orgsService.Search().Context(ctx).Do()
 	if err != nil {
@@ -69,7 +69,7 @@ func buildGCPResourceID() string {
 		sanitizedResourceType = sanitizeString(resourceType)
 
 		lbctx := context.Background()
-		computeService, err := compute.NewService(lbctx)
+		computeService, _ := compute.NewService(lbctx)
 		lbsService := compute.NewUrlMapsService(computeService)
 		lbs, err := lbsService.List(projectID).Context(ctx).Do()
 		if err != nil {

@@ -41,7 +41,7 @@ var (
 
 // NewAwsCloudWatch is the factory function for AWS cloud watch metric provider
 func NewAwsCloudWatch() (cw *AwsCloudWatch, err error) {
-	// Credentials to AWS go SDK can be setup as described in the offical doc:
+	// Credentials to AWS go SDK can be setup as described in the official doc:
 	// https://aws.github.io/aws-sdk-go-v2/docs/configuring-sdk/#specifying-credentials
 
 	return &AwsCloudWatch{}, nil

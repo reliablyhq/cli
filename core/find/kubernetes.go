@@ -160,8 +160,8 @@ func ReadAndSplitKubernetesFile(file string) []string {
 }
 
 // GetYamlInfo unmarshal the YAML into a Kubernetes meta structure
-// that is usefull to ensure the unmarshaled YAML is a Kubernetes resource
-// definition. The stucture will then contain basic K8S object meta
+// that is useful to ensure the unmarshaled YAML is a Kubernetes resource
+// definition. The structure will then contain basic K8S object meta
 func GetYamlInfo(yamlContent string) (*KubernetesAPI, error) {
 
 	var m KubernetesAPI

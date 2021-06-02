@@ -20,7 +20,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	policy, err := os.ReadFile("policy.rego")
+	policy, _ := os.ReadFile("policy.rego")
 
 	resultSet := core.Eval(core.RegoModule{Name: "policy.rego", Raw: string(policy)}, &x)
 

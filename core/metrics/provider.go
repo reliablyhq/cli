@@ -22,6 +22,6 @@ type (
 		GetLatencyAboveThresholdPercentage(resourceID string, from, to time.Time, threshold int) (float64, error)
 		GetAvailabilityPercentage(resourceID string, from, to time.Time) (float64, error)
 
-		Close() error // providers must explicitely be closed once not needed anymore
+		Close() error // providers must explicitly be closed once not needed anymore
 	}
 )
