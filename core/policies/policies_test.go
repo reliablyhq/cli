@@ -1,7 +1,5 @@
 package policies
 
-import ()
-
 /*
 func TestDownloadPodPolicy(t *testing.T) {
 

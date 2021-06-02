@@ -1,7 +1,5 @@
 package policies
 
-import ()
-
 // PolicyStorage defines the interface for policy module storage.
 type PolicyStorage interface {
 	ListPolicies() ([]string, error)

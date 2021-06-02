@@ -239,8 +239,8 @@ Reliably can also scan for your live kubernetes cluster.`,
 	// reformat the flags usage to be able to group them into sub sections
 	flagsUsages := strings.Split(cmd.Flags().FlagUsages(), "\n")
 	var groupedFlags map[string][]string = map[string][]string{
-		"":     []string{"format", "level", "output"},
-		"live": []string{"live", "kubecontext", "kubeconfig", "namespace"},
+		"":     {"format", "level", "output"},
+		"live": {"live", "kubecontext", "kubeconfig", "namespace"},
 	}
 
 	var groupedFlagsUsages map[string]string = make(map[string]string)

@@ -31,10 +31,10 @@ func TestLoad(t *testing.T) {
 			},
 			want: &Manifest{
 				Services: []*Service{
-					&Service{
+					{
 						Name: "Service A",
 						ServiceLevels: []*ServiceLevel{
-							&ServiceLevel{
+							{
 								Name:      "Service A Availability",
 								Type:      "availability",
 								Objective: 99,
@@ -49,7 +49,7 @@ func TestLoad(t *testing.T) {
 									},
 								},
 							},
-							&ServiceLevel{
+							{
 								Name: "Service A Latency",
 								Type: "latency",
 								Criteria: LatencyCriteria{
@@ -66,10 +66,10 @@ func TestLoad(t *testing.T) {
 						},
 						//Dependencies: []string{},
 					},
-					&Service{
+					{
 						Name: "Service B",
 						ServiceLevels: []*ServiceLevel{
-							&ServiceLevel{
+							{
 								Name:      "Service B Availability",
 								Type:      "availability",
 								Objective: 99,
@@ -94,10 +94,10 @@ func TestLoad(t *testing.T) {
 			},
 			want: &Manifest{
 				Services: []*Service{
-					&Service{
+					{
 						Name: "Service A",
 						ServiceLevels: []*ServiceLevel{
-							&ServiceLevel{
+							{
 								Name:      "Service A Availability",
 								Type:      "availability",
 								Objective: 99,
@@ -112,7 +112,7 @@ func TestLoad(t *testing.T) {
 									},
 								},
 							},
-							&ServiceLevel{
+							{
 								Name: "Service A Latency",
 								Type: "latency",
 								Criteria: LatencyCriteria{
@@ -129,10 +129,10 @@ func TestLoad(t *testing.T) {
 						},
 						//Dependencies: []string{},
 					},
-					&Service{
+					{
 						Name: "Service B",
 						ServiceLevels: []*ServiceLevel{
-							&ServiceLevel{
+							{
 								Name:      "Service B Availability",
 								Type:      "availability",
 								Objective: 99,

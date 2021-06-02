@@ -1,7 +1,5 @@
 package policies
 
-import ()
-
 type PolicyRegistry struct {
 	registry   Store
 	downloader Downloader

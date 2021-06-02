@@ -1,7 +1,5 @@
 package policies
 
-import ()
-
 // store reprensents a structure for in-memory storage of policies
 type store struct {
 	policies map[string][]byte // raw policies
