@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/reliablyhq/cli/cmd/reliably/alpha"
+	"github.com/reliablyhq/cli/cmd/reliably/beta"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/cmd/reliably/slo"
 	"github.com/reliablyhq/cli/core"
@@ -108,6 +109,7 @@ Environment variables:
 
 	if v.IsDevVersion() {
 		cmd.AddCommand(alpha.NewCommand())
+		cmd.AddCommand(beta.NewCommand())
 	}
 
 	//Help topics
