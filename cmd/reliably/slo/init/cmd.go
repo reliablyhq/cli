@@ -23,7 +23,6 @@ import (
 )
 
 var (
-	manifestPath        string
 	supportedExtensions = []string{".yaml", ".json"}
 	providersMap        = map[string]string{
 		"Amazon Web Services":   "aws",
@@ -31,24 +30,38 @@ var (
 	}
 )
 
+type InitOptions struct {
+	IO *iostreams.IOStreams
+
+	ManifestPath string
+}
+
 var emptyOptions = []question.AskOpt{}
 
 var iconWarn = iostreams.WarningIcon()
 
 func NewCommand() *cobra.Command {
+	opts := &InitOptions{
+		IO: iostreams.System(),
+	}
+
 	cmd := cobra.Command{
 		Use:     "init",
 		Short:   "initialise the slo portion of the manifest",
 		Long:    longCommandDescription(),
 		Example: examples(),
-		RunE:    runE,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return initRun(opts)
+		},
 	}
 
-	cmd.Flags().StringVarP(&manifestPath, "output", "o", "./reliably.yaml", "store a local copy of the service manifest created")
+	cmd.Flags().StringVarP(&opts.ManifestPath, "output", "o", "./reliably.yaml", "store a local copy of the service manifest created")
 	return &cmd
 }
 
-func runE(_ *cobra.Command, args []string) error {
+func initRun(opts *InitOptions) error {
+	manifestPath := opts.ManifestPath
+
 	log.Debugf("checking for existing service manifest: %s", manifestPath)
 	if _, err := os.Stat(manifestPath); err == nil {
 		if !question.WithBoolAnswer(fmt.Sprintf("Existing local manifest detected (%s); Do you want to overwrite it?", manifestPath), emptyOptions, question.WithNoAsDefault) {
