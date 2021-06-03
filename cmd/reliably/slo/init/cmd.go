@@ -40,7 +40,7 @@ var emptyOptions = []question.AskOpt{}
 
 var iconWarn = iostreams.WarningIcon()
 
-func NewCommand() *cobra.Command {
+func NewCommand(runF func(*InitOptions) error) *cobra.Command {
 	opts := &InitOptions{
 		IO: iostreams.System(),
 	}
@@ -51,6 +51,10 @@ func NewCommand() *cobra.Command {
 		Long:    longCommandDescription(),
 		Example: examples(),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if runF != nil {
+				return runF(opts)
+			}
+
 			return initRun(opts)
 		},
 	}
