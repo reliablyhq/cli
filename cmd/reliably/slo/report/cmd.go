@@ -42,10 +42,11 @@ type ReportOptions struct {
 const defaultFormat = "table"
 
 var (
-	supportedFormats  = Choice{"json", "yaml", "text", "table", "markdown"}
+	supportedFormats  = Choice{"json", "yaml", "text", "table", "markdown", "template"}
 	deprecatedFormats = Choice{"simple", "tabbed"}
 	manifestPath      string
 	outputPath        string
+	templateFile      string
 	outputFormat      string
 	watchFlag         bool
 	outputPaths       []string
@@ -69,10 +70,22 @@ formats at once, with using '--format' and '--output' flags with
 comma-separated list as values.`),
 		Example: `  $ reliably slo report
   $ reliably slo report -f text
+  $ reliably slo report -t slo-report.tmpl
+  $ reliably slo report -t slo-report.tmpl -o slo-report.txt
   $ reliably slo report -f markdown -o report.md
   $ reliably slo report -f yaml,json -o o.yaml,o.json`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			// Validate command options
+
+			if templateFile != "" {
+				// check template file exists, see outputFormat to template
+				_, err := os.Open(templateFile) // For read access.
+				if err != nil {
+					return fmt.Errorf("Error opening template file: %s", err)
+				}
+
+				outputFormat = "template"
+			}
 
 			if outputFormat != "" {
 				outputFormats = strings.Split(outputFormat, ",")
@@ -125,6 +138,8 @@ comma-separated list as values.`),
 					format = report.SimpleText
 				case "markdown":
 					format = report.MARKDOWN
+				case "template":
+					format = report.TEMPLATE
 				case "yaml":
 					format = report.YAML
 				}
@@ -148,6 +163,7 @@ comma-separated list as values.`),
 
 	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
+	cmd.Flags().StringVarP(&templateFile, "template", "t", "", "the name of the template to use for the report output")
 	cmd.Flags().StringVarP(&outputFormat, "format", "f", "table", fmt.Sprintf("specify the report format. Allowed Values: %v", supportedFormats))
 	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "continuously watch for changes in report output")
 	cmd.Flags().StringVar(&service, "service", "", "the name of the service")
@@ -220,7 +236,10 @@ func reportRun(opts *ReportOptions) error {
 			w = outfile
 			// we cannot defer outfile closing here as we are in a for-loop
 		}
-		report.Write(out.Format, r, w, log.StandardLogger(), &lr, &reports)
+
+		log.Debugf("Template file given on cli: %v \n", templateFile)
+
+		report.Write(out.Format, r, w, templateFile, log.StandardLogger(), &lr, &reports)
 
 		if outfile, ok := w.(*os.File); ok {
 			outfile.Close() // explicitly closing the file handle
@@ -280,7 +299,7 @@ func watch() error {
 		case r := <-rChan:
 			clearScreen()
 			fmt.Println(color.Magenta("Refreshing SLO report every 3 seconds."), "Press CTRL+C to quit.")
-			report.Write(report.TABBED, r, os.Stdout, log.StandardLogger(), last, nil)
+			report.Write(report.TABBED, r, os.Stdout, "", log.StandardLogger(), last, nil)
 			last = r
 
 		case err := <-errChan:

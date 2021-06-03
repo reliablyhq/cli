@@ -37,9 +37,9 @@ For more details of an SLO report, see the Reliably documentation on [How the Re
 
 {{ $report := .Rep }}
 
-Report time: {{ dateTime .Rep.Timestamp }}
+Report time: {{ dateTime $report.Timestamp }}
 {{ $reps := .Lreps }}
-{{ range $index, $service := .Rep.Services }}
+{{ range $index, $service := $report.Services }}
 ## Service #{{ serviceNo $index}}: {{$service.Name}}
 
 |  | Name                            | Current | Objective| Time Window | Type  | Trend |
@@ -53,13 +53,21 @@ Report time: {{ dateTime .Rep.Timestamp }}
 
 The Error Budget metrics are:
 
-|  Type    | Name          |ErrorBudget(%)|Downtime|Consumed|Remain
-| -------- | --------------|--------------|--------|--------|--------|
-{{ range $ind, $sl := $service.ServiceLevels }}{{ errorBudgetRow $sl }}
+|  Type    | Name          |ErrorBudget(%)|Time Window|Downtime|Consumed|Remain
+| -------- | --------------|--------------|-----------|--------|--------|--------|
+{{ range $ind, $sl := $service.ServiceLevels -}}
+|{{- svcLevelGetType $sl -}}|
+{{- svcLevelGetName $sl}}|
+{{- svcLevelGetTimeWindow $sl }}|
+{{- errBudgetPercentage $sl }}|
+{{- errBudgetAllowedDownTime $sl }}|
+{{- errBudgetConsumed $sl }}|
+{{- errBudgetRemain $sl }}|
 {{ end }}
 
 
 {{ end }}
 
-<sub>Generating with: The Reliably CLI Version {{ version }}</sub>
+<sub>Generating with: The Reliably CLI Version {{ reliablyVersion }}</sub>
+
 `

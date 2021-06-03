@@ -48,10 +48,11 @@ const (
 	SimpleText Format = "simple"
 	MARKDOWN   Format = "markdown"
 	YAML       Format = "yaml"
+	TEMPLATE   Format = "template"
 )
 
 // Write - write report based on given format
-func Write(format Format, r *Report, w io.Writer, l *log.Logger, lr *Report, lrs *[]Report) {
+func Write(format Format, r *Report, w io.Writer, templateFile string, l *log.Logger, lr *Report, lrs *[]Report) {
 	if r == nil {
 		return
 	}
@@ -74,6 +75,9 @@ func Write(format Format, r *Report, w io.Writer, l *log.Logger, lr *Report, lrs
 
 	case MARKDOWN:
 		_ = reportMarkdown(r, w, lrs)
+
+	case TEMPLATE:
+		_ = reportFromTemplate(r, w, templateFile, lrs)
 
 	default:
 		reportTable(r, w, lr, lrs)
@@ -118,6 +122,41 @@ func reportSimpleText(r *Report, w io.Writer) {
 	}
 }
 
+func reportFromTemplate(r *Report, w io.Writer, templateFile string, lrs *[]Report) error {
+
+	// combines the report and report history for use in the markdown report
+	type ReportData struct {
+		Rep   *Report
+		Lreps *[]Report
+	}
+	// create report data from report & lrs
+	rd := ReportData{r, lrs}
+
+	t, err := template.New("SLOTemplate").Funcs(reportFuncMap()).Parse(SLOTemplate)
+
+	fi, err := os.Stat(templateFile)
+	if err != nil {
+		log.Debug("No template file found,Using internal template.")
+	} else {
+		templateName := fi.Name()
+		t, err = template.New(templateName).Funcs(reportFuncMap()).ParseFiles(templateFile)
+		if err != nil {
+			fmt.Println(color.Red(fmt.Sprintf("Error parsing teample file: %s", templateFile)))
+			// message := color.Yellow(fmt.Sprintf("Execution %s", exec.ID))
+			fmt.Println(color.Yellow("Error processing template file, please see the docs: https://reliably.com/docs/"))
+			panic(err)
+		}
+	}
+
+	err = t.Execute(w, rd)
+	if err != nil {
+		log.Debug("Execute template failed")
+		panic(err)
+	}
+
+	return err
+}
+
 func reportMarkdown(r *Report, w io.Writer, lrs *[]Report) error {
 
 	// combines the report and report history for use in the markdown report
@@ -128,18 +167,12 @@ func reportMarkdown(r *Report, w io.Writer, lrs *[]Report) error {
 	// create report data from report & lrs
 	rd := ReportData{r, lrs}
 
-	cwd, err := os.Getwd()
-	templatePath := "/report-templates/"
-	templateName := "slo-rep.tmpl"
-
-	// t, err := template.New("SLOTemplate").Funcs(markdownFuncMap()).Parse(SLOTemplate)
-	t, err := template.New(templateName).Funcs(markdownFuncMap()).ParseFiles(cwd + templatePath + templateName)
-	if err != nil {
-		panic(err)
-	}
+	t, err := template.New("SLOTemplate").Funcs(reportFuncMap()).Parse(SLOTemplate)
 
 	err = t.Execute(w, rd)
 	if err != nil {
+		log.Debug("Execute template failed")
+
 		panic(err)
 	}
 
@@ -157,7 +190,7 @@ func getStatusIcon(res *ServiceLevelResult) string {
 	}
 }
 
-func markdownFuncMap() template.FuncMap {
+func reportFuncMap() template.FuncMap {
 	// by default those functions return the given content untouched
 	return template.FuncMap{
 		"reliablyVersion": func() string {
@@ -165,9 +198,6 @@ func markdownFuncMap() template.FuncMap {
 		},
 		"dateTime": func(t time.Time) string {
 			return t.Format(time.RFC1123) + "  "
-		},
-		"bold": func(t string) string {
-			return "**" + t + "**"
 		},
 		"serviceNo": func(i int) int {
 			return i + 1
