@@ -14,8 +14,8 @@ func NewCommand() *cobra.Command {
 		Long:  longDescription(),
 	}
 
-	cmd.AddCommand(init_cmd.NewCommand())
-	cmd.AddCommand(report.NewCommand())
+	cmd.AddCommand(init_cmd.NewCommand(nil))
+	cmd.AddCommand(report.NewCommand(nil))
 	return &cmd
 }
 

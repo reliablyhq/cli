@@ -36,6 +36,14 @@ type ReportOutput struct {
 type ReportOptions struct {
 	IO *iostreams.IOStreams
 
+	ManifestPath  string
+	OutputPath    string
+	OutputFormat  string
+	WatchFlag     bool
+	OutputPaths   []string
+	OutputFormats []string
+	Service       string
+
 	Outputs []ReportOutput
 }
 
@@ -44,17 +52,9 @@ const defaultFormat = "table"
 var (
 	supportedFormats  = Choice{"json", "yaml", "text", "table", "markdown"}
 	deprecatedFormats = Choice{"simple", "tabbed"}
-	manifestPath      string
-	outputPath        string
-	outputFormat      string
-	watchFlag         bool
-	outputPaths       []string
-	outputFormats     []string
-
-	service string
 )
 
-func NewCommand() *cobra.Command {
+func NewCommand(runF func(*ReportOptions) error) *cobra.Command {
 	opts := &ReportOptions{
 		IO: iostreams.System(),
 	}
@@ -74,38 +74,38 @@ comma-separated list as values.`),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			// Validate command options
 
-			if outputFormat != "" {
-				outputFormats = strings.Split(outputFormat, ",")
+			if opts.OutputFormat != "" {
+				opts.OutputFormats = strings.Split(opts.OutputFormat, ",")
 			}
 
-			if len(outputFormats) > 0 {
-				for _, of := range outputFormats {
+			if len(opts.OutputFormats) > 0 {
+				for _, of := range opts.OutputFormats {
 					if of != "" && !(supportedFormats.Has(of) || deprecatedFormats.Has(of)) {
 						return fmt.Errorf("Format '%v' is not valid. Use one of the supported formats: %v", of, supportedFormats)
 					}
 				}
 			}
 
-			for _, of := range outputFormats {
+			for _, of := range opts.OutputFormats {
 				if of != "" && deprecatedFormats.Has(of) {
 					log.Warnf("Format '%v' is now deprecated and soon be to removed. Use one of the supported formats: %v", of, supportedFormats)
 				}
 			}
 
-			if outputPath != "" {
-				outputPaths = strings.Split(outputPath, ",")
+			if opts.OutputPath != "" {
+				opts.OutputPaths = strings.Split(opts.OutputPath, ",")
 			}
 
-			if len(outputFormats) > 1 && len(outputPaths) == 0 {
+			if len(opts.OutputFormats) > 1 && len(opts.OutputPaths) == 0 {
 				return errors.New("Multiple output formats must be used in combination with multiple output path '--output o1,o2,...' flag")
 			}
 
-			if len(outputFormats) == 1 && outputFormat == defaultFormat && len(outputPaths) > 1 {
+			if len(opts.OutputFormats) == 1 && opts.OutputFormat == defaultFormat && len(opts.OutputPaths) > 1 {
 				return errors.New("Each output file specified with '--output' must have a format defined with '--format f1,f2,...'")
 			}
 
-			if len(outputFormats) > 0 && len(outputPaths) > 0 &&
-				len(outputFormats) != len(outputPaths) {
+			if len(opts.OutputFormats) > 0 && len(opts.OutputPaths) > 0 &&
+				len(opts.OutputFormats) != len(opts.OutputPaths) {
 				return errors.New("Flags '--format' and '--output' must have same number of values when combined")
 			}
 
@@ -116,7 +116,7 @@ comma-separated list as values.`),
 			// given the list of formats & outputs,
 			// create the list of ReportOutput structs to combine a format and (optional) path
 			// --format f1,f2 --output o1,o2 should be associated as (f1, o1) & (f2, o2)
-			for fIdx, of := range outputFormats {
+			for fIdx, of := range opts.OutputFormats {
 				var format = report.TABBED
 				switch strings.ToLower(of) {
 				case "json":
@@ -131,8 +131,8 @@ comma-separated list as values.`),
 
 				// get the output path at same index
 				var path string
-				if len(outputPaths) > fIdx {
-					path = outputPaths[fIdx]
+				if len(opts.OutputPaths) > fIdx {
+					path = opts.OutputPaths[fIdx]
 				}
 
 				opts.Outputs = append(opts.Outputs, ReportOutput{
@@ -142,23 +142,27 @@ comma-separated list as values.`),
 
 			}
 
+			if runF != nil {
+				return runF(opts)
+			}
+
 			return reportRun(opts)
 		},
 	}
 
-	cmd.Flags().StringVarP(&manifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
-	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "where the report should be written to")
-	cmd.Flags().StringVarP(&outputFormat, "format", "f", "table", fmt.Sprintf("specify the report format. Allowed Values: %v", supportedFormats))
-	cmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "continuously watch for changes in report output")
-	cmd.Flags().StringVar(&service, "service", "", "the name of the service")
+	cmd.Flags().StringVarP(&opts.ManifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
+	cmd.Flags().StringVarP(&opts.OutputPath, "output", "o", "", "where the report should be written to")
+	cmd.Flags().StringVarP(&opts.OutputFormat, "format", "f", "table", fmt.Sprintf("specify the report format. Allowed Values: %v", supportedFormats))
+	cmd.Flags().BoolVarP(&opts.WatchFlag, "watch", "w", false, "continuously watch for changes in report output")
+	cmd.Flags().StringVar(&opts.Service, "service", "", "the name of the service")
 
 	return cmd
 }
 
 func reportRun(opts *ReportOptions) error {
 	// check for -w/--watch
-	if watchFlag {
-		return watch()
+	if opts.WatchFlag {
+		return watch(opts)
 	}
 
 	opts.IO.StartProgressIndicator()
@@ -180,7 +184,7 @@ func reportRun(opts *ReportOptions) error {
 		}
 	}
 
-	m, err := getManifest()
+	m, err := getManifest(opts.ManifestPath, opts.Service)
 	if err != nil {
 		log.Debug(err)
 		return errors.New("an error occurred while attempting to load the manifest")
@@ -233,7 +237,7 @@ func reportRun(opts *ReportOptions) error {
 
 // watch - continuously fetch and update report
 // and output to terminal
-func watch() error {
+func watch(opts *ReportOptions) error {
 	rChan := make(chan *report.Report, 5)
 	errChan := make(chan error, 1)
 	done := make(chan struct{})
@@ -248,7 +252,7 @@ func watch() error {
 	// refresh every 3 seconds
 	go func() {
 		for ch := time.Tick(time.Second * 3); ; <-ch {
-			m, err := getManifest()
+			m, err := getManifest(opts.ManifestPath, opts.Service)
 			if err != nil {
 				log.Debug(err)
 				errChan <- errors.New("an error occurred while attempting to load the manifest")
@@ -314,7 +318,7 @@ func clearScreen() {
 // getManifest priority
 // 1. local file
 // 2. service manifest - if specified
-func getManifest() (m *manifest.Manifest, err error) {
+func getManifest(manifestPath string, service string) (m *manifest.Manifest, err error) {
 
 	m, err = manifest.Load(manifestPath)
 	if err == nil {
