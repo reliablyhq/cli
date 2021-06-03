@@ -54,7 +54,13 @@ func TestCommandOutputFlags(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			cmd := NewCommand()
+			runF := func(opts *ReportOptions) error {
+				//t.Log("overridden run function from test")
+				//t.Log(*opts)
+				return nil
+			}
+
+			cmd := NewCommand(runF)
 
 			argv, err := shlex.Split(tt.args)
 			require.NoError(t, err)
@@ -67,10 +73,6 @@ func TestCommandOutputFlags(t *testing.T) {
 			cmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
 				//t.Log("disable auth check for command")
 			}
-			cmd.RunE = func(cmd *cobra.Command, args []string) error {
-				//t.Log("RunE from test")
-				return nil
-			}
 
 			_, err = cmd.ExecuteC()
 			if tt.wantErr != "" {
@@ -81,13 +83,6 @@ func TestCommandOutputFlags(t *testing.T) {
 			}
 
 		})
-
-		// as tear down, cleanup gobal variables
-		// code would require to be refactored for avoiding global vars
-		outputFormat = ""
-		outputPath = ""
-		outputFormats = make([]string, 0)
-		outputPaths = make([]string, 0)
 	}
 
 }
