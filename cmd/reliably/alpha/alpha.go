@@ -9,9 +9,10 @@ import (
 
 func NewCommand() *cobra.Command {
 	cmd := cobra.Command{
-		Use:   "alpha",
-		Short: "Alpha versions of reliably commands",
-		Long:  longDescription(),
+		Use:    "alpha",
+		Short:  "Alpha versions of reliably commands",
+		Long:   longDescription(),
+		Hidden: true,
 	}
 
 	cmd.AddCommand(sloAlpha.NewCommand())
