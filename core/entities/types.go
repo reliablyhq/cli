@@ -37,3 +37,10 @@ type Metadata struct {
 	// any other entity that is a web service and located in US or EU regions
 	RelatedTo []map[string]string `json:"relatedTo,omitempty" yaml:"relatedTo,omitempty"`
 }
+
+// Entity is the interface of an entity object
+// It can be used for type asserting
+type Entity interface {
+	Version() string
+	Kind() string
+}

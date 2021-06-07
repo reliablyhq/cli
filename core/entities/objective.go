@@ -4,6 +4,7 @@ import (
 	"github.com/reliablyhq/cli/core"
 )
 
+var _ Entity = &Objective{} // ensure the Objective implements Entity interface
 type Objective struct {
 	TypeMeta `json:",inline" yaml:",inline"`
 	Metadata `json:"metadata,omitempty"`
@@ -15,4 +16,12 @@ type ObjectiveSpec struct {
 	IndicatorSelector Selector      `json:"indicatorSelector" yaml:"indicatorSelector"`
 	ObjectivePercent  float64       `json:"objectivePercent" yaml:"objectivePercent"`
 	Window            core.Duration `json:"window" yaml:"window"`
+}
+
+func (o Objective) Version() string {
+	return o.TypeMeta.APIVersion
+}
+
+func (o Objective) Kind() string {
+	return o.TypeMeta.Kind
 }
