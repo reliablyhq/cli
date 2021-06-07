@@ -437,7 +437,12 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 func getConsumedRemain(sl ServiceLevel, errBudget float64, allowedDowntime time.Duration) (string, string) {
 
-	c, r := ComsumedRemainingBudget(float64(100)-sl.Result.Actual.(float64), errBudget)
+	c := 0.0
+	r := 100.0
+
+	if sl.Result != nil {
+		c, r = ComsumedRemainingBudget(float64(100)-sl.Result.Actual.(float64), errBudget)
+	}
 
 	c2, r2 := ruleOfThreeDuration(c, allowedDowntime, 100), ruleOfThreeDuration(r, allowedDowntime, 100)
 	consumedVsAllowed := c2 - allowedDowntime

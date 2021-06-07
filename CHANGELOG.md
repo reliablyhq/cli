@@ -4,7 +4,7 @@
 
 ### Changed
 
--   changes SLO report to support reports from templates; [#302](https://github.com/reliablyhq/cli/issues/316)
+-   changes SLO report to support reports from templates; [#316](https://github.com/reliablyhq/cli/issues/316)
 
 
 ## [v0.16.1] - 2021-06-01
