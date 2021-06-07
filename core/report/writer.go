@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"text/template"
 	"time"
@@ -47,10 +48,11 @@ const (
 	SimpleText Format = "simple"
 	MARKDOWN   Format = "markdown"
 	YAML       Format = "yaml"
+	TEMPLATE   Format = "template"
 )
 
 // Write - write report based on given format
-func Write(format Format, r *Report, w io.Writer, l *log.Logger, lr *Report, lrs *[]Report) {
+func Write(format Format, r *Report, w io.Writer, templateFile string, l *log.Logger, lr *Report, lrs *[]Report) {
 	if r == nil {
 		return
 	}
@@ -73,6 +75,9 @@ func Write(format Format, r *Report, w io.Writer, l *log.Logger, lr *Report, lrs
 
 	case MARKDOWN:
 		_ = reportMarkdown(r, w, lrs)
+
+	case TEMPLATE:
+		_ = reportFromTemplate(r, w, templateFile, lrs)
 
 	default:
 		reportTable(r, w, lr, lrs)
@@ -117,6 +122,41 @@ func reportSimpleText(r *Report, w io.Writer) {
 	}
 }
 
+func reportFromTemplate(r *Report, w io.Writer, templateFile string, lrs *[]Report) error {
+
+	// combines the report and report history for use in the markdown report
+	type ReportData struct {
+		Rep   *Report
+		Lreps *[]Report
+	}
+	// create report data from report & lrs
+	rd := ReportData{r, lrs}
+
+	t, err := template.New("SLOTemplate").Funcs(reportFuncMap()).Parse(SLOTemplate)
+
+	fi, err := os.Stat(templateFile)
+	if err != nil {
+		log.Debug("No template file found,Using internal template.")
+	} else {
+		templateName := fi.Name()
+		t, err = template.New(templateName).Funcs(reportFuncMap()).ParseFiles(templateFile)
+		if err != nil {
+			fmt.Println(color.Red(fmt.Sprintf("Error parsing teample file: %s", templateFile)))
+			// message := color.Yellow(fmt.Sprintf("Execution %s", exec.ID))
+			fmt.Println(color.Yellow("Error processing template file, please see the docs: https://reliably.com/docs/"))
+			panic(err)
+		}
+	}
+
+	err = t.Execute(w, rd)
+	if err != nil {
+		log.Debug("Execute template failed")
+		panic(err)
+	}
+
+	return err
+}
+
 func reportMarkdown(r *Report, w io.Writer, lrs *[]Report) error {
 
 	// combines the report and report history for use in the markdown report
@@ -127,7 +167,7 @@ func reportMarkdown(r *Report, w io.Writer, lrs *[]Report) error {
 	// create report data from report & lrs
 	rd := ReportData{r, lrs}
 
-	t, err := template.New("sloTemplate").Funcs(markdownFuncMap()).Parse(sloTemplate)
+	t, err := template.New("sloTemplate").Funcs(reportFuncMap()).Parse(SLOTemplate)
 	if err != nil {
 		panic(err)
 	}
@@ -146,86 +186,85 @@ func getStatusIcon(res *ServiceLevelResult) string {
 	}
 }
 
-func markdownFuncMap() template.FuncMap {
+func reportFuncMap() template.FuncMap {
 	// by default those functions return the given content untouched
 	return template.FuncMap{
-		"version": func() string {
+		"reliablyVersion": func() string {
 			return v.Version + " built on: " + v.Date
 		},
 		"dateTime": func(t time.Time) string {
 			return t.Format(time.RFC1123) + "  "
 		},
-		"bold": func(t string) string {
-			return "**" + t + "**"
-		},
 		"serviceNo": func(i int) int {
 			return i + 1
 		},
-		"serviceLevelRow": func(svcName string, sl ServiceLevel, lrs *[]Report) string {
-			var builder strings.Builder
+		"svcLevelGetStatusIcon": func(sl ServiceLevel) string {
 			statusIcon := getStatusIcon(sl.Result)
+			return statusIcon
+		},
+		"svcLevelGetName": func(sl ServiceLevel) string {
+			return sl.Name
+		},
+		"svcLevelGetActualResult": func(sl ServiceLevel) string {
+			var result string
 			unit := "%"
+			if sl.Result != nil {
+				result = fmt.Sprintf("%.2f%s", sl.Result.Actual, unit)
+			} else {
+				result = "---"
+			}
+			return result
+		},
+		"svcLevelGetObjective": func(sl ServiceLevel) string {
+			unit := "%"
+			return fmt.Sprintf("%v%s", sl.Objective, unit)
+		},
+		"svcLevelGetTimeWindow": func(sl ServiceLevel) string {
 			period := sl.ObservationWindow.To.Sub(sl.ObservationWindow.From)
-
+			return core.HumanizeDuration(period)
+		},
+		"svcLevelGetType": func(sl ServiceLevel) string {
+			return sl.Type
+		},
+		"svcLevelGetTrends": func(svcName string, sl ServiceLevel, lrs *[]Report) string {
 			var trends string = "n/a"
 			if lrs != nil && len(*lrs) > 0 {
 				slosAreMet := GetSLOTrend(svcName, sl.Name, *lrs)
 				ticks := trendToTicks(slosAreMet)
 				trends = strings.Join(ticks, " ") // Using non-breaking space here !!!
 			}
-
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", statusIcon)
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", sl.Name)
-			fmt.Fprint(&builder, "|")
-			if sl.Result != nil {
-				fmt.Fprintf(&builder, "%.2f%s", sl.Result.Actual, unit)
-			} else {
-				fmt.Fprint(&builder, "---")
-			}
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%v%s", sl.Objective, unit)
-			fmt.Fprint(&builder, "|")
-			// if sl.Result != nil {
-			// 	fmt.Fprintf(&builder, "%.2f%s", sl.Result.Delta, unit)
-			// } else {
-			// 	fmt.Fprint(&builder, "---")
-			// }
-			// fmt.Fprint(&builder, "|")
-			fmt.Fprint(&builder, core.HumanizeDuration(period))
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", sl.Type)
-			fmt.Fprint(&builder, "|")
-			fmt.Fprint(&builder, trends)
-			fmt.Fprint(&builder, "|")
-
-			return builder.String()
+			return trends
 		},
-		"errorBudgetRow": func(sl ServiceLevel) string {
-			var builder strings.Builder
+		"errBudgetPercentage": func(sl ServiceLevel) string {
+			unit := "%"
+			errBudget := ErrorBudgetAsPercentage(sl.Objective)
+			return fmt.Sprintf("%.2f %s", errBudget, unit)
+		},
+		"errBudgetAllowedDownTime": func(sl ServiceLevel) string {
 
 			errBudget := ErrorBudgetAsPercentage(sl.Objective)
 			period := getObservationWindow(&sl)
 			allowedDowntime := DowntimePerPeriod(errBudget, period)
-			consumed, remain := getConsumedRemain(sl, errBudget, allowedDowntime)
 
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", sl.Type)
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", sl.Name)
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%.2f", errBudget)
-			fmt.Fprintf(&builder, "%s", "%")
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%v", allowedDowntime)
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", consumed)
-			fmt.Fprint(&builder, "|")
-			fmt.Fprintf(&builder, "%s", remain)
-			fmt.Fprint(&builder, "|")
+			return fmt.Sprintf("%v", allowedDowntime)
+		},
+		"errBudgetConsumed": func(sl ServiceLevel) string {
 
-			return builder.String()
+			errBudget := ErrorBudgetAsPercentage(sl.Objective)
+			period := getObservationWindow(&sl)
+			allowedDowntime := DowntimePerPeriod(errBudget, period)
+			consumed, _ := getConsumedRemain(sl, errBudget, allowedDowntime)
+
+			return fmt.Sprintf("%s", consumed)
+		},
+		"errBudgetRemain": func(sl ServiceLevel) string {
+
+			errBudget := ErrorBudgetAsPercentage(sl.Objective)
+			period := getObservationWindow(&sl)
+			allowedDowntime := DowntimePerPeriod(errBudget, period)
+			_, remain := getConsumedRemain(sl, errBudget, allowedDowntime)
+
+			return fmt.Sprintf("%s", remain)
 		},
 	}
 }
@@ -394,7 +433,12 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 
 func getConsumedRemain(sl ServiceLevel, errBudget float64, allowedDowntime time.Duration) (string, string) {
 
-	c, r := ComsumedRemainingBudget(float64(100)-sl.Result.Actual.(float64), errBudget)
+	c := 0.0
+	r := 100.0
+
+	if sl.Result != nil {
+		c, r = ComsumedRemainingBudget(float64(100)-sl.Result.Actual.(float64), errBudget)
+	}
 
 	c2, r2 := ruleOfThreeDuration(c, allowedDowntime, 100), ruleOfThreeDuration(r, allowedDowntime, 100)
 	consumedVsAllowed := c2 - allowedDowntime
