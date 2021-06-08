@@ -30,22 +30,6 @@ func TestIndicator(t *testing.T) {
 		},
 	}
 
-	/*
-
-			Metadata:
-		    Labels:
-		        category: latency
-		        percentile: "99"
-		        latency: 250ms
-		        gcp_project_id: abc123
-		        resource_type: loadbalancer
-		        resource_name: my-load-balancer
-		        loadbalancer_path: /api/v1/*
-		From: 2021-01-01T00:00:00Z
-		To: 2021-01-01T01:00:00Z
-		Percent: 97.3
-	*/
-
 	t.Log(sli)
 
 	y, _ := yaml.Marshal(sli)
