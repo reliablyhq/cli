@@ -1,0 +1,23 @@
+@startuml
+title Report Command
+
+participant CLI
+participant "Local Storage" as ls
+participant "Entity Server" as es
+
+
+CLI -> ls: read manifest
+CLI <-- ls
+
+group Option 1 [Query filters on objectives]
+
+    CLI -> es : GET ObjectiveResults
+    CLI <-- es
+end
+group Option 2 [Filtering happens in CLI] 
+    CLI -> es : GET ObjectiveResults
+    CLI <-- es
+    
+end
+note left: This is currently the way \n the alpha command works
+@enduml
