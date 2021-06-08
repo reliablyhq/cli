@@ -70,10 +70,10 @@ formats at once, with using '--format' and '--output' flags with
 comma-separated list as values.`),
 		Example: `  $ reliably slo report
   $ reliably slo report -f text
-  $ reliably slo report -t slo-report.tmpl
-  $ reliably slo report -t slo-report.tmpl -o slo-report.txt
   $ reliably slo report -f markdown -o report.md
-  $ reliably slo report -f yaml,json -o o.yaml,o.json`,
+  $ reliably slo report -f yaml,json -o o.yaml,o.json
+  $ reliably slo report -t slo-report.tmpl
+  $ reliably slo report -t slo-report.tmpl -o slo-report.txt`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			// Validate command options
 
