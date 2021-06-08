@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -37,6 +38,9 @@ func TestObjective(t *testing.T) {
 	t.Log(slo)
 
 	y, _ := yaml.Marshal(slo)
-	t.Log("SLO:=\n", string(y))
+	t.Log("YAML\n", string(y), "---")
+
+	j, _ := json.Marshal(slo)
+	t.Log("JSON\n", string(j), "---")
 
 }
