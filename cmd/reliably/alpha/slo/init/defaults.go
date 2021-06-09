@@ -96,7 +96,7 @@ func generateDefaultSloName(o entities.Objective) string {
 		threshold := o.Spec.IndicatorSelector["latency_target"]
 
 		if !strings.HasSuffix(threshold, "ms") {
-			threshold = fmt.Sprintf("%sms")
+			threshold = fmt.Sprintf("%sms", threshold)
 		}
 
 		desc = fmt.Sprintf("faster than %s", threshold)
