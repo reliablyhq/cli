@@ -2,18 +2,18 @@ package initAlpha
 
 import (
 	"fmt"
-	"os"
-	"os/user"
-	"path/filepath"
+	//"os"
+	//"os/user"
+	//"path/filepath"
 	"strings"
 
 	"github.com/reliablyhq/cli/core/entities"
-	"github.com/reliablyhq/cli/utils"
-
+	//"github.com/reliablyhq/cli/utils"
 	"github.com/reliablyhq/cli/core"
-	"github.com/reliablyhq/cli/core/manifest"
+	//"github.com/reliablyhq/cli/core/manifest"
 )
 
+/*
 func getDefaultAppName() string {
 
 	if utils.IsGitRepo() {
@@ -31,7 +31,8 @@ func getDefaultAppName() string {
 
 	return "my-app"
 }
-
+*/
+/*
 func getDefaultAppOwner() string {
 
 	if utils.IsGitRepo() {
@@ -46,7 +47,9 @@ func getDefaultAppOwner() string {
 	user, _ := user.Current()
 	return user.Username
 }
+*/
 
+/*
 func getDefaultRepository() string {
 
 	if utils.IsGitRepo() {
@@ -58,7 +61,9 @@ func getDefaultRepository() string {
 	cwd, _ := os.Getwd()
 	return cwd
 }
+*/
 
+/*
 func initDefaultSloName(sl *manifest.ServiceLevel) error {
 
 	var desc string
@@ -79,6 +84,7 @@ func initDefaultSloName(sl *manifest.ServiceLevel) error {
 
 	return nil
 }
+*/
 
 func generateDefaultSloName(o entities.Objective) string {
 	var (

@@ -228,7 +228,7 @@ func populateManifestInteractively(m *manifest.Manifest) {
 
 func promptForProvider(io *iostreams.IOStreams) (entities.Labels, error) {
 
-	var labels entities.Labels = make(entities.Labels)
+	//var labels entities.Labels = make(entities.Labels)
 
 	providers := []string{}
 	for key := range providersMap {
@@ -238,12 +238,8 @@ func promptForProvider(io *iostreams.IOStreams) (entities.Labels, error) {
 
 	providerFullName := question.WithSingleChoiceAnswer("Which cloud provider are you targeting?", emptyOptions, providers...)
 	provider := providersMap[providerFullName]
-	id := getResourceIDForProvider(provider)
-
-	labels["provider"] = provider
-	labels["id"] = id
-
-	return labels, nil
+	ps := getProviderSelectors(provider)
+	return entities.Labels(ps), nil
 }
 
 /*
@@ -299,15 +295,28 @@ func declareSLOForService(s *manifest.Service) {
 }
 */
 
-func getResourceIDForProvider(provider string) string {
+func getProviderSelectors(provider string) map[string]string {
+	var selectors map[string]string = make(map[string]string)
+
 	switch provider {
 	case "aws":
-		return promptAWSArn()
+		selectors["aws_arn"] = promptAWSArn()
 	case "gcp":
-		return buildGCPResourceID()
-	default:
-		return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.", emptyOptions)
+		r := buildGCPResourceID()
+		if r != nil {
+			switch r.ResourceType {
+			case "google-cloud-load-balancers":
+				selectors["gcp_project_id"] = r.ProjectID
+				selectors["gcp_loadbalancer_name"] = r.ResourceName
+			}
+		}
+		/*
+			default:
+				return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.", emptyOptions)
+		*/
 	}
+
+	return selectors
 }
 
 func getObservationWindow() core.Iso8601Duration {

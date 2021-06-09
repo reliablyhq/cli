@@ -16,7 +16,14 @@ var (
 	googleResourceTypes = []string{"Google Cloud Load Balancers"}
 )
 
-func buildGCPResourceID() string {
+type gcpResource struct {
+	ProjectID string
+	//Region       string
+	ResourceType string
+	ResourceName string
+}
+
+func buildGCPResourceID() (r *gcpResource) {
 	var projectID string
 	var sanitizedResourceType string
 	var resourceName string
@@ -27,7 +34,7 @@ func buildGCPResourceID() string {
 	orgs, err := orgsService.Search().Context(ctx).Do()
 	if err != nil {
 		handleGCPError(err)
-		return ""
+		return
 	}
 	var orgsList = []string{}
 	orgsMap := make(map[string]string)
@@ -46,11 +53,11 @@ func buildGCPResourceID() string {
 		projects, err := projectsService.List().Context(ctx).Parent(orgID).Do()
 		if err != nil {
 			handleGCPError(err)
-			return ""
+			return
 		}
 		if len(projects.Projects) == 0 {
 			fmt.Println("  Reliably couldn't find any project. Check you have all the required permissions.")
-			return ""
+			return
 		}
 		var projectsList = []string{}
 		projectsMap := make(map[string]string)
@@ -74,7 +81,7 @@ func buildGCPResourceID() string {
 		lbs, err := lbsService.List(projectID).Context(ctx).Do()
 		if err != nil {
 			handleGCPError(err)
-			return ""
+			return
 		}
 		if len(lbs.Items) > 0 {
 			var lbsList = []string{}
@@ -86,7 +93,7 @@ func buildGCPResourceID() string {
 		} else {
 			fmt.Println(iconWarn, "Reliably couldn't find matching resources.")
 			fmt.Println("  Cancelling.")
-			return ""
+			return
 		}
 
 	} else {
@@ -103,7 +110,7 @@ func buildGCPResourceID() string {
 		insufficientGCPRights := question.WithSingleChoiceAnswer("What do you want to do now?", gcpOptions, insufficientGCPRightsOptions...)
 
 		if insufficientGCPRights == "Cancel this resource" {
-			return ""
+			return
 		} else {
 			projectID = question.WithStringAnswer("Enter the Project ID:", gcpOptions)
 			resourceType := question.WithSingleChoiceAnswer("What is the 'type' of the resource?", gcpOptions, googleResourceTypes...)
@@ -112,9 +119,15 @@ func buildGCPResourceID() string {
 		}
 	}
 
-	resourceID := fmt.Sprintf("%s/%s/%s", projectID, sanitizedResourceType, resourceName)
+	//resourceID := fmt.Sprintf("%s/%s/%s", projectID, sanitizedResourceType, resourceName)
 
-	return resourceID
+	r = &gcpResource{
+		ProjectID:    projectID,
+		ResourceType: sanitizedResourceType,
+		ResourceName: resourceName,
+	}
+
+	return
 }
 
 func handleGCPError(err error) {
