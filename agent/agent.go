@@ -12,13 +12,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/metrics"
-	"github.com/reliablyhq/entity-server/server/types"
-	"github.com/reliablyhq/entity-server/server/types/v1/service_level"
 )
 
 type JobObjective struct {
-	service_level.Objective
+	entities.Objective
 	ResourceID string
 }
 
@@ -36,9 +35,9 @@ func (e *Error) Error() string {
 
 // IndicatorHandler - type used to handle indicators after
 // they are generated
-type IndicatorHandler func(*service_level.Indicator) error
+type IndicatorHandler func(*entities.Indicator) error
 
-func defaultIndicatorHandler(s *service_level.Indicator) error {
+func defaultIndicatorHandler(s *entities.Indicator) error {
 	b, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return err
@@ -52,7 +51,7 @@ func defaultIndicatorHandler(s *service_level.Indicator) error {
 type ErrorHandler func(*Error)
 
 func defaultErrorHandler(e *Error) {
-	b, _ := json.MarshalIndent(e.Objective.MetadataSpec.Labels, "", "  ")
+	b, _ := json.MarshalIndent(e.Objective.Metadata.Labels, "", "  ")
 	log.Printf("objective metadata: \n%s\nerror: %s", string(b), e.err)
 }
 
@@ -62,7 +61,7 @@ type ExitSignal struct{}
 
 type result struct {
 	Objective *JobObjective
-	Indicator *service_level.Indicator
+	Indicator *entities.Indicator
 }
 
 // Job - an Agent job defines the objectives and handlers
@@ -189,7 +188,7 @@ func NewJob(interval int64, objectives []*JobObjective, provider metrics.Provide
 	}
 }
 
-func GetIndicatorFromObjective(providerType metrics.ProviderType, obj *JobObjective) (*service_level.Indicator, error) {
+func GetIndicatorFromObjective(providerType metrics.ProviderType, obj *JobObjective) (*entities.Indicator, error) {
 	provider, err := metrics.ProviderFactories[providerType]()
 	if err != nil {
 		return nil, err
@@ -197,11 +196,11 @@ func GetIndicatorFromObjective(providerType metrics.ProviderType, obj *JobObject
 
 	defer provider.Close()
 
-	if err := obj.IsValid(); err != nil {
-		return nil, err
-	}
+	// if err := obj.IsValid(); err != nil {
+	// 	return nil, err
+	// }
 
-	var indicator service_level.Indicator
+	var indicator entities.Indicator
 	// get from/to window from (now - given_duration), to now
 	now := time.Now()
 	indicator.Spec.From = now.Add(time.Duration(-(int64(obj.Spec.Window.Duration))))
@@ -221,6 +220,6 @@ func GetIndicatorFromObjective(providerType metrics.ProviderType, obj *JobObject
 			obj.Spec.IndicatorSelector["category"])
 	}
 
-	indicator.MetadataSpec.Labels = types.Labels(obj.Spec.IndicatorSelector)
+	indicator.Metadata.Labels = obj.Spec.IndicatorSelector
 	return &indicator, nil
 }
