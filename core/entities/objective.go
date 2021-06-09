@@ -25,3 +25,18 @@ func (o Objective) Version() string {
 func (o Objective) Kind() string {
 	return o.TypeMeta.Kind
 }
+
+// NewObjective returns a new instance of the Objective struct with
+// non-zero values for internal maps
+func NewObjective() *Objective {
+	return &Objective{
+		TypeMeta: TypeMeta{APIVersion: "v1", Kind: "Objective"},
+		Metadata: Metadata{
+			Labels:    Labels{},
+			RelatedTo: []map[string]string{},
+		},
+		Spec: ObjectiveSpec{
+			IndicatorSelector: Selector{},
+		},
+	}
+}
