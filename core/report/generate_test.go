@@ -52,7 +52,7 @@ func Test_getProviderForResource(t *testing.T) {
 	metrics.ProviderFactories["test_get_provider_for_resource"] = func() (metrics.Provider, error) { return p, nil }
 
 	type args struct {
-		providerID string
+		providerID metrics.ProviderType
 	}
 	tests := []struct {
 		name    string
