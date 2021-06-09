@@ -2,7 +2,7 @@ package agent
 
 import (
 	"github.com/MakeNowJust/heredoc/v2"
-	"github.com/reliablyhq/cli/agent"
+	"github.com/reliablyhq/cli/core/agent"
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/metrics"
