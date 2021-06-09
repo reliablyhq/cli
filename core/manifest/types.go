@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/core/metrics"
 )
 
 type (
@@ -58,7 +59,7 @@ type (
 
 	ServiceLevelIndicator struct {
 		ID       string `yaml:"id" json:"id"`
-		Provider string `yaml:"provider" json:"provider"`
+		Provider metrics.ProviderType `yaml:"provider" json:"provider"`
 	}
 
 	// ServiceLevel struct {
