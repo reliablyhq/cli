@@ -4,28 +4,28 @@ import (
 	"testing"
 	"time"
 
+	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/metrics"
-	"github.com/reliablyhq/entity-server/server/types"
-	"github.com/reliablyhq/entity-server/server/types/v1/service_level"
 	"github.com/stretchr/testify/require"
 )
 
 var testJobObjective = &JobObjective{
-	Objective: service_level.Objective{
-		MetadataSpec: types.Metadata{
-			Labels: types.Labels{
+	Objective: entities.Objective{
+		Metadata: entities.Metadata{
+			Labels: entities.Labels{
 				"name": "solicito",
 			},
 		},
-		Spec: service_level.ObjectiveSpec{
-			IndicatorSelector: types.Selector{
+		Spec: entities.ObjectiveSpec{
+			IndicatorSelector: entities.Selector{
 				"category":       "latency",
 				"percentile":     "90",
 				"latency_target": "100ms",
 				"latency":        "250",
 			},
 			ObjectivePercent: 99,
-			Window:           types.Duration{Duration: time.Hour},
+			Window:           core.Duration{Duration: time.Hour},
 		},
 	},
 	ResourceID: "alpha1-e3d83fa0/google-cloud-load-balancers/reliablyadvicealpha1",
@@ -47,11 +47,10 @@ func TestAgent5Seconds(t *testing.T) {
 
 		job.ErrorFunc(func(e *Error) {
 			require.NoError(t, e)
-		}).IndicatorFunc(func(i *service_level.Indicator) error {
-			labels := types.Labels(testJobObjective.Objective.Spec.IndicatorSelector)
+		}).IndicatorFunc(func(i *entities.Indicator) error {
 			require.Equal(t,
-				labels,
-				i.MetadataSpec.Labels)
+				entities.Labels(testJobObjective.Objective.Spec.IndicatorSelector),
+				entities.Labels(i.Metadata.Labels))
 
 			require.Greater(t, i.Spec.Percent, float64(0))
 			return nil
