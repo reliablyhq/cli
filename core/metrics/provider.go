@@ -7,12 +7,18 @@ import (
 	"github.com/reliablyhq/cli/core/metrics/gcp"
 )
 
-var ProviderFactories = map[string]ProviderFactory{
+const (
+	AWSProvider ProviderType = "aws"
+	GCPProvider ProviderType = "gcp"
+)
+
+var ProviderFactories = map[ProviderType]ProviderFactory{
 	"aws": func() (Provider, error) { return aws.NewAwsCloudWatch() },
 	"gcp": func() (Provider, error) { return gcp.NewGCP() },
 }
 
 type (
+	ProviderType    string
 	ProviderFactory func() (Provider, error)
 
 	Provider interface {
