@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [v0.17.0] - 2021-06-10
+
 ### Added
 
 -   changes SLO report to support reports from templates; [#316](https://github.com/reliablyhq/cli/issues/316)
@@ -230,7 +232,9 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.16.1...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.17.0...HEAD
+
+[v0.17.0]: https://github.com/reliablyhq/cli/compare/v0.16.1...v0.17.0
 
 [v0.16.1]: https://github.com/reliablyhq/cli/compare/v0.16.0...v0.16.1
 
