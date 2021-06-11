@@ -2,7 +2,6 @@ package entities
 
 import (
 	"github.com/reliablyhq/cli/core"
-	"github.com/reliablyhq/cli/core/metrics"
 )
 
 var _ Entity = &Objective{} // ensure the Objective implements Entity interface
@@ -19,24 +18,12 @@ type ObjectiveSpec struct {
 	Window            core.Duration `json:"window" yaml:"window"`
 }
 
-func (o Objective) Version() string {
+func (o *Objective) Version() string {
 	return o.TypeMeta.APIVersion
 }
 
-func (o Objective) Kind() string {
+func (o *Objective) Kind() string {
 	return o.TypeMeta.Kind
-}
-
-// ResourceID - resolves and returns resource id
-// for the objective
-func (o *Objective) ResourceID() string {
-	return "not implemented"
-}
-
-// Provider - resolves and returns Provider for the
-// given objective
-func (o *Objective) Provider() metrics.Provider {
-	return nil
 }
 
 // NewObjective returns a new instance of the Objective struct with
