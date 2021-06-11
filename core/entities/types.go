@@ -26,7 +26,7 @@ type TypeMeta struct {
 // ObjectMeta is metadata that all entities must have
 type Metadata struct {
 	// Name of the object representation
-	Name string `json:"name,omitempty" yaml:"name,omitempty"`
+	Name string `json:"-" yaml:"-"`
 
 	// Map of string keys and values that can be used to identify an entity
 	Labels map[string]string `json:"labels,omitempty" yaml:"labels,omitempty"`

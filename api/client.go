@@ -160,14 +160,10 @@ func (c Client) REST(hostname string, method string, p string, body io.Reader, d
 		return nil
 	}
 
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(b, &data)
-	if err != nil {
-		return err
+	if data != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -201,14 +197,10 @@ func (c Client) RESTv2(hostname string, method string, p string, body io.Reader,
 		return nil
 	}
 
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(b, &data)
-	if err != nil {
-		return err
+	if data != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+			return err
+		}
 	}
 
 	return nil

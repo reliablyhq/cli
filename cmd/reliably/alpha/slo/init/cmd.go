@@ -185,6 +185,8 @@ func promptForObjectives(io *iostreams.IOStreams, serviceName string) ([]entitie
 		objective.Metadata.Name = name
 		objective.Metadata.Labels["name"] = name
 
+		objective.Metadata.Labels["service"] = serviceName
+
 		objectives = append(objectives, objective)
 
 		fmt.Println(color.Green(fmt.Sprintf("SLO '%s' added to Service '%s'", name, serviceName)))
