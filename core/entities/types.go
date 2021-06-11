@@ -1,5 +1,13 @@
 package entities
 
+import (
+	"bufio"
+	"os"
+	"strings"
+
+	"gopkg.in/yaml.v2"
+)
+
 type Labels map[string]string
 
 type Selector Labels
@@ -43,4 +51,46 @@ type Metadata struct {
 type Entity interface {
 	Version() string
 	Kind() string
+}
+
+// Manifest - a slice of Objectives
+type Manifest []*Objective
+
+func (m *Manifest) LoadFromFile(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+
+	scanner := bufio.NewScanner(f)
+	scanner.Split(splitManifest)
+	for scanner.Scan() {
+		var o Objective
+		if err := yaml.Unmarshal(scanner.Bytes(), &o); err != nil {
+			return err
+		}
+
+		*m = append(*m, &o)
+	}
+	return nil
+}
+
+func splitManifest(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	sep := "---\n"
+
+	// Return nothing if at end of file and no data passed
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+
+	if i := strings.Index(string(data), sep); i >= 0 {
+		return i + len(sep), data[0:i], nil
+	}
+
+	// If at end of file with data return the data
+	if atEOF {
+		return len(data), data, nil
+	}
+
+	return
 }
