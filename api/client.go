@@ -160,14 +160,47 @@ func (c Client) REST(hostname string, method string, p string, body io.Reader, d
 		return nil
 	}
 
-	b, err := io.ReadAll(resp.Body)
+	if data != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// RESTv2 performs a REST request and parses the response.
+// Compared to the previous version, this does not automatically use
+// the API prefix to construct the url, only the base HTTP location of the server
+func (c Client) RESTv2(hostname string, method string, p string, body io.Reader, data interface{}) error {
+	url := core.BaseHttpUrl(hostname) + p
+	log.Debugf("[api.REST] %s %s", method, url)
+	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return err
 	}
 
-	err = json.Unmarshal(b, &data)
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
+	resp, err := c.http.Do(req)
 	if err != nil {
 		return err
+	}
+	defer resp.Body.Close()
+
+	success := resp.StatusCode >= 200 && resp.StatusCode < 300
+	if !success {
+		return HandleHTTPError(resp)
+	}
+
+	if resp.StatusCode == http.StatusNoContent {
+		return nil
+	}
+
+	if data != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+			return err
+		}
 	}
 
 	return nil
