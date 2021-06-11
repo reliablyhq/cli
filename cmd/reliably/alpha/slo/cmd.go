@@ -7,6 +7,7 @@ import (
 	agentAlpha "github.com/reliablyhq/cli/cmd/reliably/alpha/slo/agent"
 	initAlpha "github.com/reliablyhq/cli/cmd/reliably/alpha/slo/init"
 	reportAlpha "github.com/reliablyhq/cli/cmd/reliably/alpha/slo/report"
+
 	"github.com/reliablyhq/cli/cmd/reliably/alpha/slo/sync"
 	initCmd "github.com/reliablyhq/cli/cmd/reliably/slo/init"
 	"github.com/reliablyhq/cli/cmd/reliably/slo/report"
