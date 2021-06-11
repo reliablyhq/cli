@@ -7,18 +7,18 @@ type Selector Labels
 // TypeMeta describes an individual object in the entity API
 // with strings representing the type of the object and its API schema version
 type TypeMeta struct {
+	// APIVersion defines the versioned schema of this representation of an object
+	APIVersion string `json:"apiVersion,omitempty" yaml:"apiVersion,omitempty"`
+
 	// Kind is a string value representing the REST resource this object represents.
 	// In CamelCase.
 	Kind string `json:"kind,omitempty" yaml:"kind,omitempty"`
-
-	// APIVersion defines the versioned schema of this representation of an object
-	APIVersion string `json:"apiVersion,omitempty" yaml:"apiVersion,omitempty"`
 }
 
 // ObjectMeta is metadata that all entities must have
 type Metadata struct {
 	// Name of the object representation
-	Name string `json:"name,omitempty" yaml:"name,omitempty"`
+	Name string `json:"-" yaml:"-"`
 
 	// Map of string keys and values that can be used to identify an entity
 	Labels map[string]string `json:"labels,omitempty" yaml:"labels,omitempty"`
