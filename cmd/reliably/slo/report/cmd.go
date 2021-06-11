@@ -282,7 +282,7 @@ func watch(opts *ReportOptions) error {
 	for {
 		select {
 		case r := <-rChan:
-			clearScreen()
+			ClearScreen()
 			fmt.Println(color.Magenta("Refreshing SLO report every 3 seconds."), "Press CTRL+C to quit.")
 			report.Write(report.TABBED, r, os.Stdout, log.StandardLogger(), last, nil)
 			last = r
@@ -297,7 +297,7 @@ func watch(opts *ReportOptions) error {
 
 }
 
-func clearScreen() {
+func ClearScreen() {
 	var c *exec.Cmd
 
 	switch runtime.GOOS {

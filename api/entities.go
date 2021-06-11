@@ -20,7 +20,7 @@ func CreateEntity(client *Client, hostname string, org string, entity entities.E
 	kind = plural(entity.Kind())
 	kind = strings.ToLower(kind)
 
-	path := fmt.Sprintf("%s/%s/%s/%s", "entities", version, org, kind)
+	path := requestPath(version, kind, org)
 
 	bodyBytes, err := json.Marshal(entity)
 	if err != nil {
@@ -30,6 +30,25 @@ func CreateEntity(client *Client, hostname string, org string, entity entities.E
 	body := bytes.NewBuffer(bodyBytes)
 
 	return client.RESTv2(hostname, http.MethodPut, path, body, nil)
+}
+
+func GetObjectiveResults(client *Client, hostname string, version string, kind string, org string) (*[]entities.ObjectiveResultResponse, error) {
+
+	var entitiesResult *[]entities.ObjectiveResultResponse
+	path := requestPath(version, kind, org)
+	err := client.RESTv2(hostname, http.MethodGet, path, nil, &entitiesResult)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to make API call: %w", err)
+	}
+
+	return entitiesResult, nil
+
+}
+
+func requestPath(version, kind, org string) string {
+
+	return fmt.Sprintf("%s/%s/%s/%s", "entities", version, org, kind)
 }
 
 // plural returns the puralized string,
