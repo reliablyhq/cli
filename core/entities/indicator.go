@@ -19,10 +19,10 @@ type IndicatorSpec struct {
 	Percent float64   `json:"percent"`
 }
 
-func (i Indicator) Version() string {
+func (i *Indicator) Version() string {
 	return i.TypeMeta.APIVersion
 }
 
-func (i Indicator) Kind() string {
+func (i *Indicator) Kind() string {
 	return i.TypeMeta.Kind
 }
