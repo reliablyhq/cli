@@ -52,7 +52,7 @@ func AlpaInitRun(opts *initCmd.InitOptions) error {
 	}
 
 	for _, o := range objectives {
-		entities = append(entities, o)
+		entities = append(entities, &o)
 	}
 
 	/*
