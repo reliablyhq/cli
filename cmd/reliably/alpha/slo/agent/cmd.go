@@ -58,7 +58,7 @@ func NewCommand(runF func(*Options) error) *cobra.Command {
 			job := agent.NewJob(opts.Interval, m, metrics.GCPProvider)
 			job.ErrorFunc(func(e *agent.Error) {
 				logger.Errorf(
-					"error processing objective: %s\nerror: %s",
+					"error processing objective: %v\nerror: %s",
 					e.Objective, e.Error())
 			}).IndicatorFunc(func(i *entities.Indicator) error {
 				return api.CreateEntity(client, core.Hostname(), org.Name, i)
