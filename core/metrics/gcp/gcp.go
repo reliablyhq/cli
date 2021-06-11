@@ -9,6 +9,7 @@ import (
 	monitoring "cloud.google.com/go/monitoring/apiv3/v2"
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/timestamp"
+	"github.com/reliablyhq/cli/core/entities"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
@@ -209,6 +210,18 @@ func (p *GCP) GetAvailabilityPercentage(resourceID string, from, to time.Time) (
 	availability := 100.0 - errorRate
 	log.Debugf("Availability is %.2f%%\n", availability)
 	return availability, nil
+}
+
+// ResourceFromSelector - identifies the resource ID given a selector.
+func (p *GCP) ResourceFromSelector(s entities.Selector) string {
+	if pid, ok := s["gcp_project_id"]; ok {
+		// check for loadbalancer key
+		if lb, ok := s["gcp_loadbalancer_name"]; ok {
+			return fmt.Sprintf("%s/google-cloud-load-balancers/%s", pid, lb)
+		}
+	}
+
+	return ""
 }
 
 func calculateLatencyOverThresholdPercentage(threshold int, it []*monitoringpb.TimeSeries) (float64, error) {
