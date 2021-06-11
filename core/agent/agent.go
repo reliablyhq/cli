@@ -5,7 +5,7 @@ package agent
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+
 	"os"
 	"os/signal"
 	"sync"
@@ -14,17 +14,13 @@ import (
 
 	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/metrics"
+	log "github.com/sirupsen/logrus"
 )
-
-type JobObjective struct {
-	entities.Objective
-	ResourceID string
-}
 
 // Error - agent error type used to associate failed objectives
 // with its given error
 type Error struct {
-	Objective *JobObjective
+	Objective *entities.Objective
 	err       error
 }
 
@@ -43,7 +39,7 @@ func defaultIndicatorHandler(s *entities.Indicator) error {
 		return err
 	}
 
-	log.Printf("indicator generated: %s", string(b))
+	fmt.Printf("indicator generated: %s", string(b))
 	return nil
 }
 
@@ -52,7 +48,7 @@ type ErrorHandler func(*Error)
 
 func defaultErrorHandler(e *Error) {
 	b, _ := json.MarshalIndent(e.Objective.Metadata.Labels, "", "  ")
-	log.Printf("objective metadata: \n%s\nerror: %s", string(b), e.err)
+	fmt.Printf("objective metadata: \n%s\nerror: %s", string(b), e.err)
 }
 
 // ExitSignal - empty struct type used to
@@ -60,7 +56,7 @@ func defaultErrorHandler(e *Error) {
 type ExitSignal struct{}
 
 type result struct {
-	Objective *JobObjective
+	Objective *entities.Objective
 	Indicator *entities.Indicator
 }
 
@@ -71,7 +67,7 @@ type Job struct {
 	Interval int64
 
 	// Objectives - The objectives to create indicators from
-	Objectives []*JobObjective
+	Objectives []*entities.Objective
 
 	// Cloud provider to query metrics for.
 	// The current assumption is that only one cloud provider will
@@ -81,6 +77,8 @@ type Job struct {
 	// indicatorHandler - executes a given function againsts all
 	// indicators generated.
 	indicatorHandler IndicatorHandler
+
+	log Logger
 
 	// errorHandler - error handle, executed against all errors
 	// detected in the workflow
@@ -92,18 +90,19 @@ type Job struct {
 
 // Do - run job
 func (j *Job) Do() {
+	j.log.Info("starting agent workflow")
 	// Ctrl+C listener
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		fmt.Printf("\nCTRL+C pressed... exiting\n")
+		j.log.Infof("\nCTRL+C pressed... exiting\n")
 		j.done <- ExitSignal{}
 	}()
 
 	go func() {
 		for ch := time.Tick(time.Second * time.Duration(j.Interval)); ; <-ch {
-			jobs := make(chan *JobObjective, 50)
+			jobs := make(chan *entities.Objective, 50)
 			var w sync.WaitGroup
 
 			// 1. populate jobs channel
@@ -123,8 +122,9 @@ func (j *Job) Do() {
 				go func() {
 					defer w.Done()
 					for obj := range jobs {
-						indicator, err := GetIndicatorFromObjective(j.Provider, obj)
+						indicator, err := getIndicatorFromObjective(obj)
 						if err != nil {
+							j.log.Debugf("error detected while getting indicator for objective: %s - %s", obj, err)
 							j.errorHandler(&Error{
 								Objective: obj,
 								err:       err,
@@ -151,6 +151,7 @@ func (j *Job) Do() {
 
 		case r := <-j.results:
 			if err := j.indicatorHandler(r.Indicator); err != nil {
+				j.log.Debugf("indicator handler failed: %s", err)
 				j.errorHandler(&Error{
 					Objective: r.Objective,
 					err:       err,
@@ -173,12 +174,18 @@ func (j *Job) IndicatorFunc(f IndicatorHandler) *Job {
 	return j
 }
 
+// Logger - set Logger for this Job
+func (j *Job) Logger(l Logger) {
+	j.log = l
+}
+
 // NewJob - creates a new agent job
-func NewJob(interval int64, objectives []*JobObjective, provider metrics.ProviderType) *Job {
+func NewJob(interval int64, objectives []*entities.Objective, provider metrics.ProviderType) *Job {
 	return &Job{
 		Interval:         interval,
 		Objectives:       objectives,
 		Provider:         provider,
+		log:              log.StandardLogger(),
 		results:          make(chan *result, 50),
 		done:             make(chan ExitSignal),
 		indicatorHandler: defaultIndicatorHandler,
@@ -186,17 +193,33 @@ func NewJob(interval int64, objectives []*JobObjective, provider metrics.Provide
 	}
 }
 
-func GetIndicatorFromObjective(providerType metrics.ProviderType, obj *JobObjective) (*entities.Indicator, error) {
-	provider, err := metrics.ProviderFactories[providerType]()
-	if err != nil {
-		return nil, err
+func getIndicatorFromObjective(obj *entities.Objective) (*entities.Indicator, error) {
+	var (
+		provider   metrics.Provider
+		resourceID string
+		err        error
+	)
+
+	// identify provider
+	for _, f := range metrics.ProviderFactories {
+		provider, err = f()
+		if err != nil {
+			return nil, err
+		}
+
+		// check for resource ID
+		if resourceID = provider.ResourceFromSelector(obj.Spec.IndicatorSelector); resourceID != "" {
+			break
+		}
+	}
+
+	// if resourceID is still undefined, error
+	if resourceID == "" {
+		return nil, fmt.Errorf("unable to identify provider and resource id for objective: %v",
+			obj.Spec.IndicatorSelector)
 	}
 
 	defer provider.Close()
-
-	// if err := obj.IsValid(); err != nil {
-	// 	return nil, err
-	// }
 
 	var indicator entities.Indicator
 	// get from/to window from (now - given_duration), to now
@@ -204,20 +227,26 @@ func GetIndicatorFromObjective(providerType metrics.ProviderType, obj *JobObject
 	indicator.Spec.From = now.Add(time.Duration(-(int64(obj.Spec.Window.Duration))))
 	indicator.Spec.To = now
 
-	// target := obj.Spec.IndicatorSelector["latency_target"]
+	var f func(resourceID string, from time.Time, to time.Time) (float64, error)
 	switch obj.Spec.IndicatorSelector["category"] {
 	case "latency":
-		indicator.Spec.Percent, err = provider.Get99PercentLatencyMetricForResource(obj.ResourceID,
-			indicator.Spec.From, indicator.Spec.To)
-		if err != nil {
-			return nil, err
-		}
+		f = provider.Get99PercentLatencyMetricForResource
+
+	case "availability":
+		f = provider.GetAvailabilityPercentage
 
 	default:
 		return nil, fmt.Errorf("unsupported indicator category: %s",
 			obj.Spec.IndicatorSelector["category"])
 	}
 
+	indicator.Spec.Percent, err = f(resourceID, indicator.Spec.From, indicator.Spec.To)
+	if err != nil {
+		return nil, err
+	}
+
 	indicator.Metadata.Labels = obj.Spec.IndicatorSelector
+	indicator.TypeMeta.Kind = "indicator"
+	indicator.TypeMeta.APIVersion = obj.Version()
 	return &indicator, nil
 }
