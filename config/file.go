@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"os"
 
+	"github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v3"
 )
 
@@ -11,8 +12,14 @@ const DefaultConfigFilePath = "~/.config/reliably/config.yaml"
 
 var ConfigFilePath = DefaultConfigFilePath
 
+func resolveConfigFilePath() string {
+	path, _ := homedir.Expand(ConfigFilePath)
+	return path
+}
+
 func readConfigFile() (*Config, error) {
-	bytes, err := os.ReadFile(ConfigFilePath)
+	p := resolveConfigFilePath()
+	bytes, err := os.ReadFile(p)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +38,8 @@ func writeConfigFile(data *Config) error {
 		return err
 	}
 
-	if err := os.WriteFile(ConfigFilePath, bytes, fs.ModeAppend); err != nil {
+	p := resolveConfigFilePath()
+	if err := os.WriteFile(p, bytes, fs.ModeAppend); err != nil {
 		return err
 	}
 	return nil
