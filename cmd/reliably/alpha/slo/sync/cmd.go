@@ -81,8 +81,8 @@ func syncRun(opts *SyncOptions) error {
 	return nil
 }
 
-func load(path string) ([]entities.Entity, error) {
-	var objects []entities.Entity = make([]entities.Entity, 0)
+func load(path string) ([]entities.Objective, error) {
+	var objects []entities.Objective = make([]entities.Objective, 0)
 
 	if path == "" {
 		return nil, errors.New("path is empty")
@@ -101,7 +101,7 @@ func load(path string) ([]entities.Entity, error) {
 
 	var objective *entities.Objective
 	for dec.Decode(&objective) == nil {
-		objects = append(objects, objective)
+		objects = append(objects, *objective)
 		// ensure to create a new pointer for next iteration - avoid merged sub-props
 		objective = new(entities.Objective)
 	}
