@@ -22,14 +22,12 @@ func CreateEntity(client *Client, hostname string, org string, entity entities.E
 
 	path := fmt.Sprintf("%s/%s/%s/%s", "entities", version, org, kind)
 
-	bodyBytes, err := json.Marshal(entity)
-	if err != nil {
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(entity); err != nil {
 		return err
 	}
 
-	body := bytes.NewBuffer(bodyBytes)
-
-	return client.RESTv2(hostname, http.MethodPut, path, body, nil)
+	return client.RESTv2(hostname, http.MethodPut, path, &body, nil)
 }
 
 // plural returns the puralized string,
