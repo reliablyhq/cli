@@ -4,9 +4,9 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
+	agentAlpha "github.com/reliablyhq/cli/cmd/reliably/alpha/slo/agent"
 	initAlpha "github.com/reliablyhq/cli/cmd/reliably/alpha/slo/init"
 	initCmd "github.com/reliablyhq/cli/cmd/reliably/slo/init"
-	"github.com/reliablyhq/cli/cmd/reliably/slo/report"
 )
 
 func NewCommand() *cobra.Command {
@@ -17,8 +17,9 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(initCmd.NewCommand(initAlpha.AlpaInitRun))
+	cmd.AddCommand(agentAlpha.NewCommand(nil))
 	// cmd.AddCommand(report.NewCommand(reportAlpha.AlpaReportRun))
-	cmd.AddCommand(report.NewAlphaCommand(nil))
+	// cmd.AddCommand(report.NewAlphaCommand(nil))
 
 	return &cmd
 }

@@ -2,7 +2,10 @@ package agent
 
 import (
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/agent"
+	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/metrics"
@@ -38,13 +41,27 @@ func NewCommand(runF func(*Options) error) *cobra.Command {
 		Example: examples,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logger := log.StandardLogger()
-			var objectives []*agent.JobObjective
-			job := agent.NewJob(opts.Interval, objectives, metrics.GCPProvider)
 
+			var m entities.Manifest
+			if err := m.LoadFromFile(opts.ManifestPath); err != nil {
+				return err
+			}
+
+			// get API client
+			client := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
+			org, err := api.CurrentUserOrganization(client, core.Hostname())
+			if err != nil {
+				return err
+			}
+
+			// define agent job
+			job := agent.NewJob(opts.Interval, m, metrics.GCPProvider)
 			job.ErrorFunc(func(e *agent.Error) {
 				logger.Errorf(
 					"error processing objective: %s\nerror: %s",
 					e.Objective, e.Error())
+			}).IndicatorFunc(func(i *entities.Indicator) error {
+				return api.CreateEntity(client, core.Hostname(), org.Name, i)
 			}).Do()
 
 			return nil
