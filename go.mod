@@ -15,7 +15,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/cloudwatch v1.2.0
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.2.2
 	github.com/aws/aws-sdk-go-v2/service/iam v1.3.1
-	github.com/briandowns/spinner v1.12.0 // indirect
+	github.com/briandowns/spinner v1.12.0
 	github.com/channelmeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61 // indirect
 	github.com/cli/safeexec v1.0.0
 	github.com/davecgh/go-spew v1.1.1
@@ -29,10 +29,10 @@ require (
 	github.com/hashicorp/hcl v1.0.0
 	github.com/icza/dyno v0.0.0-20200205103839-49cb13720835
 	github.com/imdario/mergo v0.3.11 // indirect
-	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf // indirect
+	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf
 	github.com/karrick/godirwalk v1.16.1
 	github.com/kr/pretty v0.2.0 // indirect
-	github.com/machinebox/progress v0.2.0 // indirect
+	github.com/machinebox/progress v0.2.0
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.12
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
