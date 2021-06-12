@@ -32,10 +32,10 @@ func CreateEntity(client *Client, hostname string, org string, entity entities.E
 	return client.RESTv2(hostname, http.MethodPut, path, body, nil)
 }
 
-func GetObjectiveResults(client *Client, hostname string, version string, kind string, org string) (*[]entities.ObjectiveResultResponse, error) {
+func GetObjectiveResults(client *Client, hostname string, version string, org string) (*[]entities.ObjectiveResultResponse, error) {
 
 	var entitiesResult *[]entities.ObjectiveResultResponse
-	path := requestPath(version, kind, org)
+	path := requestPath(version, "objective-results", org)
 	err := client.RESTv2(hostname, http.MethodGet, path, nil, &entitiesResult)
 
 	if err != nil {
