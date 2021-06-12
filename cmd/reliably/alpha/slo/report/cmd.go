@@ -199,7 +199,7 @@ func mapToReports(objResults [][]entities.ObjectiveResultResponse, limit int, ap
 		for _, objResGroup := range objResults {
 			serviceLabel := objResGroup[0].Metadata.Labels["service"]
 			nameLabel := objResGroup[0].Metadata.Labels["name"]
-			if _, ok := serviceList[serviceLabel][nameLabel]; !ok {
+			if _, ok := serviceList[serviceLabel]; !ok {
 				serviceList[serviceLabel] = make(map[string][]entities.ObjectiveResultResponse)
 			}
 			serviceList[serviceLabel][nameLabel] = objResGroup
