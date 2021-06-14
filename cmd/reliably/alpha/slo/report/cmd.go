@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	iso8601 "github.com/ChannelMeter/iso8601duration"
 	"github.com/reliablyhq/cli/api"
 	sloReport "github.com/reliablyhq/cli/cmd/reliably/slo/report"
 	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/report"
 	v "github.com/reliablyhq/cli/version"
@@ -24,50 +27,16 @@ func AlpaReportRun(opts *sloReport.ReportOptions) error {
 
 	// TODO: implement watch for entity server
 	// check for -w/--watch
-	// if opts.WatchFlag {
-	// 	return watch(opts)
-	// }
+	if opts.WatchFlag {
+		return watch(opts)
+	}
 
 	// TODO: define elsewhere
-	apiVersion := "v1"
-	reportsLimit := 6
-
 	opts.IO.StartProgressIndicator()
 
-	objectives, err := loadObjectives(opts.ManifestPath)
+	reports, err := getReports(opts.ManifestPath)
 	if err != nil {
-		return fmt.Errorf("failed to read manifest: %w", err)
-	}
-	_ = objectives
-
-	hostname := core.Hostname()
-	entityHost := core.Hostname()
-	if v.IsDevVersion() {
-		if hostFromEnv := os.Getenv("RELIABLY_ENTITY_HOST"); hostFromEnv != "" {
-			entityHost = hostFromEnv
-		}
-	}
-
-	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
-	org, _ := api.CurrentUserOrganization(apiClient, hostname)
-
-	// TODO: define version/kind from manifest objective?
-	objectiveResults, err := api.GetObjectiveResults(apiClient, entityHost, apiVersion, org.Name)
-	if err != nil {
-		return fmt.Errorf("failed to get objective results: %w", err)
-	}
-	_ = objectiveResults
-
-	filteredObjectiveResults := filterObjectivesResults(objectiveResults, objectives, reportsLimit)
-
-	// TODO: !!Important!! at the moment each objective result represents it's status when
-	// the indicator was pushed vs. the objective at that time. If the objective is updated, only
-	// indicators after it will produce an objective result with the delta of the new one. An alternative is to always
-	// Use the latest objective against objective results. So, either an objective change updates previous objective results
-	// retrospectively, or each stands on its own.
-	reports, err := mapToReports(filteredObjectiveResults, reportsLimit, apiVersion)
-	if err != nil {
-		return fmt.Errorf("failed to generate report: %w", err)
+		return fmt.Errorf("reports error: %w", err)
 	}
 
 	opts.IO.StopProgressIndicator()
@@ -94,6 +63,48 @@ func AlpaReportRun(opts *sloReport.ReportOptions) error {
 	}
 
 	return nil
+}
+
+func getReports(manifestPath string) ([]*report.Report, error) {
+	apiVersion := "v1"
+	reportsLimit := 6
+
+	objectives, err := loadObjectives(manifestPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read manifest: %w", err)
+	}
+	_ = objectives
+
+	hostname := core.Hostname()
+	entityHost := core.Hostname()
+	if v.IsDevVersion() {
+		if hostFromEnv := os.Getenv("RELIABLY_ENTITY_HOST"); hostFromEnv != "" {
+			entityHost = hostFromEnv
+		}
+	}
+
+	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
+	org, _ := api.CurrentUserOrganization(apiClient, hostname)
+
+	// TODO: define version/kind from manifest objective?
+	objectiveResults, err := api.GetObjectiveResults(apiClient, entityHost, apiVersion, org.Name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get objective results: %w", err)
+	}
+
+	filteredObjectiveResults := filterObjectivesResults(objectiveResults, objectives, reportsLimit)
+
+	// TODO: !!Important!! at the moment each objective result represents it's status when
+	// the indicator was pushed vs. the objective at that time. If the objective is updated, only
+	// indicators after it will produce an objective result with the delta of the new one. An alternative is to always
+	// Use the latest objective against objective results. So, either an objective change updates previous objective results
+	// retrospectively, or each stands on its own.
+	reports, err := mapToReports(filteredObjectiveResults, reportsLimit, apiVersion)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate report: %w", err)
+	}
+
+	return reports, nil
 }
 
 func editReportSlice(s []*report.Report) *[]report.Report {
@@ -187,7 +198,7 @@ func mapToReports(objResults [][]entities.ObjectiveResultResponse, limit int, ap
 	var mappedReports []*report.Report
 	_ = mappedReports
 
-	for i := 0; i <= limit; i++ {
+	for i := 0; i < limit; i++ {
 		var services []*report.Service = make([]*report.Service, 0)
 		mappedReports = append(mappedReports, &report.Report{
 			APIVersion: apiVersion,
@@ -261,4 +272,52 @@ func mapToReports(objResults [][]entities.ObjectiveResultResponse, limit int, ap
 	}
 
 	return mappedReports, nil
+}
+
+func watch(opts *sloReport.ReportOptions) error {
+	rChan := make(chan []*report.Report, 5)
+	errChan := make(chan error, 1)
+	done := make(chan struct{})
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	defer func() {
+		// put cursor back on return
+		fmt.Print("\033[?25h")
+	}()
+
+	// refresh every 3 seconds
+	go func() {
+		for ch := time.Tick(time.Second * 3); ; <-ch {
+			reports, err := getReports(opts.ManifestPath)
+			if err != nil {
+				errChan <- err
+			}
+			rChan <- reports
+		}
+	}()
+
+	// Ctrl+C listener
+	go func() {
+		<-c
+		fmt.Printf("\nCTRL+C pressed... exiting\n")
+		done <- struct{}{}
+	}()
+
+	// print stuff
+	for {
+		select {
+		case r := <-rChan:
+			sloReport.ClearScreen()
+			fmt.Println(color.Magenta("Refreshing SLO report every 3 seconds."), "Press CTRL+C to quit.")
+			report.Write(report.TABBED, r[0], os.Stdout, log.StandardLogger(), r[1], editReportSlice(r[1:]))
+
+		case err := <-errChan:
+			return err
+
+		case <-done:
+			return nil
+		}
+	}
+
 }
