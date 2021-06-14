@@ -3,15 +3,17 @@ package config
 import "os"
 
 func GetCurrentOrgInfo() (*OrgInfo, error) {
-	if orgName := os.Getenv("RELIABLY_ORG"); orgName != "" {
-		return &OrgInfo{
-			Name: orgName,
-		}, nil
-	}
-
 	cfg, err := readConfigFile()
 	if err != nil {
 		return nil, err
+	}
+
+	if orgID := os.Getenv("RELIABLY_ORG_ID"); orgID != "" {
+		cfg.CurrentOrg.ID = orgID
+	}
+
+	if orgName := os.Getenv("RELIABLY_ORG_NAME"); orgName != "" {
+		cfg.CurrentOrg.Name = orgName
 	}
 
 	return &cfg.CurrentOrg, nil
