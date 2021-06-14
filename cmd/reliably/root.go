@@ -179,9 +179,7 @@ func initLogging() {
 
 //set the log level to debug if verbose mode is on
 func setUpVerboseLogLevel(verbose bool) error {
-
-	// For now, we check env var here, but this should be done from outside
-	if verbose || os.Getenv("DEBUG") != "" {
+	if verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.InfoLevel)
