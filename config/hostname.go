@@ -5,7 +5,7 @@ import "os"
 const DefaultHostName = "reliably.com"
 
 func GetHostname() string {
-	if h := os.Getenv("RELIABLY_HOST"); h != "" {
+	if h := os.Getenv(envReliablyHost); h != "" {
 		return h
 	}
 
