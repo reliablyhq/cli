@@ -9,7 +9,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core/report"
 )
 
@@ -26,7 +26,7 @@ func SendReport(client *Client, orgID string, r *report.Report) (string, error) 
 	}
 	var response *savedReport
 
-	err := client.REST(core.Hostname(), http.MethodPost, path, &body, &response)
+	err := client.REST(config.Hostname, http.MethodPost, path, &body, &response)
 	if err == nil {
 		log.Debugf("Report %s has been saved", response.ID)
 	}

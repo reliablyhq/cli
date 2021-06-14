@@ -137,7 +137,6 @@ func Execute() {
 		updateMessageChan <- rel
 	}()
 
-	core.SetHostname(cfg_v2.Hostname)
 	verbose = cfg_v2.IsDebugMode()
 
 	rootCmd := NewCmdRoot()

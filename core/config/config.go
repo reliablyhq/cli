@@ -7,6 +7,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core"
 )
 
@@ -28,13 +29,13 @@ func Hosts() []string {
 	auths := Viper.GetStringMap("auths")
 	for h := range auths {
 		hosts = append(hosts, h)
-		if h == core.Hostname() {
+		if h == config.Hostname {
 			hasDefault = true
 		}
 	}
 
 	if core.AuthTokenProvidedFromEnv() && !hasDefault {
-		hosts = append([]string{core.Hostname()}, hosts...)
+		hosts = append([]string{config.Hostname}, hosts...)
 	}
 
 	return hosts
@@ -44,7 +45,7 @@ func Hosts() []string {
 func GetAuthTokenWithSource(hostname string) (string, string, error) {
 
 	if hostname == "" {
-		hostname = core.Hostname()
+		hostname = config.Hostname
 	}
 
 	if core.AuthTokenProvidedFromEnv() {

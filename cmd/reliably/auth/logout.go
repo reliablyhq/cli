@@ -6,8 +6,8 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
 
+	"github.com/reliablyhq/cli/config"
 	cfg_v2 "github.com/reliablyhq/cli/config"
-	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/iostreams"
 )
 
@@ -41,7 +41,7 @@ This command removes the authentication configuration.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			if opts.Hostname == "" {
-				opts.Hostname = core.Hostname()
+				opts.Hostname = config.Hostname
 			}
 
 			return logoutRun(opts)

@@ -13,8 +13,8 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 
 	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/config"
 	cfg_v2 "github.com/reliablyhq/cli/config"
-	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
 )
@@ -75,7 +75,7 @@ Alternatively, pass in a token on standard input by using '--with-token'.`,
 			}
 
 			if opts.Hostname == "" {
-				opts.Hostname = core.Hostname()
+				opts.Hostname = config.Hostname
 			}
 
 			return loginRun(opts)

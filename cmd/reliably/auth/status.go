@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/reliablyhq/cli/api"
+	cfg_v2 "github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/config"
@@ -43,7 +44,7 @@ it's still valid and report on any issue.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			if opts.Hostname == "" {
-				opts.Hostname = core.Hostname()
+				opts.Hostname = cfg_v2.Hostname
 			}
 
 			return statusRun(opts)
@@ -81,7 +82,7 @@ func statusRun(opts *StatusOptions) error {
 
 	var loginHostCmd string = loginCmd
 	var logoutHostCmd string = logoutCmd
-	if hostname != core.Hostname() {
+	if hostname != cfg_v2.Hostname {
 		loginHostCmd = fmt.Sprintf("%s --hostname %s", loginCmd, hostname)
 		logoutHostCmd = fmt.Sprintf("%s --hostname %s", logoutCmd, hostname)
 	}

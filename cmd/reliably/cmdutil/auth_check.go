@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	cfg_v2 "github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/config"
@@ -17,7 +18,7 @@ func CheckAuth() bool {
 		return true
 	}
 
-	token, _, err := config.GetAuthTokenWithSource(core.Hostname())
+	token, _, err := config.GetAuthTokenWithSource(cfg_v2.Hostname)
 	if err != nil {
 		return false
 	}
