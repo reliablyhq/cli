@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -14,23 +13,18 @@ import (
 	"github.com/mgutz/ansi"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"github.com/reliablyhq/cli/cmd/reliably/alpha"
 	"github.com/reliablyhq/cli/cmd/reliably/beta"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/cmd/reliably/slo"
+	cfg_v2 "github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
-	"github.com/reliablyhq/cli/core/config"
 	ctx "github.com/reliablyhq/cli/core/context"
 	"github.com/reliablyhq/cli/core/update"
 	"github.com/reliablyhq/cli/utils"
 	v "github.com/reliablyhq/cli/version"
-)
-
-const (
-	workspace = ".reliably"
 )
 
 type Choice = cmdutil.Choice
@@ -143,9 +137,8 @@ func Execute() {
 		updateMessageChan <- rel
 	}()
 
-	if hostFromEnv := os.Getenv("RELIABLY_HOST"); hostFromEnv != "" {
-		core.SetHostname(hostFromEnv)
-	}
+	core.SetHostname(cfg_v2.GetHostname())
+	verbose = cfg_v2.IsDebugMode()
 
 	if os.Getenv("DEBUG") != "" {
 		verbose = true
@@ -173,8 +166,6 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initLogging)
-	cobra.OnInitialize(initConfig)
-
 }
 
 /*
@@ -188,47 +179,6 @@ func initLogging() {
 	if err := setUpVerboseLogLevel(verbose); err != nil {
 		er(err)
 	}
-}
-
-// initConfig reads in config file.
-func initConfig() {
-	configHome := core.ConfigDir()
-	configName := "config"
-	configType := "yaml"
-	configPath := filepath.Join(configHome, configName+"."+configType)
-
-	// Create a new Viper global objec with custom options
-	// - change the key delimiter to support dots in keys ie 'reliably.com'
-	//   meaning the nested key lookup will be eg auths::reliably.com::token
-	//viper.NewWithOptions(viper.KeyDelimiter("::"))
-
-	config.Viper.AddConfigPath(configHome)
-	config.Viper.SetConfigType(configType)
-	config.Viper.SetConfigName(configName)
-
-	// If a config file is found, read it in.
-	if err := config.Viper.ReadInConfig(); err != nil {
-
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found;
-			// Ensure to create the config folder & file
-			// Or Viper will not be able to write the file, if does not exist !
-			err := os.MkdirAll(configHome, 0771)
-			if err != nil {
-				er(err)
-			}
-			if _, err := os.Create(configPath); err != nil {
-				er(err)
-			}
-		} else {
-			// Config file was found but another error was produced
-			er(err)
-		}
-	} else {
-		log.Debug(fmt.Sprintf("Using config file: %s", config.Viper.ConfigFileUsed()))
-	}
-
-	log.Debug(fmt.Sprintf("Loaded settings: %s", config.AllSettingsSecure()))
 }
 
 //set the log level to debug if verbose mode is on
