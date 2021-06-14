@@ -4,6 +4,7 @@ package agent
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"os"
@@ -212,22 +213,36 @@ func getIndicatorFromObjective(obj *entities.Objective) (*entities.Indicator, er
 	indicator.Spec.From = now.Add(time.Duration(-(int64(obj.Spec.Window.Duration))))
 	indicator.Spec.To = now
 
-	var f func(resourceID string, from time.Time, to time.Time) (float64, error)
 	switch obj.Spec.IndicatorSelector["category"] {
 	case "latency":
-		f = provider.Get99PercentLatencyMetricForResource
+		target, ok := obj.Spec.IndicatorSelector["latency_target"]
+		if !ok {
+			return nil, errors.New("latency_target not defined in Objective spec")
+		}
+
+		thres, err := time.ParseDuration(target)
+		if err != nil {
+			return nil, err
+		}
+
+		indicator.Spec.Percent, err = provider.GetLatencyAboveThresholdPercentage(
+			resourceID, indicator.Spec.From,
+			indicator.Spec.To, int(thres.Milliseconds()))
+		if err != nil {
+			return nil, err
+		}
 
 	case "availability":
-		f = provider.GetAvailabilityPercentage
+		indicator.Spec.Percent, err = provider.GetAvailabilityPercentage(
+			resourceID, indicator.Spec.From,
+			indicator.Spec.To)
+		if err != nil {
+			return nil, err
+		}
 
 	default:
 		return nil, fmt.Errorf("unsupported indicator category: %s",
 			obj.Spec.IndicatorSelector["category"])
-	}
-
-	indicator.Spec.Percent, err = f(resourceID, indicator.Spec.From, indicator.Spec.To)
-	if err != nil {
-		return nil, err
 	}
 
 	indicator.Metadata.Labels = obj.Spec.IndicatorSelector
