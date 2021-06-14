@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"sort"
 	"syscall"
 	"time"
 
@@ -232,10 +233,14 @@ func mapToReports(objResults [][]entities.ObjectiveResultResponse, limit int, ap
 					if sl[i].Spec.RemainingPercent >= 0 {
 						sloIsMet = true
 					}
-					layout := "2006-01-02 15:04:05.000 +0000 UTC"
+					layout := "2006-01-02 15:04:05.000 -0700 MST"
 					to, err := time.Parse(layout, sl[i].Metadata.Labels["to"])
 					if err != nil {
-						return nil, fmt.Errorf("time 'to' not parsed correctly: %w", err)
+						layout = "2006-01-02 15:04:05.00 -0700 MST"
+						to, err = time.Parse(layout, sl[i].Metadata.Labels["to"])
+						if err != nil {
+							return nil, fmt.Errorf("time 'to' not parsed correctly: %w", err)
+						}
 					}
 					from, err := time.Parse(layout, sl[i].Metadata.Labels["from"])
 					if err != nil {
@@ -264,10 +269,18 @@ func mapToReports(objResults [][]entities.ObjectiveResultResponse, limit int, ap
 					})
 				}
 
+				sort.SliceStable(service.ServiceLevels, func(k, j int) bool {
+					return service.ServiceLevels[k].Name < service.ServiceLevels[j].Name
+				})
+
 			}
 
 			mappedReports[i].Services = append(mappedReports[i].Services, &service)
 		}
+
+		sort.SliceStable(mappedReports[i].Services, func(k, j int) bool {
+			return mappedReports[i].Services[k].Name < mappedReports[i].Services[j].Name
+		})
 
 	}
 
