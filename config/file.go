@@ -9,7 +9,7 @@ import (
 )
 
 func resolveConfigFilePath() string {
-	path, _ := homedir.Expand(FilePath)
+	path, _ := homedir.Expand(ConfigFile)
 	return path
 }
 

@@ -23,7 +23,7 @@ func TestGetCurrentOrgInfo(t *testing.T) {
 			return err
 		}
 		defer log.Println("file has been written")
-		return os.WriteFile(FilePath, bytes, 0755)
+		return os.WriteFile(ConfigFile, bytes, 0755)
 	}
 
 	tests := []struct {
@@ -46,7 +46,7 @@ func TestGetCurrentOrgInfo(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			FilePath = fmt.Sprintf("%s/%d.yaml", dir, i)
+			ConfigFile = fmt.Sprintf("%s/%d.yaml", dir, i)
 
 			if err := preFunc(); err != nil {
 				t.Error(err)

@@ -5,10 +5,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	cfg_v2 "github.com/reliablyhq/cli/config"
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
-	"github.com/reliablyhq/cli/core/config"
 )
 
 // CheckAuth garanties a valid token is given to the CLI, for making
@@ -18,15 +17,7 @@ func CheckAuth() bool {
 		return true
 	}
 
-	token, _, err := config.GetAuthTokenWithSource(cfg_v2.Hostname)
-	if err != nil {
-		return false
-	}
-	if token != "" {
-		return true
-	}
-
-	return false
+	return config.GetTokenFor(config.Hostname) != ""
 }
 
 // PrintRequireAuthMsg displays formatted message that authentication

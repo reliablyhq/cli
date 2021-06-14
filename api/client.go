@@ -11,7 +11,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	cfg_v2 "github.com/reliablyhq/cli/config"
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core"
 	v "github.com/reliablyhq/cli/version"
 )
@@ -229,7 +229,7 @@ func AuthHTTPClient(hostname string) *http.Client {
 		AddHeader("Accept", "application/json"),
 	)
 
-	token = cfg_v2.GetTokenFor(hostname)
+	token = config.GetTokenFor(hostname)
 
 	if token != "" {
 		opts = append(opts,

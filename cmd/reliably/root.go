@@ -18,8 +18,7 @@ import (
 	"github.com/reliablyhq/cli/cmd/reliably/beta"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/cmd/reliably/slo"
-	cfg_v2 "github.com/reliablyhq/cli/config"
-	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core/color"
 	ctx "github.com/reliablyhq/cli/core/context"
 	"github.com/reliablyhq/cli/core/update"
@@ -137,7 +136,7 @@ func Execute() {
 		updateMessageChan <- rel
 	}()
 
-	verbose = cfg_v2.IsDebugMode()
+	verbose = config.IsDebugMode()
 
 	rootCmd := NewCmdRoot()
 	if err := rootCmd.Execute(); err != nil {
@@ -310,7 +309,7 @@ func checkForUpdate(currentVersion string) (*update.ReleaseInfo, error) {
 	}
 
 	repo := updaterRepo
-	stateFilePath := path.Join(core.ConfigDir(), "release.yml")
+	stateFilePath := path.Join(config.ConfigDir, "release.yml")
 	return update.CheckForUpdate(nil, stateFilePath, repo, currentVersion)
 }
 

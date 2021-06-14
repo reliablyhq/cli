@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/reliablyhq/cli/config"
-	cfg_v2 "github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core/iostreams"
 )
 
@@ -58,7 +57,7 @@ func logoutRun(opts *LogoutOptions) error {
 	hostname := opts.Hostname
 	askConfirm := !opts.NoConfirm
 
-	username := cfg_v2.GetUsernameFor(hostname)
+	username := config.GetUsernameFor(hostname)
 	if username == "" {
 		return fmt.Errorf("You are not logged in to %s", hostname)
 	}
@@ -80,7 +79,7 @@ func logoutRun(opts *LogoutOptions) error {
 		}
 	}
 
-	if err := cfg_v2.DeleteAuthInfoForHostname(hostname); err != nil {
+	if err := config.DeleteAuthInfoForHostname(hostname); err != nil {
 		return fmt.Errorf("failed to write config, authentication configuration not updated: %w", err)
 	}
 

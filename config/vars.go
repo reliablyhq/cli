@@ -3,8 +3,16 @@ package config
 import "os"
 
 var (
-	FilePath         = "~/.config/reliably/config.yaml"
-	Hostname         = "reliably.com"
+	// The directory where the application config can be found
+	ConfigDir = "~/.config/reliably"
+
+	// The file that contains application config
+	ConfigFile = ConfigDir + "/config.yaml"
+
+	// The hostname of the reliably web services
+	Hostname = "reliably.com"
+
+	// The Entity Server hostname. This may be merged in to the Hostame variable later.
 	EntityServerHost = Hostname
 )
 

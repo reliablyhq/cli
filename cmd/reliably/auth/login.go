@@ -14,7 +14,6 @@ import (
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/config"
-	cfg_v2 "github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
 )
@@ -95,7 +94,7 @@ func loginRun(opts *LoginOptions) error {
 	}
 
 	if opts.Token != "" {
-		return cfg_v2.SetTokenForHostname(hostname, opts.Token)
+		return config.SetTokenForHostname(hostname, opts.Token)
 	}
 
 	if !opts.Interactive {
@@ -105,7 +104,7 @@ func loginRun(opts *LoginOptions) error {
 	fmt.Fprintf(opts.IO.ErrOut, "Logging into %s\n", hostname)
 
 	// Check if a token already exists and is still valid
-	if existingToken := cfg_v2.GetTokenFor(hostname); existingToken != "" && opts.Interactive {
+	if existingToken := config.GetTokenFor(hostname); existingToken != "" && opts.Interactive {
 		apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
 		if username, err := api.CurrentUsername(apiClient, hostname); err == nil {
 			var keepGoing bool
@@ -154,7 +153,7 @@ func loginRun(opts *LoginOptions) error {
 			return fmt.Errorf("failed to authenticate via web browser: %w", err)
 		}
 
-		if err := cfg_v2.SetAuthInfo(hostname, cfg_v2.AuthInfo{Username: username, Token: token}); err != nil {
+		if err := config.SetAuthInfo(hostname, config.AuthInfo{Username: username, Token: token}); err != nil {
 			return err
 		}
 
@@ -181,7 +180,7 @@ func loginRun(opts *LoginOptions) error {
 
 						token = val.(string)
 
-						if err := cfg_v2.SetTokenForHostname(hostname, token); err != nil {
+						if err := config.SetTokenForHostname(hostname, token); err != nil {
 							return err
 						}
 
@@ -207,7 +206,7 @@ func loginRun(opts *LoginOptions) error {
 			return fmt.Errorf("could not prompt: %w", err)
 		}
 
-		if err := cfg_v2.SetUsernameForHostname(hostname, username); err != nil {
+		if err := config.SetUsernameForHostname(hostname, username); err != nil {
 			return err
 		}
 
