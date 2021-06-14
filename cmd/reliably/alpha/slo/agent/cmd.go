@@ -54,6 +54,7 @@ func NewCommand(runF func(*Options) error) *cobra.Command {
 			}
 
 			// define agent job
+			agent.SetLogger(logger)
 			job := agent.NewJob(opts.Interval, m)
 			job.ErrorFunc(func(e *agent.Error) {
 				logger.Errorf(
