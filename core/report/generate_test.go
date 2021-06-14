@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/metrics"
 	"github.com/stretchr/testify/assert"
@@ -47,12 +48,16 @@ func (p *dummyProvider) GetAvailabilityPercentage(resourceID string, from, to ti
 	return 100.0 - p.errorPercentValue, nil
 }
 
+func (p *dummyProvider) ResourceFromSelector(entities.Selector) string {
+	return "not-implemented"
+}
+
 func Test_getProviderForResource(t *testing.T) {
 	p := &dummyProvider{}
 	metrics.ProviderFactories["test_get_provider_for_resource"] = func() (metrics.Provider, error) { return p, nil }
 
 	type args struct {
-		providerID string
+		providerID metrics.ProviderType
 	}
 	tests := []struct {
 		name    string

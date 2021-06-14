@@ -12,8 +12,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/utils"
 )
+
+// SelectorKeys - a list of all
+// supported AWS specific selector keys
+var SelectorKeys = []string{
+	"aws_arn",
+}
 
 type AwsCloudWatch struct{}
 
@@ -239,6 +246,15 @@ func (cw *AwsCloudWatch) GetAvailabilityPercentage(resourceID string, from, to t
 	availability := 100.0 - errorRate
 	log.Debugf("Availability is %.2f%%\n", availability)
 	return availability, nil
+}
+
+// ResourceFromSelector - identifies the resource ID given a selector.
+func (cw *AwsCloudWatch) ResourceFromSelector(s entities.Selector) string {
+	if v, ok := s["aws_arn"]; ok {
+		return v
+	}
+
+	return ""
 }
 
 // IsSupportedService indicates wether the resource is supported
