@@ -7,7 +7,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core"
@@ -97,13 +96,13 @@ func load(path string) ([]entities.Entity, error) {
 	defer file.Close()
 
 	//var m Manifest
-	dec := yaml.NewDecoder(file)
+	var m entities.Manifest
+	if err := m.LoadFromFile(path); err != nil {
+		return nil, err
+	}
 
-	var objective *entities.Objective
-	for dec.Decode(&objective) == nil {
-		objects = append(objects, objective)
-		// ensure to create a new pointer for next iteration - avoid merged sub-props
-		objective = new(entities.Objective)
+	for _, e := range m {
+		objects = append(objects, e)
 	}
 
 	return objects, nil

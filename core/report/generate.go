@@ -138,7 +138,7 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 	return
 }
 
-func getProviderForResource(providerID string) (metrics.Provider, error) {
+func getProviderForResource(providerID metrics.ProviderType) (metrics.Provider, error) {
 	if factory, ok := metrics.ProviderFactories[providerID]; ok {
 		return factory()
 	}
