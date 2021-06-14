@@ -8,12 +8,8 @@ func GetCurrentOrgInfo() (*OrgInfo, error) {
 		return nil, err
 	}
 
-	if orgID := os.Getenv(envReliablyOrgID); orgID != "" {
+	if orgID := os.Getenv(envReliablyOrg); orgID != "" {
 		cfg.CurrentOrg.ID = orgID
-	}
-
-	if orgName := os.Getenv(envReliablyOrgName); orgName != "" {
-		cfg.CurrentOrg.Name = orgName
 	}
 
 	return &cfg.CurrentOrg, nil
