@@ -1,5 +1,7 @@
 package agent
 
+import log "github.com/sirupsen/logrus"
+
 // Logger - interface used to fascilitate logging
 // within the agent
 type Logger interface {
@@ -14,4 +16,15 @@ type Logger interface {
 
 	Errorf(format string, args ...interface{})
 	Error(args ...interface{})
+}
+
+var logger Logger
+
+func init() {
+	logger = log.StandardLogger()
+}
+
+// Logger - set Logger for the agent
+func SetLogger(l Logger) {
+	logger = l
 }

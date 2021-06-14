@@ -14,7 +14,6 @@ import (
 
 	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/metrics"
-	log "github.com/sirupsen/logrus"
 )
 
 // Error - agent error type used to associate failed objectives
@@ -39,7 +38,7 @@ func defaultIndicatorHandler(s *entities.Indicator) error {
 		return err
 	}
 
-	fmt.Printf("indicator generated: %s", string(b))
+	logger.Infof("indicator generated: %s", string(b))
 	return nil
 }
 
@@ -48,7 +47,7 @@ type ErrorHandler func(*Error)
 
 func defaultErrorHandler(e *Error) {
 	b, _ := json.MarshalIndent(e.Objective.Metadata.Labels, "", "  ")
-	fmt.Printf("objective metadata: \n%s\nerror: %s", string(b), e.err)
+	logger.Errorf("objective metadata: \n%s\nerror: %s", string(b), e.err)
 }
 
 // ExitSignal - empty struct type used to
@@ -73,8 +72,6 @@ type Job struct {
 	// indicators generated.
 	indicatorHandler IndicatorHandler
 
-	log Logger
-
 	// errorHandler - error handle, executed against all errors
 	// detected in the workflow
 	errorHandler ErrorHandler
@@ -85,13 +82,13 @@ type Job struct {
 
 // Do - run job
 func (j *Job) Do() {
-	j.log.Info("starting agent workflow")
+	logger.Info("starting agent workflow")
 	// Ctrl+C listener
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		j.log.Infof("\nCTRL+C pressed... exiting\n")
+		logger.Infof("\nCTRL+C pressed... exiting\n")
 		j.done <- ExitSignal{}
 	}()
 
@@ -119,7 +116,7 @@ func (j *Job) Do() {
 					for obj := range jobs {
 						indicator, err := getIndicatorFromObjective(obj)
 						if err != nil {
-							j.log.Debugf("error detected while getting indicator for objective: %s - %s", obj, err)
+							logger.Debugf("error detected while getting indicator for objective: %s - %s", obj, err)
 							j.errorHandler(&Error{
 								Objective: obj,
 								err:       err,
@@ -146,7 +143,7 @@ func (j *Job) Do() {
 
 		case r := <-j.results:
 			if err := j.indicatorHandler(r.Indicator); err != nil {
-				j.log.Debugf("indicator handler failed: %s", err)
+				logger.Debugf("indicator handler failed: %s", err)
 				j.errorHandler(&Error{
 					Objective: r.Objective,
 					err:       err,
@@ -169,17 +166,11 @@ func (j *Job) IndicatorFunc(f IndicatorHandler) *Job {
 	return j
 }
 
-// Logger - set Logger for this Job
-func (j *Job) Logger(l Logger) {
-	j.log = l
-}
-
 // NewJob - creates a new agent job
 func NewJob(interval int64, objectives []*entities.Objective) *Job {
 	return &Job{
 		Interval:         interval,
 		Objectives:       objectives,
-		log:              log.StandardLogger(),
 		results:          make(chan *result, 50),
 		done:             make(chan ExitSignal),
 		indicatorHandler: defaultIndicatorHandler,
