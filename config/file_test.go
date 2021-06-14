@@ -15,7 +15,7 @@ func Test_resolveConfigFilePath(t *testing.T) {
 		{
 			name:    "resolves home folder",
 			want:    fmt.Sprint(os.Getenv("HOME"), FilePath[1:]),
-			preFunc: func() { FilePath = DefaultFilePath },
+			preFunc: func() {},
 		},
 		{
 			name:    "resolves literal folder",

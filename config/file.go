@@ -8,10 +8,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const DefaultFilePath = "~/.config/reliably/config.yaml"
-
-var FilePath = DefaultFilePath
-
 func resolveConfigFilePath() string {
 	path, _ := homedir.Expand(FilePath)
 	return path

@@ -78,12 +78,7 @@ func getAuthInfoFromFile(hostname string) *AuthInfo {
 		panic(err)
 	}
 
-	h := hostname
-	if overridden_hostname := os.Getenv(envReliablyHost); overridden_hostname != "" {
-		h = overridden_hostname
-	}
-
-	if info, ok := cfg.AuthInfo[h]; !ok {
+	if info, ok := cfg.AuthInfo[hostname]; !ok {
 		return nil
 	} else {
 		return &info

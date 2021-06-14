@@ -1,13 +1,17 @@
 package config
 
-import "os"
-
-const DefaultHostName = "reliably.com"
-
-func GetHostname() string {
-	if h := os.Getenv(envReliablyHost); h != "" {
-		return h
+func GetKnownHosts() ([]string, error) {
+	cfg, err := readConfigFile()
+	if err != nil {
+		return nil, err
 	}
 
-	return DefaultHostName
+	i := 0
+	hosts := make([]string, len(cfg.AuthInfo))
+	for key := range cfg.AuthInfo {
+		hosts[i] = key
+		i++
+	}
+
+	return hosts, nil
 }
