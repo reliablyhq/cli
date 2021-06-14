@@ -4,14 +4,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/spf13/cobra"
-	//"github.com/spf13/viper"
-
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/config"
 	"github.com/reliablyhq/cli/core/iostreams"
+	"github.com/spf13/cobra"
 )
 
 type StatusOptions struct {

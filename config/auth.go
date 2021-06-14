@@ -4,38 +4,88 @@ import (
 	"os"
 )
 
-func GetTokenForHostname(hostname string) string {
+func GetTokenFor(hostname string) string {
 	if token := os.Getenv(envReliablyToken); token != "" {
 		return token
 	}
 
-	return getAuthInfoFromFile(hostname).Token
+	if info := getAuthInfoFromFile(hostname); info != nil {
+		return info.Token
+	} else {
+		return ""
+	}
 }
 
-func SetAuthInfoForHostname(hostname, token, username string) error {
+func GetUsernameFor(hostname string) string {
+	if info := getAuthInfoFromFile(hostname); info != nil {
+		return info.Username
+	} else {
+		return ""
+	}
+}
+
+func SetTokenForHostname(hostname, token string) error {
 	cfg, err := readConfigFile()
 	if err != nil {
 		return err
 	}
 
 	cfg.AuthInfo[hostname] = AuthInfo{
-		Token:    token,
+		Token: token,
+	}
+
+	return writeConfigFile(cfg)
+}
+
+func SetUsernameForHostname(hostname, username string) error {
+	cfg, err := readConfigFile()
+	if err != nil {
+		return err
+	}
+
+	cfg.AuthInfo[hostname] = AuthInfo{
 		Username: username,
 	}
 
 	return writeConfigFile(cfg)
 }
 
-func getAuthInfoFromFile(hostname string) AuthInfo {
+func SetAuthInfo(hostname string, data AuthInfo) error {
+	cfg, err := readConfigFile()
+	if err != nil {
+		return err
+	}
+
+	cfg.AuthInfo[hostname] = data
+
+	return writeConfigFile(cfg)
+}
+
+func DeleteAuthInfoForHostname(hostname string) error {
+	cfg, err := readConfigFile()
+	if err != nil {
+		return err
+	}
+
+	delete(cfg.AuthInfo, hostname)
+
+	return writeConfigFile(cfg)
+}
+
+func getAuthInfoFromFile(hostname string) *AuthInfo {
 	cfg, err := readConfigFile()
 	if err != nil {
 		panic(err)
 	}
 
+	h := hostname
 	if overridden_hostname := os.Getenv(envReliablyHost); overridden_hostname != "" {
-		return cfg.AuthInfo[overridden_hostname]
-	} else {
-		return cfg.AuthInfo[hostname]
+		h = overridden_hostname
 	}
 
+	if info, ok := cfg.AuthInfo[h]; !ok {
+		return nil
+	} else {
+		return &info
+	}
 }

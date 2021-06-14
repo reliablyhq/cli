@@ -3,12 +3,11 @@ package auth
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
-	//"github.com/spf13/viper"
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/spf13/cobra"
 
+	cfg_v2 "github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core"
-	"github.com/reliablyhq/cli/core/config"
 	"github.com/reliablyhq/cli/core/iostreams"
 )
 
@@ -59,19 +58,12 @@ func logoutRun(opts *LogoutOptions) error {
 	hostname := opts.Hostname
 	askConfirm := !opts.NoConfirm
 
-	auths := config.Viper.GetStringMap("auths")
-
-	// need to ensure authentication exists in config for hostname
-	if auths[hostname] == nil {
+	username := cfg_v2.GetUsernameFor(hostname)
+	if username == "" {
 		return fmt.Errorf("You are not logged in to %s", hostname)
 	}
 
-	username := config.Viper.Get(fmt.Sprintf("auths::%s::username", hostname))
-
-	usernameStr := ""
-	if username != "" {
-		usernameStr = fmt.Sprintf(" account '%s'", username)
-	}
+	usernameStr := fmt.Sprintf(" account '%s'", username)
 
 	if opts.IO.CanPrompt() && askConfirm {
 		var keepGoing bool
@@ -88,18 +80,11 @@ func logoutRun(opts *LogoutOptions) error {
 		}
 	}
 
-	// do stuff to remove host from config
-	delete(auths, hostname)
-	config.Viper.Set("auths", auths)
-
-	// save updated config
-	err := config.Viper.WriteConfig()
-	if err != nil {
+	if err := cfg_v2.DeleteAuthInfoForHostname(hostname); err != nil {
 		return fmt.Errorf("failed to write config, authentication configuration not updated: %w", err)
 	}
 
-	isTTY := opts.IO.IsStdinTTY() && opts.IO.IsStdoutTTY()
-	if isTTY {
+	if isTTY := opts.IO.IsStdinTTY() && opts.IO.IsStdoutTTY(); isTTY {
 		fmt.Printf("Logged out of %s%s\n", hostname, usernameStr)
 	}
 
