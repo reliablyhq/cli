@@ -87,7 +87,7 @@ func statusRun(opts *StatusOptions) error {
 
 	knownHosts, err := config.GetKnownHosts()
 	if err != nil {
-		return fmt.Errorf("an error occured while getting known hosts: ", err)
+		return fmt.Errorf("an error occured while getting known hosts: %v", err)
 	}
 
 	if len(knownHosts) == 0 {
