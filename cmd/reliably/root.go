@@ -140,10 +140,6 @@ func Execute() {
 	core.SetHostname(cfg_v2.Hostname)
 	verbose = cfg_v2.IsDebugMode()
 
-	if os.Getenv("DEBUG") != "" {
-		verbose = true
-	}
-
 	rootCmd := NewCmdRoot()
 	if err := rootCmd.Execute(); err != nil {
 		er(err)
