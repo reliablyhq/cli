@@ -6,7 +6,6 @@ import (
 
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/entities"
-	"github.com/reliablyhq/cli/core/metrics"
 	"github.com/stretchr/testify/require"
 )
 
@@ -47,7 +46,7 @@ func TestAgent5Seconds(t *testing.T) {
 	timeout := time.After(5 * time.Second)
 	go func() {
 		objectives := []*entities.Objective{testJobObjective}
-		job := NewJob(5, objectives, metrics.GCPProvider)
+		job := NewJob(5, objectives)
 
 		job.ErrorFunc(func(e *Error) {
 			require.NoError(t, e)

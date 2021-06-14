@@ -69,11 +69,6 @@ type Job struct {
 	// Objectives - The objectives to create indicators from
 	Objectives []*entities.Objective
 
-	// Cloud provider to query metrics for.
-	// The current assumption is that only one cloud provider will
-	// be supported per agent job
-	Provider metrics.ProviderType
-
 	// indicatorHandler - executes a given function againsts all
 	// indicators generated.
 	indicatorHandler IndicatorHandler
@@ -180,11 +175,10 @@ func (j *Job) Logger(l Logger) {
 }
 
 // NewJob - creates a new agent job
-func NewJob(interval int64, objectives []*entities.Objective, provider metrics.ProviderType) *Job {
+func NewJob(interval int64, objectives []*entities.Objective) *Job {
 	return &Job{
 		Interval:         interval,
 		Objectives:       objectives,
-		Provider:         provider,
 		log:              log.StandardLogger(),
 		results:          make(chan *result, 50),
 		done:             make(chan ExitSignal),

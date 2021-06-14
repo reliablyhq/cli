@@ -8,7 +8,6 @@ import (
 	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/manifest"
-	"github.com/reliablyhq/cli/core/metrics"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -55,7 +54,7 @@ func NewCommand(runF func(*Options) error) *cobra.Command {
 			}
 
 			// define agent job
-			job := agent.NewJob(opts.Interval, m, metrics.GCPProvider)
+			job := agent.NewJob(opts.Interval, m)
 			job.ErrorFunc(func(e *agent.Error) {
 				logger.Errorf(
 					"error processing objective: %v\nerror: %s",
