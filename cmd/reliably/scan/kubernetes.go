@@ -15,6 +15,7 @@ import (
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core"
 	ctx "github.com/reliablyhq/cli/core/context"
 	finder "github.com/reliablyhq/cli/core/find"
@@ -312,7 +313,7 @@ func saveOutput(opts *ScanOptions, suggestions []*core.Suggestion) error {
 // scanRun execute the workflow for the scan command
 func scanRun(opts *ScanOptions) (count int, err error) {
 
-	hostname := core.Hostname()
+	hostname := config.Hostname
 	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
 
 	// Sends the context to Reliably prior executing the command

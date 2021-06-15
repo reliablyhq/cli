@@ -3,7 +3,7 @@ package agent
 import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/reliablyhq/cli/api"
-	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core/agent"
 	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/iostreams"
@@ -47,8 +47,8 @@ func NewCommand(runF func(*Options) error) *cobra.Command {
 			}
 
 			// get API client
-			client := api.NewClientFromHTTP(api.AuthHTTPClient(core.Hostname()))
-			org, err := api.CurrentUserOrganization(client, core.Hostname())
+			client := api.NewClientFromHTTP(api.AuthHTTPClient(config.Hostname))
+			org, err := api.CurrentUserOrganization(client, config.Hostname)
 			if err != nil {
 				return err
 			}
@@ -61,7 +61,7 @@ func NewCommand(runF func(*Options) error) *cobra.Command {
 					"error processing objective: %v\nerror: %s",
 					e.Objective, e.Error())
 			}).IndicatorFunc(func(i *entities.Indicator) error {
-				return api.CreateEntity(client, core.Hostname(), org.Name, i)
+				return api.CreateEntity(client, config.Hostname, org.Name, i)
 			}).Do()
 
 			return nil

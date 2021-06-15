@@ -9,11 +9,10 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/reliablyhq/cli/api"
-	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/iostreams"
-	v "github.com/reliablyhq/cli/version"
 )
 
 type SyncOptions struct {
@@ -49,13 +48,8 @@ func syncRun(opts *SyncOptions) error {
 		return err
 	}
 
-	hostname := core.Hostname()
-	entityHost := core.Hostname()
-	if v.IsDevVersion() {
-		if hostFromEnv := os.Getenv("RELIABLY_ENTITY_HOST"); hostFromEnv != "" {
-			entityHost = hostFromEnv
-		}
-	}
+	hostname := config.Hostname
+	entityHost := config.EntityServerHost
 
 	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
 	org, _ := api.CurrentUserOrganization(apiClient, hostname)

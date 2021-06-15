@@ -9,11 +9,10 @@ import (
 	"regexp"
 	"time"
 
-	//"github.com/spf13/viper"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core"
-	"github.com/reliablyhq/cli/core/config"
 	v "github.com/reliablyhq/cli/version"
 )
 
@@ -230,12 +229,7 @@ func AuthHTTPClient(hostname string) *http.Client {
 		AddHeader("Accept", "application/json"),
 	)
 
-	if core.AuthTokenProvidedFromEnv() {
-		token, _ = core.AuthTokenFromEnv()
-	} else {
-		tokenKey := fmt.Sprintf("auths::%s::token", hostname)
-		token = config.Viper.GetString(tokenKey)
-	}
+	token = config.GetTokenFor(hostname)
 
 	if token != "" {
 		opts = append(opts,

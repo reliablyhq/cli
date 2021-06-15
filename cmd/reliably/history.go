@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
 	ctx "github.com/reliablyhq/cli/core/context"
@@ -38,9 +39,9 @@ type HistoryOptions struct {
 func NewCmdHistory() *cobra.Command {
 	opts := &HistoryOptions{
 		IO:       iostreams.System(),
-		Hostname: core.Hostname(),
+		Hostname: config.Hostname,
 		HttpClient: func() *http.Client {
-			return api.AuthHTTPClient(core.Hostname())
+			return api.AuthHTTPClient(config.Hostname)
 		},
 	}
 

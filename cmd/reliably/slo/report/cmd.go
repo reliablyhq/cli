@@ -18,7 +18,7 @@ import (
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
-	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/manifest"
@@ -183,7 +183,7 @@ func reportRun(opts *ReportOptions) error {
 
 	opts.IO.StartProgressIndicator()
 
-	hostname := core.Hostname()
+	hostname := config.Hostname
 	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
 	orgID, _ := api.CurrentUserOrganizationID(apiClient, hostname)
 
