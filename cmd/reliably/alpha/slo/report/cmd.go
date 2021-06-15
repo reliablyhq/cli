@@ -53,7 +53,7 @@ func AlpaReportRun(opts *sloReport.ReportOptions) error {
 			// we cannot defer outfile closing here as we are in a for-loop
 		}
 		// utils.Reverse(reportCollection)
-		report.Write(out.Format, reports[0], w, opts.TemplateFile, log.StandardLogger(), reports[1], editReportSlice(reports[1:]))
+		report.Write(out.Format, reports[0], w, opts.TemplateFile, log.StandardLogger(), reports[1], editReportSlice(reports))
 
 		if outfile, ok := w.(*os.File); ok {
 			outfile.Close() // explicitly closing the file handle
@@ -66,7 +66,7 @@ func AlpaReportRun(opts *sloReport.ReportOptions) error {
 
 func getReports(manifestPath string) ([]*report.Report, error) {
 	apiVersion := "v1"
-	reportsLimit := 6
+	reportsLimit := 5
 
 	objectives, err := loadObjectives(manifestPath)
 	if err != nil {
@@ -77,7 +77,10 @@ func getReports(manifestPath string) ([]*report.Report, error) {
 	entityHost := config.EntityServerHost
 
 	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
-	org, _ := api.CurrentUserOrganization(apiClient, hostname)
+	org, err := api.CurrentUserOrganization(apiClient, hostname)
+	if err != nil {
+		return nil, fmt.Errorf("unable to request org: %w", err)
+	}
 
 	// TODO: define version/kind from manifest objective?
 	objectiveResults, err := api.GetObjectiveResults(apiClient, entityHost, apiVersion, org.Name)
@@ -307,7 +310,7 @@ func watch(opts *sloReport.ReportOptions) error {
 		case r := <-rChan:
 			sloReport.ClearScreen()
 			fmt.Println(color.Magenta("Refreshing SLO report every 3 seconds."), "Press CTRL+C to quit.")
-			report.Write(report.TABBED, r[0], os.Stdout, opts.TemplateFile, log.StandardLogger(), r[1], editReportSlice(r[1:]))
+			report.Write(report.TABBED, r[0], os.Stdout, opts.TemplateFile, log.StandardLogger(), r[1], editReportSlice(r))
 
 		case err := <-errChan:
 			return err
