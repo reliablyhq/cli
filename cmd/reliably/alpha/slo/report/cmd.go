@@ -17,22 +17,19 @@ import (
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/report"
+	"github.com/reliablyhq/cli/utils"
 	v "github.com/reliablyhq/cli/version"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
 func AlpaReportRun(opts *sloReport.ReportOptions) error {
-	// TODO: add more validation
-	// TODO: tests required
 
-	// TODO: implement watch for entity server
 	// check for -w/--watch
 	if opts.WatchFlag {
 		return watch(opts)
 	}
 
-	// TODO: define elsewhere
 	opts.IO.StartProgressIndicator()
 
 	reports, err := getReports(opts.ManifestPath)
@@ -55,6 +52,7 @@ func AlpaReportRun(opts *sloReport.ReportOptions) error {
 			w = outfile
 			// we cannot defer outfile closing here as we are in a for-loop
 		}
+		// utils.Reverse(reportCollection)
 		report.Write(out.Format, reports[0], w, log.StandardLogger(), reports[1], editReportSlice(reports[1:]))
 
 		if outfile, ok := w.(*os.File); ok {
@@ -95,12 +93,12 @@ func getReports(manifestPath string) ([]*report.Report, error) {
 
 	filteredObjectiveResults := filterObjectivesResults(objectiveResults, objectives, reportsLimit)
 
-	// TODO: !!Important!! at the moment each objective result represents it's status when
-	// the indicator was pushed vs. the objective at that time. If the objective is updated, only
+	// TODO: !!Important!! at the moment each objective result represents the difference between
+	//  the objective and the indicator at that time. If the objective is updated, only
 	// indicators after it will produce an objective result with the delta of the new one. An alternative is to always
 	// Use the latest objective against objective results. So, either an objective change updates previous objective results
 	// retrospectively, or each stands on its own.
-	reports, err := mapToReports(filteredObjectiveResults, reportsLimit, apiVersion)
+	reports, err := MapToReports(filteredObjectiveResults, reportsLimit, apiVersion)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate report: %w", err)
 	}
@@ -113,6 +111,7 @@ func editReportSlice(s []*report.Report) *[]report.Report {
 	for _, v := range s {
 		sNew = append(sNew, *v)
 	}
+	utils.Reverse(sNew)
 	return &sNew
 }
 
@@ -195,7 +194,7 @@ func loadObjectives(path string) ([]entities.Objective, error) {
 	return objects, nil
 }
 
-func mapToReports(objResults [][]entities.ObjectiveResultResponse, limit int, apiVersion string) ([]*report.Report, error) {
+func MapToReports(objResults [][]entities.ObjectiveResultResponse, limit int, apiVersion string) ([]*report.Report, error) {
 	var mappedReports []*report.Report
 	_ = mappedReports
 
@@ -233,30 +232,24 @@ func mapToReports(objResults [][]entities.ObjectiveResultResponse, limit int, ap
 					if sl[i].Spec.RemainingPercent >= 0 {
 						sloIsMet = true
 					}
-					layout := "2006-01-02 15:04:05.000 -0700 MST"
-					to, err := time.Parse(layout, sl[i].Metadata.Labels["to"])
+					to, err := isoTimeParse(sl[i].Metadata.Labels["to"])
 					if err != nil {
-						layout = "2006-01-02 15:04:05.00 -0700 MST"
-						to, err = time.Parse(layout, sl[i].Metadata.Labels["to"])
-						if err != nil {
-							return nil, fmt.Errorf("time 'to' not parsed correctly: %w", err)
-						}
+						return nil, fmt.Errorf("time 'to' not parsed correctly: %w", err)
 					}
-					from, err := time.Parse(layout, sl[i].Metadata.Labels["from"])
+					from, err := isoTimeParse(sl[i].Metadata.Labels["from"])
 					if err != nil {
 						return nil, fmt.Errorf("time 'from' not parsed correctly: %w", err)
 					}
 					// TODO: remove this once entity server returns period or calculated by from/to
-					period, _ := iso8601.FromString("P0Y0DT1H0M0S")
+					timeDiff := to.Sub(from)
+					period := toIso8601Duration(timeDiff)
 
 					service.ServiceLevels = append(service.ServiceLevels, &report.ServiceLevel{
 						Name:      name,
 						Type:      sl[i].Spec.IndicatorSelector["category"],
 						Objective: sl[i].Spec.ObjectivePercent,
-						// TODO: get period from Entity Server, or is this calculated by to-from?!
-						Period: core.Iso8601Duration{
-							Duration: *period,
-						},
+						// TODO: get period from Entity Server (called Window in ES Entities)
+						Period: period,
 						Result: &report.ServiceLevelResult{
 							Actual:   sl[i].Spec.ActualPercent,
 							Delta:    sl[i].Spec.RemainingPercent,
@@ -333,4 +326,27 @@ func watch(opts *sloReport.ReportOptions) error {
 		}
 	}
 
+}
+
+// Temporary way of handling incoming time strings
+func isoTimeParse(sTime string) (time.Time, error) {
+	msOptions := []string{"000", "00", "0"}
+	var err error
+	var parsedTime time.Time
+	for _, v := range msOptions {
+		parsedTime, err = time.Parse(fmt.Sprintf("2006-01-02 15:04:05.%v -0700 MST", v), sTime)
+		if err == nil {
+			break
+		}
+	}
+	if err != nil {
+		return time.Time{}, fmt.Errorf("time not parsed correctly: %w", err)
+	}
+	return parsedTime, nil
+}
+
+func toIso8601Duration(d time.Duration) core.Iso8601Duration {
+	di := int(d.Seconds())
+	isoD := core.Iso8601Duration{Duration: iso8601.Duration{Seconds: di}}
+	return isoD
 }
