@@ -72,7 +72,6 @@ func getReports(manifestPath string) ([]*report.Report, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read manifest: %w", err)
 	}
-	_ = objectives
 
 	hostname := config.Hostname
 	entityHost := config.EntityServerHost
@@ -151,7 +150,6 @@ func filterObjectivesResults(
 	}
 
 	filteredObjResClean := make([][]entities.ObjectiveResultResponse, 0)
-	_ = filteredObjResClean
 	for _, v := range filteredObjRes {
 		if v != nil {
 			filteredObjResClean = append(filteredObjResClean, v)
@@ -191,7 +189,6 @@ func loadObjectives(path string) ([]entities.Objective, error) {
 
 func MapToReports(objResults [][]entities.ObjectiveResultResponse, limit int, apiVersion string) ([]*report.Report, error) {
 	var mappedReports []*report.Report
-	_ = mappedReports
 
 	for i := 0; i < limit; i++ {
 		var services []*report.Service = make([]*report.Service, 0)
