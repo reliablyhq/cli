@@ -230,7 +230,7 @@ func reportFuncMap() template.FuncMap {
 			var trends string = "n/a"
 			if lrs != nil && len(*lrs) > 0 {
 				slosAreMet := GetSLOTrend(svcName, sl.Name, *lrs)
-				ticks := trendToTicks(slosAreMet)
+				ticks := trendToTicks(slosAreMet, true)
 				trends = strings.Join(ticks, " ") // Using non-breaking space here !!!
 			}
 			return trends
@@ -384,7 +384,7 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 				var trends string
 				if lrs != nil && len(*lrs) > 0 {
 					slosAreMet := GetSLOTrend(svc.Name, sl.Name, *lrs)
-					ticks := trendToTicks(slosAreMet)
+					ticks := trendToTicks(slosAreMet, false)
 					trends = strings.Join(ticks, " ") // Using non-breaking space here !!!
 				}
 
@@ -464,16 +464,27 @@ func getObservationWindow(sl *ServiceLevel) time.Duration {
 
 // trend to ticks is a utility function that iterate over trending
 // for SLO met/unmet and returns a list of ticks accordingly
-func trendToTicks(trend []bool) []string {
+// the addHtmlSpan, when true, adds an Html span element with a color style for
+// html/markdown type output
+func trendToTicks(trend []bool, addHtmlSpan bool) []string {
 	var ticks []string = make([]string, 0)
 
 	for _, t := range trend {
 		switch t {
 		case true:
-			ticks = append(ticks, "<span style=\"color: green\">"+iostreams.SuccessIcon()+"</span>")
+			if addHtmlSpan {
+				ticks = append(ticks, "<span style=\"color: green\">"+iostreams.SuccessIcon()+"</span>")
+			} else {
+				ticks = append(ticks, iostreams.SuccessIcon())
+			}
 
 		case false:
-			ticks = append(ticks, "<span style=\"color: red\">"+iostreams.FailureIcon()+"</span>")
+
+			if addHtmlSpan {
+				ticks = append(ticks, "<span style=\"color: red\">"+iostreams.FailureIcon()+"</span>")
+			} else {
+				ticks = append(ticks, iostreams.FailureIcon())
+			}
 		}
 
 	}
