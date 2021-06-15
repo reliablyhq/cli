@@ -470,9 +470,10 @@ func trendToTicks(trend []bool) []string {
 	for _, t := range trend {
 		switch t {
 		case true:
-			ticks = append(ticks, iostreams.SuccessIcon())
+			ticks = append(ticks, "<span style=\"color: green\">"+iostreams.SuccessIcon()+"</span>")
+
 		case false:
-			ticks = append(ticks, iostreams.FailureIcon())
+			ticks = append(ticks, "<span style=\"color: red\">"+iostreams.FailureIcon()+"</span>")
 		}
 
 	}
