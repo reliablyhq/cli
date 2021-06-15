@@ -7,14 +7,13 @@ const SLOTemplate = `# Reliably SLO Report
 html {
 	font-family: sans-serif;
 }
-  table, th, td {
-    border: 1px solid #ccc;
-    border-collapse: collapse;
+table, th, td {
+	border: 1px solid #ccc;
+	border-collapse: collapse;
   }
-	td {
-		padding: 5px;
-	}
-
+td {
+	padding: 5px;
+}
 </style>
 
 Service Level Objectives identify what you should care about on your system. They are what good looks like for the users of your system. If an SLO is underperforming, it will be impacting your users in some way.
