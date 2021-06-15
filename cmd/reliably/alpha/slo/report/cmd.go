@@ -93,7 +93,7 @@ func getReports(manifestPath string) ([]*report.Report, error) {
 
 	filteredObjectiveResults := filterObjectivesResults(objectiveResults, objectives, reportsLimit)
 
-	// TODO: !!Important!! at the moment each objective result represents the difference between
+	// Important: at the moment each objective result represents the difference between
 	//  the objective and the indicator at that time. If the objective is updated, only
 	// indicators after it will produce an objective result with the delta of the new one. An alternative is to always
 	// Use the latest objective against objective results. So, either an objective change updates previous objective results
@@ -240,7 +240,7 @@ func MapToReports(objResults [][]entities.ObjectiveResultResponse, limit int, ap
 					if err != nil {
 						return nil, fmt.Errorf("time 'from' not parsed correctly: %w", err)
 					}
-					// TODO: remove this once entity server returns period or calculated by from/to
+					// Remove this once entity server returns period or calculated by from/to
 					timeDiff := to.Sub(from)
 					period := toIso8601Duration(timeDiff)
 
@@ -248,8 +248,7 @@ func MapToReports(objResults [][]entities.ObjectiveResultResponse, limit int, ap
 						Name:      name,
 						Type:      sl[i].Spec.IndicatorSelector["category"],
 						Objective: sl[i].Spec.ObjectivePercent,
-						// TODO: get period from Entity Server (called Window in ES Entities)
-						Period: period,
+						Period:    period,
 						Result: &report.ServiceLevelResult{
 							Actual:   sl[i].Spec.ActualPercent,
 							Delta:    sl[i].Spec.RemainingPercent,
