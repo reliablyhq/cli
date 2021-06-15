@@ -20,16 +20,14 @@ func CreateEntity(client *Client, hostname string, org string, entity entities.E
 	kind = plural(entity.Kind())
 	kind = strings.ToLower(kind)
 
-	path := requestPath(version, kind, org)
+	path := fmt.Sprintf("%s/%s/%s/%s", "entities", version, org, kind)
 
-	bodyBytes, err := json.Marshal(entity)
-	if err != nil {
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(entity); err != nil {
 		return err
 	}
 
-	body := bytes.NewBuffer(bodyBytes)
-
-	return client.RESTv2(hostname, http.MethodPut, path, body, nil)
+	return client.RESTv2(hostname, http.MethodPut, path, &body, nil)
 }
 
 func GetObjectiveResults(client *Client, hostname string, version string, org string) (*[]entities.ObjectiveResultResponse, error) {

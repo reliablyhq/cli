@@ -17,6 +17,7 @@ import (
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/manifest"
+	"github.com/reliablyhq/cli/core/metrics"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -157,7 +158,7 @@ func declareSLOForService(s *manifest.Service) {
 
 			if id != "" { // We're returning empty strings when something fails...
 				sl.Indicators = append(sl.Indicators, manifest.ServiceLevelIndicator{
-					Provider: provider,
+					Provider: metrics.ProviderType(provider),
 					ID:       id,
 				})
 			}

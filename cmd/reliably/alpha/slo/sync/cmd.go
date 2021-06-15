@@ -7,14 +7,12 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 
 	"github.com/reliablyhq/cli/api"
-	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/iostreams"
-	v "github.com/reliablyhq/cli/version"
 )
 
 type SyncOptions struct {
@@ -50,13 +48,8 @@ func syncRun(opts *SyncOptions) error {
 		return err
 	}
 
-	hostname := core.Hostname()
-	entityHost := core.Hostname()
-	if v.IsDevVersion() {
-		if hostFromEnv := os.Getenv("RELIABLY_ENTITY_HOST"); hostFromEnv != "" {
-			entityHost = hostFromEnv
-		}
-	}
+	hostname := config.Hostname
+	entityHost := config.EntityServerHost
 
 	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
 	org, _ := api.CurrentUserOrganization(apiClient, hostname)
@@ -81,8 +74,8 @@ func syncRun(opts *SyncOptions) error {
 	return nil
 }
 
-func load(path string) ([]entities.Objective, error) {
-	var objects []entities.Objective = make([]entities.Objective, 0)
+func load(path string) ([]entities.Entity, error) {
+	var objects []entities.Entity = make([]entities.Entity, 0)
 
 	if path == "" {
 		return nil, errors.New("path is empty")
@@ -97,13 +90,13 @@ func load(path string) ([]entities.Objective, error) {
 	defer file.Close()
 
 	//var m Manifest
-	dec := yaml.NewDecoder(file)
+	var m entities.Manifest
+	if err := m.LoadFromFile(path); err != nil {
+		return nil, err
+	}
 
-	var objective *entities.Objective
-	for dec.Decode(&objective) == nil {
-		objects = append(objects, *objective)
-		// ensure to create a new pointer for next iteration - avoid merged sub-props
-		objective = new(entities.Objective)
+	for _, e := range m {
+		objects = append(objects, e)
 	}
 
 	return objects, nil

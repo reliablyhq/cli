@@ -13,6 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/reliablyhq/cli/api"
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/utils"
 )
@@ -154,8 +155,8 @@ func authorizeToAPI(
 	//q.Set("state", state)
 	q.Set("code", code)
 
-	authorizedURL := core.BaseHttpUrl(core.Hostname()) + fmt.Sprintf("login/with/cli/%s/authorized", provider)
-	httpClient := api.UnsecureHTTPClient(core.Hostname())
+	authorizedURL := core.BaseHttpUrl(config.Hostname) + fmt.Sprintf("login/with/cli/%s/authorized", provider)
+	httpClient := api.UnsecureHTTPClient(config.Hostname)
 	// increase timeout for login call to API that can take a bit of extra time
 	// Rather than removing the timeout, we make it very long, user will
 	// problably be interrupting with ctrl-c before the end of it

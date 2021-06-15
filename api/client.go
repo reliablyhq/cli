@@ -9,11 +9,10 @@ import (
 	"regexp"
 	"time"
 
-	//"github.com/spf13/viper"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core"
-	"github.com/reliablyhq/cli/core/config"
 	v "github.com/reliablyhq/cli/version"
 )
 
@@ -160,14 +159,8 @@ func (c Client) REST(hostname string, method string, p string, body io.Reader, d
 		return nil
 	}
 
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
 	if data != nil {
-		err = json.Unmarshal(b, &data)
-		if err != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 			return err
 		}
 	}
@@ -203,14 +196,8 @@ func (c Client) RESTv2(hostname string, method string, p string, body io.Reader,
 		return nil
 	}
 
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
 	if data != nil {
-		err = json.Unmarshal(b, &data)
-		if err != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 			return err
 		}
 	}
@@ -242,12 +229,7 @@ func AuthHTTPClient(hostname string) *http.Client {
 		AddHeader("Accept", "application/json"),
 	)
 
-	if core.AuthTokenProvidedFromEnv() {
-		token, _ = core.AuthTokenFromEnv()
-	} else {
-		tokenKey := fmt.Sprintf("auths::%s::token", hostname)
-		token = config.Viper.GetString(tokenKey)
-	}
+	token = config.GetTokenFor(hostname)
 
 	if token != "" {
 		opts = append(opts,

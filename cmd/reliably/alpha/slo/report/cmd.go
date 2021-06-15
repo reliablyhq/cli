@@ -13,12 +13,12 @@ import (
 	iso8601 "github.com/ChannelMeter/iso8601duration"
 	"github.com/reliablyhq/cli/api"
 	sloReport "github.com/reliablyhq/cli/cmd/reliably/slo/report"
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/report"
 	"github.com/reliablyhq/cli/utils"
-	v "github.com/reliablyhq/cli/version"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
@@ -53,7 +53,7 @@ func AlpaReportRun(opts *sloReport.ReportOptions) error {
 			// we cannot defer outfile closing here as we are in a for-loop
 		}
 		// utils.Reverse(reportCollection)
-		report.Write(out.Format, reports[0], w, log.StandardLogger(), reports[1], editReportSlice(reports[1:]))
+		report.Write(out.Format, reports[0], w, opts.TemplateFile, log.StandardLogger(), reports[1], editReportSlice(reports[1:]))
 
 		if outfile, ok := w.(*os.File); ok {
 			outfile.Close() // explicitly closing the file handle
@@ -74,13 +74,8 @@ func getReports(manifestPath string) ([]*report.Report, error) {
 	}
 	_ = objectives
 
-	hostname := core.Hostname()
-	entityHost := core.Hostname()
-	if v.IsDevVersion() {
-		if hostFromEnv := os.Getenv("RELIABLY_ENTITY_HOST"); hostFromEnv != "" {
-			entityHost = hostFromEnv
-		}
-	}
+	hostname := config.Hostname
+	entityHost := config.EntityServerHost
 
 	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
 	org, _ := api.CurrentUserOrganization(apiClient, hostname)
@@ -315,7 +310,7 @@ func watch(opts *sloReport.ReportOptions) error {
 		case r := <-rChan:
 			sloReport.ClearScreen()
 			fmt.Println(color.Magenta("Refreshing SLO report every 3 seconds."), "Press CTRL+C to quit.")
-			report.Write(report.TABBED, r[0], os.Stdout, log.StandardLogger(), r[1], editReportSlice(r[1:]))
+			report.Write(report.TABBED, r[0], os.Stdout, opts.TemplateFile, log.StandardLogger(), r[1], editReportSlice(r[1:]))
 
 		case err := <-errChan:
 			return err

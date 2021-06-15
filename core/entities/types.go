@@ -1,5 +1,11 @@
 package entities
 
+import (
+	"os"
+
+	"gopkg.in/yaml.v2"
+)
+
 type Labels map[string]string
 
 type Selector Labels
@@ -43,4 +49,28 @@ type Metadata struct {
 type Entity interface {
 	Version() string
 	Kind() string
+}
+
+// Manifest - a slice of Objectives
+type Manifest []*Objective
+
+func (m *Manifest) LoadFromFile(path string) (err error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+
+	dec := yaml.NewDecoder(f)
+	var o *Objective
+	for ; err == nil; err = dec.Decode(&o) {
+		if o != nil {
+			*m = append(*m, o)
+		}
+		o = new(Objective)
+	}
+
+	if err.Error() == "EOF" {
+		err = nil
+	}
+	return nil
 }

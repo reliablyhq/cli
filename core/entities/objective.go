@@ -18,11 +18,11 @@ type ObjectiveSpec struct {
 	Window            core.Duration `json:"window" yaml:"window"`
 }
 
-func (o Objective) Version() string {
+func (o *Objective) Version() string {
 	return o.TypeMeta.APIVersion
 }
 
-func (o Objective) Kind() string {
+func (o *Objective) Kind() string {
 	return o.TypeMeta.Kind
 }
 

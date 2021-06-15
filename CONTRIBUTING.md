@@ -16,12 +16,16 @@ The Reliably CLI project require all contributors must sign a
 
 ## How to checkout the code
 
+You must have a working [Go environment].
+
 ```
-$ go get github.com/reliablyhq/cli
+$ mkdir -p $GOPATH/src/github.com/reliablyhq
+$ cd $GOPATH/src/github.com/reliablyhq
+$ git clone github.com/reliablyhq/cli
+$ cd cli
 ```
 
-The source code will be downloaded in the `$GOPATH/src` folder
-
+[Go environment]: https://golang.org/doc/install
 ## How to build
 
 Run:
