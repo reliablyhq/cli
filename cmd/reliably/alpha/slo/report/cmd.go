@@ -63,7 +63,7 @@ func AlpaReportRun(opts *sloReport.ReportOptions) error {
 }
 
 func getReports(manifestPath string) ([]*report.Report, error) {
-	apiVersion := "v1"
+
 	reportsLimit := 5
 
 	var objectives entities.Manifest
@@ -71,6 +71,12 @@ func getReports(manifestPath string) ([]*report.Report, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read manifest: %w", err)
 	}
+	if len(objectives) < 1 {
+		return nil, fmt.Errorf("no objectives found")
+	}
+
+	// Using single APIVersion until API can filter for each objective
+	apiVersion := objectives[0].APIVersion
 
 	hostname := config.Hostname
 	entityHost := config.EntityServerHost
