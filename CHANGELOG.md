@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Fixed the trend ouput for terminal and included html span elements for markdown type reports  ; [#330](https://github.com/reliablyhq/cli/issues/330)
+
 ## [v0.17.0] - 2021-06-10
 
 ### Added
