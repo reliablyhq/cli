@@ -1,7 +1,6 @@
 package reportAlpha
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -20,7 +19,6 @@ import (
 	"github.com/reliablyhq/cli/core/report"
 	"github.com/reliablyhq/cli/utils"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 )
 
 func AlpaReportRun(opts *sloReport.ReportOptions) error {
@@ -68,7 +66,8 @@ func getReports(manifestPath string) ([]*report.Report, error) {
 	apiVersion := "v1"
 	reportsLimit := 5
 
-	objectives, err := loadObjectives(manifestPath)
+	var objectives entities.Manifest
+	err := objectives.LoadFromFile(manifestPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read manifest: %w", err)
 	}
@@ -117,7 +116,7 @@ func editReportSlice(s []*report.Report) *[]report.Report {
 // If Entity Server assumes filtering, this function can likely be replaced.
 func filterObjectivesResults(
 	objectiveResults *[]entities.ObjectiveResultResponse,
-	objectives []entities.Objective,
+	objectives []*entities.Objective,
 	maxResults int,
 ) [][]entities.ObjectiveResultResponse {
 
@@ -160,34 +159,6 @@ func filterObjectivesResults(
 	}
 
 	return filteredObjResClean
-}
-
-func loadObjectives(path string) ([]entities.Objective, error) {
-	var objects []entities.Objective = make([]entities.Objective, 0)
-
-	if path == "" {
-		return nil, errors.New("path is empty")
-	}
-
-	log.Debug("Loading manifest at ", path)
-
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	//var m Manifest
-	dec := yaml.NewDecoder(file)
-
-	var objective *entities.Objective
-	for dec.Decode(&objective) == nil {
-		objects = append(objects, *objective)
-		// ensure to create a new pointer for next iteration - avoid merged sub-props
-		objective = new(entities.Objective)
-	}
-
-	return objects, nil
 }
 
 func MapToReports(objResults [][]entities.ObjectiveResultResponse, limit int, apiVersion string) ([]*report.Report, error) {
