@@ -10,14 +10,11 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
-	//"github.com/spf13/viper"
-	//log "github.com/sirupsen/logrus"
 	"github.com/AlecAivazis/survey/v2"
 
 	"github.com/reliablyhq/cli/api"
-	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core/color"
-	"github.com/reliablyhq/cli/core/config"
 	"github.com/reliablyhq/cli/core/iostreams"
 )
 
@@ -77,7 +74,7 @@ Alternatively, pass in a token on standard input by using '--with-token'.`,
 			}
 
 			if opts.Hostname == "" {
-				opts.Hostname = core.Hostname()
+				opts.Hostname = config.Hostname
 			}
 
 			return loginRun(opts)
@@ -91,25 +88,13 @@ Alternatively, pass in a token on standard input by using '--with-token'.`,
 }
 
 func loginRun(opts *LoginOptions) error {
-
 	hostname := opts.Hostname
 	if hostname == "" {
-		return errors.New("Empty hostname")
-	}
-
-	if config.Viper.GetStringMap("auths") == nil {
-		config.Viper.Set("auths", map[string]interface{}{})
+		return errors.New("empty hostname")
 	}
 
 	if opts.Token != "" {
-		authForHost := map[string]interface{}{
-			"token": opts.Token,
-		}
-
-		authKey := fmt.Sprintf("auths::%s", opts.Hostname)
-		config.Viper.Set(authKey, authForHost)
-
-		return config.Viper.WriteConfig()
+		return config.SetTokenForHostname(hostname, opts.Token)
 	}
 
 	if !opts.Interactive {
@@ -119,16 +104,9 @@ func loginRun(opts *LoginOptions) error {
 	fmt.Fprintf(opts.IO.ErrOut, "Logging into %s\n", hostname)
 
 	// Check if a token already exists and is still valid
-	tokenKey := fmt.Sprintf("auths::%s::token", hostname)
-	existingToken := config.Viper.GetString(tokenKey)
-	if existingToken != "" && opts.Interactive {
-		// We display the confirmation only if the user is authenticated
-		// otherwise, possibly an invalid token, we let user continue without prompt
-
+	if existingToken := config.GetTokenFor(hostname); existingToken != "" && opts.Interactive {
 		apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
-		username, err := api.CurrentUsername(apiClient, hostname)
-
-		if err == nil {
+		if username, err := api.CurrentUsername(apiClient, hostname); err == nil {
 			var keepGoing bool
 			err = survey.AskOne(&survey.Confirm{
 				Message: fmt.Sprintf(
@@ -175,16 +153,7 @@ func loginRun(opts *LoginOptions) error {
 			return fmt.Errorf("failed to authenticate via web browser: %w", err)
 		}
 
-		authForHost := map[string]interface{}{
-			"token":    token,
-			"username": username,
-		}
-
-		authKey := fmt.Sprintf("auths::%s", hostname)
-		config.Viper.Set(authKey, authForHost)
-
-		err = config.Viper.WriteConfig()
-		if err != nil {
+		if err := config.SetAuthInfo(hostname, config.AuthInfo{Username: username, Token: token}); err != nil {
 			return err
 		}
 
@@ -211,12 +180,9 @@ func loginRun(opts *LoginOptions) error {
 
 						token = val.(string)
 
-						authForHost := map[string]interface{}{
-							"token": token,
+						if err := config.SetTokenForHostname(hostname, token); err != nil {
+							return err
 						}
-
-						authKey := fmt.Sprintf("auths::%s", hostname)
-						config.Viper.Set(authKey, authForHost)
 
 						// creates a new client that will use the token from config for hostname
 						apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
@@ -240,16 +206,11 @@ func loginRun(opts *LoginOptions) error {
 			return fmt.Errorf("could not prompt: %w", err)
 		}
 
-		usernameKey := fmt.Sprintf("auths::%s::username", hostname)
-		config.Viper.Set(usernameKey, username)
-
-		err = config.Viper.WriteConfig()
-		if err != nil {
+		if err := config.SetUsernameForHostname(hostname, username); err != nil {
 			return err
 		}
 
 		fmt.Fprintf(opts.IO.ErrOut, "%s Logged in as %s\n", iostreams.SuccessIcon(), color.Bold(username))
-
 	}
 
 	return nil
