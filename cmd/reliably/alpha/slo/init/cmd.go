@@ -37,7 +37,6 @@ var (
 func AlpaInitRun(opts *initCmd.InitOptions) error {
 
 	manifestPath := opts.ManifestPath
-	var entities []entities.Entity = make([]entities.Entity, 0)
 
 	log.Debugf("checking for existing service manifest: %s", manifestPath)
 	if _, err := os.Stat(manifestPath); err == nil {
@@ -51,17 +50,6 @@ func AlpaInitRun(opts *initCmd.InitOptions) error {
 		return err
 	}
 
-	for _, o := range objectives {
-		entities = append(entities, &o)
-	}
-
-	/*
-		// validate
-		if err := m.Validate(); err != nil {
-			return err
-		}
-	*/
-
 	// write file output
 	f, err := os.Create(manifestPath)
 	if err != nil {
@@ -70,8 +58,8 @@ func AlpaInitRun(opts *initCmd.InitOptions) error {
 	defer f.Close()
 
 	ye := yaml.NewEncoder(f)
-	for _, e := range entities {
-		if err := ye.Encode(e); err != nil {
+	for _, o := range objectives {
+		if err := ye.Encode(o); err != nil {
 			return err
 		}
 	}
