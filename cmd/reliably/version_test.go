@@ -64,29 +64,29 @@ func TestFormatVersion(t *testing.T) {
 	}{
 		{
 			name: "dev version",
-			args: []string{"DEV", ""},
-			want: fmt.Sprintf("%s DEV\n", prefix),
+			args: []string{"DEV", "", "ab12cd34"},
+			want: fmt.Sprintf("%s DEV (rev ab12cd34)\n", prefix),
 		},
 		{
 			name: "semantic version",
-			args: []string{"1.2.3", ""},
+			args: []string{"1.2.3", "", ""},
 			want: fmt.Sprintf("%s 1.2.3\n", prefix),
 		},
 		{
 			name: "semver with v prefix",
-			args: []string{"v1.2.3", ""},
+			args: []string{"v1.2.3", "", ""},
 			want: fmt.Sprintf("%s 1.2.3\n", prefix),
 		},
 		{
 			name: "version and build date",
-			args: []string{"v1.2.3", "2021-03-04"},
+			args: []string{"v1.2.3", "2021-03-04", ""},
 			want: fmt.Sprintf("%s 1.2.3 (2021-03-04)\n", prefix),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			v := FormatVersion(tt.args[0], tt.args[1])
+			v := FormatVersion(tt.args[0], tt.args[1], tt.args[2])
 			assert.Equal(t, tt.want, v, "Unexpected version")
 		})
 	}
