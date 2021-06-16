@@ -248,5 +248,9 @@ func getIndicatorFromObjective(obj *entities.Objective) (*entities.Indicator, er
 	indicator.Metadata.Labels = obj.Spec.IndicatorSelector
 	indicator.TypeMeta.Kind = "Indicator"
 	indicator.TypeMeta.APIVersion = obj.Version()
+
+	// adding from/to to labels as well, to enforce unique-ness per indicator
+	indicator.Metadata.Labels["from"] = indicator.Spec.From.String()
+	indicator.Metadata.Labels["to"] = indicator.Spec.To.String()
 	return &indicator, nil
 }
