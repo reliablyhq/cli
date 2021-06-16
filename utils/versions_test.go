@@ -16,7 +16,7 @@ func TestGetShortVersion(t *testing.T) {
 	}{
 		{
 			name: "working standard api version",
-			arg:  "api.reliably.com/v1",
+			arg:  "reliably.com/v1",
 			want: want{
 				shortVersion: "v1",
 				ok:           true,
@@ -32,7 +32,7 @@ func TestGetShortVersion(t *testing.T) {
 		},
 		{
 			name: "unsupported version",
-			arg:  "api.reliably.com/v1000",
+			arg:  "reliably.com/v1000",
 			want: want{
 				shortVersion: "",
 				ok:           false,

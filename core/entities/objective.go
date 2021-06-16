@@ -30,7 +30,7 @@ func (o *Objective) Kind() string {
 // non-zero values for internal maps
 func NewObjective() *Objective {
 	return &Objective{
-		TypeMeta: TypeMeta{APIVersion: "api.reliably.com/v1", Kind: "Objective"},
+		TypeMeta: TypeMeta{APIVersion: "reliably.com/v1", Kind: "Objective"},
 		Metadata: Metadata{
 			Labels:    Labels{},
 			RelatedTo: []map[string]string{},
