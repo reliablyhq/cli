@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Added the formats 'table' & 'text' to the kubernetes scan command. Put 'simple' amd 'tabbed' formats in the deprecated list  ; [#332](https://github.com/reliablyhq/cli/issues/332)
 - Fixed the trend ouput for terminal and included html span elements for markdown type reports  ; [#330](https://github.com/reliablyhq/cli/issues/330)
 
 ## [v0.17.0] - 2021-06-10
