@@ -35,8 +35,9 @@ var (
 
 	violations core.ResultSet
 
-	supportedFormats = Choice{"simple", "json", "yaml", "sarif", "codeclimate", "extended", "tabbed"}
-	supportedLevels  = Choice(core.Levels)
+	supportedFormats  = Choice{"text", "json", "yaml", "sarif", "codeclimate", "extended", "table"}
+	deprecatedFormats = Choice{"simple", "tabbed"}
+	supportedLevels   = Choice(core.Levels)
 )
 
 type ScanOptions struct {
@@ -121,10 +122,16 @@ Reliably can also scan for your live kubernetes cluster.`,
 			return nil
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+
 			// Validate command options
-			if opts.OutputFormat != "" && !supportedFormats.Has(opts.OutputFormat) {
+			if opts.OutputFormat != "" && !(supportedFormats.Has(opts.OutputFormat) || deprecatedFormats.Has(opts.OutputFormat)) {
 				return fmt.Errorf("Format '%v' is not valid. Use one of the supported formats: %v", opts.OutputFormat, supportedFormats)
 			}
+
+			if opts.OutputFormat != "" && deprecatedFormats.Has(opts.OutputFormat) {
+				log.Warnf("Format '%v' is now deprecated and soon be to removed. Use one of the supported formats: %v", opts.OutputFormat, supportedFormats)
+			}
+
 			if opts.OutputFormat == "sarif" && opts.OutputFile != "" {
 				// The file name of a SARIF log file SHOULD end with the extension ".sarif".
 				// Example 1: output.sarif
