@@ -54,6 +54,14 @@ func TestGetShortVersion(t *testing.T) {
 				ok:           false,
 			},
 		},
+		{
+			name: "already short version",
+			arg:  "v1",
+			want: want{
+				shortVersion: "v1",
+				ok:           true,
+			},
+		},
 	}
 	_ = tests
 	for _, tt := range tests {
