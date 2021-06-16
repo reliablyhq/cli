@@ -105,11 +105,11 @@ func CreateReport(w io.Writer, format string, baseDir string, suggestions []*cor
 		err = reportJSON(w, data)
 	case "yaml":
 		err = reportYAML(w, data)
-	case "text", "extended":
+	case "extended":
 		err = reportFromPlaintextTemplate(w, text, data)
-	case "tabbed":
+	case "table", "tabbed":
 		err = reportFromTabbedTextTemplate(w, data)
-	case "simple", "basic", "linter":
+	case "text", "simple", "basic", "linter":
 		err = reportLinter(w, data)
 	case "sarif":
 		err = reportSARIF(baseDir, w, data)
