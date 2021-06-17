@@ -67,6 +67,7 @@ jobs:
       - name: Delete release branch
         run: |
           git push origin --delete release/${{ github.event.inputs.version }}
+        continue-on-error: true # release branch might be deleted upon PR merge
       - name: Create the git tag (trigger release build)
         run: |
           git checkout main
