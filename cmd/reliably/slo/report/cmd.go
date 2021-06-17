@@ -224,6 +224,15 @@ func getReports(manifestPath string) ([]*report.Report, error) {
 	reportsLimit := 5
 	apiVersion := "v1"
 
+	// Temporarily detecting old manifest
+	isOld := isDeprecatedManifest(manifestPath)
+	if isOld {
+		return nil, fmt.Errorf(
+			"manifest '%s' is using deprecated format. Please generate a new one with `reliably slo init`",
+			manifestPath,
+		)
+	}
+
 	var objectives entities.Manifest
 	err := objectives.LoadFromFile(manifestPath)
 	if err != nil {
@@ -493,4 +502,12 @@ func clearScreen() {
 
 	c.Stdout = os.Stdout
 	c.Run()
+}
+
+func isDeprecatedManifest(path string) bool {
+	m, _ := manifest.Load(path)
+	if m != nil {
+		return m.Services != nil
+	}
+	return false
 }
