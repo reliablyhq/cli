@@ -2,10 +2,17 @@
 
 ## [Unreleased]
 
-### Changed
 
+### Added
+
+- `slo sync` command allows to synchronize the local objectives with Reliably servers
+- `slo agent` command runs as a background process to periodically fetch your SLIs and send them back to Reliably.
+
+### Changed
 - Added the formats 'table' & 'text' to the kubernetes scan command. Put 'simple' amd 'tabbed' formats in the deprecated list  ; [#332](https://github.com/reliablyhq/cli/issues/332)
 - Fixed the trend ouput for terminal and included html span elements for markdown type reports  ; [#330](https://github.com/reliablyhq/cli/issues/330)
+- `slo init` and `slo report` have been updated with breaking changes to handle new manifest & objective structure.
+- The SLO manifest has been entirely refactored changed to match the Kubernete-like definition.
 
 ## [v0.17.0] - 2021-06-10
 

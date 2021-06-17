@@ -3,8 +3,6 @@ package alpha
 import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
-
-	"github.com/reliablyhq/cli/cmd/reliably/alpha/slo"
 )
 
 func NewCommand() *cobra.Command {
@@ -14,8 +12,6 @@ func NewCommand() *cobra.Command {
 		Long:   longDescription(),
 		Hidden: true,
 	}
-
-	cmd.AddCommand(sloAlpha.NewCommand())
 
 	return &cmd
 }

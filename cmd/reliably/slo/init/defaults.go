@@ -2,78 +2,42 @@ package init
 
 import (
 	"fmt"
-	"os"
-	"os/user"
-	"path/filepath"
-
-	"github.com/reliablyhq/cli/utils"
+	"strings"
 
 	"github.com/reliablyhq/cli/core"
-	"github.com/reliablyhq/cli/core/manifest"
+	"github.com/reliablyhq/cli/core/entities"
 )
 
-func getDefaultAppName() string {
+func generateDefaultSloName(o entities.Objective) string {
+	var (
+		name     string
+		desc     string
+		category string
+	)
 
-	if utils.IsGitRepo() {
-		if url, err := utils.GitRemoteOriginURL(); err == nil {
-			_, repo, err := utils.ExtractOwnerRepoFromGitURL(url)
-			if err == nil {
-				return repo
-			}
-		}
+	if val, ok := o.Spec.IndicatorSelector["category"]; ok {
+		category = val
 	}
 
-	if cwd, err := os.Getwd(); err == nil {
-		return filepath.Base(cwd)
-	}
-
-	return "my-app"
-}
-
-func getDefaultAppOwner() string {
-
-	if utils.IsGitRepo() {
-		if url, err := utils.GitRemoteOriginURL(); err == nil {
-			owner, _, err := utils.ExtractOwnerRepoFromGitURL(url)
-			if err == nil {
-				return owner
-			}
-		}
-	}
-
-	user, _ := user.Current()
-	return user.Username
-}
-
-func getDefaultRepository() string {
-
-	if utils.IsGitRepo() {
-		if url, err := utils.GitRemoteOriginURL(); err == nil {
-			return url
-		}
-	}
-
-	cwd, _ := os.Getwd()
-	return cwd
-}
-
-func initDefaultSloName(sl *manifest.ServiceLevel) error {
-
-	var desc string
-	switch sl.Type {
+	switch category {
 	case "latency":
-		c := sl.Criteria.(manifest.LatencyCriteria)
-		threshold := c.Threshold.Duration.Milliseconds()
-		desc = fmt.Sprintf("faster than %vms", threshold)
+		threshold := o.Spec.IndicatorSelector["latency_target"]
+
+		if !strings.HasSuffix(threshold, "ms") {
+			threshold = fmt.Sprintf("%sms", threshold)
+		}
+
+		desc = fmt.Sprintf("faster than %s", threshold)
+
 	case "availability":
 		desc = "successful"
 	}
 
-	sl.Name = fmt.Sprintf("%v%% of requests %s over last %s",
-		sl.Objective,
+	name = fmt.Sprintf("%v%% of requests %s over last %s",
+		o.Spec.ObjectivePercent,
 		desc,
-		core.HumanizeDuration(sl.ObservationWindow.ToDuration()),
+		core.HumanizeDuration(o.Spec.Window.Duration),
 	)
 
-	return nil
+	return name
 }

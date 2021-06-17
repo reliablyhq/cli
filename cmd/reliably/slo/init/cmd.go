@@ -12,18 +12,20 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/terminal"
 	iso8601 "github.com/ChannelMeter/iso8601duration"
-	"github.com/reliablyhq/cli/core"
-	"github.com/reliablyhq/cli/core/cli/question"
-	"github.com/reliablyhq/cli/core/color"
-	"github.com/reliablyhq/cli/core/iostreams"
-	"github.com/reliablyhq/cli/core/manifest"
-	"github.com/reliablyhq/cli/core/metrics"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
+
+	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/core/cli/question"
+	"github.com/reliablyhq/cli/core/color"
+	"github.com/reliablyhq/cli/core/entities"
+	"github.com/reliablyhq/cli/core/iostreams"
 )
 
 var (
+	emptyOptions        = []question.AskOpt{}
+	iconWarn            = iostreams.WarningIcon()
 	supportedExtensions = []string{".yaml", ".json"}
 	providersMap        = map[string]string{
 		"Amazon Web Services":   "aws",
@@ -36,10 +38,6 @@ type InitOptions struct {
 
 	ManifestPath string
 }
-
-var emptyOptions = []question.AskOpt{}
-
-var iconWarn = iostreams.WarningIcon()
 
 func NewCommand(runF func(*InitOptions) error) *cobra.Command {
 	opts := &InitOptions{
@@ -65,6 +63,7 @@ func NewCommand(runF func(*InitOptions) error) *cobra.Command {
 }
 
 func initRun(opts *InitOptions) error {
+
 	manifestPath := opts.ManifestPath
 
 	log.Debugf("checking for existing service manifest: %s", manifestPath)
@@ -74,11 +73,8 @@ func initRun(opts *InitOptions) error {
 		}
 	}
 
-	var m manifest.Manifest
-	populateManifestInteractively(&m)
-
-	// validate
-	if err := m.Validate(); err != nil {
+	objectives, err := promptForServices(opts.IO)
+	if err != nil {
 		return err
 	}
 
@@ -89,104 +85,130 @@ func initRun(opts *InitOptions) error {
 	}
 	defer f.Close()
 
-	if err := yaml.NewEncoder(f).Encode(&m); err != nil {
-		return err
+	ye := yaml.NewEncoder(f)
+	for _, o := range objectives {
+		if err := ye.Encode(o); err != nil {
+			return err
+		}
 	}
 
 	fmt.Println()
 	fmt.Println(iostreams.SuccessIcon(), "Your manifest has been saved to", manifestPath)
-	log.Debugf("service manifest created at: %s", manifestPath)
+	log.Debugf("manifest created at: %s", manifestPath)
 	return nil
 }
 
-func populateManifestInteractively(m *manifest.Manifest) {
+func promptForServices(io *iostreams.IOStreams) ([]entities.Objective, error) {
 
-	var s manifest.Service
-	serviceNameValidator := survey.WithValidator(func(v interface{}) error {
-		for _, s := range m.Services {
-			if s.Name == v.(string) {
-				return fmt.Errorf("service mame [%v] already exists", v)
-			}
+	var objectives []entities.Objective = make([]entities.Objective, 0)
+	w := io.Out
+
+	askForService := true
+	for askForService {
+		name := question.WithStringAnswer(
+			"What is the name of the service you want to declare SLOs for?", emptyOptions)
+
+		serviceObjectives, err := promptForObjectives(io, name)
+		if err != nil {
+			return objectives, err
 		}
-		return nil
-	})
+		objectives = append(objectives, serviceObjectives...)
 
-	s.Name = question.WithStringAnswerV2(
-		"What is the name of the service you want to declare SLOs for?", "",
-		s.Name, []survey.AskOpt{serviceNameValidator})
+		fmt.Fprintln(w, color.Green(fmt.Sprintf("Service '%s' added", name)))
 
-	declareSLOForService(&s)
-
-	m.Services = append(m.Services, &s)
-	fmt.Println(color.Green(fmt.Sprintf("Service '%s' added", s.Name)))
-
-	fmt.Println()
-	if question.WithBoolAnswer("Do you want to add another Service?", emptyOptions, question.WithNoAsDefault) {
-		populateManifestInteractively(m)
+		fmt.Fprintln(w)
+		askForService = question.WithBoolAnswer("Do you want to add another Service?", emptyOptions, question.WithNoAsDefault)
 	}
 
+	return objectives, nil
 }
 
-func declareSLOForService(s *manifest.Service) {
-	var sl manifest.ServiceLevel
+func promptForObjectives(io *iostreams.IOStreams, serviceName string) ([]entities.Objective, error) {
+	var objectives []entities.Objective = make([]entities.Objective, 0)
+	w := io.Out
 
-	slType := question.WithSingleChoiceAnswer("What type of SLO do you want to declare?", emptyOptions, "Availability", "Latency")
-	sl.Type = sanitizeString(slType)
+	askForObjective := true
+	for askForObjective {
+		objective := *entities.NewObjective()
 
-	sl.Objective = question.WithFloat64Answer("What is your target for this SLO (in %)?", emptyOptions, 0, 100)
+		// ask users for objective data
+		objective.Spec.ObjectivePercent = question.WithFloat64Answer("What is your target for this SLO (in %)?", emptyOptions, 0, 100)
 
-	if sl.Type == "latency" {
-		threshold := question.WithDurationAnswer("What is your latency threshold (in milliseconds)?", emptyOptions)
-		sl.Criteria = manifest.LatencyCriteria{Threshold: threshold}
-	}
+		slType := question.WithSingleChoiceAnswer("What type of SLO do you want to declare?", emptyOptions, "Availability", "Latency")
+		slType = sanitizeString(slType)
+		objective.Spec.IndicatorSelector["category"] = slType
 
-	sl.ObservationWindow = getObservationWindow()
+		if slType == "latency" {
+			threshold := question.WithDurationAnswer("What is your latency threshold (in milliseconds)?", emptyOptions)
+			objective.Spec.IndicatorSelector["latency_target"] = fmt.Sprint(threshold)
 
-	do := question.WithBoolAnswer("Do you want to add a resource for measuring your SLI?", emptyOptions, question.WithYesAsDefault)
-
-	if do {
-		providers := []string{}
-		for key := range providersMap {
-			providers = append(providers, key)
+			// should we prompt for the percentile as well ? ...
+			objective.Spec.IndicatorSelector["percentile"] = "99"
 		}
-		sort.Strings(providers) // sorts slice in-place
 
-		for do {
-			providerFullName := question.WithSingleChoiceAnswer("On which cloud provider?", emptyOptions, providers...)
-			provider := providersMap[providerFullName]
-			id := getResourceIDForProvider(provider)
+		objective.Spec.Window = core.Duration{Duration: getObservationWindow().ToDuration()}
 
-			if id != "" { // We're returning empty strings when something fails...
-				sl.Indicators = append(sl.Indicators, manifest.ServiceLevelIndicator{
-					Provider: metrics.ProviderType(provider),
-					ID:       id,
-				})
-			}
-
-			fmt.Println()
-			do = question.WithBoolAnswer("Do you want to add another resource for measuring your SLI?", emptyOptions, question.WithNoAsDefault)
+		providerLabels, _ := promptForProvider(io)
+		for k, v := range providerLabels {
+			objective.Spec.IndicatorSelector[k] = v
 		}
-	}
-	_ = initDefaultSloName(&sl)
-	sl.Name = question.WithStringAnswerV2("What is the name of this SLO?", "", sl.Name, emptyOptions)
-	s.ServiceLevels = append(s.ServiceLevels, &sl)
-	fmt.Println(color.Green(fmt.Sprintf("SLO '%s' added to Service '%s'", sl.Name, s.Name)))
 
-	fmt.Println()
-	if question.WithBoolAnswer("Do you want to add another SLO?", emptyOptions, question.WithNoAsDefault) {
-		declareSLOForService(s)
+		defaultSloName := generateDefaultSloName(objective)
+		name := question.WithStringAnswerV2("What is the name of this SLO?", "", defaultSloName, emptyOptions)
+		objective.Metadata.Name = name
+		objective.Metadata.Labels["name"] = name
+
+		objective.Metadata.Labels["service"] = serviceName
+
+		objectives = append(objectives, objective)
+
+		fmt.Println(color.Green(fmt.Sprintf("SLO '%s' added to Service '%s'", name, serviceName)))
+
+		fmt.Fprintln(w)
+		askForObjective = question.WithBoolAnswer("Do you want to add another SLO?", emptyOptions, question.WithNoAsDefault)
 	}
+
+	return objectives, nil
 }
 
-func getResourceIDForProvider(provider string) string {
+func promptForProvider(io *iostreams.IOStreams) (entities.Labels, error) {
+
+	//var labels entities.Labels = make(entities.Labels)
+
+	providers := []string{}
+	for key := range providersMap {
+		providers = append(providers, key)
+	}
+	sort.Strings(providers) // sorts slice in-place
+
+	providerFullName := question.WithSingleChoiceAnswer("Which cloud provider are you targeting?", emptyOptions, providers...)
+	provider := providersMap[providerFullName]
+	ps := getProviderSelectors(provider)
+	return entities.Labels(ps), nil
+}
+
+func getProviderSelectors(provider string) map[string]string {
+	var selectors map[string]string = make(map[string]string)
+
 	switch provider {
 	case "aws":
-		return promptAWSArn()
+		selectors["aws_arn"] = promptAWSArn()
 	case "gcp":
-		return buildGCPResourceID()
-	default:
-		return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.", emptyOptions)
+		r := buildGCPResourceID()
+		if r != nil {
+			switch r.ResourceType {
+			case "google-cloud-load-balancers":
+				selectors["gcp_project_id"] = r.ProjectID
+				selectors["gcp_loadbalancer_name"] = r.ResourceName
+			}
+		}
+		/*
+			default:
+				return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.", emptyOptions)
+		*/
 	}
+
+	return selectors
 }
 
 func getObservationWindow() core.Iso8601Duration {
