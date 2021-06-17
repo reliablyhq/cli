@@ -1,12 +1,16 @@
 VERSION=$(shell git describe --tags)
 BUILD=$(shell date +%Y-%m-%d)
+REVISION=$(shell git rev-parse --short HEAD)
 
 LDFLAGS := -X github.com/reliablyhq/cli/version.Version=${VERSION}
 LDFLAGS := $(LDFLAGS) -X github.com/reliablyhq/cli/version.Date=${BUILD}
 LDFLAGS := -ldflags "$(LDFLAGS)"
 
+DEVLDFLAGS := -X github.com/reliablyhq/cli/version.Revision=${REVISION}
+DEVLDFLAGS := -ldflags "$(DEVLDFLAGS)"
+
 build:
-	go build -o bin/reliably main.go
+	go build ${DEVLDFLAGS} -o bin/reliably main.go
 	#go build -gcflags="-m=2" -o bin/reliably main.go
 
 build/docker:
