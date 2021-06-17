@@ -33,6 +33,7 @@ var (
 	noColor     bool
 	version     = v.Version
 	buildDate   = v.Date
+	revision    = v.Revision
 	updaterRepo = "reliablyhq/cli"
 )
 
@@ -64,7 +65,7 @@ Environment variables:
 		&verbose, "verbose", "v", false, "verbose output")
 	cmd.PersistentFlags().BoolVar(
 		&noColor, "no-color", false, "Disable color output")
-	cmd.SetVersionTemplate(FormatVersion(version, buildDate))
+	cmd.SetVersionTemplate(FormatVersion(version, buildDate, revision))
 	cmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		// This prerun hook is inherited by subcommands if not overridden
 		// If this hook is needed by a subcommand, makes sure to excplicitely
