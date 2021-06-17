@@ -10,7 +10,6 @@ import (
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/config"
-	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/iostreams"
 )
@@ -28,7 +27,7 @@ func NewCommand(runF func(*SyncOptions) error) *cobra.Command {
 
 	cmd := cobra.Command{
 		Use:   "sync",
-		Short: "synchronize your manifest with our servers",
+		Short: "synchronize the objectives from your manifest with Reliably",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if runF != nil {
 				return runF(opts)
@@ -68,7 +67,7 @@ func syncRun(opts *SyncOptions) error {
 		return errors.New("An error occured while syncing your manifest")
 	} else {
 		w := opts.IO.ErrOut
-		fmt.Fprintln(w, iostreams.SuccessIcon(), color.Green("Your manifest has been successfully synchronized"))
+		fmt.Fprintln(w, iostreams.SuccessIcon(), "Your manifest has been successfully synchronized")
 	}
 
 	return nil
