@@ -228,7 +228,7 @@ func getReports(manifestPath string) ([]*report.Report, error) {
 	isOld := isDeprecatedManifest(manifestPath)
 	if isOld {
 		return nil, fmt.Errorf(
-			"manifest '%s' is using deprecated format. Please generate a new one with `reliably slo init`",
+			"manifest '%s' is using a deprecated format. Please generate a new one with `reliably slo init`",
 			manifestPath,
 		)
 	}
