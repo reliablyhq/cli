@@ -76,13 +76,13 @@ func statusRun(opts *StatusOptions) error {
 	var username string
 	var token string
 	var loginCmd string = "reliably auth login"
-	// var logoutCmd string = "reliably auth logout"
+	var logoutCmd string = "reliably auth logout"
 
 	var loginHostCmd string = loginCmd
-	// var logoutHostCmd string = logoutCmd
+	var logoutHostCmd string = logoutCmd
 	if hostname != config.Hostname {
 		loginHostCmd = fmt.Sprintf("%s --hostname %s", loginCmd, hostname)
-		// logoutHostCmd = fmt.Sprintf("%s --hostname %s", logoutCmd, hostname)
+		logoutHostCmd = fmt.Sprintf("%s --hostname %s", logoutCmd, hostname)
 	}
 
 	knownHosts, err := config.GetKnownHosts()
@@ -112,6 +112,12 @@ func statusRun(opts *StatusOptions) error {
 			addMsg(fmt.Sprintf("%s %s", iostreams.FailureIcon(), "authentication failed"))
 			addMsg("- The access token in %s is no longer valid.", hostname)
 			failed = true
+
+			tokenIsWriteable := !config.AuthTokenProvidedFromEnv()
+			if tokenIsWriteable {
+				addMsg("- To re-authenticate, run: %s", loginHostCmd)
+				addMsg("- To forget about this authentication, run: %s", logoutHostCmd)
+			}
 		} else {
 			return fmt.Errorf("Unable to check token validity against %s", hostname)
 		}
