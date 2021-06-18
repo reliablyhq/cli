@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- CLI failed when config file is missing; [#341](https://github.com/reliablyhq/cli/issues/341)
+
 ## [v0.18.0] - 2021-06-17
 
 ### Added
