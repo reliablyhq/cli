@@ -30,8 +30,15 @@ func SetTokenForHostname(hostname, token string) error {
 		return err
 	}
 
-	cfg.AuthInfo[hostname] = AuthInfo{
-		Token: token,
+	if ai, ok := cfg.AuthInfo[hostname]; ok {
+		// update the existing entry - do NOT overwrite or will lose data
+		ai.Token = token
+		cfg.AuthInfo[hostname] = ai
+	} else {
+		// add a new entry
+		cfg.AuthInfo[hostname] = AuthInfo{
+			Token: token,
+		}
 	}
 
 	return writeConfigFile(cfg)
@@ -43,8 +50,15 @@ func SetUsernameForHostname(hostname, username string) error {
 		return err
 	}
 
-	cfg.AuthInfo[hostname] = AuthInfo{
-		Username: username,
+	if ai, ok := cfg.AuthInfo[hostname]; ok {
+		// update the existing entry - do NOT overwrite or will lose data
+		ai.Username = username
+		cfg.AuthInfo[hostname] = ai
+	} else {
+		// add a new entry
+		cfg.AuthInfo[hostname] = AuthInfo{
+			Username: username,
+		}
 	}
 
 	return writeConfigFile(cfg)
