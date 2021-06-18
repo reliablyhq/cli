@@ -17,7 +17,11 @@ func readConfigFile() (*Config, error) {
 	p := resolveConfigFilePath()
 	bytes, err := os.ReadFile(p)
 	if err != nil {
-		return nil, err
+		if os.IsNotExist(err) {
+			return NewConfig(), nil
+		} else {
+			return nil, err
+		}
 	}
 
 	var config Config
