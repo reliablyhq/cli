@@ -2,10 +2,12 @@
 
 ## [Unreleased]
 
+## [v0.18.1] - 2021-06-18
+
 ### Fixed
 
-- CLI failed when config file is missing; [#341](https://github.com/reliablyhq/cli/issues/341)
-- Regression in `auth status` with overriden auth token from environment variable; [#346](https://github.com/reliablyhq/cli/issues/346)
+-   CLI failed when config file is missing; [#341](https://github.com/reliablyhq/cli/issues/341)
+-   Regression in `auth status` with overriden auth token from environment variable; [#346](https://github.com/reliablyhq/cli/issues/346)
 
 ## [v0.18.0] - 2021-06-17
 
@@ -251,7 +253,9 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.18.1...HEAD
+
+[v0.18.1]: https://github.com/reliablyhq/cli/compare/v0.18.0...v0.18.1
 
 [v0.18.0]: https://github.com/reliablyhq/cli/compare/v0.17.0...v0.18.0
 
