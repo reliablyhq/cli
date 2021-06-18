@@ -5,6 +5,7 @@
 ### Fixed
 
 - CLI failed when config file is missing; [#341](https://github.com/reliablyhq/cli/issues/341)
+- Regression in `auth status` with overriden auth token from environment variable; [#346](https://github.com/reliablyhq/cli/issues/346)
 
 ## [v0.18.0] - 2021-06-17
 

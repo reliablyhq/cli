@@ -84,3 +84,7 @@ func getAuthInfoFromFile(hostname string) *AuthInfo {
 		return &info
 	}
 }
+
+func AuthTokenProvidedFromEnv() bool {
+	return os.Getenv(envReliablyToken) != ""
+}
