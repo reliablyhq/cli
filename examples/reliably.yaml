@@ -1,28 +1,29 @@
-services:
-- name: website
-  service-levels:
-  - name: 95th of requests response time under 100ms
-    type: latency
-    criteria:
-      threshold: 100ms
-    slo: 95
-    sli:
-    - id: myprojectid/google-cloud-load-balancers/myloadbalancer-name
-      provider: gcp
-    window: PT24H
-  - name: 99th of requests response time under 500ms
-    type: latency
-    criteria:
-      threshold: 500ms
-    slo: 99
-    sli:
-    - id: myprojectid/google-cloud-load-balancers/myloadbalancer-name
-      provider: gcp
-    window: PT24H
-  - name: 99th of requests responses not 5xx
-    type: availability
-    slo: 99
-    sli:
-    - id: myprojectid/google-cloud-load-balancers/myloadbalancer-name
-      provider: gcp
-    window: P7D
+apiVersion: reliably.com/v1
+kind: Objective
+metadata:
+  labels:
+    name: api-availability
+    service: reliably-api
+spec:
+  indicatorSelector:
+    category: availability
+    gcp_loadbalancer_name: example-lb
+    gcp_project_id: example-id
+  objectivePercent: 99
+  window: 1h0m0s
+---
+apiVersion: reliably.com/v1
+kind: Objective
+metadata:
+  labels:
+    name: api-latency
+    service: reliably-api
+spec:
+  indicatorSelector:
+    category: latency
+    gcp_loadbalancer_name: example-lb
+    gcp_project_id: example-id
+    latency_target: 300ms
+    percentile: "99"
+  objectivePercent: 99
+  window: 24h0m0s
