@@ -6,6 +6,7 @@ import (
 
 	agentAlpha "github.com/reliablyhq/cli/cmd/reliably/alpha/slo/agent"
 	initAlpha "github.com/reliablyhq/cli/cmd/reliably/alpha/slo/init"
+	"github.com/reliablyhq/cli/cmd/reliably/alpha/slo/related"
 	reportAlpha "github.com/reliablyhq/cli/cmd/reliably/alpha/slo/report"
 
 	"github.com/reliablyhq/cli/cmd/reliably/alpha/slo/sync"
@@ -24,6 +25,7 @@ func NewCommand() *cobra.Command {
 	cmd.AddCommand(agentAlpha.NewCommand(nil))
 	cmd.AddCommand(report.NewCommand(reportAlpha.AlpaReportRun))
 	cmd.AddCommand(sync.NewCommand(nil))
+	cmd.AddCommand(related.NewCommand(nil))
 
 	return &cmd
 }
