@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta http-equiv=“Pragma” content=”no-cache”>
+<meta http-equiv=“Expires” content=”-1″>
+<meta http-equiv=“CACHE-CONTROL” content=”NO-CACHE”>
+<title>Reliably Force-Directed Node Graph</title>
+
+<head>
+    <!-- <link rel="stylesheet" type="text/css" href="./styles.css"> -->
+    <link rel="stylesheet" type="text/css" href="./inspector.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins">
+    <script type="module">
+
+        import define from "./index.js";
+        import {Runtime, Library, Inspector} from "./runtime.js";
+
+        const runtime = new Runtime();
+        const main = runtime.module(define, Inspector.into(document.body));
+
+    </script>
+</head>
+
+<body></body>
