@@ -20,7 +20,7 @@ export default function define(runtime, observer) {
           .force("charge", d3.forceManyBody().strength(-300))
           .force("x", d3.forceX())
           .force("y", d3.forceY())
-          .force('collide', d3.forceCollide(d => 65))
+          .force('collide', d3.forceCollide(d => 85))
 
       const svg = d3.create("svg")
           .attr("viewBox", [-width / 2, -height / 2, width, height])
@@ -67,7 +67,7 @@ export default function define(runtime, observer) {
       node.append("text")
           .attr("x", 30 + 4)
           .attr("y", "0.31em")
-          .text(d=> JSON.stringify(d.entity.metadata.labels) )
+          .text(d=> JSON.stringify(`name: ${d.metadata.labels["name"]}`) )
           .clone(true).lower()
           .attr("fill", "none")
           .attr("stroke", "white")
