@@ -132,13 +132,15 @@ func serveRelationshipGraph(client *api.Client, org string, port string, m entit
 			return
 		}
 
-		if err := json.NewEncoder(w).Encode(g); err != nil {
+		encoder := json.NewEncoder(w)
+		encoder.SetIndent("", "  ")
+		if err := encoder.Encode(g); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	})
-	openbrowser(uri)
 
+	openbrowser(uri)
 	fmt.Println(color.Green("serving relationship graph on:"), color.Cyan(uri))
 	fmt.Println(color.Green("openning browser..."))
 	return http.ListenAndServe(port, server)
