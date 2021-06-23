@@ -26,6 +26,9 @@ compile:
 release:
 	go build ${LDFLAGS} -o bin/reliably main.go
 
+clean:
+	rm -rf bin
+
 .PHONY: test
 test:
 	go test ./...
