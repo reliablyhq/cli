@@ -20,7 +20,7 @@ func NewCommand() *cobra.Command {
 		Long: heredoc.Doc(`
 			A set of commands to manage your organizations and their members.
 
-			Organizations allows you to regroup and share data between mutliple users.
+			Organizations allows you to regroup and share data between multiple users.
 			You can create, manage and delete organizations.
 
 			You can also add/remove users to/from your organizations.`),
