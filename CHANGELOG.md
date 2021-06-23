@@ -2,13 +2,15 @@
 
 ## [Unreleased]
 
+## [v0.19.0] - 2021-06-23
+
 ### Added
 
-- `org` command provides sub-commands to create, manage and delete organizations.
+-   `org` command provides sub-commands to create, manage and delete organizations.
 
 ### Fixed
 
-- `auth login` crashes when config file is not present; [#350](https://github.com/reliablyhq/cli/issues/350)
+-   `auth login` crashes when config file is not present; [#350](https://github.com/reliablyhq/cli/issues/350)
 
 ## [v0.18.1] - 2021-06-18
 
@@ -261,7 +263,9 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.18.1...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.19.0...HEAD
+
+[v0.19.0]: https://github.com/reliablyhq/cli/compare/v0.18.1...v0.19.0
 
 [v0.18.1]: https://github.com/reliablyhq/cli/compare/v0.18.0...v0.18.1
 
