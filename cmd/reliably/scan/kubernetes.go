@@ -1,6 +1,7 @@
 package scan
 
 import (
+	go_ctx "context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -476,7 +477,7 @@ func liveScan(opts *ScanOptions) (core.ResultSet, error) {
 
 	// log.Debugf("Get pods for namespace %v", namespace)
 
-	var resourceList = k8s.GetResourceList(*clientSet, namespace)
+	var resourceList = k8s.GetResourceList(go_ctx.TODO(), *clientSet, namespace)
 
 	for _, r := range resourceList {
 

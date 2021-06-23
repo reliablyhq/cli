@@ -1,7 +1,10 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 // Organization represents an Organization under Reliably
@@ -9,6 +12,7 @@ type Organization struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`
 	CreatedBy string `json:"created_by"`
+	Owner     string `json:"owner,omitempty"`
 }
 
 // ListOrganizations list all organizations to which
@@ -54,4 +58,33 @@ func CurrentUserOrganizationID(client *Client, hostname string) (string, error) 
 	}
 
 	return org.ID, nil
+}
+
+func CreateOrganisation(client *Client, hostname, orgName string) error {
+	type model struct {
+		Name string `json:"name"`
+	}
+
+	m := model{Name: orgName}
+	var buffer bytes.Buffer
+	if err := json.NewEncoder(&buffer).Encode(&m); err != nil {
+		return err
+	}
+
+	return client.REST(hostname, "POST", "orgs", &buffer, nil)
+}
+
+func DeleteOrganisation(client *Client, hostname, orgID string) error {
+	path := fmt.Sprint("orgs/", orgID)
+	return client.REST(hostname, "DELETE", path, nil, nil)
+}
+
+func AddUserToOrganisation(client *Client, hostname, orgID, username string) error {
+	path := fmt.Sprintf("orgs/%s/users/%s", orgID, username)
+	return client.REST(hostname, "PUT", path, nil, nil)
+}
+
+func RemoveUserFromOrganisation(client *Client, hostname, orgID, username string) error {
+	path := fmt.Sprintf("orgs/%s/users/%s", orgID, username)
+	return client.REST(hostname, "DELETE", path, nil, nil)
 }
