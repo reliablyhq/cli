@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+
+- `org` command provides sub-commands to create, manage and delete organizations.
 ## [v0.18.1] - 2021-06-18
 
 ### Fixed

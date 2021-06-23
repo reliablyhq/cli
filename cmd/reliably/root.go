@@ -17,6 +17,7 @@ import (
 	"github.com/reliablyhq/cli/cmd/reliably/alpha"
 	"github.com/reliablyhq/cli/cmd/reliably/beta"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
+	"github.com/reliablyhq/cli/cmd/reliably/org"
 	"github.com/reliablyhq/cli/cmd/reliably/slo"
 	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core/color"
@@ -99,6 +100,7 @@ Environment variables:
 	cmd.AddCommand(NewCmdHistory())
 	cmd.AddCommand(NewCmdScan(cmd))
 	cmd.AddCommand(NewCmdUpdate())
+	cmd.AddCommand(org.NewCommand())
 	cmd.AddCommand(slo.NewCommand())
 
 	if v.IsDevVersion() {
