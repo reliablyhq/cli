@@ -5,6 +5,11 @@
 ### Added
 
 - `org` command provides sub-commands to create, manage and delete organizations.
+
+### Fixed
+
+- `auth login` crashes when config file is not present; [#350](https://github.com/reliablyhq/cli/issues/350)
+
 ## [v0.18.1] - 2021-06-18
 
 ### Fixed
