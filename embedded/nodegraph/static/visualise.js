@@ -1,13 +1,10 @@
-// https://observablehq.com/@brunolaranjeira/d3-v6-force-directed-graph-with-directional-straight-arrow@316
-// import define1 from "./a33468b95d0b15b0@703.js";
-
 export default function define(runtime, observer) {
   const main = runtime.module();
-  const fileAttachments = new Map([["suits.csv",new URL("./data.json",import.meta.url)]]);
-  main.builtin("FileAttachment", runtime.fileAttachments(name => fileAttachments.get(name)));
+  // const fileAttachments = new Map([["suits.csv",new URL("./data.json",import.meta.url)]]);
+  // main.builtin("FileAttachment", runtime.fileAttachments(name => fileAttachments.get(name)));
   
   main.variable(observer()).define(["md"], function(md){return(
-    md`# Reliably Node Graph`
+    md`## Reliably Node Graph`
   )});
 
   main.variable(observer("chart")).define("chart", ["data","d3","width","height","types","color","location","drag","linkArc","invalidation"], 
@@ -97,32 +94,28 @@ export default function define(runtime, observer) {
   }
   );
 
-  main.variable(observer("links")).define("links", ["d3","FileAttachment"], async function(d3,FileAttachment){return(
-    d3.csvParse(await FileAttachment("suits.csv").text())
-  )});
-
-  main.variable(observer("types")).define("types", ["data"], (data) => {
+  main.variable().define("types", ["data"], (data) => {
     // return( Array.from(new Set(data.nodes.map(d => d.kind)) )
     return (["edge"]) // hard coding the type here as it is only used to color the arrow heads
   });
 
-  main.variable(observer("data")).define("data", () => {
+  main.variable().define("data", () => {
     return ( GETSync("/data") )
     // return ( GETSync("/data.json") )
   });
 
 
-  main.variable(observer("height")).define("height", () => { return(800) });
-  main.variable(observer("color")).define("color", ["d3","types"], (d3,types) => {
+  main.variable().define("height", () => { return(800) });
+  main.variable().define("color", ["d3","types"], (d3,types) => {
     return(d3.scaleOrdinal(types, d3.schemeCategory10))
   });
 
 
-  main.variable(observer("linkArc")).define("linkArc", () => {
+  main.variable().define("linkArc", () => {
     return( d =>`M${d.source.x},${d.source.y}A0,0 0 0,1 ${d.target.x},${d.target.y}`) 
   });
 
-  main.variable(observer("drag")).define("drag", ["d3"], (d3) => {
+  main.variable().define("drag", ["d3"], (d3) => {
     return(
       simulation => {
       
@@ -150,8 +143,8 @@ export default function define(runtime, observer) {
     }
   )});
 
-  main.variable(observer("d3")).define("d3", ["require"], (require) => {
-    return( require("d3@6")) 
+  main.variable().define("d3", ["require"], (require) => {
+    return( require("d3@6") ) 
   });
 
   return main;
@@ -168,8 +161,8 @@ function GETAsync(uri, callback) {
 }
 
 function GETSync(uri) {
-var xmlHttp = new XMLHttpRequest();
-xmlHttp.open( "GET", uri, false ); // false for synchronous request
-xmlHttp.send( null );
-return JSON.parse(xmlHttp.responseText);
+  var xmlHttp = new XMLHttpRequest();
+  xmlHttp.open( "GET", uri, false ); // false for synchronous request
+  xmlHttp.send( null );
+  return JSON.parse(xmlHttp.responseText);
 }
