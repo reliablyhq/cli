@@ -1,7 +1,6 @@
 package config
 
 import (
-	"io/fs"
 	"os"
 
 	"github.com/mitchellh/go-homedir"
@@ -39,7 +38,7 @@ func writeConfigFile(data *Config) error {
 	}
 
 	p := resolveConfigFilePath()
-	if err := os.WriteFile(p, bytes, fs.ModeAppend); err != nil {
+	if err := os.WriteFile(p, bytes, 0600); err != nil {
 		return err
 	}
 	return nil
