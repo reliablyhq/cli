@@ -157,6 +157,16 @@ func loginRun(opts *LoginOptions) error {
 			return err
 		}
 
+		apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
+		defaultOrg, err := api.CurrentUserOrganization(apiClient, hostname)
+		if err != nil {
+			return fmt.Errorf("error using api to retrieve user default organization: %w", err)
+		}
+
+		if err := config.SetCurrentOrgInfo(defaultOrg.Name, defaultOrg.ID); err != nil {
+			return err
+		}
+
 		fmt.Fprintf(opts.IO.ErrOut, "%s Logged in as %s\n", iostreams.SuccessIcon(), color.Bold(username))
 
 	} else {
@@ -207,6 +217,16 @@ func loginRun(opts *LoginOptions) error {
 		}
 
 		if err := config.SetUsernameForHostname(hostname, username); err != nil {
+			return err
+		}
+
+		apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
+		defaultOrg, err := api.CurrentUserOrganization(apiClient, hostname)
+		if err != nil {
+			return fmt.Errorf("error using api to retrieve user default organization: %w", err)
+		}
+
+		if err := config.SetCurrentOrgInfo(defaultOrg.Name, defaultOrg.ID); err != nil {
 			return err
 		}
 

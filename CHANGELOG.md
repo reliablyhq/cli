@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Save user's default organization to config upon successful authentication; [#242](https://github.com/reliablyhq/cli/issues/242)
+
 ## [v0.19.0] - 2021-06-23
 
 ### Added
