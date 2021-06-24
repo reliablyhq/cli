@@ -17,7 +17,7 @@ export default function define(runtime, observer) {
           .force("charge", d3.forceManyBody().strength(-300))
           .force("x", d3.forceX())
           .force("y", d3.forceY())
-          .force('collide', d3.forceCollide(d => 85))
+          .force('collide', d3.forceCollide(d => 85)) // collide, the forced distance between nodes
 
       const svg = d3.create("svg")
           .attr("viewBox", [-width / 2, -height / 2, width, height - 64]);
