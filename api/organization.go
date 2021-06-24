@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 )
 
@@ -27,25 +26,11 @@ func ListOrganizations(client *Client, hostname string) ([]Organization, error) 
 // CurrentUserOrganization returns the default organization of the
 // current logged in user
 func CurrentUserOrganization(client *Client, hostname string) (*Organization, error) {
+	var org Organization
 
-	orgs, err := ListOrganizations(client, hostname)
-	if err != nil {
-		return nil, err
-	}
+	err := client.REST(hostname, "GET", "orgs/default", nil, &org)
+	return &org, err
 
-	user, err := CurrentUser(client, hostname)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, org := range orgs {
-		if org.Name == user.Username && org.CreatedBy == user.ID {
-			return &org, nil
-		}
-
-	}
-
-	return nil, errors.New("No organization found for current username")
 }
 
 // CurrentUserOrganizationID returns the identifier of the
