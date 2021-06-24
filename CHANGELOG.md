@@ -6,6 +6,10 @@
 
 - Save user's default organization to config upon successful authentication; [#242](https://github.com/reliablyhq/cli/issues/242)
 
+### Fixed
+
+- Use current organization set from config, instead of users default one
+
 ## [v0.19.0] - 2021-06-23
 
 ### Added
