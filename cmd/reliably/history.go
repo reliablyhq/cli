@@ -66,7 +66,7 @@ func NewCmdHistory() *cobra.Command {
 				if e, ok := err.(api.HTTPError); ok {
 					if e.StatusCode == 404 {
 						return fmt.Errorf(`Current source is unknown!
-You probably haven't run 'reliably scan .' from this current working directory yet.
+You probably haven't run 'reliably scan' from this current working directory yet.
 The history will only be available after a first scan.`)
 					}
 				}
