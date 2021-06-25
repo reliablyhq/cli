@@ -64,13 +64,13 @@ func agentRun(opts *AgentOptions) error {
 	}
 
 	// get API client
-	client := api.NewClientFromHTTP(api.AuthHTTPClient(config.Hostname))
-	org, err := api.CurrentUserOrganization(client, config.Hostname)
+	org, err := config.GetCurrentOrgInfo()
 	if err != nil {
 		return err
 	}
 
 	// define agent job
+	client := api.NewClientFromHTTP(api.AuthHTTPClient(config.Hostname))
 	agent.SetLogger(logger)
 	job := agent.NewJob(opts.Interval, m)
 	job.ErrorFunc(func(e *agent.Error) {
