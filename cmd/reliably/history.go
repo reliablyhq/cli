@@ -54,10 +54,11 @@ func NewCmdHistory() *cobra.Command {
 			apiClient := api.NewClientFromHTTP(opts.HttpClient())
 
 			// Ensure the CLI history is executed in a valid org/source
-			opts.OrgID, err = api.CurrentUserOrganizationID(apiClient, opts.Hostname)
+			org, err := config.GetCurrentOrgInfo()
 			if err != nil {
 				return fmt.Errorf("unable to retrieve current organization: %w", err)
 			}
+			opts.OrgID = org.ID
 
 			context := ctx.NewContext() // can we improve/refactor to create a source without full context
 			opts.SourceID, err = api.CurrentSourceID(apiClient, opts.Hostname, opts.OrgID, context.Source.(ctx.Source).Hash)
@@ -65,7 +66,7 @@ func NewCmdHistory() *cobra.Command {
 				if e, ok := err.(api.HTTPError); ok {
 					if e.StatusCode == 404 {
 						return fmt.Errorf(`Current source is unknown!
-You probably haven't run 'reliably scan .' from this current working directory yet.
+You probably haven't run 'reliably scan' from this current working directory yet.
 The history will only be available after a first scan.`)
 					}
 				}

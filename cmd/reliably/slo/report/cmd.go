@@ -244,11 +244,10 @@ func getReports(manifestPath string) ([]*report.Report, error) {
 
 	hostname := config.Hostname
 	entityHost := config.EntityServerHost
-
 	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
-	org, err := api.CurrentUserOrganization(apiClient, hostname)
+	org, err := config.GetCurrentOrgInfo()
 	if err != nil {
-		return nil, fmt.Errorf("unable to request org: %w", err)
+		return nil, err
 	}
 
 	// TODO: define version/kind from manifest objective?

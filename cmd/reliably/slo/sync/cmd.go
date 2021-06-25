@@ -49,9 +49,12 @@ func syncRun(opts *SyncOptions) error {
 
 	hostname := config.Hostname
 	entityHost := config.EntityServerHost
-
 	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
-	org, _ := api.CurrentUserOrganization(apiClient, hostname)
+
+	org, err := config.GetCurrentOrgInfo()
+	if err != nil {
+		return err
+	}
 
 	var hasErr bool
 	for i, slo := range objectives {
