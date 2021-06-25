@@ -142,7 +142,7 @@ func serveRelationshipGraph(client *api.Client, org string, port string, m entit
 
 	openbrowser(uri)
 	fmt.Println(color.Green("serving relationship graph on:"), color.Cyan(uri))
-	fmt.Println(color.Green("openning browser..."))
+	fmt.Println(color.Green("opening browser..."))
 	return http.ListenAndServe(port, server)
 }
 
