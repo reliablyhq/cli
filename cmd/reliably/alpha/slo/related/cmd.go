@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -21,6 +20,7 @@ import (
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/embedded/nodegraph"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -95,7 +95,7 @@ func NewCommand(runF OptFunc) *cobra.Command {
 				return encoder.Encode(g)
 			}
 
-			return serveRelationshipGraph(client, org.Name, opts.Port, m)
+			return serveRelationshipGraph(client, org.Name, opts.Port, opts.ManifestPath)
 		},
 	}
 
@@ -106,7 +106,8 @@ func NewCommand(runF OptFunc) *cobra.Command {
 	return cmd
 }
 
-func serveRelationshipGraph(client *api.Client, org string, port string, m entities.Manifest) error {
+func serveRelationshipGraph(client *api.Client, org, port, manifestPath string) error {
+	logger := log.StandardLogger()
 	if port == "" {
 		port = fmt.Sprintf("%d", randomInt(60000, 61000))
 	}
@@ -126,8 +127,17 @@ func serveRelationshipGraph(client *api.Client, org string, port string, m entit
 	server := http.NewServeMux()
 	server.Handle("/", fs)
 	server.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
+		// read manifest
+		var m entities.Manifest
+		if err := m.LoadFromFile(manifestPath); err != nil {
+			logger.Debugf("error loading manifest file: %s", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		g, err := api.GetRelationshipGraph(client, config.EntityServerHost, org, m)
 		if err != nil {
+			logger.Debugf("error fetching relationship data from API: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -135,6 +145,7 @@ func serveRelationshipGraph(client *api.Client, org string, port string, m entit
 		encoder := json.NewEncoder(w)
 		encoder.SetIndent("", "  ")
 		if err := encoder.Encode(g); err != nil {
+			logger.Debugf("error: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
