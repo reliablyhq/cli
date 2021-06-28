@@ -2,13 +2,15 @@
 
 ## [Unreleased]
 
+## [v0.19.1] - 2021-06-28
+
 ### Added
 
-- Save user's default organization to config upon successful authentication; [#242](https://github.com/reliablyhq/cli/issues/242)
+-   Save user's default organization to config upon successful authentication; [#242](https://github.com/reliablyhq/cli/issues/242)
 
 ### Fixed
 
-- Use current organization set from config, instead of users default one
+-   Use current organization set from config, instead of users default one
 
 ## [v0.19.0] - 2021-06-23
 
@@ -271,7 +273,9 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.19.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.19.1...HEAD
+
+[v0.19.1]: https://github.com/reliablyhq/cli/compare/v0.19.0...v0.19.1
 
 [v0.19.0]: https://github.com/reliablyhq/cli/compare/v0.18.1...v0.19.0
 
