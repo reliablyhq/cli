@@ -191,3 +191,12 @@ func ParseGitRemoteOriginURL(url string) (*GitRemoteURL, error) {
 	}
 
 }
+
+func GitShortRev() (string, error) {
+	showCmd, err := GitCommand("rev-parse", "--short", "HEAD")
+	if err != nil {
+		return "", err
+	}
+	output, err := showCmd.Output()
+	return firstLine(output), err
+}

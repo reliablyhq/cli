@@ -1,6 +1,7 @@
 package scan
 
 import (
+	go_ctx "context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -324,10 +325,11 @@ func scanRun(opts *ScanOptions) (count int, err error) {
 	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
 
 	// Sends the context to Reliably prior executing the command
-	orgID, err := api.CurrentUserOrganizationID(apiClient, hostname)
+	org, err := config.GetCurrentOrgInfo()
 	if err != nil {
 		return
 	}
+	orgID := org.ID
 
 	context = ctx.NewContext()
 	opts.Exec, err = api.SendExecutionContext(apiClient, hostname, orgID, context)
@@ -476,7 +478,7 @@ func liveScan(opts *ScanOptions) (core.ResultSet, error) {
 
 	// log.Debugf("Get pods for namespace %v", namespace)
 
-	var resourceList = k8s.GetResourceList(*clientSet, namespace)
+	var resourceList = k8s.GetResourceList(go_ctx.TODO(), *clientSet, namespace)
 
 	for _, r := range resourceList {
 

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/reliablyhq/cli/core/entities"
+	"github.com/reliablyhq/cli/utils"
 )
 
 func CreateEntity(client *Client, hostname string, org string, entity entities.Entity) error {
@@ -21,7 +22,12 @@ func CreateEntity(client *Client, hostname string, org string, entity entities.E
 	kind = plural(entity.Kind())
 	kind = strings.ToLower(kind)
 
-	path := fmt.Sprintf("%s/%s/%s/%s", "entities", version, org, kind)
+	shortVersion, ok := utils.GetShortVersion(version)
+	if !ok {
+		return fmt.Errorf("version %v not supported", version)
+	}
+
+	path := requestPath(shortVersion, kind, org)
 
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(entity); err != nil {
@@ -34,7 +40,13 @@ func CreateEntity(client *Client, hostname string, org string, entity entities.E
 func GetObjectiveResults(client *Client, hostname string, version string, org string) (*[]entities.ObjectiveResultResponse, error) {
 
 	var entitiesResult *[]entities.ObjectiveResultResponse
-	path := requestPath(version, "objective-results", org)
+
+	shortVersion, ok := utils.GetShortVersion(version)
+	if !ok {
+		return nil, fmt.Errorf("version %v not supported", version)
+	}
+
+	path := requestPath(shortVersion, "objective-results", org)
 	err := client.RESTv2(hostname, http.MethodGet, path, nil, &entitiesResult)
 
 	if err != nil {

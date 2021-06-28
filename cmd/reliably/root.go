@@ -17,6 +17,7 @@ import (
 	"github.com/reliablyhq/cli/cmd/reliably/alpha"
 	"github.com/reliablyhq/cli/cmd/reliably/beta"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
+	"github.com/reliablyhq/cli/cmd/reliably/org"
 	"github.com/reliablyhq/cli/cmd/reliably/slo"
 	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core/color"
@@ -33,6 +34,7 @@ var (
 	noColor     bool
 	version     = v.Version
 	buildDate   = v.Date
+	revision    = v.Revision
 	updaterRepo = "reliablyhq/cli"
 )
 
@@ -64,7 +66,7 @@ Environment variables:
 		&verbose, "verbose", "v", false, "verbose output")
 	cmd.PersistentFlags().BoolVar(
 		&noColor, "no-color", false, "Disable color output")
-	cmd.SetVersionTemplate(FormatVersion(version, buildDate))
+	cmd.SetVersionTemplate(FormatVersion(version, buildDate, revision))
 	cmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		// This prerun hook is inherited by subcommands if not overridden
 		// If this hook is needed by a subcommand, makes sure to excplicitely
@@ -98,6 +100,7 @@ Environment variables:
 	cmd.AddCommand(NewCmdHistory())
 	cmd.AddCommand(NewCmdScan(cmd))
 	cmd.AddCommand(NewCmdUpdate())
+	cmd.AddCommand(org.NewCommand())
 	cmd.AddCommand(slo.NewCommand())
 
 	if v.IsDevVersion() {

@@ -22,7 +22,7 @@ func SetCurrentOrgInfo(name, ID string) error {
 	}
 
 	cfg.CurrentOrg.Name = name
-	cfg.CurrentOrg.ID = name
+	cfg.CurrentOrg.ID = ID
 
 	return writeConfigFile(cfg)
 }

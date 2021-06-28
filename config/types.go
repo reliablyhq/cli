@@ -16,3 +16,10 @@ type (
 		ID   string `yaml:"id"`
 	}
 )
+
+// NewConfig initializes a config with empty/default values
+func NewConfig() *Config {
+	return &Config{
+		AuthInfo: map[string]AuthInfo{},
+	}
+}
