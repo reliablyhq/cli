@@ -57,17 +57,43 @@ export default function define(runtime, observer) {
           .attr("class", "node")
           .call(drag(simulation));
 
-      let purposes = [];
+      let labels = [];
+      let labelsObjects = [];
+      // [
+      //  { name: property1, values: [value1, value2] },
+      //  { name: property2, values: [value3, value4] },
+      // ]
 
       const circle = node.append("circle")
           .attr("class", (d) => {
-            let p = JSON.stringify(`${d.metadata.labels["purpose"]}`).substring(1).slice(0, -1);
-            if (purposes.includes(p)) {
-              return `node-circle group-${purposes.indexOf(p)}`;
-            } else {
-              purposes.push(p)
-              return `node-circle group-${purposes.length - 1}`;
+            // console.log(d.metadata.labels);
+            let objectiveLabels = d.metadata.labels;
+            let classString = "node-circle";
+            for (const property in objectiveLabels) {
+              if (property !== "name") {
+                if (labels.includes(property)) {
+                  const propertyValues = labelsObjects[labels.indexOf(property)];
+                  if (propertyValues.values.includes(objectiveLabels[property])) {
+                    classString = classString.concat(` group-${property}-${propertyValues.values.indexOf(objectiveLabels[property])}`);
+                  } else {
+                    propertyValues.values.push(objectiveLabels[property]);
+                    classString = classString.concat(` group-${property}-${propertyValues.values.indexOf(objectiveLabels[property]) - 1}`);
+                  }
+                } else {
+                  labels.push(property);
+                  labelsObjects.push({ name: property, values: [objectiveLabels[property]] });
+                  classString = classString.concat(` group-${property}-0`);
+                }
+              }
             }
+            return classString;
+            // let p = JSON.stringify(`${d.metadata.labels["purpose"]}`).substring(1).slice(0, -1);
+            // if (purposes.includes(p)) {
+            //   return `node-circle group-${purposes.indexOf(p)}`;
+            // } else {
+            //   purposes.push(p)
+            //   return `node-circle group-${purposes.length - 1}`;
+            // }
           })
           .attr("stroke", "hsl(170, 40%, 35%)")
           .attr("stroke-width", 1.5)
@@ -90,30 +116,50 @@ export default function define(runtime, observer) {
           .attr("x", 34)
           .attr("y", 2)
           .text((d) => {
-            let str = JSON.stringify(`${d.metadata.labels["name"]}`).substring(1).slice(0, -1);
+            let str = d.metadata.labels["name"];
             return str;
           });
-      
+
       label.append("text")
-          .attr("class", "node-purpose")
+          .attr("class", "node-metadata")
+
           .attr("x", 34)
           .attr("y", 13)
+          // .data((d) => { d.metadata.labels })
+          // .join(tspan)
+          //     .attr("x", 34)
+          //     .attr("dy", "1.2em")
+          //     .text((d) => { d });
+
           .text((d) => {
-            if (d.metadata.labels["purpose"] !== undefined) {
-              let str = JSON.stringify(`${d.metadata.labels["purpose"]}`).substring(1).slice(0, -1);
-              return str;
-            } else {
-              return "-";
+            let str = "";
+            for (const property in d.metadata.labels) {
+              str = str.concat(`${property}: ${d.metadata.labels[property]} - `);
             }
+            str = str.slice(0, -3);
+            return str;
+            // if (d.metadata.labels["purpose"] !== undefined) {
+            //   let str = JSON.stringify(`${d.metadata.labels["purpose"]}`).substring(1).slice(0, -1);
+            //   return str;
+            // } else {
+            //   return "-";
+            // }
           });
 
       // node.on('dblclick', (e, d) => console.log(nodes[d.index]))
 
       circle.on('mouseover',(e, d) => {
+        d3.select(e.target.parentNode).raise().classed("display-tooltip", true);
         let label = e.target.parentNode.childNodes.item(1);
         let width = label.getBBox().width + 4;
         let rect = label.childNodes.item(0);
         rect.setAttribute("width", width);
+        // console.log(e.target.parentNode);
+        
+      });
+
+      circle.on('mouseout', (e) => {
+        d3.select(e.target.parentNode).classed("display-tooltip", false);
       });
 
       simulation.on("tick", () => {
@@ -208,4 +254,8 @@ function GETSync(uri) {
   xmlHttp.open( "GET", uri, false ); // false for synchronous request
   xmlHttp.send( null );
   return JSON.parse(xmlHttp.responseText);
+}
+
+function removeQuotes(string) {
+  return string.substring(1).slice(0, -1);
 }
