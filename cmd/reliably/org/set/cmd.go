@@ -86,7 +86,6 @@ func runSetOrg(opts *SetOptions) error {
 	log.Debug("matching org found - updating config file...")
 
 	// 3: write org to config
-	fmt.Println(org.Name, org.ID)
 	if err := config.SetCurrentOrgInfo(org.Name, org.ID); err != nil {
 		return err
 	}

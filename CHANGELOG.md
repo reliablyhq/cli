@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Remove a debug statement for `org set` command
+
 ## [v0.19.1] - 2021-06-28
 
 ### Added
