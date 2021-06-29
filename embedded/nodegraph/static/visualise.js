@@ -2,10 +2,6 @@ export default function define(runtime, observer) {
   const main = runtime.module();
   // const fileAttachments = new Map([["suits.csv",new URL("./data.json",import.meta.url)]]);
   // main.builtin("FileAttachment", runtime.fileAttachments(name => fileAttachments.get(name)));
-  
-  main.variable(observer()).define(["md"], function(md){return(
-    md`# Reliably Node Graph`
-  )});
 
   main.variable(observer("chart")).define("chart", ["data","d3","width","height","types","color","location","drag","linkArc","invalidation"], 
     (data,d3,width,height,types,color,location,drag,linkArc,invalidation) => {
@@ -20,7 +16,7 @@ export default function define(runtime, observer) {
           .force('collide', d3.forceCollide(d => 85)) // collide, the forced distance between nodes
 
       const svg = d3.create("svg")
-          .attr("viewBox", [-width / 2, -height / 2, width, height - 64]);
+          .attr("viewBox", [-width / 2, -height / 2, width, height]);
 
       // Per-type markers, as they don't inherit styles.
       svg.append("defs").selectAll("marker")
@@ -66,7 +62,6 @@ export default function define(runtime, observer) {
 
       const circle = node.append("circle")
           .attr("class", (d) => {
-            // console.log(d.metadata.labels);
             let objectiveLabels = d.metadata.labels;
             let classString = "node-circle";
             for (const property in objectiveLabels) {
@@ -77,7 +72,7 @@ export default function define(runtime, observer) {
                     classString = classString.concat(` group-${property}-${propertyValues.values.indexOf(objectiveLabels[property])}`);
                   } else {
                     propertyValues.values.push(objectiveLabels[property]);
-                    classString = classString.concat(` group-${property}-${propertyValues.values.indexOf(objectiveLabels[property]) - 1}`);
+                    classString = classString.concat(` group-${property}-${propertyValues.values.indexOf(objectiveLabels[property])}`);
                   }
                 } else {
                   labels.push(property);
@@ -153,8 +148,6 @@ export default function define(runtime, observer) {
         let width = label.getBBox().width + 4;
         let rect = label.childNodes.item(0);
         rect.setAttribute("width", width);
-        // console.log(e.target.parentNode);
-        
       });
 
       circle.on('mouseout', (e) => {
@@ -164,6 +157,90 @@ export default function define(runtime, observer) {
       simulation.on("tick", () => {
           link.attr("d", linkArc);
           node.attr("transform", d => `translate(${d.x},${d.y})`);
+      });
+
+      let form = d3.select("#js-group-select-form");
+
+      form.append("label")
+              .attr("class", "group-select__label")
+              .attr("for", "group-select__input")
+              .text("Highlight nodes by label");
+
+      let selectInput = form.append("select")
+              .attr("class", "group-select__input")
+              .attr("id", "group-select")
+              .attr("name", "group-select")
+
+      selectInput.append("option")
+          .text("Select a label")
+          .attr("value", "");
+
+      selectInput.selectAll("options")
+          .data(labels)
+          .enter()
+              .append("option")
+                  .text((d) => { return d; })
+                  .attr("value", (d) => { return d; });
+
+      let defaultColor = {
+        fill: "hsl(170, 25%, 60%)",
+        stroke: "hsl(170, 50%, 35%)"
+      };
+
+      let colors = [
+        {
+          fill: "hsl(260, 25%, 60%)",
+          stroke: "hsl(260, 50%, 35%)"
+        },
+        {
+          fill: "hsl(350, 25%, 60%)",
+          stroke: "hsl(350, 50%, 35%)"
+        },
+        {
+          fill: "hsl(80, 25%, 60%)",
+          stroke: "hsl(80, 50%, 35%)"
+        },
+        {
+          fill: "hsl(200, 25%, 60%)",
+          stroke: "hsl(200, 50%, 35%)"
+        },
+        {
+          fill: "hsl(290, 25%, 60%)",
+          stroke: "hsl(290, 50%, 35%)"
+        },
+        {
+          fill: "hsl(20, 25%, 60%)",
+          stroke: "hsl(20, 50%, 35%)"
+        },
+        {
+          fill: "hsl(110, 25%, 60%)",
+          stroke: "hsl(110, 50%, 35%)"
+        },
+        {
+          fill: "hsl(230, 25%, 60%)",
+          stroke: "hsl(230, 50%, 35%)"
+        },
+        {
+          fill: "hsl(320, 25%, 60%)",
+          stroke: "hsl(320, 50%, 35%)"
+        },
+        {
+          fill: "hsl(50, 25%, 60%)",
+          stroke: "hsl(50, 50%, 35%)"
+        },
+      ];
+
+      selectInput.on("change", (e) => {
+        d3.selectAll(".node-circle")
+            .attr("fill", defaultColor.fill)
+            .attr("stroke", defaultColor.stroke);
+        let selectedLabel = e.target.value;
+        let length = labelsObjects[labels.indexOf(selectedLabel)].values.length;
+        for (let i = 0; i < length; i++) {
+          d3.selectAll(`.group-${selectedLabel}-${i}`)
+              .attr("fill", colors[i % length].fill)
+              .attr("stroke", colors[i % length].stroke);
+        }
       });
 
       invalidation.then(() => simulation.stop());
