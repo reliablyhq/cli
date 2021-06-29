@@ -6,14 +6,13 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/reliablyhq/cli/config"
-	"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/color"
 )
 
 // CheckAuth garanties a valid token is given to the CLI, for making
 // authenticated calls, either from env var or config file
 func CheckAuth() bool {
-	if core.AuthTokenProvidedFromEnv() {
+	if config.AuthTokenProvidedFromEnv() {
 		return true
 	}
 

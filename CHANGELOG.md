@@ -2,10 +2,46 @@
 
 ## [Unreleased]
 
+## [v0.19.1] - 2021-06-28
+
+### Added
+
+-   Save user's default organization to config upon successful authentication; [#242](https://github.com/reliablyhq/cli/issues/242)
+
+### Fixed
+
+-   Use current organization set from config, instead of users default one
+
+## [v0.19.0] - 2021-06-23
+
+### Added
+
+-   `org` command provides sub-commands to create, manage and delete organizations.
+
+### Fixed
+
+-   `auth login` crashes when config file is not present; [#350](https://github.com/reliablyhq/cli/issues/350)
+
+## [v0.18.1] - 2021-06-18
+
+### Fixed
+
+-   CLI failed when config file is missing; [#341](https://github.com/reliablyhq/cli/issues/341)
+-   Regression in `auth status` with overriden auth token from environment variable; [#346](https://github.com/reliablyhq/cli/issues/346)
+
+## [v0.18.0] - 2021-06-17
+
+### Added
+
+-   `slo sync` command allows to synchronize the local objectives with Reliably servers
+-   `slo agent` command runs as a background process to periodically fetch your SLIs and send them back to Reliably.
+
 ### Changed
 
-- Added the formats 'table' & 'text' to the kubernetes scan command. Put 'simple' amd 'tabbed' formats in the deprecated list  ; [#332](https://github.com/reliablyhq/cli/issues/332)
-- Fixed the trend ouput for terminal and included html span elements for markdown type reports  ; [#330](https://github.com/reliablyhq/cli/issues/330)
+-   Added the formats 'table' & 'text' to the kubernetes scan command. Put 'simple' amd 'tabbed' formats in the deprecated list  ; [#332](https://github.com/reliablyhq/cli/issues/332)
+-   Fixed the trend ouput for terminal and included html span elements for markdown type reports  ; [#330](https://github.com/reliablyhq/cli/issues/330)
+-   `slo init` and `slo report` have been updated with breaking changes to handle new manifest & objective structure.
+-   The SLO manifest has been entirely refactored changed to match the Kubernete-like definition.
 
 ## [v0.17.0] - 2021-06-10
 
@@ -237,7 +273,15 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.19.1...HEAD
+
+[v0.19.1]: https://github.com/reliablyhq/cli/compare/v0.19.0...v0.19.1
+
+[v0.19.0]: https://github.com/reliablyhq/cli/compare/v0.18.1...v0.19.0
+
+[v0.18.1]: https://github.com/reliablyhq/cli/compare/v0.18.0...v0.18.1
+
+[v0.18.0]: https://github.com/reliablyhq/cli/compare/v0.17.0...v0.18.0
 
 [v0.17.0]: https://github.com/reliablyhq/cli/compare/v0.16.1...v0.17.0
 

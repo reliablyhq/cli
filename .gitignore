@@ -30,3 +30,5 @@ reliably.yaml
 
 # ignore delve(dlv) debug directory
 __debug_bin
+
+backup.reliably.yaml

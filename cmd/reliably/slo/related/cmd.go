@@ -1,10 +1,10 @@
 package related
 
 import (
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -21,6 +21,7 @@ import (
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/embedded/nodegraph"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -95,7 +96,7 @@ func NewCommand(runF OptFunc) *cobra.Command {
 				return encoder.Encode(g)
 			}
 
-			return serveRelationshipGraph(client, org.Name, opts.Port, m)
+			return serveRelationshipGraph(client, org.Name, opts.Port, opts.ManifestPath)
 		},
 	}
 
@@ -106,7 +107,7 @@ func NewCommand(runF OptFunc) *cobra.Command {
 	return cmd
 }
 
-func serveRelationshipGraph(client *api.Client, org string, port string, m entities.Manifest) error {
+func serveRelationshipGraph(client *api.Client, org, port, manifestPath string) error {
 	if port == "" {
 		port = fmt.Sprintf("%d", randomInt(60000, 61000))
 	}
@@ -126,8 +127,24 @@ func serveRelationshipGraph(client *api.Client, org string, port string, m entit
 	server := http.NewServeMux()
 	server.Handle("/", fs)
 	server.HandleFunc("/data", func(w http.ResponseWriter, r *http.Request) {
+		// read manifest
+		var m entities.Manifest
+		if err := m.LoadFromFile(manifestPath); err != nil {
+			log.Debugf("error loading manifest file: %s", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		// resync manifest
+		if err := syncManifest(client, org, m); err != nil {
+			log.Debugf("error syncing manifest: %s", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		g, err := api.GetRelationshipGraph(client, config.EntityServerHost, org, m)
 		if err != nil {
+			log.Debugf("error fetching relationship data from API: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -135,6 +152,7 @@ func serveRelationshipGraph(client *api.Client, org string, port string, m entit
 		encoder := json.NewEncoder(w)
 		encoder.SetIndent("", "  ")
 		if err := encoder.Encode(g); err != nil {
+			log.Debugf("error: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -168,4 +186,34 @@ func openbrowser(url string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// used to hash manifest file
+var manifestHash string
+
+func syncManifest(client *api.Client, org string, m entities.Manifest) error {
+
+	h := md5Hash(m)
+
+	// return if manifestHash is the same
+	if manifestHash == h {
+		return nil
+	}
+
+	defer func() {
+		manifestHash = h
+	}()
+
+	for _, slo := range m {
+		log.Debugf("syncing: %s", slo.Name)
+		if err := api.CreateEntity(client, config.EntityServerHost, org, slo); err != nil {
+			return fmt.Errorf("error syncing manifest object: %s - %s", slo.Name, err)
+		}
+	}
+	return nil
+}
+
+func md5Hash(m entities.Manifest) string {
+	b, _ := json.Marshal(m)
+	return fmt.Sprintf("%x", md5.Sum(b))
 }
