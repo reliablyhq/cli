@@ -147,6 +147,10 @@ body {
   position: relative;
 }
 
+.node:hover {
+  z-index: 99999;
+}
+
 .node-circle.group-0,
 .node-circle.group-12,
 .node-circle.group-24 {
@@ -231,21 +235,26 @@ body {
   stroke: hsl(140, 50%, 35%);
 }
 
-.node-purpose {
+.node-metadata {
   color: var(--grey-500);
   font-size: 1.2rem;
+  display: none;
 }
 
-.node-circle:hover + .node-label > .node-label-bg {
+/* .node-circle:hover + .node-label > .node-label-bg, */
+.node.display-tooltip .node-label > .node-label-bg {
   fill: var(--grey-900);
 }
 
-.node-circle:hover + .node-label > .node-name {
+/* .node-circle:hover + .node-label > .node-name, */
+.node.display-tooltip .node-label > .node-name {
   color: var(--grey-100);
 }
 
-.node-circle:hover + .node-label > .node-purpose {
+/* .node-circle:hover + .node-label > .node-metadata, */
+.node.display-tooltip .node-label > .node-metadata {
   color: var(--grey-300);
+  display: block;
 }
 
 /* This duplicated text-element serves as a background for the text */
