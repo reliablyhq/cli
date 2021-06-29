@@ -109,7 +109,7 @@ export default function define(runtime, observer) {
           .attr("height", (d) => {
             let h =  32
             for (var _ in d.metadata.labels) {
-              h += 8
+              h += 12
             }
             return h
           })
