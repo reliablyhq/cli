@@ -120,6 +120,19 @@
   --border-radius-s: .3rem;
 }
 
+.screen-reader-text {
+  border: 0;
+  clip: rect(1px, 1px, 1px, 1px);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  word-wrap: normal !important;
+}
+
 html {
   color: var(--grey-700);
   /* 1rem = 10px */
@@ -128,18 +141,63 @@ html {
 
 body {
   margin: 0;
-}
-
-.observablehq {
-  padding: 1.6rem;
 
   font-family: var(--body-font);
   font-size: 1.6rem;
 }
 
-.observablehq h1 {
-  color: var(--blue-800);
+body > * {
+  padding: 1.6rem;
+}
+
+header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem 2rem;
+
+  background-color: var(--blue-800);
+}
+
+header svg {
+  height: 3.2rem;
+  margin-right: 1rem;
+}
+
+header h1 {
+  margin: 0;
+
+  color: white;
+  font-size: 2.4rem;
   text-align: center;
+}
+
+.group-select {
+  display: flex;
+  justify-content: center;
+
+  background-color: var(--grey-100);
+}
+
+.group-select__form {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 1.6rem;
+}
+
+.group-select__input {
+  padding: .3rem 0;
+
+  background-color: white;
+  border: .1rem solid var(--grey-200);
+  border-radius: .3rem;
+
+  color: var(--grey-700);
+  font-family: var(--body-font);
+  font-size: 1.6rem;
+
+
 }
 
 .node {
@@ -152,85 +210,78 @@ body {
 }
 
 .node-circle.group-0,
-.node-circle.group-12,
-.node-circle.group-24 {
-  fill: hsl(170, 25%, 60%);
-  stroke: hsl(170, 50%, 35%);
-}
-
-.node-circle.group-1,
-.node-circle.group-13,
-.node-circle.group-25 {
+.node-circle.group-11,
+.node-circle.group-22 {
   fill: hsl(260, 25%, 60%);
   stroke: hsl(260, 50%, 35%);
 }
 
-.node-circle.group-2,
-.node-circle.group-14,
-.node-circle.group-26 {
+.node-circle.group-1,
+.node-circle.group-12,
+.node-circle.group-23 {
   fill: hsl(350, 25%, 60%);
   stroke: hsl(350, 50%, 35%);
 }
 
-.node-circle.group-3,
-.node-circle.group-15,
-.node-circle.group-27 {
+.node-circle.group-2,
+.node-circle.group-13,
+.node-circle.group-24 {
   fill: hsl(80, 25%, 60%);
   stroke: hsl(80, 50%, 35%);
 }
 
-.node-circle.group-4,
-.node-circle.group-16,
-.node-circle.group-28 {
+.node-circle.group-3,
+.node-circle.group-14,
+.node-circle.group-25 {
   fill: hsl(200, 25%, 60%);
   stroke: hsl(200, 50%, 35%);
 }
 
-.node-circle.group-5,
-.node-circle.group-17,
-.node-circle.group-29 {
+.node-circle.group-4,
+.node-circle.group-15,
+.node-circle.group-26 {
   fill: hsl(290, 25%, 60%);
   stroke: hsl(290, 50%, 35%);
 }
 
-.node-circle.group-6,
-.node-circle.group-18,
-.node-circle.group-30 {
+.node-circle.group-5,
+.node-circle.group-16,
+.node-circle.group-27 {
   fill: hsl(20, 25%, 60%);
   stroke: hsl(20, 50%, 35%);
 }
 
-.node-circle.group-7,
-.node-circle.group-19,
-.node-circle.group-31 {
+.node-circle.group-6,
+.node-circle.group-17,
+.node-circle.group-28 {
   fill: hsl(110, 25%, 60%);
   stroke: hsl(110, 50%, 35%);
 }
 
-.node-circle.group-8,
-.node-circle.group-20,
-.node-circle.group-32 {
+.node-circle.group-7,
+.node-circle.group-18,
+.node-circle.group-29 {
   fill: hsl(230, 25%, 60%);
   stroke: hsl(230, 50%, 35%);
 }
 
-.node-circle.group-9,
-.node-circle.group-21,
-.node-circle.group-33 {
+.node-circle.group-8,
+.node-circle.group-19,
+.node-circle.group-30 {
   fill: hsl(320, 25%, 60%);
   stroke: hsl(320, 13%, 72%);
 }
 
-.node-circle.group-10,
-.node-circle.group-22,
-.node-circle.group-34 {
+.node-circle.group-9,
+.node-circle.group-20,
+.node-circle.group-31 {
   fill: hsl(50, 25%, 60%);
   stroke: hsl(50, 50%, 35%);
 }
 
-.node-circle.group-11,
-.node-circle.group-23,
-.node-circle.group-35 {
+.node-circle.group-10,
+.node-circle.group-21,
+.node-circle.group-32 {
   fill: hsl(140, 25%, 60%);
   stroke: hsl(140, 50%, 35%);
 }
