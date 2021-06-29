@@ -2,8 +2,11 @@
 
 ## [Unreleased]
 
+## [v0.19.2] - 2021-06-29
+
 ### Fixed
-- Remove a debug statement for `org set` command
+
+-   Remove a debug statement for `org set` command
 
 ## [v0.19.1] - 2021-06-28
 
@@ -276,7 +279,9 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.19.1...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.19.2...HEAD
+
+[v0.19.2]: https://github.com/reliablyhq/cli/compare/v0.19.1...v0.19.2
 
 [v0.19.1]: https://github.com/reliablyhq/cli/compare/v0.19.0...v0.19.1
 
