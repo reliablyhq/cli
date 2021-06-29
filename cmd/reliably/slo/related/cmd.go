@@ -58,7 +58,7 @@ var examples = heredoc.Docf(`
 	%s
 	$ reliably alpha slo related --raw`,
 	color.Grey("open visualisation on a random port between 60000-61000"),
-	color.Grey("open visualtion app on port 8085"),
+	color.Grey("open visualisation app on port 8085"),
 	color.Grey("return raw JSON blob of visualisation data"),
 )
 
@@ -160,7 +160,7 @@ func serveRelationshipGraph(client *api.Client, org, port, manifestPath string) 
 
 	openbrowser(uri)
 	fmt.Println(color.Green("serving relationship graph on:"), color.Cyan(uri))
-	fmt.Println(color.Green("openning browser..."))
+	fmt.Println(color.Green("opening browser..."))
 	return http.ListenAndServe(port, server)
 }
 

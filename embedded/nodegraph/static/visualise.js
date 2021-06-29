@@ -4,7 +4,7 @@ export default function define(runtime, observer) {
   // main.builtin("FileAttachment", runtime.fileAttachments(name => fileAttachments.get(name)));
   
   main.variable(observer()).define(["md"], function(md){return(
-    md`## Reliably Node Graph`
+    md`# Reliably Node Graph`
   )});
 
   main.variable(observer("chart")).define("chart", ["data","d3","width","height","types","color","location","drag","linkArc","invalidation"], 
@@ -20,7 +20,7 @@ export default function define(runtime, observer) {
           .force('collide', d3.forceCollide(d => 85)) // collide, the forced distance between nodes
 
       const svg = d3.create("svg")
-          .attr("viewBox", [-width / 2, -height / 2, width, height])
+          .attr("viewBox", [-width / 2, -height / 2, width, height - 64]);
 
       // Per-type markers, as they don't inherit styles.
       svg.append("defs").selectAll("marker")
@@ -30,34 +30,48 @@ export default function define(runtime, observer) {
           .attr("viewBox", "0 -5 10 10")
           .attr("refX", 38)
           .attr("refY", 0)
-          .attr("markerWidth", 6)
-          .attr("markerHeight", 6)
+          .attr("markerWidth", 9)
+          .attr("markerHeight", 9)
           .attr("orient", "auto")
           .append("path")
-          .attr("fill", color)
+          .attr("fill", "hsl(170, 5%, 48%)")
           .attr("d", 'M0,-5L10,0L0,5');
 
       const link = svg.append("g")
           .attr("fill", "none")
-          .attr("stroke-width", 1.5)
+          .attr("stroke-width", 1)
           .selectAll("path")
           .data(links)
           .join("path")
-          .attr("stroke", d => color("edge"))
+          .attr("stroke", "hsl(170, 5%, 48%)")
           .attr("marker-end", d => `url(${new URL(`#arrow-edge`, location)})`);
 
       const node = svg.append("g")
+          .attr("class", "nodes")
           .attr("fill", "currentColor")
           .attr("stroke-linecap", "round")
           .attr("stroke-linejoin", "round")
           .selectAll("g")
           .data(nodes)
           .join("g")
+          .attr("class", "node")
           .call(drag(simulation));
 
-      node.append("circle")
-          .attr("stroke", "white")
+      let purposes = [];
+
+      const circle = node.append("circle")
+          .attr("class", (d) => {
+            let p = JSON.stringify(`${d.metadata.labels["purpose"]}`).substring(1).slice(0, -1);
+            if (purposes.includes(p)) {
+              return `node-circle group-${purposes.indexOf(p)}`;
+            } else {
+              purposes.push(p)
+              return `node-circle group-${purposes.length - 1}`;
+            }
+          })
+          .attr("stroke", "hsl(170, 40%, 35%)")
           .attr("stroke-width", 1.5)
+<<<<<<< HEAD
           .attr("r", 25) // radius, circle size
           .attr('fill', d => '#6baed6');
     
@@ -71,7 +85,52 @@ export default function define(runtime, observer) {
           .attr("stroke-width", 3);
     
       node.on('dblclick', (e, d) => console.log(nodes[d.index]))
+=======
+          .attr("r", 25)
+          .attr("fill", "hsl(170, 25%, 60%)");
+>>>>>>> f2fad113e5994fe19132abc40068ccbd84766cb9
 
+      var label = node.append("g")
+          .attr("class", "node-label");
+      
+      label.append("rect")
+          .attr("class", "node-label-bg")
+          .attr("width", 1)
+          .attr("height", 32)
+          .attr("fill", "none")
+          .attr("x", 30)
+          .attr("y", -14);
+
+      label.append("text")
+          .attr("class", "node-name")
+          .attr("x", 34)
+          .attr("y", 2)
+          .text((d) => {
+            let str = JSON.stringify(`${d.metadata.labels["name"]}`).substring(1).slice(0, -1);
+            return str;
+          });
+      
+      label.append("text")
+          .attr("class", "node-purpose")
+          .attr("x", 34)
+          .attr("y", 13)
+          .text((d) => {
+            if (d.metadata.labels["purpose"] !== undefined) {
+              let str = JSON.stringify(`${d.metadata.labels["purpose"]}`).substring(1).slice(0, -1);
+              return str;
+            } else {
+              return "-";
+            }
+          });
+
+      // node.on('dblclick', (e, d) => console.log(nodes[d.index]))
+
+      circle.on('mouseover',(e, d) => {
+        let label = e.target.parentNode.childNodes.item(1);
+        let width = label.getBBox().width + 4;
+        let rect = label.childNodes.item(0);
+        rect.setAttribute("width", width);
+      });
 
       simulation.on("tick", () => {
           link.attr("d", linkArc);
