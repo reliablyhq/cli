@@ -71,24 +71,8 @@ export default function define(runtime, observer) {
           })
           .attr("stroke", "hsl(170, 40%, 35%)")
           .attr("stroke-width", 1.5)
-<<<<<<< HEAD
-          .attr("r", 25) // radius, circle size
-          .attr('fill', d => '#6baed6');
-    
-      node.append("text")
-          .attr("x", 30 + 4)
-          .attr("y", "0.31em")
-          .text(d=> JSON.stringify(`name: ${d.metadata.labels["name"]}`) )
-          .clone(true).lower()
-          .attr("fill", "none")
-          .attr("stroke", "white")
-          .attr("stroke-width", 3);
-    
-      node.on('dblclick', (e, d) => console.log(nodes[d.index]))
-=======
           .attr("r", 25)
           .attr("fill", "hsl(170, 25%, 60%)");
->>>>>>> f2fad113e5994fe19132abc40068ccbd84766cb9
 
       var label = node.append("g")
           .attr("class", "node-label");
