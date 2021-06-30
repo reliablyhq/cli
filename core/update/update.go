@@ -14,6 +14,7 @@ import (
 
 	"github.com/google/go-github/v33/github"
 	"github.com/hashicorp/go-version"
+	"github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v2"
 )
 
@@ -33,6 +34,12 @@ type StateEntry struct {
 // CheckForUpdate checks whether a new release is available on GitHub
 func CheckForUpdate(client *http.Client, stateFilePath, repo string, currentVersion string) (*ReleaseInfo, error) {
 
+	var err error
+	stateFilePath, err = homedir.Expand(stateFilePath)
+	if err != nil {
+		return nil, err
+	}
+
 	stateEntry, _ := getStateEntry(stateFilePath)
 	if stateEntry != nil && time.Since(stateEntry.CheckedForUpdateAt).Hours() < 24 {
 		return nil, nil
@@ -43,10 +50,7 @@ func CheckForUpdate(client *http.Client, stateFilePath, repo string, currentVers
 		return nil, err
 	}
 
-	err = setStateEntry(stateFilePath, time.Now(), *releaseInfo)
-	if err != nil {
-		return nil, err
-	}
+	_ = setStateEntry(stateFilePath, time.Now(), *releaseInfo)
 
 	if VersionGreaterThan(releaseInfo.Version, currentVersion) {
 		return releaseInfo, nil
@@ -76,7 +80,10 @@ func setStateEntry(stateFilePath string, t time.Time, r ReleaseInfo) error {
 	if err != nil {
 		return err
 	}
-	_ = os.WriteFile(stateFilePath, content, 0600)
+	err = os.WriteFile(stateFilePath, content, 0600)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
