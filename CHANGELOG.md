@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Release file not found, path is not correctly expanded from user home
+
 ## [v0.19.3] - 2021-06-30
 
 ### Fixed
