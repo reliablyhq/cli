@@ -1,0 +1,19 @@
+html {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    height: 100%;
+    width: 100%;
+}
+
+.observablehq {
+    /* width: 97%; */
+    height: 100%;
+}
+
+.observablehq svg {
+    width: 100%;
+    height: 100%;
+}
