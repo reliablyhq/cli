@@ -1,0 +1,283 @@
+{
+    "nodes": [
+        {
+            "id": "rdRVdEmfgxVpo/MDNW8Q+ivLUYxrtP8Ch9fC08wRb/k=",
+            "kind": "entity_context",
+            "entity": {
+                "metadata": {
+                    "labels": {
+                        "name": "90 percent of 90th percentile latency served in 250ms",
+                        "purpose": "dev",
+                        "service": "my demo service"
+                    },
+                    "relatedTo": [
+                        {
+                            "name": "solito"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "n6/E1RME8YKOmDWibaSzVK61szk9jf6I4UOx35MME9E=",
+            "kind": "objective",
+            "entity": {
+                "metadata": {
+                    "labels": {
+                        "name": "solito"
+                    },
+                    "relatedTo": [
+                        {
+                            "purpose": "dev"
+                        }
+                    ]
+                },
+                "spec": {
+                    "indicatorSelector": {
+                        "category": "latency",
+                        "gcp_project_id": "abc123",
+                        "latency": "250ms",
+                        "latency_target": "100ms",
+                        "percentile": "90"
+                    },
+                    "objectivePercent": 100,
+                    "window": "1h0m0s"
+                }
+            }
+        },
+        {
+            "id": "Nmbk+MSdP78pdcQNJCIMN3X3Zsc/a8xsLuhxqz+Vl3U=",
+            "kind": "objective",
+            "entity": {
+                "metadata": {
+                    "labels": {
+                        "name": "90 percent of 90th percentile latency served in 250ms",
+                        "purpose": "dev",
+                        "service": "my demo service"
+                    },
+                    "relatedTo": [
+                        {
+                            "purpose": "world domination"
+                        }
+                    ]
+                },
+                "spec": {
+                    "indicatorSelector": {
+                        "category": "latency",
+                        "gcp_project_id": "abc123",
+                        "latency": "250ms",
+                        "latency_target": "100ms",
+                        "percentile": "90"
+                    },
+                    "objectivePercent": 100,
+                    "window": "1h0m0s"
+                }
+            }
+        },
+        {
+            "id": "ZJZsRCjetxUzyN89zPdHpV6/XQn9D/+erMBPcKRPlec=",
+            "kind": "objective",
+            "entity": {
+                "metadata": {
+                    "labels": {
+                        "name": "90 percent of 90th percentile latency served in 250ms",
+                        "purpose": "world domination",
+                        "service": "my demo service"
+                    },
+                    "relatedTo": [
+                        {
+                            "purpose": "world domination"
+                        }
+                    ]
+                },
+                "spec": {
+                    "indicatorSelector": {
+                        "category": "latency",
+                        "gcp_project_id": "abc123",
+                        "latency": "250ms",
+                        "latency_target": "100ms",
+                        "percentile": "90"
+                    },
+                    "objectivePercent": 100,
+                    "window": "1h0m0s"
+                }
+            }
+        },
+        {
+            "id": "dG7Mk1wDK5m9vLcbtN6drn5XEDQ/pcVA1piPruzcGBQ=",
+            "kind": "objective",
+            "entity": {
+                "metadata": {
+                    "labels": {
+                        "name": "sheeran",
+                        "purpose": "world domination",
+                        "service": "another service"
+                    },
+                    "relatedTo": [
+                        {
+                            "purpose": "local domination"
+                        }
+                    ]
+                },
+                "spec": {
+                    "indicatorSelector": {
+                        "category": "latency",
+                        "gcp_project_id": "abc123",
+                        "latency": "250ms",
+                        "latency_target": "100ms",
+                        "percentile": "90"
+                    },
+                    "objectivePercent": 100,
+                    "window": "1h0m0s"
+                }
+            }
+        },
+        {
+            "id": "0RY/PwD0nvAQrkptl/p1QqrX605FVTINGgDKpSfUw1o=",
+            "kind": "objective",
+            "entity": {
+                "metadata": {
+                    "labels": {
+                        "name": "blunt",
+                        "purpose": "local domination",
+                        "service": "blunt service"
+                    },
+                    "relatedTo": [
+                        {
+                            "purpose": "dev"
+                        }
+                    ]
+                },
+                "spec": {
+                    "indicatorSelector": {
+                        "category": "latency",
+                        "gcp_project_id": "abc123",
+                        "latency": "250ms",
+                        "latency_target": "100ms",
+                        "percentile": "90"
+                    },
+                    "objectivePercent": 100,
+                    "window": "1h0m0s"
+                }
+            }
+        },
+        {
+            "id": "lvcMCetQMdzRhuL/nDzWALVxqjaMLu5LUKSXHRZ8o1o=",
+            "kind": "objective",
+            "entity": {
+                "metadata": {
+                    "labels": {
+                        "name": "50% latency slo v1",
+                        "purpose": "world domination"
+                    },
+                    "relatedTo": [
+                        {
+                            "name": "95% latency slo v2"
+                        }
+                    ]
+                },
+                "spec": {
+                    "indicatorSelector": {
+                        "category": "latency",
+                        "gcp_loadbalancer_name": "reliablyadvicealpha1",
+                        "gcp_project_id": "alpha1-e3d83fa0",
+                        "latency_target": "100ms",
+                        "percentile": "95"
+                    },
+                    "objectivePercent": 50,
+                    "window": "1h0m0s"
+                }
+            }
+        },
+        {
+            "id": "XuVofQhOlcrRSfmNlSn3DcSXaaUu10PKcbcr6iCevUE=",
+            "kind": "objective",
+            "entity": {
+                "metadata": {
+                    "labels": {
+                        "name": "95% latency slo v2",
+                        "purpose": "dev"
+                    },
+                    "relatedTo": [
+                        {
+                            "purpose": "world domination"
+                        }
+                    ]
+                },
+                "spec": {
+                    "indicatorSelector": {
+                        "category": "latency",
+                        "gcp_loadbalancer_name": "reliablyadvicealpha1",
+                        "gcp_project_id": "alpha1-e3d83fa0",
+                        "latency_target": "250ms",
+                        "percentile": "95"
+                    },
+                    "objectivePercent": 95,
+                    "window": "1h0m0s"
+                }
+            }
+        }
+    ],
+    "edges": [
+        {
+            "source": "rdRVdEmfgxVpo/MDNW8Q+ivLUYxrtP8Ch9fC08wRb/k=",
+            "target": "n6/E1RME8YKOmDWibaSzVK61szk9jf6I4UOx35MME9E="
+        },
+        {
+            "source": "n6/E1RME8YKOmDWibaSzVK61szk9jf6I4UOx35MME9E=",
+            "target": "Nmbk+MSdP78pdcQNJCIMN3X3Zsc/a8xsLuhxqz+Vl3U="
+        },
+        {
+            "source": "Nmbk+MSdP78pdcQNJCIMN3X3Zsc/a8xsLuhxqz+Vl3U=",
+            "target": "ZJZsRCjetxUzyN89zPdHpV6/XQn9D/+erMBPcKRPlec="
+        },
+        {
+            "source": "ZJZsRCjetxUzyN89zPdHpV6/XQn9D/+erMBPcKRPlec=",
+            "target": "dG7Mk1wDK5m9vLcbtN6drn5XEDQ/pcVA1piPruzcGBQ="
+        },
+        {
+            "source": "dG7Mk1wDK5m9vLcbtN6drn5XEDQ/pcVA1piPruzcGBQ=",
+            "target": "0RY/PwD0nvAQrkptl/p1QqrX605FVTINGgDKpSfUw1o="
+        },
+        {
+            "source": "0RY/PwD0nvAQrkptl/p1QqrX605FVTINGgDKpSfUw1o=",
+            "target": "Nmbk+MSdP78pdcQNJCIMN3X3Zsc/a8xsLuhxqz+Vl3U="
+        },
+        {
+            "source": "Nmbk+MSdP78pdcQNJCIMN3X3Zsc/a8xsLuhxqz+Vl3U=",
+            "target": "dG7Mk1wDK5m9vLcbtN6drn5XEDQ/pcVA1piPruzcGBQ="
+        },
+        {
+            "source": "Nmbk+MSdP78pdcQNJCIMN3X3Zsc/a8xsLuhxqz+Vl3U=",
+            "target": "lvcMCetQMdzRhuL/nDzWALVxqjaMLu5LUKSXHRZ8o1o="
+        },
+        {
+            "source": "lvcMCetQMdzRhuL/nDzWALVxqjaMLu5LUKSXHRZ8o1o=",
+            "target": "XuVofQhOlcrRSfmNlSn3DcSXaaUu10PKcbcr6iCevUE="
+        },
+        {
+            "source": "XuVofQhOlcrRSfmNlSn3DcSXaaUu10PKcbcr6iCevUE=",
+            "target": "ZJZsRCjetxUzyN89zPdHpV6/XQn9D/+erMBPcKRPlec="
+        },
+        {
+            "source": "ZJZsRCjetxUzyN89zPdHpV6/XQn9D/+erMBPcKRPlec=",
+            "target": "lvcMCetQMdzRhuL/nDzWALVxqjaMLu5LUKSXHRZ8o1o="
+        },
+        {
+            "source": "XuVofQhOlcrRSfmNlSn3DcSXaaUu10PKcbcr6iCevUE=",
+            "target": "dG7Mk1wDK5m9vLcbtN6drn5XEDQ/pcVA1piPruzcGBQ="
+        },
+        {
+            "source": "XuVofQhOlcrRSfmNlSn3DcSXaaUu10PKcbcr6iCevUE=",
+            "target": "lvcMCetQMdzRhuL/nDzWALVxqjaMLu5LUKSXHRZ8o1o="
+        },
+        {
+            "source": "0RY/PwD0nvAQrkptl/p1QqrX605FVTINGgDKpSfUw1o=",
+            "target": "XuVofQhOlcrRSfmNlSn3DcSXaaUu10PKcbcr6iCevUE="
+        },
+        {
+            "source": "n6/E1RME8YKOmDWibaSzVK61szk9jf6I4UOx35MME9E=",
+            "target": "XuVofQhOlcrRSfmNlSn3DcSXaaUu10PKcbcr6iCevUE="
+        }
+    ]
+}

@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -54,6 +55,26 @@ func GetObjectiveResults(client *Client, hostname string, version string, org st
 
 	return entitiesResult, nil
 
+}
+
+func GetRelationshipGraph(client *Client, hostname, org string, m entities.Manifest) (*entities.NodeGraph, error) {
+	if len(m) == 0 {
+		return nil, errors.New("no entities found in manifest")
+	}
+
+	// TODO: by using m[0].Version() we assumes all entities in a manifest
+	// will have the same API version. This should be changed if/when the API
+	// is extended beyond v1
+	path := fmt.Sprintf("%s/%s/%s/objectives/relatedto", "entities", m[0].Version(), org)
+
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(m); err != nil {
+		return nil, err
+	}
+
+	var g entities.NodeGraph
+	return &g, client.RESTv2(hostname,
+		http.MethodPost, path, &body, &g)
 }
 
 func requestPath(version, kind, org string) string {
