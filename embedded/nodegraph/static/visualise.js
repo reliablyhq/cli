@@ -235,11 +235,13 @@ export default function define(runtime, observer) {
             .attr("fill", defaultColor.fill)
             .attr("stroke", defaultColor.stroke);
         let selectedLabel = e.target.value;
-        let length = labelsObjects[labels.indexOf(selectedLabel)].values.length;
-        for (let i = 0; i < length; i++) {
-          d3.selectAll(`.group-${selectedLabel}-${i}`)
-              .attr("fill", colors[i % length].fill)
-              .attr("stroke", colors[i % length].stroke);
+        if (selectedLabel !== "") {
+          let length = labelsObjects[labels.indexOf(selectedLabel)].values.length;
+          for (let i = 0; i < length; i++) {
+            d3.selectAll(`.group-${selectedLabel}-${i}`)
+                .attr("fill", colors[i % length].fill)
+                .attr("stroke", colors[i % length].stroke);
+          }
         }
       });
 
