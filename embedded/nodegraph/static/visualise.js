@@ -1,22 +1,22 @@
 export default function define(runtime, observer) {
   const main = runtime.module();
-  // const fileAttachments = new Map([["suits.csv",new URL("./data.json",import.meta.url)]]);
-  // main.builtin("FileAttachment", runtime.fileAttachments(name => fileAttachments.get(name)));
-
+  
   main.variable(observer("chart")).define("chart", ["data","d3","width","height","types","color","location","drag","linkArc","invalidation"], 
     (data,d3,width,height,types,color,location,drag,linkArc,invalidation) => {
       const links = data.edges.map(d => Object.create(d));
       const nodes = data.nodes.map(d => Object.create(d));
+      const radius = 25
 
       const simulation = d3.forceSimulation(nodes)
           .force("link", d3.forceLink(links).id(d => d.id))
-          .force("charge", d3.forceManyBody().strength(-300))
+          .force("charge", d3.forceManyBody().strength(-100))
           .force("x", d3.forceX())
           .force("y", d3.forceY())
+          .force("center_force", d3.forceCenter(width/2, height/2))
           .force('collide', d3.forceCollide(d => 85)) // collide, the forced distance between nodes
 
-      const svg = d3.create("svg")
-          .attr("viewBox", [-width / 2, -height / 4, width, height - 32]);
+      const svg = d3.create("svg");
+          // .attr("viewBox", [-width / 2, -height / 4, width, height - 32]);
 
       // Per-type markers, as they don't inherit styles.
       svg.append("defs").selectAll("marker")
@@ -92,7 +92,7 @@ export default function define(runtime, observer) {
           })
           .attr("stroke", "hsl(170, 40%, 35%)")
           .attr("stroke-width", 1.5)
-          .attr("r", 25)
+          .attr("r", radius)
           .attr("fill", "hsl(170, 25%, 60%)");
 
       var label = node.append("g")
@@ -155,8 +155,15 @@ export default function define(runtime, observer) {
       });
 
       simulation.on("tick", () => {
-          link.attr("d", linkArc);
+          node.attr("cx", (d) => { 
+            return d.x = Math.max(radius, Math.min(width, d.x)); 
+          })
+          .attr("cy", (d) => {
+            return d.y = Math.max(radius, Math.min(height, d.y));
+          });
+    
           node.attr("transform", d => `translate(${d.x},${d.y})`);
+          link.attr("d", linkArc);
       });
 
       let form = d3.select("#js-group-select-form");
@@ -255,32 +262,7 @@ export default function define(runtime, observer) {
             obj = v.kind
           }})
         return obj
-      }
-
-      function wrap(text, width) {
-        text.each(function() {
-          var text = d3.select(this),
-              words = text.text().split(/\s+/).reverse(),
-              word,
-              line = [],
-              lineNumber = 0,
-              lineHeight = 1.1, // ems
-              y = text.attr("y"),
-              dy = parseFloat(text.attr("dy")),
-              tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
-          while (word = words.pop()) {
-            line.push(word);
-            tspan.text(line.join(" "));
-            if (tspan.node().getComputedTextLength() > width) {
-              line.pop();
-              tspan.text(line.join(" "));
-              line = [word];
-              tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-            }
-          }
-        });
-      }
-      
+      }      
 
       return svg.node();
   }
