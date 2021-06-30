@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed overidden organization info merged with info from config; [#364](https://github.com/reliablyhq/cli/issues/364)
+
 ## [v0.19.2] - 2021-06-29
 
 ### Fixed
