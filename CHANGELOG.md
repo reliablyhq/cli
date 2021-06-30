@@ -2,9 +2,11 @@
 
 ## [Unreleased]
 
+## [v0.19.3] - 2021-06-30
+
 ### Fixed
 
-- Fixed overidden organization info merged with info from config; [#364](https://github.com/reliablyhq/cli/issues/364)
+-   Fixed overidden organization info merged with info from config; [#364](https://github.com/reliablyhq/cli/issues/364)
 
 ## [v0.19.2] - 2021-06-29
 
@@ -283,7 +285,9 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.19.2...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.19.3...HEAD
+
+[v0.19.3]: https://github.com/reliablyhq/cli/compare/v0.19.2...v0.19.3
 
 [v0.19.2]: https://github.com/reliablyhq/cli/compare/v0.19.1...v0.19.2
 
