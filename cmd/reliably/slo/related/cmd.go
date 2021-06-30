@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -30,6 +31,7 @@ type Options struct {
 	ManifestPath string
 	Raw          bool
 	Port         string
+	Filters      []string
 }
 
 type OptFunc func(*Options) error
@@ -50,16 +52,20 @@ var longDesc = heredoc.Doc(`
 
 var examples = heredoc.Docf(`
 	%s
-	$ reliably alpha slo related
+	$ reliably slo related
 
 	%s
-	$ reliably alpha slo related -m reliably.yaml --port 8085
+	$ reliably slo related -m reliably.yaml --port 8085
 
 	%s
-	$ reliably alpha slo related --raw`,
+	$ reliably slo related --raw
+	
+	%s
+	$ reliably slo related --filter 'key=value' --filter 'key=value' -m reliably.yaml`,
 	color.Grey("open visualisation on a random port between 60000-61000"),
 	color.Grey("open visualisation app on port 8085"),
 	color.Grey("return raw JSON blob of visualisation data"),
+	color.Grey("open visualisation app on random port, only showing nodes with labels matching the given filters"),
 )
 
 func NewCommand(runF OptFunc) *cobra.Command {
@@ -91,12 +97,14 @@ func NewCommand(runF OptFunc) *cobra.Command {
 				if err != nil {
 					return err
 				}
+
+				g = applyFilters(g, opts.Filters...)
 				encoder := json.NewEncoder(os.Stdout)
 				encoder.SetIndent("", "  ")
 				return encoder.Encode(g)
 			}
 
-			return serveRelationshipGraph(client, org.Name, opts.Port, opts.ManifestPath)
+			return serveRelationshipGraph(client, org.Name, opts.Port, opts.ManifestPath, opts.Filters...)
 		},
 	}
 
@@ -104,10 +112,11 @@ func NewCommand(runF OptFunc) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.ManifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
 	cmd.Flags().StringVarP(&opts.Port, "port", "p", "", "the port to serve the graph visualisation on. A random port [60000-61000] is used if no port is profided")
 	cmd.Flags().BoolVarP(&opts.Raw, "raw", "r", false, "prints raw json graph data")
+	cmd.Flags().StringArrayVarP(&opts.Filters, "filters", "f", []string{}, "<key=value> labels to filter relationship graph nodes")
 	return cmd
 }
 
-func serveRelationshipGraph(client *api.Client, org, port, manifestPath string) error {
+func serveRelationshipGraph(client *api.Client, org, port, manifestPath string, filters ...string) error {
 	if port == "" {
 		port = fmt.Sprintf("%d", randomInt(60000, 61000))
 	}
@@ -149,6 +158,7 @@ func serveRelationshipGraph(client *api.Client, org, port, manifestPath string) 
 			return
 		}
 
+		g = applyFilters(g, filters...)
 		encoder := json.NewEncoder(w)
 		encoder.SetIndent("", "  ")
 		if err := encoder.Encode(g); err != nil {
@@ -216,4 +226,46 @@ func syncManifest(client *api.Client, org string, m entities.Manifest) error {
 func md5Hash(m entities.Manifest) string {
 	b, _ := json.Marshal(m)
 	return fmt.Sprintf("%x", md5.Sum(b))
+}
+
+// applyFilters - filter graph based on user provided labels
+func applyFilters(g *entities.NodeGraph, filters ...string) *entities.NodeGraph {
+	if len(filters) == 0 {
+		return g
+	}
+
+	var updatedGraph entities.NodeGraph
+	filteredNodeIDs := make(map[string]struct{})
+	validFilterReg := regexp.MustCompile(`^[a-zA-Z0-9\-\_]+=[a-zA-Z0-9\s\_\-]+$`)
+	for _, f := range filters {
+		if !validFilterReg.MatchString(f) {
+			log.Debugf("error: invalid key=value pair detected for filter: [%s]", f)
+			continue
+		}
+
+		fk, fv := strings.Split(f, "=")[0], strings.Split(f, "=")[1]
+		for _, node := range g.Nodes {
+			for mk, mv := range node.Metadata.Labels {
+				if fk == mk && fv == mv {
+					updatedGraph.Nodes = append(updatedGraph.Nodes, node)
+					filteredNodeIDs[node.ID] = struct{}{}
+				}
+			}
+		}
+
+		// check both edge IDs exist in updated Graph
+		for _, edge := range g.Edges {
+			if _, ok := filteredNodeIDs[edge.Source]; !ok {
+				continue
+			}
+
+			if _, ok := filteredNodeIDs[edge.Target]; !ok {
+				continue
+			}
+
+			updatedGraph.Edges = append(updatedGraph.Edges, edge)
+		}
+
+	}
+	return &updatedGraph
 }
