@@ -16,7 +16,7 @@ export default function define(runtime, observer) {
           .force('collide', d3.forceCollide(d => 85)) // collide, the forced distance between nodes
 
       const svg = d3.create("svg")
-          .attr("viewBox", [-width / 2, -height / 2, width, height]);
+          .attr("viewBox", [-width / 2, -height / 4, width, height - 32]);
 
       // Per-type markers, as they don't inherit styles.
       svg.append("defs").selectAll("marker")
