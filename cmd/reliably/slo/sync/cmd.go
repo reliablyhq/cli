@@ -42,8 +42,8 @@ func NewCommand(runF func(*SyncOptions) error) *cobra.Command {
 }
 
 func syncRun(opts *SyncOptions) error {
-	objectives, err := load(opts.ManifestPath)
-	if err != nil {
+	var m entities.Manifest
+	if err := m.LoadFromFile(opts.ManifestPath); err != nil {
 		return err
 	}
 
@@ -56,23 +56,12 @@ func syncRun(opts *SyncOptions) error {
 		return err
 	}
 
-	var hasErr bool
-	for i, slo := range objectives {
-		log.Debug("#", i, slo)
-		err := api.CreateEntity(apiClient, entityHost, org.Name, slo)
-		if err != nil {
-			log.Debug(err)
-			hasErr = true
-		}
+	if err := api.SyncManifest(apiClient, entityHost, org.Name, m); err != nil {
+		return err
 	}
 
-	if hasErr {
-		return errors.New("An error occured while syncing your manifest")
-	} else {
-		w := opts.IO.ErrOut
-		fmt.Fprintln(w, iostreams.SuccessIcon(), "Your manifest has been successfully synchronized")
-	}
-
+	w := opts.IO.ErrOut
+	fmt.Fprintln(w, iostreams.SuccessIcon(), "Your manifest has been successfully synchronized")
 	return nil
 }
 
