@@ -15,21 +15,7 @@ import (
 )
 
 func CreateEntity(client *Client, hostname string, org string, entity entities.Entity) error {
-
-	var version string
-	version = entity.Version()
-	version = strings.ToLower(version)
-
-	var kind string
-	kind = plural(entity.Kind())
-	kind = strings.ToLower(kind)
-
-	shortVersion, ok := utils.GetShortVersion(version)
-	if !ok {
-		return fmt.Errorf("version %v not supported", version)
-	}
-
-	path := requestPath(shortVersion, kind, org)
+	path := requestPath(org, entity.Version(), entity.Kind())
 
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(entity); err != nil {

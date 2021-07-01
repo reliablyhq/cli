@@ -144,10 +144,13 @@ func serveRelationshipGraph(client *api.Client, org, port, manifestPath string, 
 		}
 
 		// resync manifest
-		if err := syncManifest(client, org, m); err != nil {
-			log.Debugf("error syncing manifest: %s", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+		if manifestHash != m.Hash() {
+			if err := api.SyncManifest(client, config.EntityServerHost, org, m); err != nil {
+				log.Debugf("error syncing manifest: %s", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			manifestHash = m.Hash()
 		}
 
 		g, err := api.GetRelationshipGraph(client, config.EntityServerHost, org, m)

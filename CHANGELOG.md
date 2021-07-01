@@ -2,13 +2,18 @@
 
 ## [Unreleased]
 
+<<<<<<< HEAD
 ## Added
 
 - New `reliably slo related` command for SLO relationship visualisation
+=======
+## [v0.19.4] - 2021-07-01
+>>>>>>> main
 
 ### Fixed
 
-- Release file not found, path is not correctly expanded from user home
+-   Release file not found, path is not correctly expanded from user home
+-   Overridden organization with RELIABLY_ORG taken into account; [#361](https://github.com/reliablyhq/cli/issues/361)
 
 ## [v0.19.3] - 2021-06-30
 
@@ -293,7 +298,9 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.19.3...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.19.4...HEAD
+
+[v0.19.4]: https://github.com/reliablyhq/cli/compare/v0.19.3...v0.19.4
 
 [v0.19.3]: https://github.com/reliablyhq/cli/compare/v0.19.2...v0.19.3
 
