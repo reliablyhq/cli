@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## Added
+
+- New `reliably slo related` command for SLO relationship visualisation
+
 ### Fixed
 
 - Release file not found, path is not correctly expanded from user home
