@@ -5,6 +5,7 @@
 ### Fixed
 
 - Release file not found, path is not correctly expanded from user home
+- Overridden organization with RELIABLY_ORG taken into account; [#361](https://github.com/reliablyhq/cli/issues/361)
 
 ## [v0.19.3] - 2021-06-30
 

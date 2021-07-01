@@ -73,3 +73,21 @@ func RemoveUserFromOrganisation(client *Client, hostname, orgID, username string
 	path := fmt.Sprintf("orgs/%s/users/%s", orgID, username)
 	return client.REST(hostname, "DELETE", path, nil, nil)
 }
+
+func GetOrganisation(client *Client, hostname string, orgID string) (*Organization, error) {
+	var org Organization
+
+	path := fmt.Sprintf("orgs/%s", orgID)
+	err := client.REST(hostname, "GET", path, nil, &org)
+	return &org, err
+
+}
+
+func GetOrganizationByName(client *Client, hostname string, name string) (*Organization, error) {
+	var org Organization
+
+	path := fmt.Sprintf("orgs/lookup/%s", name)
+	err := client.REST(hostname, "GET", path, nil, &org)
+	return &org, err
+
+}
