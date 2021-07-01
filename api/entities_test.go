@@ -34,7 +34,7 @@ func Test_requestPath(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := requestPath(tt.args.version, tt.args.kind, tt.args.org); got != tt.want {
+			if got := requestPath(tt.args.org, tt.args.version, tt.args.kind); got != tt.want {
 				t.Errorf("requestPath() = %v, want %v", got, tt.want)
 			}
 		})
