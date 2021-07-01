@@ -2,13 +2,11 @@
 
 ## [Unreleased]
 
-<<<<<<< HEAD
 ## Added
 
 - New `reliably slo related` command for SLO relationship visualisation
-=======
+
 ## [v0.19.4] - 2021-07-01
->>>>>>> main
 
 ### Fixed
 
