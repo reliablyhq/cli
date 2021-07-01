@@ -24,6 +24,46 @@ func Test_requestPath(t *testing.T) {
 			want:    "entities/testing/reliably/v1/something",
 			wantErr: false,
 		},
+		{
+			name: "lowercases the args",
+			args: args{
+				org:     "TestIng",
+				version: "relIAbly/V1",
+				kind:    "SOMEthing",
+			},
+			want:    "entities/testing/reliably/v1/something",
+			wantErr: false,
+		},
+		{
+			name: "returns an error is org is empty",
+			args: args{
+				org:     "",
+				version: "b",
+				kind:    "c",
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "returns an error is version is empty",
+			args: args{
+				org:     "a",
+				version: "",
+				kind:    "c",
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "returns an error is kind is empty",
+			args: args{
+				org:     "a",
+				version: "b",
+				kind:    "",
+			},
+			want:    "",
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
