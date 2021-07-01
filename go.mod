@@ -23,6 +23,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-github/v33 v33.0.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+	github.com/google/uuid v1.1.2
 	github.com/gookit/color v1.4.2
 	github.com/hashicorp/go-version v1.3.0
 	github.com/hashicorp/hcl v1.0.0
