@@ -1,18 +1,13 @@
 package related
 
 import (
-	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"math/rand"
 	"net/http"
 	"os"
-	"os/exec"
 	"regexp"
-	"runtime"
 	"strings"
-	"time"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/reliablyhq/cli/api"
@@ -22,6 +17,7 @@ import (
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/embedded/nodegraph"
+	"github.com/reliablyhq/cli/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -87,7 +83,7 @@ func NewCommand(runF OptFunc) *cobra.Command {
 
 			// get API client
 			client := api.NewClientFromHTTP(api.AuthHTTPClient(config.Hostname))
-			org, err := api.CurrentUserOrganization(client, config.Hostname)
+			org, err := config.GetCurrentOrgInfo()
 			if err != nil {
 				return err
 			}
@@ -118,7 +114,7 @@ func NewCommand(runF OptFunc) *cobra.Command {
 
 func serveRelationshipGraph(client *api.Client, org, port, manifestPath string, filters ...string) error {
 	if port == "" {
-		port = fmt.Sprintf("%d", randomInt(60000, 61000))
+		port = fmt.Sprintf("%d", utils.RandomInt(60000, 61000))
 	}
 
 	if !strings.HasPrefix(port, ":") {
@@ -168,50 +164,25 @@ func serveRelationshipGraph(client *api.Client, org, port, manifestPath string, 
 		}
 	})
 
-	openbrowser(uri)
+	utils.OpenInBrowser(uri)
 	fmt.Println(color.Green("serving relationship graph on:"), color.Cyan(uri))
 	fmt.Println(color.Green("opening browser..."))
 	return http.ListenAndServe(port, server)
 }
 
-// Returns an int >= min, < max
-func randomInt(min, max int64) int64 {
-	rand.Seed(time.Now().UnixNano())
-	return min + int64(rand.Int63n(max-min))
-}
-
-func openbrowser(url string) {
-	var err error
-	fmt.Println()
-	switch runtime.GOOS {
-	case "linux":
-		err = exec.Command("xdg-open", url).Start()
-	case "windows":
-		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
-	case "darwin":
-		err = exec.Command("open", url).Start()
-	default:
-		err = fmt.Errorf("unsupported platform")
-	}
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 // used to hash manifest file
 var manifestHash string
 
+// sync manifest if there is a change
 func syncManifest(client *api.Client, org string, m entities.Manifest) error {
 
-	h := md5Hash(m)
-
 	// return if manifestHash is the same
-	if manifestHash == h {
+	if manifestHash == m.Hash() {
 		return nil
 	}
 
 	defer func() {
-		manifestHash = h
+		manifestHash = m.Hash()
 	}()
 
 	for _, slo := range m {
@@ -221,11 +192,6 @@ func syncManifest(client *api.Client, org string, m entities.Manifest) error {
 		}
 	}
 	return nil
-}
-
-func md5Hash(m entities.Manifest) string {
-	b, _ := json.Marshal(m)
-	return fmt.Sprintf("%x", md5.Sum(b))
 }
 
 // applyFilters - filter graph based on user provided labels
