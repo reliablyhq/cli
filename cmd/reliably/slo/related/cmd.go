@@ -176,30 +176,6 @@ func serveRelationshipGraph(client *api.Client, org, port, manifestPath string, 
 	return http.ListenAndServe(port, server)
 }
 
-// used to hash manifest file
-var manifestHash string
-
-// sync manifest if there is a change
-func syncManifest(client *api.Client, org string, m entities.Manifest) error {
-
-	// return if manifestHash is the same
-	if manifestHash == m.Hash() {
-		return nil
-	}
-
-	defer func() {
-		manifestHash = m.Hash()
-	}()
-
-	for _, slo := range m {
-		log.Debugf("syncing: %s", slo.Name)
-		if err := api.CreateEntity(client, config.EntityServerHost, org, slo); err != nil {
-			return fmt.Errorf("error syncing manifest object: %s - %s", slo.Name, err)
-		}
-	}
-	return nil
-}
-
 // applyFilters - filter graph based on user provided labels
 func applyFilters(g *entities.NodeGraph, filters ...string) *entities.NodeGraph {
 	if len(filters) == 0 {
