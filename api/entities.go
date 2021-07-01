@@ -25,7 +25,7 @@ func GetObjectiveResults(client *Client, hostname string, version string, org st
 
 	var entitiesResult *[]entities.ObjectiveResultResponse
 
-	path := requestPath(org, version, "objective-results")
+	path := requestPath(org, version, "objectiveresult")
 	err := client.RESTv2(hostname, http.MethodGet, path, nil, &entitiesResult)
 
 	if err != nil {
@@ -40,5 +40,5 @@ func requestPath(org, version, kind string) string {
 	o := strings.ToLower(org)
 	v := strings.ToLower(version)
 	k := strings.ToLower(kind)
-	return fmt.Sprintf("entities/%s/%s/%s", v, o, k)
+	return fmt.Sprintf("entities/%s/%s/%s", o, v, k)
 }
