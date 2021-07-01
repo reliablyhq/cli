@@ -1,6 +1,8 @@
 package config
 
-import "os"
+import (
+	"os"
+)
 
 var (
 	// The directory where the application config can be found
@@ -14,6 +16,9 @@ var (
 
 	// The Entity Server hostname. This may be merged in to the Hostame variable later.
 	EntityServerHost = Hostname
+
+	// The organization info matching the RELIABLY_ORG ID/username used
+	OverriddenOrg *OrgInfo
 )
 
 func init() {

@@ -1,13 +1,19 @@
 package config
 
-import "os"
+import ()
 
 func GetCurrentOrgInfo() (*OrgInfo, error) {
-	if orgID := os.Getenv(envReliablyOrg); orgID != "" {
-		return &OrgInfo{
-			ID: orgID,
-		}, nil
+	if OverriddenOrg != nil {
+		return OverriddenOrg, nil
 	}
+
+	/*
+		if orgID := os.Getenv(envReliablyOrg); orgID != "" {
+			return &OrgInfo{
+				ID: orgID,
+			}, nil
+		}
+	*/
 
 	cfg, err := readConfigFile()
 	if err != nil {
