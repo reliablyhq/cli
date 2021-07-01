@@ -15,7 +15,7 @@ import (
 )
 
 func CreateEntity(client *Client, hostname string, org string, entity entities.Entity) error {
-	path := requestPath(org, entity.Version(), entity.Kind())
+	path := requestPath(entity.Version(), entity.Kind(), org)
 
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(entity); err != nil {
@@ -53,7 +53,8 @@ func GetRelationshipGraph(client *Client, hostname, org string, m entities.Manif
 	// TODO: by using m[0].Version() we assumes all entities in a manifest
 	// will have the same API version. This should be changed if/when the API
 	// is extended beyond v1
-	path := fmt.Sprintf("%s/%s/%s/objectives/relatedto", "entities", m[0].Version(), org)
+	// path := fmt.Sprintf("%s/%s/%s/objectives/relatedto", "entities", m[0].Version(), org)
+	path := requestPath(m[0].Version(), m[0].Kind(), org)
 
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(m); err != nil {
@@ -98,8 +99,7 @@ func SyncManifest(client *Client, entityHost, org string, m entities.Manifest) e
 }
 
 func requestPath(version, kind, org string) string {
-
-	return fmt.Sprintf("%s/%s/%s/%s", "entities", version, org, kind)
+	return strings.ToLower(fmt.Sprintf("entities/%s/%s/%s", org, version, kind))
 }
 
 // plural returns the puralized string,
