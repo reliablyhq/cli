@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 func CreateEntity(client *Client, hostname string, org string, entity entities.Entity) error {
@@ -75,6 +77,38 @@ func GetRelationshipGraph(client *Client, hostname, org string, m entities.Manif
 	var g entities.NodeGraph
 	return &g, client.RESTv2(hostname,
 		http.MethodPost, path, &body, &g)
+}
+
+// SyncManifest - synchronize objectives from manifest with the entity server
+func SyncManifest(client *Client, entityHost, org string, m entities.Manifest) error {
+	var hasErr bool
+	var errchan = make(chan error, len(m))
+	var w sync.WaitGroup
+
+	for _, slo := range m {
+		w.Add(1)
+		go func(slo *entities.Objective) {
+			defer w.Done()
+			log.Debugf("syncing slo: %s", slo.Name)
+			if err := CreateEntity(client, entityHost, org, slo); err != nil {
+				errchan <- fmt.Errorf("error syncing manifest object: %s - %s", slo.Name, err)
+			}
+		}(slo)
+	}
+
+	w.Wait()
+	close(errchan)
+
+	for e := range errchan {
+		log.Debug(e)
+		hasErr = true
+	}
+
+	if hasErr {
+		return errors.New("An error occured while syncing your manifest")
+	}
+
+	return nil
 }
 
 func requestPath(version, kind, org string) string {
