@@ -113,6 +113,9 @@ func NewCommand(runF OptFunc) *cobra.Command {
 }
 
 func serveRelationshipGraph(client *api.Client, org, port, manifestPath string, filters ...string) error {
+	// used to hash manifest file
+	var manifestHash string
+
 	if port == "" {
 		port = fmt.Sprintf("%d", utils.RandomInt(60000, 61000))
 	}
