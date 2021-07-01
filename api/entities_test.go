@@ -4,37 +4,75 @@ import "testing"
 
 func Test_requestPath(t *testing.T) {
 	type args struct {
+		org     string
 		version string
 		kind    string
-		org     string
 	}
 	tests := []struct {
-		name string
-		args args
-		want string
+		name    string
+		args    args
+		want    string
+		wantErr bool
 	}{
 		{
-			name: "returns the expected value",
+			name: "returns expected value",
 			args: args{
-				org:     "some-org",
-				version: "reliably.com/v1",
+				org:     "testing",
+				version: "reliably/v1",
 				kind:    "something",
 			},
-			want: "entities/some-org/reliably.com/v1/something",
+			want:    "entities/testing/reliably/v1/something",
+			wantErr: false,
 		},
 		{
-			name: "converts uppercase stuff to lowercase",
+			name: "lowercases the args",
 			args: args{
-				org:     "Some-Org",
-				version: "Reliably.com/V1",
-				kind:    "SomEThinG",
+				org:     "TestIng",
+				version: "relIAbly/V1",
+				kind:    "SOMEthing",
 			},
-			want: "entities/some-org/reliably.com/v1/something",
+			want:    "entities/testing/reliably/v1/something",
+			wantErr: false,
+		},
+		{
+			name: "returns an error is org is empty",
+			args: args{
+				org:     "",
+				version: "b",
+				kind:    "c",
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "returns an error is version is empty",
+			args: args{
+				org:     "a",
+				version: "",
+				kind:    "c",
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "returns an error is kind is empty",
+			args: args{
+				org:     "a",
+				version: "b",
+				kind:    "",
+			},
+			want:    "",
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := requestPath(tt.args.org, tt.args.version, tt.args.kind); got != tt.want {
+			got, err := requestPath(tt.args.org, tt.args.version, tt.args.kind)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("requestPath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
 				t.Errorf("requestPath() = %v, want %v", got, tt.want)
 			}
 		})

@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -11,7 +12,10 @@ import (
 )
 
 func CreateEntity(client *Client, hostname string, org string, entity entities.Entity) error {
-	path := requestPath(org, entity.Version(), entity.Kind())
+	path, err := requestPath(org, entity.Version(), entity.Kind())
+	if err != nil {
+		return err
+	}
 
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(entity); err != nil {
@@ -22,13 +26,14 @@ func CreateEntity(client *Client, hostname string, org string, entity entities.E
 }
 
 func GetObjectiveResults(client *Client, hostname string, version string, org string) (*[]entities.ObjectiveResultResponse, error) {
-
 	var entitiesResult *[]entities.ObjectiveResultResponse
 
-	path := requestPath(org, version, "objectiveresult")
-	err := client.RESTv2(hostname, http.MethodGet, path, nil, &entitiesResult)
-
+	path, err := requestPath(org, version, "ObjectiveResult")
 	if err != nil {
+		return nil, err
+	}
+
+	if err := client.RESTv2(hostname, http.MethodGet, path, nil, &entitiesResult); err != nil {
 		return nil, fmt.Errorf("failed to make API call: %w", err)
 	}
 
@@ -36,9 +41,20 @@ func GetObjectiveResults(client *Client, hostname string, version string, org st
 
 }
 
-func requestPath(org, version, kind string) string {
-	o := strings.ToLower(org)
-	v := strings.ToLower(version)
-	k := strings.ToLower(kind)
-	return fmt.Sprintf("entities/%s/%s/%s", o, v, k)
+func requestPath(org, version, kind string) (string, error) {
+	if org == "" {
+		return "", errors.New("org is empty")
+	}
+
+	if version == "" {
+		return "", errors.New("version is empty")
+	}
+
+	if kind == "" {
+		return "", errors.New("kind is empty")
+	}
+
+	path := fmt.Sprintf("entities/%s/%s/%s", org, version, kind)
+
+	return strings.ToLower(path), nil
 }
