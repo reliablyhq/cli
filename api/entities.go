@@ -12,21 +12,7 @@ import (
 )
 
 func CreateEntity(client *Client, hostname string, org string, entity entities.Entity) error {
-
-	var version string
-	version = entity.Version()
-	version = strings.ToLower(version)
-
-	var kind string
-	kind = plural(entity.Kind())
-	kind = strings.ToLower(kind)
-
-	shortVersion, ok := utils.GetShortVersion(version)
-	if !ok {
-		return fmt.Errorf("version %v not supported", version)
-	}
-
-	path := requestPath(shortVersion, kind, org)
+	path := requestPath(org, entity.Version(), entity.Kind())
 
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(entity); err != nil {
@@ -56,16 +42,9 @@ func GetObjectiveResults(client *Client, hostname string, version string, org st
 
 }
 
-func requestPath(version, kind, org string) string {
-
-	return fmt.Sprintf("%s/%s/%s/%s", "entities", version, org, kind)
-}
-
-// plural returns the puralized string,
-// append trailing 's' if not already ending with it
-func plural(s string) string {
-	if !strings.HasSuffix(s, "s") {
-		s = fmt.Sprintf("%ss", s)
-	}
-	return s
+func requestPath(org, version, kind string) string {
+	o := strings.ToLower(org)
+	v := strings.ToLower(version)
+	k := strings.ToLower(kind)
+	return fmt.Sprintf("entities/%s/%s/%s", o, v, k)
 }
