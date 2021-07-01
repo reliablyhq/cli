@@ -222,7 +222,7 @@ func reportRun(opts *ReportOptions) error {
 func getReports(manifestPath string) ([]*report.Report, error) {
 
 	reportsLimit := 5
-	apiVersion := "v1"
+	apiVersion := "reliably.com/v1"
 
 	// Temporarily detecting old manifest
 	isOld := isDeprecatedManifest(manifestPath)

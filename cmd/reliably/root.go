@@ -14,6 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/alpha"
 	"github.com/reliablyhq/cli/cmd/reliably/beta"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
@@ -140,6 +141,7 @@ func Execute() {
 	}()
 
 	verbose = config.IsDebugMode()
+	CheckOverriddenOrg()
 
 	rootCmd := NewCmdRoot()
 	if err := rootCmd.Execute(); err != nil {
@@ -322,4 +324,30 @@ func isCompletionCommand() bool {
 
 func isUpdateCommand() bool {
 	return len(os.Args) > 1 && os.Args[1] == "update"
+}
+
+// CheckOverriddenOrg sets into the loaded config the org info (ID & name)
+// from the overridden RELIABLY_ORG env var that accepts either an org UIUD
+// or an org slug/name
+func CheckOverriddenOrg() {
+
+	if org := os.Getenv(config.RELIABLY_ORG); org != "" {
+
+		h := config.Hostname
+		apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(h))
+		o, err := api.GetOrganisation(apiClient, h, org)
+		if err != nil {
+			o, err = api.GetOrganizationByName(apiClient, h, org)
+		}
+		if err == nil {
+			config.OverriddenOrg = &config.OrgInfo{
+				ID:   o.ID,
+				Name: o.Name,
+			}
+		}
+		if err != nil {
+			log.Debug(err)
+		}
+
+	}
 }
