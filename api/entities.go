@@ -25,20 +25,28 @@ func CreateEntity(client *Client, hostname string, org string, entity entities.E
 	return client.RESTv2(hostname, http.MethodPut, path, &body, nil)
 }
 
-func Query(client *Client, hostname string, version string, org string, query QueryBody) (*[]entities.ObjectiveResultResponse, error) {
+func Query(client *Client, hostname string, version string, org string, query QueryBody) (*QueryResponse, error) {
 
-	var entitiesResult *[]entities.ObjectiveResultResponse
+	var response QueryResponse
 
-	path, err := requestPath(org, version, "ObjectiveResult")
+	path, err := requestPath(org, version, "query")
 	if err != nil {
 		return nil, err
 	}
 
-	if err := client.RESTv2(hostname, http.MethodGet, path, nil, &entitiesResult); err != nil {
+	bodyBytes, err := json.Marshal(query)
+	fmt.Printf("%s", bodyBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	body := bytes.NewBuffer(bodyBytes)
+
+	if err := client.RESTv2(hostname, http.MethodPost, path, body, &response); err != nil {
 		return nil, fmt.Errorf("failed to make API call: %w", err)
 	}
 
-	return entitiesResult, nil
+	return &response, nil
 
 }
 

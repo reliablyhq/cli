@@ -251,26 +251,37 @@ func getReports(manifestPath string) ([]*report.Report, error) {
 		return nil, err
 	}
 
-	// TODO: define version/kind from manifest objective?
-	var queryBody api.QueryBody
-	objectiveResults, err := api.Query(apiClient, entityHost, apiVersion, org.Name, queryBody)
+	queryBody := api.QueryBody{
+		Kind:   "objective",
+		Labels: make(map[string]string),
+		Limit:  50,
+		ForEach: api.ForEach{
+			ObjectiveResult: api.ObjectiveResult{
+				Include: true,
+				Limit:   reportsLimit,
+			},
+		},
+	}
+
+	response, err := api.Query(apiClient, entityHost, apiVersion, org.Name, queryBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get objective results: %w", err)
 	}
+	_ = response
+	return nil, nil
+	// filteredObjectiveResults := filterObjectivesResults(objectiveResults, objectives, reportsLimit)
 
-	filteredObjectiveResults := filterObjectivesResults(objectiveResults, objectives, reportsLimit)
+	// // Important: at the moment each objective result represents the difference between
+	// //  the objective and the indicator at that time. If the objective is updated, only
+	// // indicators after it will produce an objective result with the delta of the new one. An alternative is to always
+	// // Use the latest objective against objective results. So, either an objective change updates previous objective results
+	// // retrospectively, or each stands on its own.
+	// reports, err := MapToReports(filteredObjectiveResults, reportsLimit, apiVersion)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to generate report: %w", err)
+	// }
 
-	// Important: at the moment each objective result represents the difference between
-	//  the objective and the indicator at that time. If the objective is updated, only
-	// indicators after it will produce an objective result with the delta of the new one. An alternative is to always
-	// Use the latest objective against objective results. So, either an objective change updates previous objective results
-	// retrospectively, or each stands on its own.
-	reports, err := MapToReports(filteredObjectiveResults, reportsLimit, apiVersion)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate report: %w", err)
-	}
-
-	return reports, nil
+	// return reports, nil
 }
 
 func editReportSlice(s []*report.Report) *[]report.Report {
