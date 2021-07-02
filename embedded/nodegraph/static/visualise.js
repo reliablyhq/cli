@@ -16,7 +16,6 @@ export default function define(runtime, observer) {
           .force('collide', d3.forceCollide(d => 85)) // collide, the forced distance between nodes
 
       const svg = d3.create("svg");
-          // .attr("viewBox", [-width / 2, -height / 4, width, height - 32]);
 
       // Per-type markers, as they don't inherit styles.
       svg.append("defs").selectAll("marker")
@@ -82,13 +81,6 @@ export default function define(runtime, observer) {
               }
             }
             return classString;
-            // let p = JSON.stringify(`${d.metadata.labels["purpose"]}`).substring(1).slice(0, -1);
-            // if (purposes.includes(p)) {
-            //   return `node-circle group-${purposes.indexOf(p)}`;
-            // } else {
-            //   purposes.push(p)
-            //   return `node-circle group-${purposes.length - 1}`;
-            // }
           })
           .attr("stroke", "hsl(170, 40%, 35%)")
           .attr("stroke-width", 1.5)
@@ -269,13 +261,11 @@ export default function define(runtime, observer) {
   );
 
   main.variable().define("types", ["data"], (data) => {
-    // return( Array.from(new Set(data.nodes.map(d => d.kind)) )
     return (["edge"]) // hard coding the type here as it is only used to color the arrow heads
   });
 
   main.variable().define("data", () => {
     return ( GETSync("/data") )
-    // return ( GETSync("/data.json") )
   });
 
 
