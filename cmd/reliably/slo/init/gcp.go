@@ -2,6 +2,7 @@ package init
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -29,17 +30,28 @@ func buildGCPResourceID() (r *gcpResource) {
 	var resourceName string
 
 	ctx := context.Background()
-	crmService, _ := crm.NewService(ctx)
+	crmService, err := crm.NewService(ctx)
+	if err != nil {
+		if strings.Contains(err.Error(), "could not find default credentials") {
+			err = errors.New("you are not currently logged in to Google Cloud. Run `gcloud auth application-default login` to log in")
+		}
+
+		handleGCPError(err)
+		return
+	}
+
 	orgsService := crm.NewOrganizationsService(crmService)
 	orgs, err := orgsService.Search().Context(ctx).Do()
+
 	if err != nil {
 		handleGCPError(err)
 		return
 	}
+
 	var orgsList = []string{}
 	orgsMap := make(map[string]string)
 
-	if len(orgs.Organizations) > 0 {
+	if orgs != nil && len(orgs.Organizations) > 0 {
 		for _, o := range orgs.Organizations {
 			displayName := o.DisplayName
 			id := o.Name
@@ -99,7 +111,7 @@ func buildGCPResourceID() (r *gcpResource) {
 	} else {
 		fmt.Println(iconWarn, "Reliably couldn't list your GCP Organizations.")
 		fmt.Println("For interactive mode to work, you need to ensure the following conditions are met:")
-		fmt.Println(" - You are currently logged in to Google Cloud with the `gcloud` CLI.")
+		fmt.Println(" - You are currently logged in to Google Cloud. Run `gcloud auth application-default login` to log in.")
 		fmt.Println(" - The currently-logged user has the `resourcemanager.projects.list` rights on the organization you're working on.")
 		fmt.Println(" - The Cloud Resource Manager API is activated on the projects for which you want to list resources.")
 
