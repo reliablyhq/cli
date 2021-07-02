@@ -5,13 +5,17 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
+	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/report"
 )
@@ -149,7 +153,7 @@ comma-separated list as values.`),
 func reportRun(opts *report.ReportOptions) error {
 	// check for -w/--watch
 	if opts.WatchFlag {
-		return report.Watch(opts)
+		return Watch(opts)
 	}
 
 	opts.IO.StartProgressIndicator()
@@ -184,4 +188,52 @@ func reportRun(opts *report.ReportOptions) error {
 	}
 
 	return nil
+}
+
+func Watch(opts *report.ReportOptions) error {
+	rChan := make(chan []*report.Report, 5)
+	errChan := make(chan error, 1)
+	done := make(chan struct{})
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	defer func() {
+		// put cursor back on return
+		fmt.Print("\033[?25h")
+	}()
+
+	// refresh every 3 seconds
+	go func() {
+		for ch := time.Tick(time.Second * 3); ; <-ch {
+			reports, err := report.GetReports(opts)
+			if err != nil {
+				errChan <- err
+			}
+			rChan <- reports
+		}
+	}()
+
+	// Ctrl+C listener
+	go func() {
+		<-c
+		fmt.Printf("\nCTRL+C pressed... exiting\n")
+		done <- struct{}{}
+	}()
+
+	// print stuff
+	for {
+		select {
+		case r := <-rChan:
+			report.ClearScreen()
+			fmt.Println(color.Magenta("Refreshing SLO report every 3 seconds."), "Press CTRL+C to quit.")
+			report.Write(report.TABBED, r[0], os.Stdout, opts.TemplateFile, log.StandardLogger(), r[1], report.EditReportSlice(r))
+
+		case err := <-errChan:
+			return err
+
+		case <-done:
+			return nil
+		}
+	}
+
 }
