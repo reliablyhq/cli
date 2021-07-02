@@ -142,6 +142,7 @@ func Execute() {
 
 	verbose = config.IsDebugMode()
 	CheckOverriddenOrg()
+	SetDefautOrganization() // if previously overridden, the org won't be changed
 
 	rootCmd := NewCmdRoot()
 	if err := rootCmd.Execute(); err != nil {
@@ -357,4 +358,35 @@ func CheckOverriddenOrg() {
 		}
 
 	}
+}
+
+// SetDefautOrganization defines the user's default organization as the
+// current active one, in case the RELIABLY_ORG has not been set and
+// no organization is set in the config.
+func SetDefautOrganization() {
+	var useDefault bool = false
+
+	org, err := config.GetCurrentOrgInfo()
+	if err != nil || org == nil || (org != nil && org.ID == "" && org.Name == "") {
+		useDefault = true
+	}
+
+	if useDefault {
+		h := config.Hostname
+		apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(h))
+
+		o, err := api.CurrentUserOrganization(apiClient, h) // user's default org
+
+		if err == nil {
+			config.OverriddenOrg = &config.OrgInfo{
+				ID:   o.ID,
+				Name: o.Name,
+			}
+		}
+		if err != nil {
+			log.Debug(err)
+		}
+
+	}
+
 }

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+
+- use user's default organization when not set in config nor set with RELIABLY_ORG env var; [#362](https://github.com/reliablyhq/cli/issues/362)
 ### Changed
 
 - Uses new GitHub action for scan command in GitHub workflow template
