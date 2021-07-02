@@ -48,7 +48,8 @@ func GetRelationshipGraph(client *Client, hostname, org string, m entities.Manif
 	// TODO: by using m[0].Version() we assumes all entities in a manifest
 	// will have the same API version. This should be changed if/when the API
 	// is extended beyond v1
-	path, _ := requestPath(m[0].Version(), m[0].Kind(), org)
+	path, _ := requestPath(org, m[0].Version(), m[0].Kind())
+	path = fmt.Sprintf("%s/relatedto", path)
 
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(m); err != nil {
@@ -70,7 +71,7 @@ func SyncManifest(client *Client, entityHost, org string, m entities.Manifest) e
 		w.Add(1)
 		go func(slo *entities.Objective) {
 			defer w.Done()
-			log.Debugf("syncing slo: %s", slo.Name)
+			log.Debugf("syncing slo: %s", slo.Labels)
 			if err := CreateEntity(client, entityHost, org, slo); err != nil {
 				errchan <- fmt.Errorf("error syncing manifest object: %s - %s", slo.Name, err)
 			}
