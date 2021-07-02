@@ -9,6 +9,7 @@
 ### Changed
 
 - Added RELIABLY_ORG usage to workflows templates
+- Added more descriptive error messaging when using `slo init` when not logged in to GCP
 
 ## [v0.20.0] - 2021-07-02
 
