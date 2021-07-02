@@ -48,7 +48,8 @@ func GetRelationshipGraph(client *Client, hostname, org string, m entities.Manif
 	// TODO: by using m[0].Version() we assumes all entities in a manifest
 	// will have the same API version. This should be changed if/when the API
 	// is extended beyond v1
-	path, _ := requestPath(m[0].Version(), m[0].Kind(), org)
+	path, _ := requestPath(org, m[0].Version(), m[0].Kind())
+	path = fmt.Sprintf("%s/relatedto", path)
 
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(m); err != nil {
