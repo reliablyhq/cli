@@ -21,7 +21,7 @@ jobs:
       - name: 'Checkout source code'
         uses: actions/checkout@v2
       - name: 'Run Reliably'
-        uses: reliablyhq/gh-action@v1
+        uses: reliablyhq/actions/scan@v1
         continue-on-error: true
         with:
           format: "sarif"
