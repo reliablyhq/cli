@@ -2,9 +2,14 @@
 
 ## [Unreleased]
 
-## Added
+### Added
 
 - New `reliably slo related` command for SLO relationship visualisation
+- use user's default organization when not set in config nor set with RELIABLY_ORG env var; [#362](https://github.com/reliablyhq/cli/issues/362)
+### Changed
+
+- Uses new GitHub action for scan command in GitHub workflow template
+- updated `slo sync` to support weakly define types
 
 ## [v0.19.4] - 2021-07-01
 
