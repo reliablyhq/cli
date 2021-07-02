@@ -333,12 +333,19 @@ func CheckOverriddenOrg() {
 
 	if org := os.Getenv(config.RELIABLY_ORG); org != "" {
 
+		var o *api.Organization
+		var err error
+
 		h := config.Hostname
 		apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(h))
-		o, err := api.GetOrganisation(apiClient, h, org)
-		if err != nil {
+
+		switch {
+		case utils.IsValidUUID(org):
+			o, err = api.GetOrganisation(apiClient, h, org)
+		default:
 			o, err = api.GetOrganizationByName(apiClient, h, org)
 		}
+
 		if err == nil {
 			config.OverriddenOrg = &config.OrgInfo{
 				ID:   o.ID,
