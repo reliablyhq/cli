@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Added RELIABLY_ORG usage to workflows templates
 ## [v0.20.0] - 2021-07-02
 
 ### Added

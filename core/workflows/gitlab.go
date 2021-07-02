@@ -32,6 +32,7 @@ code_quality:
     paths: [gl-code-quality-report.json]
   rules:
     - if: $RELIABLY_TOKEN
+    - if: $RELIABLY_ORG
 `)
 
 var gitlab_AccessTokenHelp string = `
