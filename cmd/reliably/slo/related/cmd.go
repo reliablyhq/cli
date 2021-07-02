@@ -94,6 +94,11 @@ func NewCommand(runF OptFunc) *cobra.Command {
 					return err
 				}
 
+				if err := api.SyncManifest(client, config.EntityServerHost, org.Name, m); err != nil {
+					log.Debugf("error syncing manifest: %s", err)
+					return err
+				}
+
 				g = applyFilters(g, opts.Filters...)
 				encoder := json.NewEncoder(os.Stdout)
 				encoder.SetIndent("", "  ")
