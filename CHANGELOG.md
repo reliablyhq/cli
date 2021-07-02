@@ -8,6 +8,7 @@
 ### Changed
 
 - Uses new GitHub action for scan command in GitHub workflow template
+- updated `slo sync` to support weakly define types
 
 ## [v0.19.4] - 2021-07-01
 
