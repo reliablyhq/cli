@@ -8,10 +8,12 @@ import (
 
 	"github.com/google/shlex"
 	"github.com/spf13/cobra"
+
 	//"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/reliablyhq/cli/core/entities"
+	"github.com/reliablyhq/cli/core/report"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -57,7 +59,7 @@ func TestCommandOutputFlags(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			runF := func(opts *ReportOptions) error {
+			runF := func(opts *report.ReportOptions) error {
 				//t.Log("overridden run function from test")
 				//t.Log(*opts)
 				return nil
@@ -135,7 +137,7 @@ func TestMapToReports(t *testing.T) {
 	objResults := make([][]entities.ObjectiveResultResponse, 2)
 	objResults[0] = []entities.ObjectiveResultResponse{objRes1}
 	objResults[1] = []entities.ObjectiveResultResponse{objRes2}
-	reports, err := MapToReports(objResults, 6, "v1")
+	reports, err := report.MapToReports(objResults, 6, "v1")
 	assert.NoError(t, err, "Error occurred in MapToReports")
 	assert.Equal(
 		t,

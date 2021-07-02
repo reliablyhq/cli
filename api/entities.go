@@ -34,7 +34,6 @@ func Query(client *Client, hostname string, version string, org string, query Qu
 	}
 
 	bodyBytes, err := json.Marshal(query)
-	fmt.Printf("%s", bodyBytes)
 	if err != nil {
 		return nil, err
 	}

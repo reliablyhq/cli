@@ -5,52 +5,18 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
-	"os/signal"
-	"runtime"
-	"sort"
 	"strings"
-	"syscall"
-	"time"
 
-	iso8601 "github.com/ChannelMeter/iso8601duration"
 	"github.com/MakeNowJust/heredoc/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
-	"github.com/reliablyhq/cli/config"
-	"github.com/reliablyhq/cli/core"
-	"github.com/reliablyhq/cli/core/color"
-	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/iostreams"
-	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
-	"github.com/reliablyhq/cli/utils"
 )
 
 type Choice = cmdutil.Choice
-
-type ReportOutput struct {
-	Format report.Format
-	Path   string
-}
-
-type ReportOptions struct {
-	IO *iostreams.IOStreams
-
-	ManifestPath  string
-	OutputPath    string
-	OutputFormat  string
-	TemplateFile  string
-	WatchFlag     bool
-	OutputPaths   []string
-	OutputFormats []string
-	Service       string
-
-	Outputs []ReportOutput
-}
 
 const defaultFormat = "table"
 
@@ -59,8 +25,8 @@ var (
 	deprecatedFormats = Choice{"simple", "tabbed"}
 )
 
-func NewCommand(runF func(*ReportOptions) error) *cobra.Command {
-	opts := &ReportOptions{
+func NewCommand(runF func(*report.ReportOptions) error) *cobra.Command {
+	opts := &report.ReportOptions{
 		IO: iostreams.System(),
 	}
 
@@ -154,7 +120,7 @@ comma-separated list as values.`),
 					path = opts.OutputPaths[fIdx]
 				}
 
-				opts.Outputs = append(opts.Outputs, ReportOutput{
+				opts.Outputs = append(opts.Outputs, report.ReportOutput{
 					Format: format,
 					Path:   path,
 				})
@@ -169,7 +135,8 @@ comma-separated list as values.`),
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.ManifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
+	cmd.Flags().StringVarP(&opts.Selector, "selector", "l", "", "objectives selector based on labels")
+	cmd.Flags().StringVarP(&opts.ManifestPath, "manifest", "m", "", "the location of the manifest file")
 	cmd.Flags().StringVarP(&opts.OutputPath, "output", "o", "", "where the report should be written to")
 	cmd.Flags().StringVarP(&opts.TemplateFile, "template", "t", "", "the name of the template to use for the report output")
 	cmd.Flags().StringVarP(&opts.OutputFormat, "format", "f", "table", fmt.Sprintf("specify the report format. Allowed Values: %v", supportedFormats))
@@ -179,15 +146,15 @@ comma-separated list as values.`),
 	return cmd
 }
 
-func reportRun(opts *ReportOptions) error {
+func reportRun(opts *report.ReportOptions) error {
 	// check for -w/--watch
 	if opts.WatchFlag {
-		return watch(opts)
+		return report.Watch(opts)
 	}
 
 	opts.IO.StartProgressIndicator()
 
-	reports, err := getReports(opts.ManifestPath)
+	reports, err := report.GetReports(opts)
 	if err != nil {
 		return fmt.Errorf("reports error: %w", err)
 	}
@@ -208,7 +175,7 @@ func reportRun(opts *ReportOptions) error {
 			// we cannot defer outfile closing here as we are in a for-loop
 		}
 		// utils.Reverse(reportCollection)
-		report.Write(out.Format, reports[0], w, opts.TemplateFile, log.StandardLogger(), reports[1], editReportSlice(reports))
+		report.Write(out.Format, reports[0], w, opts.TemplateFile, log.StandardLogger(), reports[1], report.EditReportSlice(reports))
 
 		if outfile, ok := w.(*os.File); ok {
 			outfile.Close() // explicitly closing the file handle
@@ -217,309 +184,4 @@ func reportRun(opts *ReportOptions) error {
 	}
 
 	return nil
-}
-
-func getReports(manifestPath string) ([]*report.Report, error) {
-
-	reportsLimit := 5
-	apiVersion := "reliably.com/v1"
-
-	// Temporarily detecting old manifest
-	isOld := isDeprecatedManifest(manifestPath)
-	if isOld {
-		return nil, fmt.Errorf(
-			"manifest '%s' is using a deprecated format. Please generate a new one with `reliably slo init`",
-			manifestPath,
-		)
-	}
-
-	// Filter report by manifest if there is a flag
-	var objectives entities.Manifest
-	err := objectives.LoadFromFile(manifestPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read manifest: %w", err)
-	}
-	if len(objectives) < 1 {
-		return nil, fmt.Errorf("no objectives found")
-	}
-
-	hostname := config.Hostname
-	entityHost := config.EntityServerHost
-	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
-	org, err := config.GetCurrentOrgInfo()
-	if err != nil {
-		return nil, err
-	}
-
-	queryBody := api.QueryBody{
-		Kind:   "objective",
-		Labels: make(map[string]string),
-		Limit:  50,
-		ForEach: api.ForEach{
-			ObjectiveResult: api.ObjectiveResult{
-				Include: true,
-				Limit:   reportsLimit,
-			},
-		},
-	}
-
-	response, err := api.Query(apiClient, entityHost, apiVersion, org.Name, queryBody)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get objective results: %w", err)
-	}
-	_ = response
-	return nil, nil
-	// filteredObjectiveResults := filterObjectivesResults(objectiveResults, objectives, reportsLimit)
-
-	// // Important: at the moment each objective result represents the difference between
-	// //  the objective and the indicator at that time. If the objective is updated, only
-	// // indicators after it will produce an objective result with the delta of the new one. An alternative is to always
-	// // Use the latest objective against objective results. So, either an objective change updates previous objective results
-	// // retrospectively, or each stands on its own.
-	// reports, err := MapToReports(filteredObjectiveResults, reportsLimit, apiVersion)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to generate report: %w", err)
-	// }
-
-	// return reports, nil
-}
-
-func editReportSlice(s []*report.Report) *[]report.Report {
-	var sNew []report.Report
-	for _, v := range s {
-		sNew = append(sNew, *v)
-	}
-	utils.Reverse(sNew)
-	return &sNew
-}
-
-// Function filters objectiveResultResponses based on objectives.
-// It is assumed the slice is ordered in descending order by creation time.
-// If Entity Server assumes filtering, this function can likely be replaced.
-func filterObjectivesResults(
-	objectiveResults *[]entities.ObjectiveResultResponse,
-	objectives []*entities.Objective,
-	maxResults int,
-) [][]entities.ObjectiveResultResponse {
-
-	// Creating a hash table for faster search, although likely not many entities.
-	// Array of name+service used as map key.
-	objectivesMapped := make(map[[2]string]int)
-	for i, o := range objectives {
-		if _, ok := o.Metadata.Labels["name"]; !ok {
-			continue
-		}
-		if _, ok := o.Metadata.Labels["service"]; !ok {
-			continue
-		}
-		objectivesMapped[[2]string{
-			o.Metadata.Labels["name"], o.Metadata.Labels["service"],
-		}] = i
-	}
-
-	filteredObjRes := make([][]entities.ObjectiveResultResponse, len(objectives))
-	for _, or := range *objectiveResults {
-		if _, ok := or.Metadata.Labels["name"]; !ok {
-			continue
-		}
-		if _, ok := or.Metadata.Labels["service"]; !ok {
-			continue
-		}
-		nameAndService := [2]string{or.Metadata.Labels["name"], or.Metadata.Labels["service"]}
-		if objectiveIndex, ok := objectivesMapped[nameAndService]; ok {
-			if len(filteredObjRes[objectiveIndex]) <= maxResults {
-				filteredObjRes[objectiveIndex] = append(filteredObjRes[objectiveIndex], or)
-			}
-		}
-	}
-
-	filteredObjResClean := make([][]entities.ObjectiveResultResponse, 0)
-	for _, v := range filteredObjRes {
-		if v != nil {
-			filteredObjResClean = append(filteredObjResClean, v)
-		}
-	}
-
-	return filteredObjResClean
-}
-
-func MapToReports(objResults [][]entities.ObjectiveResultResponse, limit int, apiVersion string) ([]*report.Report, error) {
-	var mappedReports []*report.Report
-
-	for i := 0; i < limit; i++ {
-		var services []*report.Service = make([]*report.Service, 0)
-		mappedReports = append(mappedReports, &report.Report{
-			APIVersion: apiVersion,
-			Timestamp:  time.Now().UTC(),
-			Services:   services,
-		})
-
-		serviceList := make(map[string]map[string][]entities.ObjectiveResultResponse)
-		for _, objResGroup := range objResults {
-			serviceLabel := objResGroup[0].Metadata.Labels["service"]
-			nameLabel := objResGroup[0].Metadata.Labels["name"]
-			if _, ok := serviceList[serviceLabel]; !ok {
-				serviceList[serviceLabel] = make(map[string][]entities.ObjectiveResultResponse)
-			}
-			serviceList[serviceLabel][nameLabel] = objResGroup
-		}
-
-		// 2. each service has many service levels
-		for serviceLabel, s := range serviceList {
-			// 1. Define service struct
-			serviceLevels := make([]*report.ServiceLevel, 0)
-			service := report.Service{
-				Name:          serviceLabel,
-				Dependencies:  []string{},
-				ServiceLevels: serviceLevels,
-			}
-
-			for name, sl := range s {
-				if len(sl) > i {
-					sloIsMet := false
-					if sl[i].Spec.RemainingPercent >= 0 {
-						sloIsMet = true
-					}
-					to, err := isoTimeParse(sl[i].Metadata.Labels["to"])
-					if err != nil {
-						return nil, fmt.Errorf("time 'to' not parsed correctly: %w", err)
-					}
-					from, err := isoTimeParse(sl[i].Metadata.Labels["from"])
-					if err != nil {
-						return nil, fmt.Errorf("time 'from' not parsed correctly: %w", err)
-					}
-					// Remove this once entity server returns period or calculated by from/to
-					timeDiff := to.Sub(from)
-					period := toIso8601Duration(timeDiff)
-
-					service.ServiceLevels = append(service.ServiceLevels, &report.ServiceLevel{
-						Name:      name,
-						Type:      sl[i].Spec.IndicatorSelector["category"],
-						Objective: sl[i].Spec.ObjectivePercent,
-						Period:    period,
-						Result: &report.ServiceLevelResult{
-							Actual:   sl[i].Spec.ActualPercent,
-							Delta:    sl[i].Spec.RemainingPercent,
-							SloIsMet: sloIsMet,
-						},
-						ObservationWindow: report.Window{
-							To:   to,
-							From: from,
-						},
-					})
-				}
-
-				sort.SliceStable(service.ServiceLevels, func(k, j int) bool {
-					return service.ServiceLevels[k].Name < service.ServiceLevels[j].Name
-				})
-
-			}
-
-			mappedReports[i].Services = append(mappedReports[i].Services, &service)
-		}
-
-		sort.SliceStable(mappedReports[i].Services, func(k, j int) bool {
-			return mappedReports[i].Services[k].Name < mappedReports[i].Services[j].Name
-		})
-
-	}
-
-	return mappedReports, nil
-}
-
-func watch(opts *ReportOptions) error {
-	rChan := make(chan []*report.Report, 5)
-	errChan := make(chan error, 1)
-	done := make(chan struct{})
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-
-	defer func() {
-		// put cursor back on return
-		fmt.Print("\033[?25h")
-	}()
-
-	// refresh every 3 seconds
-	go func() {
-		for ch := time.Tick(time.Second * 3); ; <-ch {
-			reports, err := getReports(opts.ManifestPath)
-			if err != nil {
-				errChan <- err
-			}
-			rChan <- reports
-		}
-	}()
-
-	// Ctrl+C listener
-	go func() {
-		<-c
-		fmt.Printf("\nCTRL+C pressed... exiting\n")
-		done <- struct{}{}
-	}()
-
-	// print stuff
-	for {
-		select {
-		case r := <-rChan:
-			clearScreen()
-			fmt.Println(color.Magenta("Refreshing SLO report every 3 seconds."), "Press CTRL+C to quit.")
-			report.Write(report.TABBED, r[0], os.Stdout, opts.TemplateFile, log.StandardLogger(), r[1], editReportSlice(r))
-
-		case err := <-errChan:
-			return err
-
-		case <-done:
-			return nil
-		}
-	}
-
-}
-
-// Temporary way of handling incoming time strings
-func isoTimeParse(sTime string) (time.Time, error) {
-	msOptions := []string{"000", "00", "0"}
-	var err error
-	var parsedTime time.Time
-	for _, v := range msOptions {
-		parsedTime, err = time.Parse(fmt.Sprintf("2006-01-02 15:04:05.%v -0700 MST", v), sTime)
-		if err == nil {
-			break
-		}
-	}
-	if err != nil {
-		return time.Time{}, fmt.Errorf("time not parsed correctly: %w", err)
-	}
-	return parsedTime, nil
-}
-
-func toIso8601Duration(d time.Duration) core.Iso8601Duration {
-	di := int(d.Seconds())
-	isoD := core.Iso8601Duration{Duration: iso8601.Duration{Seconds: di}}
-	return isoD
-}
-
-func clearScreen() {
-	var c *exec.Cmd
-
-	switch runtime.GOOS {
-	case "windows":
-		c = exec.Command("cmd", "/c", "cls")
-	default:
-		// clear should work for UNIX & linux based systems
-		c = exec.Command("clear")
-
-		// hide cursor on unix based systems
-		fmt.Print("\033[?25l")
-	}
-
-	c.Stdout = os.Stdout
-	c.Run()
-}
-
-func isDeprecatedManifest(path string) bool {
-	m, _ := manifest.Load(path)
-	if m != nil {
-		return m.Services != nil
-	}
-	return false
 }
