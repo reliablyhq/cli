@@ -2,14 +2,16 @@
 
 ## [Unreleased]
 
+## [v0.20.1] - 2021-07-02
+
 ### Fixed
 
-- Invalid `/relatedto` path for graph visualisation: [#382](https://github.com/reliablyhq/cli/issues/382)
+-   Invalid `/relatedto` path for graph visualisation: [#382](https://github.com/reliablyhq/cli/issues/382)
 
 ### Changed
 
-- Added RELIABLY_ORG usage to workflows templates
-- Added more descriptive error messaging when using `slo init` when not logged in to GCP
+-   Added RELIABLY_ORG usage to workflows templates
+-   Added more descriptive error messaging when using `slo init` when not logged in to GCP
 
 ## [v0.20.0] - 2021-07-02
 
@@ -313,7 +315,9 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.20.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.20.1...HEAD
+
+[v0.20.1]: https://github.com/reliablyhq/cli/compare/v0.20.0...v0.20.1
 
 [v0.20.0]: https://github.com/reliablyhq/cli/compare/v0.19.4...v0.20.0
 
