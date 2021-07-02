@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
