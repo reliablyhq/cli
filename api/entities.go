@@ -71,7 +71,7 @@ func SyncManifest(client *Client, entityHost, org string, m entities.Manifest) e
 		w.Add(1)
 		go func(slo *entities.Objective) {
 			defer w.Done()
-			log.Debugf("syncing slo: %s", slo.Name)
+			log.Debugf("syncing slo: %s", slo.Labels)
 			if err := CreateEntity(client, entityHost, org, slo); err != nil {
 				errchan <- fmt.Errorf("error syncing manifest object: %s - %s", slo.Name, err)
 			}
