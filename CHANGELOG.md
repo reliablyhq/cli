@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Uses new GitHub action for scan command in GitHub workflow template
+
 ## [v0.19.4] - 2021-07-01
 
 ### Fixed
