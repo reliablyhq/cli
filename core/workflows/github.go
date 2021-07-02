@@ -13,6 +13,7 @@ on: push
 
 env:
   RELIABLY_TOKEN: ${{ secrets.RELIABLY_TOKEN }}
+  RELIABLY_ORG: ${{ secrets.RELIABLY_ORG }}
 
 jobs:
   reliably:

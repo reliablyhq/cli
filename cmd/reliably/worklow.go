@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
+	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core/iostreams"
 	wf "github.com/reliablyhq/cli/core/workflows"
 	"github.com/reliablyhq/cli/utils"
@@ -131,6 +132,7 @@ func workflowRun(opts *WorkflowOptions) error {
 	}
 
 	workflowAccessTokenHelp(opts.IO.ErrOut, platform)
+	workflowReliablyOrgHelp(opts.IO.ErrOut, platform)
 
 	return nil
 }
@@ -152,10 +154,22 @@ $ git commit -m "Add Reliably workflow"
 // setup securely the Reliably access token as RELIABLY_TOKEN env var
 // for any CI/CD platform.
 func workflowAccessTokenHelp(w io.Writer, platform string) {
-	help := wf.GetAccessTokenHelp(platform, "RELIABLY_TOKEN")
+	help := wf.GetAccessTokenHelp(platform, config.RELIABLY_TOKEN)
 	if help != "" {
 		fmt.Fprint(w, "\n", help, "\n",
 			"You can retrieve your access token by running:\n",
 			"$ reliably auth status --show-token\n")
+	}
+}
+
+// workflowReliablyOrgHelp prints out the help message on how to setup
+// securely the active organization as RELIABLY_ORG env var
+// for any CI/CD platform.
+func workflowReliablyOrgHelp(w io.Writer, platform string) {
+	help := wf.GetAccessTokenHelp(platform, config.RELIABLY_ORG)
+	if help != "" {
+		fmt.Fprint(w, "\n", help, "\n",
+			"You can retrieve your current organization information by running:\n",
+			"$ reliably org current\n")
 	}
 }
