@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- updated `slo sync` to support weakly define types
+
 ## [v0.19.4] - 2021-07-01
 
 ### Fixed
