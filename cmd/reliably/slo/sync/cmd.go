@@ -2,11 +2,9 @@ package sync
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -118,16 +116,6 @@ func syncRun(opts *SyncOptions) error {
 }
 
 func load(path string) ([]entities.Entity, error) {
-	var unmarshal func([]byte, interface{}) error
-	pathL := strings.ToLower(path)
-	if strings.HasSuffix(pathL, ".yaml") {
-		unmarshal = yaml.Unmarshal
-	} else if strings.HasSuffix(pathL, ".json") {
-		unmarshal = json.Unmarshal
-	} else {
-		return nil, errors.New("file must be either .json or .yaml")
-	}
-
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -139,7 +127,7 @@ func load(path string) ([]entities.Entity, error) {
 		part = bytes.TrimSpace(part)
 
 		var t ManifestObject
-		if err := unmarshal(part, &t); err != nil {
+		if err := yaml.Unmarshal(part, &t); err != nil {
 			return nil, err
 		}
 
