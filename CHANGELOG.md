@@ -4,6 +4,7 @@
 
 ### Added
 
+- New `reliably slo related` command for SLO relationship visualisation
 - use user's default organization when not set in config nor set with RELIABLY_ORG env var; [#362](https://github.com/reliablyhq/cli/issues/362)
 ### Changed
 

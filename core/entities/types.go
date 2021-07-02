@@ -1,6 +1,10 @@
 package entities
 
 import (
+	"crypto/md5"
+	"encoding/json"
+	"fmt"
+	"io"
 	"os"
 
 	"gopkg.in/yaml.v2"
@@ -69,8 +73,14 @@ func (m *Manifest) LoadFromFile(path string) (err error) {
 		o = new(Objective)
 	}
 
-	if err.Error() == "EOF" {
+	if err == io.EOF {
 		err = nil
 	}
 	return nil
+}
+
+// Hash - returns an MD5 hash of the manifest
+func (m *Manifest) Hash() string {
+	b, _ := json.Marshal(m)
+	return fmt.Sprintf("%x", md5.Sum(b))
 }
