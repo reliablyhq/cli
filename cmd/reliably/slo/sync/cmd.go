@@ -1,12 +1,14 @@
 package sync
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/config"
@@ -18,6 +20,43 @@ type SyncOptions struct {
 	IO *iostreams.IOStreams
 
 	ManifestPath string
+}
+
+var _ entities.Entity = &ManifestObject{}
+
+type ManifestObject struct {
+	APIVersion string                 `json:"apiVersion" yaml:"apiVersion"`
+	KindValue  string                 `json:"kind" yaml:"kind"`
+	Metadata   map[string]interface{} `json:"metadata" yaml:"metadata"`
+	Spec       map[string]interface{} `json:"spec" yaml:"spec"`
+}
+
+func (t *ManifestObject) Version() string {
+	return t.APIVersion
+}
+
+func (t *ManifestObject) Kind() string {
+	return t.KindValue
+}
+
+func (t *ManifestObject) Validate() error {
+	if t.APIVersion == "" {
+		return errors.New("APIVersion is empty")
+	}
+
+	if t.KindValue == "" {
+		return errors.New("kind is empty")
+	}
+
+	if len(t.Metadata) == 0 {
+		return errors.New("metadata is invalid")
+	}
+
+	if len(t.Spec) == 0 {
+		return errors.New("spec is invalid")
+	}
+
+	return nil
 }
 
 func NewCommand(runF func(*SyncOptions) error) *cobra.Command {
@@ -77,29 +116,27 @@ func syncRun(opts *SyncOptions) error {
 }
 
 func load(path string) ([]entities.Entity, error) {
-	var objects []entities.Entity = make([]entities.Entity, 0)
-
-	if path == "" {
-		return nil, errors.New("path is empty")
-	}
-
-	log.Debug("Loading manifest at ", path)
-
-	file, err := os.Open(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
 
-	//var m Manifest
-	var m entities.Manifest
-	if err := m.LoadFromFile(path); err != nil {
-		return nil, err
+	parts := bytes.Split(content, []byte("---"))
+	entities := make([]entities.Entity, len(parts))
+	for i, part := range parts {
+		part = bytes.TrimSpace(part)
+
+		var t ManifestObject
+		if err := yaml.Unmarshal(part, &t); err != nil {
+			return nil, err
+		}
+
+		if err := t.Validate(); err != nil {
+			return nil, err
+		}
+
+		entities[i] = &t
 	}
 
-	for _, e := range m {
-		objects = append(objects, e)
-	}
-
-	return objects, nil
+	return entities, nil
 }
