@@ -233,6 +233,7 @@ func getReports(manifestPath string) ([]*report.Report, error) {
 		)
 	}
 
+	// Filter report by manifest if there is a flag
 	var objectives entities.Manifest
 	err := objectives.LoadFromFile(manifestPath)
 	if err != nil {
@@ -251,7 +252,8 @@ func getReports(manifestPath string) ([]*report.Report, error) {
 	}
 
 	// TODO: define version/kind from manifest objective?
-	objectiveResults, err := api.GetObjectiveResults(apiClient, entityHost, apiVersion, org.Name)
+	var queryBody api.QueryBody
+	objectiveResults, err := api.Query(apiClient, entityHost, apiVersion, org.Name, queryBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get objective results: %w", err)
 	}

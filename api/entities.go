@@ -21,7 +21,7 @@ func CreateEntity(client *Client, hostname string, org string, entity entities.E
 	return client.RESTv2(hostname, http.MethodPut, path, &body, nil)
 }
 
-func GetObjectiveResults(client *Client, hostname string, version string, org string) (*[]entities.ObjectiveResultResponse, error) {
+func Query(client *Client, hostname string, version string, org string, query QueryBody) (*[]entities.ObjectiveResultResponse, error) {
 
 	var entitiesResult *[]entities.ObjectiveResultResponse
 
