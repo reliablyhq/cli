@@ -2,13 +2,28 @@
 
 ## [Unreleased]
 
-### Added
+## [v0.20.1] - 2021-07-02
 
-- use user's default organization when not set in config nor set with RELIABLY_ORG env var; [#362](https://github.com/reliablyhq/cli/issues/362)
+### Fixed
+
+-   Invalid `/relatedto` path for graph visualisation: [#382](https://github.com/reliablyhq/cli/issues/382)
+
 ### Changed
 
-- Uses new GitHub action for scan command in GitHub workflow template
-- updated `slo sync` to support weakly define types
+-   Added RELIABLY_ORG usage to workflows templates
+-   Added more descriptive error messaging when using `slo init` when not logged in to GCP
+
+## [v0.20.0] - 2021-07-02
+
+### Added
+
+-   New `reliably slo related` command for SLO relationship visualisation
+-   use user's default organization when not set in config nor set with RELIABLY_ORG env var; [#362](https://github.com/reliablyhq/cli/issues/362)
+
+### Changed
+
+-   Uses new GitHub action for scan command in GitHub workflow template
+-   updated `slo sync` to support weakly define types
 
 ## [v0.19.4] - 2021-07-01
 
@@ -300,7 +315,11 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.19.4...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.20.1...HEAD
+
+[v0.20.1]: https://github.com/reliablyhq/cli/compare/v0.20.0...v0.20.1
+
+[v0.20.0]: https://github.com/reliablyhq/cli/compare/v0.19.4...v0.20.0
 
 [v0.19.4]: https://github.com/reliablyhq/cli/compare/v0.19.3...v0.19.4
 
