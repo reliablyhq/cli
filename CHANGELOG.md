@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Invalid `/relatedto` path for graph visualisation: [#382](https://github.com/reliablyhq/cli/issues/382)
+
 ## [v0.20.0] - 2021-07-02
 
 ### Added
