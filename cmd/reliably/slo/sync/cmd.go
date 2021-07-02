@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
@@ -80,8 +81,8 @@ func NewCommand(runF func(*SyncOptions) error) *cobra.Command {
 }
 
 func syncRun(opts *SyncOptions) error {
-	var m entities.Manifest
-	if err := m.LoadFromFile(opts.ManifestPath); err != nil {
+	entities, err := load(opts.ManifestPath)
+	if err != nil {
 		return err
 	}
 
@@ -94,12 +95,23 @@ func syncRun(opts *SyncOptions) error {
 		return err
 	}
 
-	if err := api.SyncManifest(apiClient, entityHost, org.Name, m); err != nil {
-		return err
+	var hasErr bool
+	for i, entity := range entities {
+		log.Debug("#", i, entity)
+		err := api.CreateEntity(apiClient, entityHost, org.Name, entity)
+		if err != nil {
+			log.Debug(err)
+			hasErr = true
+		}
 	}
 
-	w := opts.IO.ErrOut
-	fmt.Fprintln(w, iostreams.SuccessIcon(), "Your manifest has been successfully synchronized")
+	if hasErr {
+		return errors.New("an error occured while syncing your manifest")
+	} else {
+		w := opts.IO.ErrOut
+		fmt.Fprintln(w, iostreams.SuccessIcon(), "Your manifest has been successfully synchronized")
+	}
+
 	return nil
 }
 
