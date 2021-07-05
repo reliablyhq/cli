@@ -17,6 +17,7 @@ import (
 	"github.com/reliablyhq/cli/cmd/reliably/cmdutil"
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/iostreams"
+	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
 )
 
@@ -140,7 +141,8 @@ comma-separated list as values.`),
 	}
 
 	cmd.Flags().StringVarP(&opts.Selector, "selector", "l", "", "objectives selector based on labels")
-	cmd.Flags().StringVarP(&opts.ManifestPath, "manifest", "m", "", "the location of the manifest file")
+	cmd.Flags().StringVarP(&opts.ManifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
+	cmd.Flags().BoolVarP(&opts.IgnoreManifest, "ignore-manifest", "i", false, "ignore the default manifest")
 	cmd.Flags().StringVarP(&opts.OutputPath, "output", "o", "", "where the report should be written to")
 	cmd.Flags().StringVarP(&opts.TemplateFile, "template", "t", "", "the name of the template to use for the report output")
 	cmd.Flags().StringVarP(&opts.OutputFormat, "format", "f", "table", fmt.Sprintf("specify the report format. Allowed Values: %v", supportedFormats))

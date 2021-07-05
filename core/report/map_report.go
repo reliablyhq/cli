@@ -1,6 +1,9 @@
 package report
 
 import (
+	"bytes"
+	"crypto"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"os/exec"
@@ -27,15 +30,16 @@ type ReportOutput struct {
 type ReportOptions struct {
 	IO *iostreams.IOStreams
 
-	Selector      string
-	ManifestPath  string
-	OutputPath    string
-	OutputFormat  string
-	TemplateFile  string
-	WatchFlag     bool
-	OutputPaths   []string
-	OutputFormats []string
-	Service       string
+	Selector       string
+	ManifestPath   string
+	OutputPath     string
+	OutputFormat   string
+	TemplateFile   string
+	WatchFlag      bool
+	OutputPaths    []string
+	OutputFormats  []string
+	Service        string
+	IgnoreManifest bool
 
 	Outputs []ReportOutput
 }
@@ -49,7 +53,79 @@ func EditReportSlice(s []*Report) *[]Report {
 	return &sNew
 }
 
-// func MapToReports(objResults [][]entities.ObjectiveResultResponse, limit int, apiVersion string) ([]*Report, error) {
+func GetReports(opts *ReportOptions) ([]*Report, error) {
+
+	reportsLimit := 5
+	apiVersion := "reliably.com/v1"
+
+	var manObjectives entities.Manifest
+	// Temporarily detecting old manifest
+	if !opts.IgnoreManifest {
+		isOld := IsDeprecatedManifest(opts.ManifestPath)
+		if isOld {
+			return nil, fmt.Errorf(
+				"manifest '%s' is using a deprecated format. Please generate a new one with `reliably slo init`",
+				opts.ManifestPath,
+			)
+		}
+
+		// Will use this to filter results based on manifest objectives
+		err := manObjectives.LoadFromFile(opts.ManifestPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read manifest: %w", err)
+		}
+		if len(manObjectives) < 1 {
+			return nil, fmt.Errorf("no objectives found")
+		}
+	}
+
+	// Parse selectors
+	var selector map[string]string
+	if opts.Selector != "" {
+		var err error
+		selector, err = ParseSelectors(opts.Selector)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	hostname := config.Hostname
+	entityHost := config.EntityServerHost
+	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
+	org, err := config.GetCurrentOrgInfo()
+	if err != nil {
+		return nil, err
+	}
+
+	queryBody := api.QueryBody{
+		Kind:   "objective",
+		Labels: selector,
+		Limit:  50,
+		ForEach: api.ForEach{
+			ObjectiveResult: api.ObjectiveResult{
+				Include: true,
+				Limit:   reportsLimit,
+			},
+		},
+	}
+
+	response, err := api.Query(apiClient, entityHost, apiVersion, org.Name, queryBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get objective results: %w", err)
+	}
+
+	if !opts.IgnoreManifest {
+		response.Objectives = filterByManifest(org.Name, apiVersion, manObjectives, response.Objectives)
+	}
+
+	reports, err := MapToReports(response.Objectives, reportsLimit, apiVersion)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate report: %w", err)
+	}
+
+	return reports, nil
+}
+
 func MapToReports(objectives []api.ExpandedObjective, limit int, apiVersion string) ([]*Report, error) {
 	var mappedReports []*Report
 
@@ -62,7 +138,7 @@ func MapToReports(objectives []api.ExpandedObjective, limit int, apiVersion stri
 			Services:   services,
 		})
 
-		// Map into services. If no service, use "-" for now
+		// Map into services. If no service, set as " "
 		serviceList := make(map[string][]api.ExpandedObjective)
 		for _, obj := range objectives {
 			serviceName, ok := obj.Metadata.Labels["service"]
@@ -147,75 +223,50 @@ func MapToReports(objectives []api.ExpandedObjective, limit int, apiVersion stri
 	return mappedReports, nil
 }
 
-func GetReports(opts *ReportOptions) ([]*Report, error) {
-
-	reportsLimit := 5
-	apiVersion := "reliably.com/v1"
-
-	var manObjectives entities.Manifest
-	// Temporarily detecting old manifest
-	if opts.ManifestPath != "" {
-		isOld := IsDeprecatedManifest(opts.ManifestPath)
-		if isOld {
-			return nil, fmt.Errorf(
-				"manifest '%s' is using a deprecated format. Please generate a new one with `reliably slo init`",
-				opts.ManifestPath,
-			)
-		}
-
-		// Will use this to filter results based on manifest objectives
-		err := manObjectives.LoadFromFile(opts.ManifestPath)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read manifest: %w", err)
-		}
-		if len(manObjectives) < 1 {
-			return nil, fmt.Errorf("no objectives found")
+func filterByManifest(org string, apiVersion string, manObjectives entities.Manifest, response []api.ExpandedObjective) (filteredResponse []api.ExpandedObjective) {
+	manObjIds := make(map[string]int)
+	for i, obj := range manObjectives {
+		objId := IDFromMetadata(org, obj.Metadata, apiVersion)
+		manObjIds[objId] = i
+	}
+	for _, obj := range response {
+		objId := IDFromMetadata(org, obj.Metadata, apiVersion)
+		if _, ok := manObjIds[objId]; ok {
+			filteredResponse = append(filteredResponse, obj)
 		}
 	}
 
-	// Parse selectors
-	var selector map[string]string
-	if opts.Selector != "" {
-		var err error
-		selector, err = ParseSelectors(opts.Selector)
-		if err != nil {
-			return nil, err
-		}
+	return
+}
+
+func IDFromMetadata(org string, metadata entities.Metadata, apiVersion string) string {
+
+	labels := metadata.Labels
+
+	i := 0
+	keys := make([]string, len(labels))
+	for key := range labels {
+		keys[i] = key
+		i++
 	}
 
-	hostname := config.Hostname
-	entityHost := config.EntityServerHost
-	apiClient := api.NewClientFromHTTP(api.AuthHTTPClient(hostname))
-	org, err := config.GetCurrentOrgInfo()
-	if err != nil {
-		return nil, err
+	sort.Strings(keys)
+
+	var buffer bytes.Buffer
+
+	buffer.WriteString(org)
+	buffer.WriteString("objective")
+	buffer.WriteString(apiVersion)
+
+	for _, key := range keys {
+		buffer.WriteString(key)
+		buffer.WriteString(labels[key])
 	}
 
-	queryBody := api.QueryBody{
-		Kind:   "objective",
-		Labels: selector,
-		Limit:  50,
-		ForEach: api.ForEach{
-			ObjectiveResult: api.ObjectiveResult{
-				Include: true,
-				Limit:   reportsLimit,
-			},
-		},
-	}
-
-	response, err := api.Query(apiClient, entityHost, apiVersion, org.Name, queryBody)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get objective results: %w", err)
-	}
-
-	// TODO: if manifest objectives, filter list of objectives to have only ones that match that one.
-	// Can use the entity server id function to generate id from one and then the other and compare and filter maybe?
-	reports, err := MapToReports(response.Objectives, reportsLimit, apiVersion)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate report: %w", err)
-	}
-
-	return reports, nil
+	hasher := crypto.SHA256.New()
+	hasher.Write(buffer.Bytes())
+	hash := hasher.Sum(nil)
+	return base64.StdEncoding.EncodeToString(hash)
 }
 
 // Temporary way of handling incoming time strings
@@ -279,53 +330,3 @@ func ParseSelectors(s string) (map[string]string, error) {
 	}
 	return selector, nil
 }
-
-// Function filters objectiveResultResponses based on objectives.
-// It is assumed the slice is ordered in descending order by creation time.
-// If Entity Server assumes filtering, this function can likely be replaced.
-// func filterObjectivesResults(
-// 	objectiveResults *[]entities.ObjectiveResultResponse,
-// 	objectives []*entities.Objective,
-// 	maxResults int,
-// ) [][]entities.ObjectiveResultResponse {
-
-// 	// Creating a hash table for faster search, although likely not many entities.
-// 	// Array of name+service used as map key.
-// 	objectivesMapped := make(map[[2]string]int)
-// 	for i, o := range objectives {
-// 		if _, ok := o.Metadata.Labels["name"]; !ok {
-// 			continue
-// 		}
-// 		if _, ok := o.Metadata.Labels["service"]; !ok {
-// 			continue
-// 		}
-// 		objectivesMapped[[2]string{
-// 			o.Metadata.Labels["name"], o.Metadata.Labels["service"],
-// 		}] = i
-// 	}
-
-// 	filteredObjRes := make([][]entities.ObjectiveResultResponse, len(objectives))
-// 	for _, or := range *objectiveResults {
-// 		if _, ok := or.Metadata.Labels["name"]; !ok {
-// 			continue
-// 		}
-// 		if _, ok := or.Metadata.Labels["service"]; !ok {
-// 			continue
-// 		}
-// 		nameAndService := [2]string{or.Metadata.Labels["name"], or.Metadata.Labels["service"]}
-// 		if objectiveIndex, ok := objectivesMapped[nameAndService]; ok {
-// 			if len(filteredObjRes[objectiveIndex]) <= maxResults {
-// 				filteredObjRes[objectiveIndex] = append(filteredObjRes[objectiveIndex], or)
-// 			}
-// 		}
-// 	}
-
-// 	filteredObjResClean := make([][]entities.ObjectiveResultResponse, 0)
-// 	for _, v := range filteredObjRes {
-// 		if v != nil {
-// 			filteredObjResClean = append(filteredObjResClean, v)
-// 		}
-// 	}
-
-// 	return filteredObjResClean
-// }

@@ -9,12 +9,12 @@ import (
 	"github.com/google/shlex"
 	"github.com/spf13/cobra"
 
-	//"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/report"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCommandOutputFlags(t *testing.T) {
@@ -93,56 +93,41 @@ func TestCommandOutputFlags(t *testing.T) {
 }
 
 func TestMapToReports(t *testing.T) {
+	// var sliSelect entities.Labels = entities.Labels{
+	// 	"provider":       "gcp",
+	// 	"category":       "availability",
+	// 	"gcp_project_id": "abc123",
+	// 	"resource_id":    "projectid/google-cloud-load-balancers/loadbalancer-name",
+	// }
 
-	var sliSelect entities.Labels = entities.Labels{
-		"provider":       "gcp",
-		"category":       "availability",
-		"gcp_project_id": "abc123",
-		"resource_id":    "projectid/google-cloud-load-balancers/loadbalancer-name",
+	obj1 := entities.NewObjective()
+	expObj1 := api.ExpandedObjective{
+		Objective: *obj1,
+		ForEach:   api.ForEachResponse{},
+	}
+	expObj1.Objective.Metadata.Labels = entities.Labels{
+		"name":    "api-availability",
+		"service": "example-api",
 	}
 
-	objRes1 := entities.ObjectiveResultResponse{
-		Metadata: entities.Metadata{
-			Labels: map[string]string{
-				"name":    "api-availability",
-				"service": "example-api",
-				"from":    "2021-06-13 12:07:57.081 +0000 UTC",
-				"to":      "2021-06-14 12:07:57.081 +0000 UTC",
-			},
-		},
-		Spec: entities.ObjectiveResultSpec{
-			IndicatorSelector: entities.Selector(sliSelect),
-			ObjectivePercent:  90,
-			ActualPercent:     80,
-			RemainingPercent:  -10,
-		},
+	obj2 := entities.NewObjective()
+	expObj2 := api.ExpandedObjective{
+		Objective: *obj2,
+		ForEach:   api.ForEachResponse{},
+	}
+	expObj2.Objective.Metadata.Labels = entities.Labels{
+		"name":    "api-latency",
+		"service": "example-api",
 	}
 
-	objRes2 := entities.ObjectiveResultResponse{
-		Metadata: entities.Metadata{
-			Labels: map[string]string{
-				"name":    "api-latency",
-				"service": "example-api",
-				"from":    "2021-06-13 12:07:57.081 +0000 UTC",
-				"to":      "2021-06-14 12:07:57.081 +0000 UTC",
-			},
-		},
-		Spec: entities.ObjectiveResultSpec{
-			IndicatorSelector: entities.Selector(sliSelect),
-			ObjectivePercent:  80,
-			ActualPercent:     90,
-			RemainingPercent:  10,
-		},
-	}
-	objResults := make([][]entities.ObjectiveResultResponse, 2)
-	objResults[0] = []entities.ObjectiveResultResponse{objRes1}
-	objResults[1] = []entities.ObjectiveResultResponse{objRes2}
-	reports, err := report.MapToReports(objResults, 6, "v1")
+	objectives := make([]api.ExpandedObjective, 2)
+	objectives = append(objectives, expObj1, expObj2)
+	reports, err := report.MapToReports(objectives, 5, "reliably.com/v1")
 	assert.NoError(t, err, "Error occurred in MapToReports")
 	assert.Equal(
 		t,
-		reports[0].Services[0].Name,
 		"example-api",
+		reports[0].Services[0].Name,
 		"MapToReports incorrect service name mapping: example-api",
 	)
 	assert.Equal(
@@ -153,8 +138,8 @@ func TestMapToReports(t *testing.T) {
 	)
 	assert.Equal(
 		t,
-		reports[0].Services[0].ServiceLevels[1].Name,
 		"api-latency",
+		reports[0].Services[0].ServiceLevels[1].Name,
 		"MapToReports incorrect name mapping: api-latency",
 	)
 
