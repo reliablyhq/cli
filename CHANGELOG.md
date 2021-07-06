@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Fixed
+
+-   `reliably slo report` receives the correct number of results for each objective
+
+### Changed
+
+-   `reliably slo report` now accepts a `-l, --selector` flag to filter objectives by labels
+-   `reliably slo report` has an `--ignore-manifest` flag that avoids the default `reliably.yaml` filtering and retrieves all values from an org
+
 ## [v0.20.1] - 2021-07-02
 
 ### Fixed
