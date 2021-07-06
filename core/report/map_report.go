@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	iso8601 "github.com/ChannelMeter/iso8601duration"
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/config"
@@ -27,18 +29,16 @@ type ReportOutput struct {
 type ReportOptions struct {
 	IO *iostreams.IOStreams
 
-	Selector       string
-	ManifestPath   string
-	OutputPath     string
-	OutputFormat   string
-	TemplateFile   string
-	WatchFlag      bool
-	OutputPaths    []string
-	OutputFormats  []string
-	Service        string
-	IgnoreManifest bool
-
-	Outputs []ReportOutput
+	Selector      string
+	ManifestPath  string
+	OutputPath    string
+	OutputFormat  string
+	TemplateFile  string
+	WatchFlag     bool
+	OutputPaths   []string
+	OutputFormats []string
+	Service       string
+	Outputs       []ReportOutput
 }
 
 func EditReportSlice(s []*Report) *[]Report {
@@ -57,7 +57,7 @@ func GetReports(opts *ReportOptions) ([]*Report, error) {
 
 	var manObjectives entities.Manifest
 	// Temporarily detecting old manifest
-	if !opts.IgnoreManifest {
+	if opts.ManifestPath != "" {
 		isOld := IsDeprecatedManifest(opts.ManifestPath)
 		if isOld {
 			return nil, fmt.Errorf(
@@ -111,7 +111,8 @@ func GetReports(opts *ReportOptions) ([]*Report, error) {
 		return nil, fmt.Errorf("failed to get objective results: %w", err)
 	}
 
-	if !opts.IgnoreManifest {
+	if len(manObjectives) > 0 {
+		log.Info("Filtering results with manifest: ", opts.ManifestPath)
 		response.Objectives = filterByManifest(org.Name, apiVersion, manObjectives, response.Objectives)
 	}
 

@@ -9,7 +9,8 @@
 ### Changed
 
 -   `reliably slo report` now accepts a `-l, --selector` flag to filter objectives by labels
--   `reliably slo report` has an `--ignore-manifest` flag that avoids the default `reliably.yaml` filtering and retrieves all values from an org
+-   `reliably slo report` does not add additional filtering from manifest by default. To filter from manifest, explicitly include the path.
+-   The service label is now optional in `reliably slo report`.
 
 ## [v0.20.1] - 2021-07-02
 
