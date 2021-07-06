@@ -19,6 +19,7 @@ import (
 	"github.com/reliablyhq/cli/core/iostreams"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/report"
+	"github.com/reliablyhq/cli/utils"
 )
 
 type Choice = cmdutil.Choice
@@ -226,7 +227,7 @@ func Watch(opts *report.ReportOptions) error {
 	for {
 		select {
 		case r := <-rChan:
-			report.ClearScreen()
+			utils.ClearScreen()
 			fmt.Println(color.Magenta("Refreshing SLO report every 3 seconds."), "Press CTRL+C to quit.")
 			report.Write(report.TABBED, r[0], os.Stdout, opts.TemplateFile, log.StandardLogger(), r[1], report.EditReportSlice(r))
 

@@ -5,9 +5,6 @@ import (
 	"crypto"
 	"encoding/base64"
 	"fmt"
-	"os"
-	"os/exec"
-	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -290,24 +287,6 @@ func toIso8601Duration(d time.Duration) core.Iso8601Duration {
 	di := int(d.Seconds())
 	isoD := core.Iso8601Duration{Duration: iso8601.Duration{Seconds: di}}
 	return isoD
-}
-
-func ClearScreen() {
-	var c *exec.Cmd
-
-	switch runtime.GOOS {
-	case "windows":
-		c = exec.Command("cmd", "/c", "cls")
-	default:
-		// clear should work for UNIX & linux based systems
-		c = exec.Command("clear")
-
-		// hide cursor on unix based systems
-		fmt.Print("\033[?25l")
-	}
-
-	c.Stdout = os.Stdout
-	c.Run()
 }
 
 func IsDeprecatedManifest(path string) bool {
