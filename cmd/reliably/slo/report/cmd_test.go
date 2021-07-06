@@ -9,11 +9,10 @@ import (
 	"github.com/google/shlex"
 	"github.com/spf13/cobra"
 
-	"github.com/stretchr/testify/assert"
+	//"github.com/stretchr/testify/assert"
+
 	"github.com/stretchr/testify/require"
 
-	"github.com/reliablyhq/cli/api"
-	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/report"
 )
 
@@ -89,58 +88,5 @@ func TestCommandOutputFlags(t *testing.T) {
 
 		})
 	}
-
-}
-
-func TestMapToReports(t *testing.T) {
-	// var sliSelect entities.Labels = entities.Labels{
-	// 	"provider":       "gcp",
-	// 	"category":       "availability",
-	// 	"gcp_project_id": "abc123",
-	// 	"resource_id":    "projectid/google-cloud-load-balancers/loadbalancer-name",
-	// }
-
-	obj1 := entities.NewObjective()
-	expObj1 := api.ExpandedObjective{
-		Objective: *obj1,
-		ForEach:   api.ForEachResponse{},
-	}
-	expObj1.Objective.Metadata.Labels = entities.Labels{
-		"name":    "api-availability",
-		"service": "example-api",
-	}
-
-	obj2 := entities.NewObjective()
-	expObj2 := api.ExpandedObjective{
-		Objective: *obj2,
-		ForEach:   api.ForEachResponse{},
-	}
-	expObj2.Objective.Metadata.Labels = entities.Labels{
-		"name":    "api-latency",
-		"service": "example-api",
-	}
-
-	objectives := make([]api.ExpandedObjective, 2)
-	objectives = append(objectives, expObj1, expObj2)
-	reports, err := report.MapToReports(objectives, 5, "reliably.com/v1")
-	assert.NoError(t, err, "Error occurred in MapToReports")
-	assert.Equal(
-		t,
-		"example-api",
-		reports[0].Services[0].Name,
-		"MapToReports incorrect service name mapping: example-api",
-	)
-	assert.Equal(
-		t,
-		reports[0].Services[0].ServiceLevels[0].Name,
-		"api-availability",
-		"MapToReports incorrect name mapping: api-availability",
-	)
-	assert.Equal(
-		t,
-		"api-latency",
-		reports[0].Services[0].ServiceLevels[1].Name,
-		"MapToReports incorrect name mapping: api-latency",
-	)
 
 }
