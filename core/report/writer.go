@@ -86,9 +86,14 @@ func Write(format Format, r *Report, w io.Writer, templateFile string, l *log.Lo
 }
 
 func reportSimpleText(r *Report, w io.Writer) {
-
+	serviceCount := 0
 	for i, svc := range r.Services {
-		fmt.Fprint(w, color.Yellow(fmt.Sprintf("Service #%d: %s\n", i+1, svc.Name)))
+		serviceLine := " "
+		if svc.Name != " " && svc.Name != "" {
+			serviceCount += 1
+			serviceLine = fmt.Sprintf("Service #%d: %s\n", serviceCount, svc.Name)
+		}
+		fmt.Fprint(w, color.Yellow(serviceLine))
 
 		for _, sl := range svc.ServiceLevels {
 
@@ -132,7 +137,7 @@ func reportFromTemplate(r *Report, w io.Writer, templateFile string, lrs *[]Repo
 	// create report data from report & lrs
 	rd := ReportData{r, lrs}
 
-	t, err := template.New("SLOTemplate").Funcs(reportFuncMap()).Parse(SLOTemplate)
+	t, _ := template.New("SLOTemplate").Funcs(reportFuncMap()).Parse(SLOTemplate)
 
 	fi, err := os.Stat(templateFile)
 	if err != nil {
@@ -318,9 +323,14 @@ func reportTable(r *Report, w io.Writer, last *Report, lrs *[]Report) {
 	})
 
 	emptyRow := []string{""}
-
+	serviceCount := 0
 	for i, svc := range r.Services {
-		svcRowHeader := []string{fmt.Sprintf("Service #%d: %s", i+1, svc.Name)}
+		svcRowHeader := []string{" "}
+		if svc.Name != " " && svc.Name != "" {
+			serviceCount += 1
+			svcRowHeader = []string{fmt.Sprintf("Service #%d: %s", serviceCount, svc.Name)}
+		}
+
 		table.Append(svcRowHeader)
 
 		for _, sl := range svc.ServiceLevels {

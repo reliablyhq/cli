@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Fixed
+
+-   `reliably slo report` receives the correct number of results for each objective
+
+### Changed
+
+-   `reliably slo report` now accepts a `-l, --selector` flag to filter objectives by labels
+-   `reliably slo report` does not add additional filtering from manifest by default. To filter from manifest, explicitly include the path.
+-   The service label is now optional in `reliably slo report`.
+
 ## [v0.20.1] - 2021-07-02
 
 ### Fixed
