@@ -13,6 +13,7 @@ import (
 
 	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core"
+	"github.com/reliablyhq/cli/version"
 	v "github.com/reliablyhq/cli/version"
 )
 
@@ -135,6 +136,7 @@ func HandleHTTPError(resp *http.Response) error {
 
 // REST performs a REST request and parses the response.
 func (c Client) REST(hostname string, method string, p string, body io.Reader, data interface{}) error {
+
 	url := core.RESTPrefix(hostname) + p
 	log.Debugf("[api.REST] %s %s", method, url)
 	req, err := http.NewRequest(method, url, body)
@@ -143,6 +145,7 @@ func (c Client) REST(hostname string, method string, p string, body io.Reader, d
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("Client", fmt.Sprintf("reliably-cli:%s", version.Version))
 
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -180,6 +183,7 @@ func (c Client) RESTv2(hostname string, method string, p string, body io.Reader,
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("Client", fmt.Sprintf("reliably-cli:%s", version.Version))
 
 	resp, err := c.http.Do(req)
 	if err != nil {
