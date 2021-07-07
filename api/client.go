@@ -145,7 +145,7 @@ func (c Client) REST(hostname string, method string, p string, body io.Reader, d
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	req.Header.Set("Client", fmt.Sprintf("reliably-cli:%s", version.Version))
+	req.Header.Set("metadata-client", fmt.Sprintf("reliably-cli:%s", version.Version))
 
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -183,7 +183,7 @@ func (c Client) RESTv2(hostname string, method string, p string, body io.Reader,
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	req.Header.Set("Client", fmt.Sprintf("reliably-cli:%s", version.Version))
+	req.Header.Set("metadata-client", fmt.Sprintf("reliably-cli:%s", version.Version))
 
 	resp, err := c.http.Do(req)
 	if err != nil {
