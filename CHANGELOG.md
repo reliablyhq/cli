@@ -5,6 +5,7 @@
 ### Fixed
 
 -   `reliably slo report` receives the correct number of results for each objective
+-   Entity server hostname is not changed when overridding with reliably host environment variable
 
 ### Changed
 

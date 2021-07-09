@@ -24,6 +24,10 @@ var (
 func init() {
 	if h := os.Getenv(envReliablyHost); h != "" {
 		Hostname = h
+
+		// when we override the hostname, we shall make it default for entity
+		// host as well, unless this is also overridden after
+		EntityServerHost = h
 	}
 
 	if h := os.Getenv(envReliablyEntityServerHost); h != "" {
