@@ -31,7 +31,7 @@ func Test_requestPath(t *testing.T) {
 				version: "relIAbly/V1",
 				kind:    "SOMEthing",
 			},
-			want:    "entities/testing/reliably/v1/something",
+			want:    "entities/TestIng/reliably/v1/something",
 			wantErr: false,
 		},
 		{
