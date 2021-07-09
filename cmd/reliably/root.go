@@ -74,8 +74,6 @@ Environment variables:
 		// call that root hook as:
 		// cmd.Root().PersistentPreRunE(cmd, args)
 
-		api.AddGlobalHeader("x-reliably-cmd", strings.Join(os.Args[1:], " "))
-
 		if err := setUpVerboseLogLevel(verbose); err != nil {
 			return err
 		}
@@ -136,6 +134,10 @@ Environment variables:
 
 // Execute the root command and exit with nonzero code in case of errors
 func Execute() {
+	// add global headers
+	api.AddGlobalHeader("X-Reliably-Cli-Cmd", strings.Join(os.Args[1:], " "))
+	api.AddGlobalHeader("X-Reliably-Cli-Version", v.Version)
+
 	updateMessageChan := make(chan *update.ReleaseInfo)
 	go func() {
 		rel, _ := checkForUpdate(version)
