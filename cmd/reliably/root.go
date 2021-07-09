@@ -63,10 +63,6 @@ Environment variables:
 		},
 	}
 
-	// cmd.PreRun = func(_ *cobra.Command, _ []string) {
-
-	// }
-
 	cmd.PersistentFlags().BoolVarP(
 		&verbose, "verbose", "v", false, "verbose output")
 	cmd.PersistentFlags().BoolVar(
