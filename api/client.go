@@ -69,6 +69,14 @@ func AddHeader(name, value string) ClientOption {
 	}
 }
 
+var globalHeaders = make(map[string]string)
+
+// AddGlobalHeader - adds header
+// these headers will be added to all REST API calls.
+func AddGlobalHeader(name, value string) {
+	globalHeaders[name] = value
+}
+
 // AddHeaderFunc is an AddHeader that gets the string value from a function
 func AddHeaderFunc(name string, getValue func(*http.Request) (string, error)) ClientOption {
 	return func(tr http.RoundTripper) http.RoundTripper {
@@ -143,6 +151,9 @@ func (c Client) REST(hostname string, method string, p string, body io.Reader, d
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	for k, v := range globalHeaders {
+		req.Header.Set(k, v)
+	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -180,6 +191,9 @@ func (c Client) RESTv2(hostname string, method string, p string, body io.Reader,
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	for k, v := range globalHeaders {
+		req.Header.Set(k, v)
+	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
