@@ -63,6 +63,10 @@ Environment variables:
 		},
 	}
 
+	// cmd.PreRun = func(_ *cobra.Command, _ []string) {
+
+	// }
+
 	cmd.PersistentFlags().BoolVarP(
 		&verbose, "verbose", "v", false, "verbose output")
 	cmd.PersistentFlags().BoolVar(
@@ -73,6 +77,8 @@ Environment variables:
 		// If this hook is needed by a subcommand, makes sure to excplicitely
 		// call that root hook as:
 		// cmd.Root().PersistentPreRunE(cmd, args)
+
+		api.AddGlobalHeader("x-reliably-cmd", strings.Join(os.Args[1:], " "))
 
 		if err := setUpVerboseLogLevel(verbose); err != nil {
 			return err
