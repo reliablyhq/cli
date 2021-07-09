@@ -6,6 +6,7 @@
 
 -   `reliably slo report` receives the correct number of results for each objective
 -   Entity server hostname is not changed when overridding with reliably host environment variable
+-   Do not lowercase the organization name in the entity server URLs
 
 ### Changed
 

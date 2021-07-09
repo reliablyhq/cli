@@ -114,7 +114,8 @@ func requestPath(org, version, kind string) (string, error) {
 		return "", errors.New("kind is empty")
 	}
 
-	path := fmt.Sprintf("entities/%s/%s/%s", org, version, kind)
+	path := fmt.Sprintf("entities/%s/%s/%s",
+		org, strings.ToLower(version), strings.ToLower(kind))
 
-	return strings.ToLower(path), nil
+	return path, nil
 }
