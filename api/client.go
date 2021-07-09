@@ -234,8 +234,8 @@ func UnsecureHTTPClient(hostname string) *http.Client {
 }
 
 // AuthHTTPClient returns an authenticated HTTP client
-func AuthHTTPClient(hostname string, opts ...ClientOption) *http.Client {
-	// var opts []ClientOption
+func AuthHTTPClient(hostname string) *http.Client {
+	var opts []ClientOption
 	var token string
 
 	opts = append(opts,
@@ -278,5 +278,3 @@ func NewHTTPClient(cfg config.Config, appVersion string, setAccept bool) *http.C
 	return api.NewHTTPClient(opts...)
 }
 */
-
-var headers map[string]string
