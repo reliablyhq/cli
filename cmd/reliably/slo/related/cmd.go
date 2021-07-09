@@ -74,6 +74,9 @@ func NewCommand(runF OptFunc) *cobra.Command {
 		Short:   "fetches a node graph of relationships based on manifest objectives",
 		Long:    longDesc,
 		Example: examples,
+		PreRun: func(cmd *cobra.Command, args []string) {
+			api.AddGlobalHeader("x-reliably-cmd", cmd.Use)
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// read manifest
 			var m entities.Manifest
