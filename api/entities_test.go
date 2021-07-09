@@ -27,11 +27,11 @@ func Test_requestPath(t *testing.T) {
 		{
 			name: "lowercases the args",
 			args: args{
-				org:     "TestIng",
+				org:     "TestIng", // except the org name
 				version: "relIAbly/V1",
 				kind:    "SOMEthing",
 			},
-			want:    "entities/testing/reliably/v1/something",
+			want:    "entities/TestIng/reliably/v1/something",
 			wantErr: false,
 		},
 		{
