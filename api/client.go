@@ -69,7 +69,7 @@ func AddHeader(name, value string) ClientOption {
 	}
 }
 
-var globalHeaders map[string]string
+var globalHeaders = make(map[string]string)
 
 // AddGlobalHeader - adds header
 // these headers will be added to all REST API calls.
