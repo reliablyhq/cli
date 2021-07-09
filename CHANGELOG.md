@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [v0.20.2] - 2021-07-09
+
 ### Fixed
 
 -   `reliably slo report` receives the correct number of results for each objective
@@ -327,7 +329,9 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.20.1...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.20.2...HEAD
+
+[v0.20.2]: https://github.com/reliablyhq/cli/compare/v0.20.1...v0.20.2
 
 [v0.20.1]: https://github.com/reliablyhq/cli/compare/v0.20.0...v0.20.1
 
