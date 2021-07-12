@@ -2,9 +2,11 @@
 
 ## [Unreleased]
 
+## [v0.20.3] - 2021-07-12
+
 ### Fixed
 
-- Datetime string parsing fixed to support microseconds, as provided by the `slo agent` command.
+-   Datetime string parsing fixed to support microseconds, as provided by the `slo agent` command.
 
 ## [v0.20.2] - 2021-07-09
 
@@ -333,7 +335,9 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.20.2...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.20.3...HEAD
+
+[v0.20.3]: https://github.com/reliablyhq/cli/compare/v0.20.2...v0.20.3
 
 [v0.20.2]: https://github.com/reliablyhq/cli/compare/v0.20.1...v0.20.2
 
