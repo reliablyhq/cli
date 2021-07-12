@@ -269,7 +269,7 @@ func IDFromMetadata(org string, metadata entities.Metadata, apiVersion string) s
 
 // Temporary way of handling incoming time strings
 func isoTimeParse(sTime string) (time.Time, error) {
-	msOptions := []string{"000", "00", "0"}
+	msOptions := []string{"000000", "00000", "0000", "000", "00", "0"}
 	var err error
 	var parsedTime time.Time
 	for _, v := range msOptions {
