@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Datetime string parsing fixed to support microseconds, as provided by the `slo agent` command.
+
 ## [v0.20.2] - 2021-07-09
 
 ### Fixed
