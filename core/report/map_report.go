@@ -177,9 +177,7 @@ func MapToReports(objectives []api.ExpandedObjective, limit int, apiVersion stri
 					if err != nil {
 						return nil, fmt.Errorf("time 'from' not parsed correctly: %w", err)
 					}
-					// Remove this once entity server returns period or calculated by from/to
-					// timeDiff := to.Sub(from)
-					// period := toIso8601Duration(timeDiff)
+
 					period, err := time.ParseDuration(obj.Spec.Window.String())
 					if err != nil {
 						return nil, fmt.Errorf("time window cannot be parsed: %w", err)
@@ -267,13 +265,19 @@ func IDFromMetadata(org string, metadata entities.Metadata, apiVersion string) s
 	return base64.StdEncoding.EncodeToString(hash)
 }
 
-// Temporary way of handling incoming time strings
 func isoTimeParse(sTime string) (time.Time, error) {
-	msOptions := []string{"000000", "00000", "0000", "000", "00", "0"}
 	var err error
 	var parsedTime time.Time
-	for _, v := range msOptions {
-		parsedTime, err = time.Parse(fmt.Sprintf("2006-01-02 15:04:05.%v -0700 MST", v), sTime)
+	formats := []string{
+		time.RFC3339,
+		time.RFC3339Nano,
+		"2006-01-02 15:04:05.999999999 -0700 MST",
+		"2006-01-02 15:04:05.999999 -0700 MST",
+		"2006-01-02 15:04:05.999 -0700 MST",
+		"2006-01-02 15:04:05.9 -0700 MST",
+	}
+	for _, format := range formats {
+		parsedTime, err = time.Parse(format, sTime)
 		if err == nil {
 			break
 		}
@@ -281,6 +285,7 @@ func isoTimeParse(sTime string) (time.Time, error) {
 	if err != nil {
 		return time.Time{}, fmt.Errorf("time not parsed correctly: %w", err)
 	}
+
 	return parsedTime, nil
 }
 
