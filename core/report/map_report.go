@@ -112,7 +112,7 @@ func GetReports(opts *ReportOptions) ([]*Report, error) {
 	}
 
 	if len(manObjectives) > 0 {
-		log.Info("Filtering results with manifest: ", opts.ManifestPath)
+		log.Debug("Filtering results with manifest: ", opts.ManifestPath)
 		response.Objectives = filterByManifest(org.Name, apiVersion, manObjectives, response.Objectives)
 	}
 
