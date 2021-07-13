@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Fixed
+
+-   Report command accepts to/from time in RFC 3339 and time.String() output
+
+### Changed
+
+- Reading manifest message in report command is displayed only in verbose mode
+
 ## [v0.20.3] - 2021-07-12
 
 ### Fixed
