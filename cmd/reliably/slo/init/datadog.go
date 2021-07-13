@@ -9,6 +9,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/reliablyhq/cli/core"
 
+	"github.com/reliablyhq/cli/core/cli/question"
 	"github.com/reliablyhq/cli/core/manifest"
 	"github.com/reliablyhq/cli/core/metrics/datadog"
 )
@@ -129,4 +130,9 @@ func ImportSLOsFromDatadog() error {
 	}
 
 	return fmt.Errorf("Skip")
+}
+
+func promptDatadogQuery(name string, help string) string {
+	q := fmt.Sprintf("Paste your '%s' (%s) datadog query:", name, help)
+	return question.WithStringAnswer(q, emptyOptions)
 }

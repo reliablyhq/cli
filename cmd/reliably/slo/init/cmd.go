@@ -31,6 +31,7 @@ var (
 	providersMap        = map[string]string{
 		"Amazon Web Services":   "aws",
 		"Google Cloud Platform": "gcp",
+		"Datadog":               "datadog",
 	}
 )
 
@@ -119,7 +120,7 @@ func initRun(opts *InitOptions) error {
 	}
 	fmt.Println("SLO ->", slo)
 
-	return nil
+	//return nil
 
 	manifestPath := opts.ManifestPath
 
@@ -191,24 +192,31 @@ func promptForObjectives(io *iostreams.IOStreams, serviceName string) ([]entitie
 		// ask users for objective data
 		objective.Spec.ObjectivePercent = question.WithFloat64Answer("What is your target for this SLO (in %)?", emptyOptions, 0, 100)
 
-		slType := question.WithSingleChoiceAnswer("What type of SLO do you want to declare?", emptyOptions, "Availability", "Latency")
-		slType = sanitizeString(slType)
-		objective.Spec.IndicatorSelector["category"] = slType
-
-		if slType == "latency" {
-			threshold := question.WithDurationAnswer("What is your latency threshold (in milliseconds)?", emptyOptions)
-			objective.Spec.IndicatorSelector["latency_target"] = fmt.Sprint(threshold)
-
-			// should we prompt for the percentile as well ? ...
-			objective.Spec.IndicatorSelector["percentile"] = "99"
-		}
-
-		objective.Spec.Window = core.Duration{Duration: getObservationWindow().ToDuration()}
-
-		providerLabels, _ := promptForProvider(io)
+		provider, providerLabels, _ := promptForProvider(io)
 		for k, v := range providerLabels {
 			objective.Spec.IndicatorSelector[k] = v
 		}
+
+		switch provider {
+		case "gcp", "aws":
+			slType := question.WithSingleChoiceAnswer("What type of SLO do you want to declare?", emptyOptions, "Availability", "Latency")
+			slType = sanitizeString(slType)
+			objective.Spec.IndicatorSelector["category"] = slType
+
+			if slType == "latency" {
+				threshold := question.WithDurationAnswer("What is your latency threshold (in milliseconds)?", emptyOptions)
+				objective.Spec.IndicatorSelector["latency_target"] = fmt.Sprint(threshold)
+
+				// should we prompt for the percentile as well ? ...
+				objective.Spec.IndicatorSelector["percentile"] = "99"
+			}
+
+		case "datadog":
+			objective.Spec.IndicatorSelector["datadog_numerator_query"] = promptDatadogQuery("numerator", "good events")
+			objective.Spec.IndicatorSelector["datadog_denominator_query"] = promptDatadogQuery("denominator", "total events")
+		}
+
+		objective.Spec.Window = core.Duration{Duration: getObservationWindow().ToDuration()}
 
 		defaultSloName := generateDefaultSloName(objective)
 		name := question.WithStringAnswerV2("What is the name of this SLO?", "", defaultSloName, emptyOptions)
@@ -228,7 +236,7 @@ func promptForObjectives(io *iostreams.IOStreams, serviceName string) ([]entitie
 	return objectives, nil
 }
 
-func promptForProvider(io *iostreams.IOStreams) (entities.Labels, error) {
+func promptForProvider(io *iostreams.IOStreams) (string, entities.Labels, error) {
 
 	//var labels entities.Labels = make(entities.Labels)
 
@@ -241,7 +249,7 @@ func promptForProvider(io *iostreams.IOStreams) (entities.Labels, error) {
 	providerFullName := question.WithSingleChoiceAnswer("Which cloud provider are you targeting?", emptyOptions, providers...)
 	provider := providersMap[providerFullName]
 	ps := getProviderSelectors(provider)
-	return entities.Labels(ps), nil
+	return provider, entities.Labels(ps), nil
 }
 
 func getProviderSelectors(provider string) map[string]string {
