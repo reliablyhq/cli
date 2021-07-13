@@ -54,3 +54,13 @@ func Reverse(s interface{}) {
 		swap(i, j)
 	}
 }
+
+// AvgInt returns the average of all int values of the slice
+func AvgInt(array []int) float64 {
+	return float64(SumInt(array) / len(array))
+}
+
+// SumFloat64 returns the average of all float64 values of the slice
+func AvgFloat64(array []float64) float64 {
+	return SumFloat64(array) / float64(len(array))
+}

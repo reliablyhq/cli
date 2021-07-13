@@ -21,6 +21,7 @@ import (
 	"github.com/reliablyhq/cli/core/color"
 	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/iostreams"
+	"github.com/reliablyhq/cli/core/metrics/datadog"
 )
 
 var (
@@ -63,6 +64,62 @@ func NewCommand(runF func(*InitOptions) error) *cobra.Command {
 }
 
 func initRun(opts *InitOptions) error {
+
+	fmt.Println("Validate API Key for datadog")
+	if ok, err := datadog.ValidateApiKey(); ok {
+		fmt.Println("Authenticated to Datadog API")
+	} else {
+		fmt.Println("Error while validating DD API KEY", err)
+	}
+
+	var query string
+
+	/*
+		//query = "sum:gcp.loadbalancing.https.backend_request_count{response_code_class:200,backend_name:staging-api}"
+		query = "sum:gcp.loadbalancing.https.backend_request_count{response_code_class:200,backend_name:staging-api}.as_count()+sum:gcp.loadbalancing.https.backend_request_count{response_code_class:300,backend_name:staging-api}.as_count()+sum:gcp.loadbalancing.https.backend_request_count{response_code_class:400,backend_name:staging-api}.as_count()"
+		_ = QueryMetrics(query)
+
+		query = "sum:gcp.loadbalancing.https.backend_request_count{backend_name:staging-api}.as_count()"
+		_ = QueryMetrics(query)
+	*/
+
+	/*
+		query = "sum:gcp.loadbalancing.https.backend_request_count{response_code_class:200,backend_name:reliablyalpha1}.as_count()+sum:gcp.loadbalancing.https.backend_request_count{response_code_class:300,backend_name:reliablyalpha1}.as_count()"
+		_ = QueryMetrics(query)
+
+		query = "sum:gcp.loadbalancing.https.backend_request_count{backend_name:reliablyalpha1}"
+		_ = QueryMetrics(query)
+
+		query = "(sum:gcp.loadbalancing.https.backend_request_count{response_code_class:200,backend_name:reliablyalpha1}.as_count()+sum:gcp.loadbalancing.https.backend_request_count{response_code_class:300,backend_name:reliablyalpha1}.as_count()) / sum:gcp.loadbalancing.https.backend_request_count{backend_name:reliablyalpha1}"
+		_ = QueryMetrics(query)
+	*/
+
+	query = "sum:gcp.loadbalancing.https.backend_request_count{backend_name:reliablyalpha1,response_code_class:200}.as_count()"
+	//	_ = QueryMetrics(query)
+	num := query
+
+	query = "sum:gcp.loadbalancing.https.backend_request_count{backend_name:reliablyalpha1}.as_count()"
+	//_ = QueryMetrics(query)
+	denom := query
+
+	//query = "(sum:gcp.loadbalancing.https.backend_request_count{response_code_class:200,backend_name:reliablyalpha1}.as_count()+sum:gcp.loadbalancing.https.backend_request_count{response_code_class:300,backend_name:reliablyalpha1}.as_count()) / sum:gcp.loadbalancing.https.backend_request_count{backend_name:reliablyalpha1}"
+	//_ = QueryMetrics(query)
+	/*
+		fmt.Println("#####")
+
+		_ = ImportSLOsFromDatadog()
+	*/
+
+	fmt.Println("----> COMPUTE SLO from numerator/denumerator queries")
+
+	slo, err := datadog.ComputeSloFromQueryMetrics(num, denom)
+	if err != nil {
+		fmt.Println("we have an error", err)
+		return nil
+	}
+	fmt.Println("SLO ->", slo)
+
+	return nil
 
 	manifestPath := opts.ManifestPath
 
