@@ -146,6 +146,16 @@ func HandleHTTPError(resp *http.Response) error {
 func (c Client) REST(hostname string, method string, p string, body io.Reader, data interface{}) error {
 	url := core.RESTPrefix(hostname) + p
 	log.Debugf("[api.REST] %s %s", method, url)
+	if log.GetLevel() == log.TraceLevel && body != nil {
+		readBody, err := io.ReadAll(body)
+		if err != nil {
+			return err
+		}
+		log.Tracef("%s Request Body: %s", method, readBody)
+		buf := io.NopCloser(bytes.NewBuffer(readBody))
+		body = buf
+	}
+
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return err
@@ -161,6 +171,16 @@ func (c Client) REST(hostname string, method string, p string, body io.Reader, d
 		return err
 	}
 	defer resp.Body.Close()
+
+	if log.GetLevel() == log.TraceLevel && resp.Body != nil {
+		readBody, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		log.Tracef("Response Body: %s", readBody)
+		buf := io.NopCloser(bytes.NewBuffer(readBody))
+		resp.Body = buf
+	}
 
 	success := resp.StatusCode >= 200 && resp.StatusCode < 300
 	if !success {
@@ -193,7 +213,7 @@ func (c Client) RESTv2(hostname string, method string, p string, body io.Reader,
 		if err != nil {
 			return err
 		}
-		log.Tracef("%s Body: %s", method, readBody)
+		log.Tracef("%s Request Body: %s", method, readBody)
 		buf := io.NopCloser(bytes.NewBuffer(readBody))
 		body = buf
 	}
@@ -213,6 +233,16 @@ func (c Client) RESTv2(hostname string, method string, p string, body io.Reader,
 		return err
 	}
 	defer resp.Body.Close()
+
+	if log.GetLevel() == log.TraceLevel && resp.Body != nil {
+		readBody, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		log.Tracef("Response Body: %s", readBody)
+		buf := io.NopCloser(bytes.NewBuffer(readBody))
+		resp.Body = buf
+	}
 
 	success := resp.StatusCode >= 200 && resp.StatusCode < 300
 	if !success {
