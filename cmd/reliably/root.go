@@ -32,6 +32,7 @@ type Choice = cmdutil.Choice
 
 var (
 	verbose     bool
+	veryVerbose bool
 	noColor     bool
 	version     = v.Version
 	buildDate   = v.Date
@@ -62,9 +63,10 @@ Environment variables:
 `),
 		},
 	}
-
 	cmd.PersistentFlags().BoolVarP(
 		&verbose, "verbose", "v", false, "verbose output")
+	cmd.PersistentFlags().BoolVarP(
+		&veryVerbose, "very-verbose", "V", false, "very verbose output")
 	cmd.PersistentFlags().BoolVar(
 		&noColor, "no-color", false, "Disable color output")
 	cmd.SetVersionTemplate(FormatVersion(version, buildDate, revision))
@@ -74,7 +76,7 @@ Environment variables:
 		// call that root hook as:
 		// cmd.Root().PersistentPreRunE(cmd, args)
 
-		if err := setUpVerboseLogLevel(verbose); err != nil {
+		if err := setUpVerboseLogLevel(verbose, veryVerbose); err != nil {
 			return err
 		}
 
@@ -180,14 +182,16 @@ func init() {
 
 // initLogging ensure the log level is set depending on the verbose flag
 func initLogging() {
-	if err := setUpVerboseLogLevel(verbose); err != nil {
+	if err := setUpVerboseLogLevel(verbose, veryVerbose); err != nil {
 		er(err)
 	}
 }
 
 //set the log level to debug if verbose mode is on
-func setUpVerboseLogLevel(verbose bool) error {
-	if verbose {
+func setUpVerboseLogLevel(verbose bool, veryVerbose bool) error {
+	if veryVerbose {
+		log.SetLevel(log.TraceLevel)
+	} else if verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.InfoLevel)

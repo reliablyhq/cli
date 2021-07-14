@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -185,6 +186,18 @@ func (c Client) REST(hostname string, method string, p string, body io.Reader, d
 func (c Client) RESTv2(hostname string, method string, p string, body io.Reader, data interface{}) error {
 	url := core.BaseHttpUrl(hostname) + p
 	log.Debugf("[api.REST] %s %s", method, url)
+
+	// avoiding running this outside trace level to prevent unnecessary io.ReadAll()
+	if log.GetLevel() == log.TraceLevel && body != nil {
+		readBody, err := io.ReadAll(body)
+		if err != nil {
+			return err
+		}
+		log.Tracef("%s Body: %s", method, readBody)
+		buf := io.NopCloser(bytes.NewBuffer(readBody))
+		body = buf
+	}
+
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return err
