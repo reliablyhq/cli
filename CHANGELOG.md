@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- A very verbose `-V, --very-verbose` flag allows for logging request/response bodies
+
 ### Fixed
 
 -   Report command accepts to/from time in RFC 3339 and time.String() output
