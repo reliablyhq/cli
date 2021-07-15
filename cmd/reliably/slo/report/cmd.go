@@ -163,7 +163,7 @@ func reportRun(opts *report.ReportOptions) error {
 	if err != nil {
 		return fmt.Errorf("reports error: %w", err)
 	}
-	// TODO: reports wont be empty, need to check empty objective/obj res inside it
+
 	if len(reports[0].Services) == 0 {
 		fmt.Fprintln(opts.IO.ErrOut, color.Yellow("No relevant objective results were found. To generate them, follow these steps:"))
 		fmt.Fprintln(opts.IO.ErrOut, " 1. Define objectives with 'reliably slo init' or manually create them. Find out more: https://reliably.com/docs/guides/slo/define-slos")
