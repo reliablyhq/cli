@@ -14,12 +14,13 @@ import (
 	"github.com/reliablyhq/cli/core/metrics/datadog"
 )
 
+/*
 func QueryMetrics(query string) error {
 	pl, err := datadog.RunQueryMetrics(query)
 	fmt.Println(pl)
 	return err
 }
-
+*/
 func ImportSLOsFromDatadog() error {
 
 	fmt.Println("Validate API Key for datadog")

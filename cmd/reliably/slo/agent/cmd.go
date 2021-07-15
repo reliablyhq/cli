@@ -78,7 +78,7 @@ func agentRun(opts *AgentOptions) error {
 			"error processing objective: %v\nerror: %s",
 			e.Objective, e.Error())
 	}).IndicatorFunc(func(i *entities.Indicator) error {
-		return api.CreateEntity(client, config.Hostname, org.Name, i)
+		return api.CreateEntity(client, config.EntityServerHost, org.Name, i)
 	}).Do()
 
 	return nil

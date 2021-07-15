@@ -26,3 +26,34 @@ func (i *Indicator) Version() string {
 func (i *Indicator) Kind() string {
 	return i.TypeMeta.Kind
 }
+
+// NewIndicator returns a new instance of the Indicator struct with
+// non-zero values for internal maps
+func NewIndicator() *Indicator {
+	return &Indicator{
+		TypeMeta: TypeMeta{APIVersion: "reliably.com/v1", Kind: "Indicator"},
+		Metadata: Metadata{
+			Labels:    Labels{},
+			RelatedTo: []map[string]string{},
+		},
+		Spec: IndicatorSpec{},
+	}
+}
+
+func NewIndicatorForObjective(o *Objective, from time.Time, to time.Time) *Indicator {
+
+	i := &Indicator{
+		TypeMeta: TypeMeta{APIVersion: o.Version(), Kind: "Indicator"},
+		Metadata: Metadata{
+			Labels:    o.Spec.IndicatorSelector,
+			RelatedTo: []map[string]string{},
+		},
+		Spec: IndicatorSpec{From: from, To: to},
+	}
+
+	// adding from/to to labels as well, to enforce unique-ness per indicator
+	i.Metadata.Labels["from"] = i.Spec.From.String()
+	i.Metadata.Labels["to"] = i.Spec.To.String()
+
+	return i
+}

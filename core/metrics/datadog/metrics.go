@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
+	//"math"
 	"time"
 
 	datadog "github.com/DataDog/datadog-api-client-go/api/v1/datadog"
@@ -15,17 +15,18 @@ import (
 
 type Pointlist *[][]float64
 
-func RunQueryMetrics(query string) (Pointlist, error) {
+func RunQueryMetrics(query string, from time.Time, to time.Time) (Pointlist, error) {
 
 	/*
 		to, _ := time.Parse(time.RFC3339, "2021-07-13T00:00:00Z")
 		from := to.Add(-time.Hour * (24 * 7))
 	*/
-
-	now := time.Now().Unix()
-	to := now
-	week := time.Hour * 24 * 7
-	from := now - int64(week.Seconds())
+	/*
+		now := time.Now().Unix()
+		to := now
+		week := time.Hour * 24 * 7
+		from := now - int64(week.Seconds())
+	*/
 
 	log.Debug("Run datadog metrics query")
 	log.Debugf("from: %s - to: %s", from, to)
@@ -36,8 +37,8 @@ func RunQueryMetrics(query string) (Pointlist, error) {
 	configuration := datadog.NewConfiguration()
 	apiClient := datadog.NewAPIClient(configuration)
 
-	fmt.Println("query")
-	fmt.Println(query)
+	//fmt.Println("query")
+	//fmt.Println(query)
 
 	/*
 		now := time.Now().Unix()
@@ -46,21 +47,23 @@ func RunQueryMetrics(query string) (Pointlist, error) {
 		from := now - int64(week.Seconds())
 	*/
 
-	queryResult, _, err := apiClient.MetricsApi.QueryMetrics(ctx, from, to, query)
+	queryResult, _, err := apiClient.MetricsApi.QueryMetrics(ctx, from.Unix(), to.Unix(), query)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println("response")
-	fmt.Println(queryResult)
+	/*
+		fmt.Println("response")
+		fmt.Println(queryResult)
 
-	fmt.Println(queryResult.GetGroupBy())
-	fmt.Println(queryResult.GetQuery())
-	fmt.Println(queryResult.GetFromDate())
-	fmt.Println(queryResult.GetToDate())
-	fmt.Println(queryResult.GetStatus())
-	fmt.Println(queryResult.GetResType())
-	fmt.Println(len(queryResult.GetSeries()))
+		fmt.Println(queryResult.GetGroupBy())
+		fmt.Println(queryResult.GetQuery())
+		fmt.Println(queryResult.GetFromDate())
+		fmt.Println(queryResult.GetToDate())
+		fmt.Println(queryResult.GetStatus())
+		fmt.Println(queryResult.GetResType())
+		fmt.Println(len(queryResult.GetSeries()))
+	*/
 
 	queryResult.GetSeriesOk()
 	if len(queryResult.GetSeries()) == 0 {
@@ -69,21 +72,24 @@ func RunQueryMetrics(query string) (Pointlist, error) {
 
 	series := queryResult.GetSeries()[0]
 
-	sum := 0.0
+	//sum := 0.0
 	datapoints := series.GetPointlist()
-	for _, dp := range datapoints {
 
-		sec, dec := math.Modf(dp[0] / 1000)
-		//fmt.Println(dp[0], sec, dec)
-		t := time.Unix(int64(sec), int64(dec*(1e9)))
+	/*
+		for _, dp := range datapoints {
 
-		fmt.Println("> ", t, dp[1])
+			sec, dec := math.Modf(dp[0] / 1000)
+			//fmt.Println(dp[0], sec, dec)
+			t := time.Unix(int64(sec), int64(dec*(1e9)))
 
-		sum = sum + dp[1]
+			fmt.Println("> ", t, dp[1])
 
-	}
-	fmt.Println("SUM", sum)
-	fmt.Println("AVG", sum/float64(len(datapoints)))
+			//sum = sum + dp[1]
+
+		}
+	*/
+	//fmt.Println("SUM", sum)
+	//fmt.Println("AVG", sum/float64(len(datapoints)))
 	/*
 		if len(datapoints) == 0 {
 			return errors.New("No data points retrieved from metrics series")
@@ -93,11 +99,13 @@ func RunQueryMetrics(query string) (Pointlist, error) {
 		for _
 
 	*/
-	fmt.Println(series.GetLength())
-	fmt.Println(series.GetAggr())
-	fmt.Println(series.GetDisplayName())
-	fmt.Println(series.GetMetric())
-	fmt.Println(series.GetPointlist())
+	/*
+		fmt.Println(series.GetLength())
+		fmt.Println(series.GetAggr())
+		fmt.Println(series.GetDisplayName())
+		fmt.Println(series.GetMetric())
+		fmt.Println(series.GetPointlist())
+	*/
 	/*
 		series.GetPointlist()[0][0], float64(series.GetStart()))
 		series.GetPointlist()[1][0], float64(series.GetEnd()))
@@ -127,14 +135,14 @@ func pointlist2Map(pl Pointlist) map[float64]float64 {
 
 }
 
-func ComputeSloFromQueryMetrics(numerator_query string, denominator_query string) (float64, error) {
+func ComputeSloFromQueryMetrics(numerator_query string, denominator_query string, from time.Time, to time.Time) (float64, error) {
 
-	numResult, err := RunQueryMetrics(numerator_query)
+	numResult, err := RunQueryMetrics(numerator_query, from, to)
 	if err != nil {
 		return 0.0, err
 	}
 
-	denomResult, err := RunQueryMetrics(denominator_query)
+	denomResult, err := RunQueryMetrics(denominator_query, from, to)
 	if err != nil {
 		return 0.0, err
 	}
@@ -147,7 +155,7 @@ func ComputeSloFromQueryMetrics(numerator_query string, denominator_query string
 	fmt.Println("numerator map", numMap)
 	fmt.Println("denominator map", denomMap)
 
-	return slo, nil
+	return slo * 100.0, nil
 
 }
 
