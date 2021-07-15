@@ -153,10 +153,6 @@ func promptForObjectives(io *iostreams.IOStreams, serviceName string) ([]entitie
 				// should we prompt for the percentile as well ? ...
 				objective.Spec.IndicatorSelector["percentile"] = "99"
 			}
-
-		case "datadog":
-			objective.Spec.IndicatorSelector["datadog_numerator_query"] = promptDatadogQuery("numerator", "good events")
-			objective.Spec.IndicatorSelector["datadog_denominator_query"] = promptDatadogQuery("denominator", "total events")
 		}
 
 		objective.Spec.Window = core.Duration{Duration: getObservationWindow().ToDuration()}
@@ -210,6 +206,10 @@ func getProviderSelectors(provider string) map[string]string {
 				selectors["gcp_loadbalancer_name"] = r.ResourceName
 			}
 		}
+	case "datadog":
+		selectors["datadog_numerator_query"] = promptDatadogQuery("numerator", "good events")
+		selectors["datadog_denominator_query"] = promptDatadogQuery("denominator", "total events")
+
 		/*
 			default:
 				return question.WithStringAnswer("What is the ID of the resource? This could be the AWS ARN, azure resource ID, etc.", emptyOptions)
