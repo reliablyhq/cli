@@ -164,6 +164,14 @@ func reportRun(opts *report.ReportOptions) error {
 		return fmt.Errorf("reports error: %w", err)
 	}
 
+	if len(reports[0].Services) == 0 {
+		fmt.Fprintln(opts.IO.ErrOut, color.Yellow("No relevant objective results were found. To generate them, follow these steps:"))
+		fmt.Fprintln(opts.IO.ErrOut, " 1. Define objectives with 'reliably slo init' or manually create them. Find out more: https://reliably.com/docs/guides/slo/define-slos")
+		fmt.Fprintln(opts.IO.ErrOut, " 2. Sync your objectives if you haven't, with 'reliably slo sync'. Find out more: https://reliably.com/docs/reference/cli/reliably-slo-sync")
+		fmt.Fprintln(opts.IO.ErrOut, " 3. Push indicators for these objectives. For this you may use 'reliably slo agent' or manually push them. Find out more: https://reliably.com/docs/guides/slo/sending-custom-indicators")
+		return nil
+	}
+
 	opts.IO.StopProgressIndicator()
 
 	for _, out := range opts.Outputs {
