@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added `--report-view/-R` flags to `reliably slo agent` command to allow a split view showing agent output and an SLO report
+
 ### Added
 
 - A very verbose `-V, --very-verbose` flag allows for logging request/response bodies
