@@ -54,11 +54,11 @@ func runUI(client *api.Client, opts *AgentOptions, m *entities.Manifest, org str
 
 	// run agent output writer
 	w.Add(1)
-	go writeAgentOutput(g, &w, logger, done)
+	go agentViewWriter(g, &w, logger, done)
 
 	// run report writer
 	w.Add(1)
-	go writeReport(g, &w, done, opts)
+	go reportViewWriter(g, &w, done, opts)
 
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		return err
@@ -99,7 +99,8 @@ func quitHandler(done chan struct{}) func(*gocui.Gui, *gocui.View) error {
 	}
 }
 
-func writeAgentOutput(g *gocui.Gui, w *sync.WaitGroup, logger *AgentUILogger, done chan struct{}) {
+// write to agent view
+func agentViewWriter(g *gocui.Gui, w *sync.WaitGroup, logger *AgentUILogger, done chan struct{}) {
 	defer w.Done()
 
 	updateFn := func(msg interface{}) func(g *gocui.Gui) error {
@@ -134,7 +135,8 @@ func writeAgentOutput(g *gocui.Gui, w *sync.WaitGroup, logger *AgentUILogger, do
 	}
 }
 
-func writeReport(g *gocui.Gui, w *sync.WaitGroup, done chan struct{}, opts *AgentOptions) {
+// write to report view
+func reportViewWriter(g *gocui.Gui, w *sync.WaitGroup, done chan struct{}, opts *AgentOptions) {
 	defer w.Done()
 	rChan := make(chan []*report.Report)
 	errChan := make(chan error, 1)
