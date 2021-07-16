@@ -48,7 +48,7 @@ func runUI(client *api.Client, opts *AgentOptions, m *entities.Manifest, org str
 				"error processing objective: %v\nerror: %s",
 				e.Objective, e.Error())
 		}).IndicatorFunc(func(i *entities.Indicator) error {
-			return api.CreateEntity(client, config.Hostname, org, i)
+			return api.CreateEntity(client, config.EntityServerHost, org, i)
 		}).Do()
 	}()
 
