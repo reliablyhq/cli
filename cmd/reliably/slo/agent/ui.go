@@ -77,7 +77,7 @@ func layout(opts *AgentOptions) func(g *gocui.Gui) error {
 			return err
 		} else {
 			v.Wrap = true
-			v.Title = " Report (3s)"
+			v.Title = " Report (3s) "
 		}
 
 		if v, err := g.SetView(agentView, -1, maxY/2, maxX, maxY); err != nil &&
