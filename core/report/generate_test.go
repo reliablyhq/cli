@@ -1,15 +1,14 @@
 package report
 
 import (
-	"reflect"
-	"testing"
+	//"reflect"
+	//"testing"
 	"time"
-
-	"github.com/reliablyhq/cli/core"
+	//"github.com/reliablyhq/cli/core"
 	"github.com/reliablyhq/cli/core/entities"
-	"github.com/reliablyhq/cli/core/manifest"
-	"github.com/reliablyhq/cli/core/metrics"
-	"github.com/stretchr/testify/assert"
+	//"github.com/reliablyhq/cli/core/manifest"
+	//"github.com/reliablyhq/cli/core/metrics"
+	//"github.com/stretchr/testify/assert"
 )
 
 type dummyProvider struct {
@@ -52,6 +51,7 @@ func (p *dummyProvider) ResourceFromSelector(entities.Selector) string {
 	return "not-implemented"
 }
 
+/*
 func Test_getProviderForResource(t *testing.T) {
 	p := &dummyProvider{}
 	metrics.ProviderFactories["test_get_provider_for_resource"] = func() (metrics.Provider, error) { return p, nil }
@@ -97,7 +97,9 @@ func Test_getProviderForResource(t *testing.T) {
 		})
 	}
 }
+*/
 
+/*
 func TestFromManifest(t *testing.T) {
 	p := &dummyProvider{
 		latencyPercentValue: 93,
@@ -201,3 +203,4 @@ func TestFromManifest(t *testing.T) {
 		})
 	}
 }
+*/

@@ -195,76 +195,39 @@ func NewJob(interval int64, objectives []*entities.Objective) *Job {
 
 func getIndicatorFromObjective(obj *entities.Objective) (*entities.Indicator, error) {
 	var (
-		provider   metrics.Provider
-		resourceID string
-		err        error
+		provider metrics.Provider
+		err      error
 	)
 
-	// identify provider
+	now := time.Now()
+	from := now.Add(time.Duration(-(int64(obj.Spec.Window.Duration))))
+	to := now
+
+	// loop over all providers to compute the objective indicate
+	// we defer handling capability check to provider
 	for _, f := range metrics.ProviderFactories {
 		provider, err = f()
 		if err != nil {
-			return nil, err
+			logger.Debug(err)
+			continue
 		}
 
-		// check for resource ID
-		if resourceID = provider.ResourceFromSelector(obj.Spec.IndicatorSelector); resourceID != "" {
-			break
+		if !provider.CanHandleSelector(obj.Spec.IndicatorSelector) {
+			continue
 		}
+
+		// we stop/return on the first provider being able to compute the objective indicator
+		i, err := provider.ComputeObjective(obj, from, to)
+		if err != nil {
+			logger.Debug(err)
+		} else {
+			// closing provider only when no errors
+			provider.Close()
+		}
+		return i, err
+
 	}
 
-	// if resourceID is still undefined, error
-	if resourceID == "" {
-		return nil, fmt.Errorf("unable to identify provider and resource id for objective: %v",
-			obj.Spec.IndicatorSelector)
-	}
+	return nil, errors.New("No provider was able to compute the objective indicator")
 
-	defer provider.Close()
-
-	var indicator entities.Indicator
-	// get from/to window from (now - given_duration), to now
-	now := time.Now()
-	indicator.Spec.From = now.Add(time.Duration(-(int64(obj.Spec.Window.Duration))))
-	indicator.Spec.To = now
-
-	switch obj.Spec.IndicatorSelector["category"] {
-	case "latency":
-		target, ok := obj.Spec.IndicatorSelector["latency_target"]
-		if !ok {
-			return nil, errors.New("latency_target not defined in Objective spec")
-		}
-
-		thres, err := time.ParseDuration(target)
-		if err != nil {
-			return nil, err
-		}
-
-		indicator.Spec.Percent, err = provider.GetLatencyAboveThresholdPercentage(
-			resourceID, indicator.Spec.From,
-			indicator.Spec.To, int(thres.Milliseconds()))
-		if err != nil {
-			return nil, err
-		}
-
-	case "availability":
-		indicator.Spec.Percent, err = provider.GetAvailabilityPercentage(
-			resourceID, indicator.Spec.From,
-			indicator.Spec.To)
-		if err != nil {
-			return nil, err
-		}
-
-	default:
-		return nil, fmt.Errorf("unsupported indicator category: %s",
-			obj.Spec.IndicatorSelector["category"])
-	}
-
-	indicator.Metadata.Labels = obj.Spec.IndicatorSelector
-	indicator.TypeMeta.Kind = "Indicator"
-	indicator.TypeMeta.APIVersion = obj.Version()
-
-	// adding from/to to labels as well, to enforce unique-ness per indicator
-	indicator.Metadata.Labels["from"] = indicator.Spec.From.String()
-	indicator.Metadata.Labels["to"] = indicator.Spec.To.String()
-	return &indicator, nil
 }

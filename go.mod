@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.84.0
 	github.com/AlecAivazis/survey/v2 v2.2.12
 	github.com/ChannelMeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61
+	github.com/DataDog/datadog-api-client-go v1.2.0
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/aws/aws-sdk-go v1.38.59

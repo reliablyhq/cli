@@ -5,16 +5,22 @@
 - Added `--report-view/-R` flags to `reliably slo agent` command to allow a split view showing agent output and an SLO report
 
 ### Added
+- Add support for Datadog for SLO commands; init an objective with datadog queries & push indicators using the SLO agent
 
-- A very verbose `-V, --very-verbose` flag allows for logging request/response bodies
+## [v0.20.4] - 2021-07-16
+
+### Added
+
+-   A very verbose `-V, --very-verbose` flag allows for logging request/response bodies
 
 ### Fixed
 
 -   Report command accepts to/from time in RFC 3339 and time.String() output
+-   Creates config folder before writing config file; [#350](https://github.com/reliablyhq/cli/issues/350)
 
 ### Changed
 
-- Reading manifest message in report command is displayed only in verbose mode
+-   Reading manifest message in report command is displayed only in verbose mode
 
 ## [v0.20.3] - 2021-07-12
 
@@ -349,7 +355,9 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.20.3...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.20.4...HEAD
+
+[v0.20.4]: https://github.com/reliablyhq/cli/compare/v0.20.3...v0.20.4
 
 [v0.20.3]: https://github.com/reliablyhq/cli/compare/v0.20.2...v0.20.3
 
