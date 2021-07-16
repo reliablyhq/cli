@@ -1,8 +1,6 @@
 package agent
 
 import (
-	"fmt"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -68,8 +66,6 @@ func agentRun(opts *AgentOptions) error {
 	if err := m.LoadFromFile(opts.ManifestPath); err != nil {
 		return err
 	}
-
-	fmt.Println(m)
 
 	// get API client
 	org, err := config.GetCurrentOrgInfo()
