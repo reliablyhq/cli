@@ -9,6 +9,7 @@
 ### Fixed
 
 -   Report command accepts to/from time in RFC 3339 and time.String() output
+- Creates config folder before writing config file; [#350](https://github.com/reliablyhq/cli/issues/350)
 
 ### Changed
 

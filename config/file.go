@@ -7,6 +7,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+func resolveConfiDirPath() string {
+	path, _ := homedir.Expand(ConfigDir)
+	return path
+}
+
 func resolveConfigFilePath() string {
 	path, _ := homedir.Expand(ConfigFile)
 	return path
@@ -35,6 +40,15 @@ func writeConfigFile(data *Config) error {
 	bytes, err := yaml.Marshal(data)
 	if err != nil {
 		return err
+	}
+
+	// makes sure to create the config dir before writing the file
+	d := resolveConfiDirPath()
+	if _, err := os.Stat(d); os.IsNotExist(err) {
+		err := os.Mkdir(d, 0755)
+		if err != nil {
+			return err
+		}
 	}
 
 	p := resolveConfigFilePath()
