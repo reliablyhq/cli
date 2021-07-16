@@ -4,6 +4,7 @@
 
 ### Added
 - Add support for Datadog for SLO commands; init an objective with datadog queries & push indicators using the SLO agent
+
 ## [v0.20.4] - 2021-07-16
 
 ### Added
