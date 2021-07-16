@@ -1,13 +1,12 @@
 package report
 
 import (
-	go_errors "errors"
+	//go_errors "errors"
 	"fmt"
 	"time"
-
-	"github.com/reliablyhq/cli/core/manifest"
-	"github.com/reliablyhq/cli/core/metrics"
-	log "github.com/sirupsen/logrus"
+	//"github.com/reliablyhq/cli/core/manifest"
+	//"github.com/reliablyhq/cli/core/metrics"
+	//log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -25,6 +24,7 @@ var notSuportedErrorBuilder = func(thingType, thingName string) error {
 	return fmt.Errorf("%s type '%s' is not currently supported. I've informed ReliablyHQ about this; check back later - maybe we'll be able to help then.", thingType, thingName)
 }
 
+/*
 func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 	// check for nil manifest
 	if m == nil {
@@ -137,7 +137,8 @@ func FromManifest(m *manifest.Manifest) (report *Report, err error) {
 
 	return
 }
-
+*/
+/*
 func getProviderForResource(providerID metrics.ProviderType) (metrics.Provider, error) {
 	if factory, ok := metrics.ProviderFactories[providerID]; ok {
 		return factory()
@@ -145,3 +146,4 @@ func getProviderForResource(providerID metrics.ProviderType) (metrics.Provider, 
 
 	return nil, fmt.Errorf("No provider factory found for '%s'", providerID)
 }
+*/

@@ -303,3 +303,56 @@ func (r *AwsResource) MetricProvider() (provider AwsMetricsProvider, err error) 
 
 	return
 }
+
+func (cw *AwsCloudWatch) CanHandleSelector(labels entities.Selector) bool {
+	resourceID := cw.ResourceFromSelector(labels)
+	if resourceID == "" {
+		return false
+	}
+
+	return true
+}
+
+func (cw *AwsCloudWatch) ComputeObjective(o *entities.Objective, from time.Time, to time.Time) (*entities.Indicator, error) {
+
+	i := entities.NewIndicatorForObjective(o, from, to)
+	var err error
+
+	resourceID := cw.ResourceFromSelector(o.Spec.IndicatorSelector)
+	if resourceID == "" {
+		return nil, fmt.Errorf("unable to identify provider and resource id for objective: %v",
+			o.Spec.IndicatorSelector)
+	}
+
+	switch o.Spec.IndicatorSelector["category"] {
+	case "latency":
+		target, ok := o.Spec.IndicatorSelector["latency_target"]
+		if !ok {
+			return nil, errors.New("latency_target not defined in Objective spec")
+		}
+
+		thres, err := time.ParseDuration(target)
+		if err != nil {
+			return nil, err
+		}
+
+		i.Spec.Percent, err = cw.GetLatencyAboveThresholdPercentage(
+			resourceID, from, to, int(thres.Milliseconds()))
+		if err != nil {
+			return nil, err
+		}
+
+	case "availability":
+		i.Spec.Percent, err = cw.GetAvailabilityPercentage(
+			resourceID, from, to)
+		if err != nil {
+			return nil, err
+		}
+
+	default:
+		return nil, fmt.Errorf("unsupported indicator category: %s",
+			o.Spec.IndicatorSelector["category"])
+	}
+
+	return i, nil
+}
