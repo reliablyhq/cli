@@ -3,8 +3,6 @@ package datadog
 import (
 	"context"
 	"errors"
-	"fmt"
-	//"math"
 	"time"
 
 	datadog "github.com/DataDog/datadog-api-client-go/api/v1/datadog"
@@ -17,17 +15,6 @@ type Pointlist *[][]float64
 
 func RunQueryMetrics(query string, from time.Time, to time.Time) (Pointlist, error) {
 
-	/*
-		to, _ := time.Parse(time.RFC3339, "2021-07-13T00:00:00Z")
-		from := to.Add(-time.Hour * (24 * 7))
-	*/
-	/*
-		now := time.Now().Unix()
-		to := now
-		week := time.Hour * 24 * 7
-		from := now - int64(week.Seconds())
-	*/
-
 	log.Debug("Run datadog metrics query")
 	log.Debugf("from: %s - to: %s", from, to)
 	log.Debug("query=", query)
@@ -37,33 +24,10 @@ func RunQueryMetrics(query string, from time.Time, to time.Time) (Pointlist, err
 	configuration := datadog.NewConfiguration()
 	apiClient := datadog.NewAPIClient(configuration)
 
-	//fmt.Println("query")
-	//fmt.Println(query)
-
-	/*
-		now := time.Now().Unix()
-		to := now
-		week := time.Hour * 24 * 7
-		from := now - int64(week.Seconds())
-	*/
-
 	queryResult, _, err := apiClient.MetricsApi.QueryMetrics(ctx, from.Unix(), to.Unix(), query)
 	if err != nil {
 		return nil, err
 	}
-
-	/*
-		fmt.Println("response")
-		fmt.Println(queryResult)
-
-		fmt.Println(queryResult.GetGroupBy())
-		fmt.Println(queryResult.GetQuery())
-		fmt.Println(queryResult.GetFromDate())
-		fmt.Println(queryResult.GetToDate())
-		fmt.Println(queryResult.GetStatus())
-		fmt.Println(queryResult.GetResType())
-		fmt.Println(len(queryResult.GetSeries()))
-	*/
 
 	queryResult.GetSeriesOk()
 	if len(queryResult.GetSeries()) == 0 {
@@ -71,48 +35,7 @@ func RunQueryMetrics(query string, from time.Time, to time.Time) (Pointlist, err
 	}
 
 	series := queryResult.GetSeries()[0]
-
-	//sum := 0.0
 	datapoints := series.GetPointlist()
-
-	/*
-		for _, dp := range datapoints {
-
-			sec, dec := math.Modf(dp[0] / 1000)
-			//fmt.Println(dp[0], sec, dec)
-			t := time.Unix(int64(sec), int64(dec*(1e9)))
-
-			fmt.Println("> ", t, dp[1])
-
-			//sum = sum + dp[1]
-
-		}
-	*/
-	//fmt.Println("SUM", sum)
-	//fmt.Println("AVG", sum/float64(len(datapoints)))
-	/*
-		if len(datapoints) == 0 {
-			return errors.New("No data points retrieved from metrics series")
-		}
-
-		dp := datapoints[0]
-		for _
-
-	*/
-	/*
-		fmt.Println(series.GetLength())
-		fmt.Println(series.GetAggr())
-		fmt.Println(series.GetDisplayName())
-		fmt.Println(series.GetMetric())
-		fmt.Println(series.GetPointlist())
-	*/
-	/*
-		series.GetPointlist()[0][0], float64(series.GetStart()))
-		series.GetPointlist()[1][0], float64(series.GetEnd()))
-		10.5, series.GetPointlist()[0][1])
-		11., series.GetPointlist()[1][1])
-	*/
-
 	return &datapoints, err
 }
 
@@ -151,9 +74,6 @@ func ComputeSloFromQueryMetrics(numerator_query string, denominator_query string
 	denomMap := pointlist2Map(denomResult)
 
 	slo := computeSLOWithNumDenom(numMap, denomMap)
-
-	fmt.Println("numerator map", numMap)
-	fmt.Println("denominator map", denomMap)
 
 	return slo * 100.0, nil
 
