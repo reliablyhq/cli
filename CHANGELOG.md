@@ -7,6 +7,7 @@
 ### Added
 
 -   A very verbose `-V, --very-verbose` flag allows for logging request/response bodies
+- Add support for Datadog for SLO commands; init an objective with datadog queries & push indicators using the SLO agent
 
 ### Fixed
 
