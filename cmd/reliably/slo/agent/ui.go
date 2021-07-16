@@ -156,6 +156,7 @@ func writeReport(g *gocui.Gui, w *sync.WaitGroup, done chan struct{}, opts *Agen
 	go func() {
 		for ch := time.Tick(time.Second * 3); ; <-ch {
 			reports, err := report.GetReports(&report.ReportOptions{
+				Selector:     opts.Selector,
 				ManifestPath: opts.ManifestPath,
 			})
 			if err != nil {
@@ -180,7 +181,6 @@ func writeReport(g *gocui.Gui, w *sync.WaitGroup, done chan struct{}, opts *Agen
 				fmt.Fprintln(v, color.RedString(e.Error()))
 				return nil
 			})
-			// close(done)
 
 		case <-done:
 			return
