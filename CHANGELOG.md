@@ -2,10 +2,9 @@
 
 ## [Unreleased]
 
-- Added `--report-view/-R` flags to `reliably slo agent` command to allow a split view showing agent output and an SLO report
-
 ### Added
 - Add support for Datadog for SLO commands; init an objective with datadog queries & push indicators using the SLO agent
+- Added `--report-view/-R` flags to `reliably slo agent` command to allow a split view showing agent output and an SLO report
 
 ## [v0.20.4] - 2021-07-16
 
