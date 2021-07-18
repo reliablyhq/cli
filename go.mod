@@ -9,6 +9,7 @@ require (
 	github.com/DataDog/datadog-api-client-go v1.2.0
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
+	github.com/awesome-gocui/gocui v1.0.0
 	github.com/aws/aws-sdk-go v1.38.59
 	github.com/aws/aws-sdk-go-v2 v1.6.0
 	github.com/aws/aws-sdk-go-v2/config v1.3.0
@@ -31,7 +32,6 @@ require (
 	github.com/icza/dyno v0.0.0-20200205103839-49cb13720835
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf
-	github.com/jroimartin/gocui v0.4.0
 	github.com/karrick/godirwalk v1.16.1
 	github.com/machinebox/progress v0.2.0
 	github.com/matryer/is v1.4.0 // indirect
@@ -39,7 +39,6 @@ require (
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nathan-fiscaletti/consolesize-go v0.0.0-20210105204122-a87d9f614b9d
-	github.com/nsf/termbox-go v1.1.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/open-policy-agent/opa v0.29.4
 	github.com/pkg/browser v0.0.0-20210606212950-a7b7a6107d32
