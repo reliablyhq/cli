@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/awesome-gocui/gocui"
 	"github.com/fatih/color"
-	"github.com/jroimartin/gocui"
 	"github.com/reliablyhq/cli/api"
 	"github.com/reliablyhq/cli/config"
 	"github.com/reliablyhq/cli/core/agent"
@@ -25,7 +25,7 @@ func runUI(client *api.Client, opts *AgentOptions, m *entities.Manifest, org str
 	done := make(chan struct{})
 	var w sync.WaitGroup
 
-	g, err := gocui.NewGui(gocui.OutputNormal)
+	g, err := gocui.NewGui(gocui.OutputNormal, false)
 	if err != nil {
 		return err
 	}
@@ -72,21 +72,27 @@ func runUI(client *api.Client, opts *AgentOptions, m *entities.Manifest, org str
 func layout(opts *AgentOptions) func(g *gocui.Gui) error {
 	return func(g *gocui.Gui) error {
 		maxX, maxY := g.Size()
-		if v, err := g.SetView(reportView, -1, 1, maxX, maxY-15); err != nil &&
+		if v, err := g.SetView(reportView, -1, 1, maxX, maxY-15, 0); err != nil &&
 			err != gocui.ErrUnknownView {
 			return err
 		} else {
 			v.Wrap = true
-			v.Title = " Report (3s) "
+			v.Title = " Report "
+			v.Subtitle = " interval (3s) "
+			v.TitleColor = gocui.ColorYellow
+			v.FrameColor = gocui.ColorCyan
 		}
 
-		if v, err := g.SetView(agentView, -1, maxY/2, maxX, maxY); err != nil &&
+		if v, err := g.SetView(agentView, -1, maxY/2, maxX, maxY, 0); err != nil &&
 			err != gocui.ErrUnknownView {
 			return err
 		} else {
 			v.Wrap = true
-			v.Title = fmt.Sprintf(" Agent (%ds) ", opts.Interval)
+			v.Title = " Agent "
+			v.Subtitle = fmt.Sprintf(" interval (%ds) ", opts.Interval)
 			v.Autoscroll = true
+			v.TitleColor = gocui.ColorYellow
+			v.FrameColor = gocui.ColorCyan
 		}
 		return nil
 	}
