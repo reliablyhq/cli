@@ -2,9 +2,12 @@
 
 ## [Unreleased]
 
+## [v0.21.0] - 2021-07-19
+
 ### Added
-- Add support for Datadog for SLO commands; init an objective with datadog queries & push indicators using the SLO agent
-- Added `--report-view/-R` flags to `reliably slo agent` command to allow a split view showing agent output and an SLO report
+
+-   Add support for Datadog for SLO commands; init an objective with datadog queries & push indicators using the SLO agent
+-   Added `--report-view/-R` flags to `reliably slo agent` command to allow a split view showing agent output and an SLO report
 
 ## [v0.20.4] - 2021-07-16
 
@@ -354,7 +357,9 @@
 
 -   Initial version
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.20.4...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/v0.21.0...HEAD
+
+[v0.21.0]: https://github.com/reliablyhq/cli/compare/v0.20.4...v0.21.0
 
 [v0.20.4]: https://github.com/reliablyhq/cli/compare/v0.20.3...v0.20.4
 
