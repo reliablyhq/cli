@@ -9,6 +9,7 @@ require (
 	github.com/DataDog/datadog-api-client-go v1.2.0
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
+	github.com/awesome-gocui/gocui v1.0.0
 	github.com/aws/aws-sdk-go v1.38.59
 	github.com/aws/aws-sdk-go-v2 v1.6.0
 	github.com/aws/aws-sdk-go-v2/config v1.3.0

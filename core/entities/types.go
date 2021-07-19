@@ -76,6 +76,11 @@ func (m *Manifest) LoadFromFile(path string) (err error) {
 	if err == io.EOF {
 		err = nil
 	}
+
+	if len(*m) == 0 {
+		return fmt.Errorf("no objectives detectives detected in file: %s", path)
+	}
+
 	return nil
 }
 

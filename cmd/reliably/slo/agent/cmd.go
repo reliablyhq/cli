@@ -17,6 +17,8 @@ type AgentOptions struct {
 	IO           *iostreams.IOStreams
 	ManifestPath string
 	Interval     int64
+	Selector     string
+	ReportUI     bool
 }
 
 var longDesc = heredoc.Doc(`
@@ -52,6 +54,8 @@ func NewCommand(runF func(*AgentOptions) error) *cobra.Command {
 	// define flags
 	cmd.Flags().StringVarP(&opts.ManifestPath, "manifest", "m", manifest.DefaultManifestPath, "the location of the manifest file")
 	cmd.Flags().Int64VarP(&opts.Interval, "interval", "i", 300, "interval indicators are pushed at in seconds")
+	cmd.Flags().StringVarP(&opts.Selector, "selector", "l", "", "objectives selector based on labels - only used when --report-ui/-R flag is used")
+	cmd.Flags().BoolVarP(&opts.ReportUI, "report-view", "R", false, "shows a view of the report while pushing indicators")
 	return cmd
 }
 
@@ -71,6 +75,11 @@ func agentRun(opts *AgentOptions) error {
 
 	// define agent job
 	client := api.NewClientFromHTTP(api.AuthHTTPClient(config.Hostname))
+
+	if opts.ReportUI {
+		return runUI(client, opts, &m, org.Name)
+	}
+
 	agent.SetLogger(logger)
 	job := agent.NewJob(opts.Interval, m)
 	job.ErrorFunc(func(e *agent.Error) {

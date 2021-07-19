@@ -5,6 +5,8 @@ package agent
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strings"
 
 	"os"
 	"os/signal"
@@ -15,6 +17,17 @@ import (
 	"github.com/reliablyhq/cli/core/entities"
 	"github.com/reliablyhq/cli/core/metrics"
 )
+
+type Labels entities.Labels
+
+func (l Labels) String() string {
+	var s []string
+	for k, v := range l {
+		s = append(s, fmt.Sprintf(`%s='%s'`, k, v))
+	}
+
+	return strings.Join(s, ", ")
+}
 
 // Error - agent error type used to associate failed objectives
 // with its given error
@@ -82,7 +95,7 @@ type Job struct {
 
 // Do - run job
 func (j *Job) Do() {
-	logger.Info("starting agent workflow")
+	logger.Info("--- starting slo indicator agent ---")
 	// Ctrl+C listener
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
@@ -114,9 +127,10 @@ func (j *Job) Do() {
 				go func() {
 					defer w.Done()
 					for obj := range jobs {
+						logger.Infof("getting indicators for objective: [%s]", Labels(obj.Labels))
 						indicator, err := getIndicatorFromObjective(obj)
 						if err != nil {
-							logger.Debugf("error detected while getting indicator for objective: %s - %s", obj, err)
+							err = fmt.Errorf("error detected while getting indicator for objective: %v - %s", obj, err)
 							j.errorHandler(&Error{
 								Objective: obj,
 								err:       err,
@@ -142,8 +156,9 @@ func (j *Job) Do() {
 			return
 
 		case r := <-j.results:
+
+			logger.Infof("indicator percent: [%.2f] for objective: [%s]", r.Indicator.Spec.Percent, Labels(r.Objective.Labels))
 			if err := j.indicatorHandler(r.Indicator); err != nil {
-				logger.Debugf("indicator handler failed: %s", err)
 				j.errorHandler(&Error{
 					Objective: r.Objective,
 					err:       err,
