@@ -62,11 +62,13 @@ func ComputeSloFromQueryMetrics(numerator_query string, denominator_query string
 
 	numResult, err := RunQueryMetrics(numerator_query, from, to)
 	if err != nil {
+		log.Debug("numerator query failed=", err)
 		return 0.0, err
 	}
 
 	denomResult, err := RunQueryMetrics(denominator_query, from, to)
 	if err != nil {
+		log.Debug("denominator query failed=", err)
 		return 0.0, err
 	}
 
