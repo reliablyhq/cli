@@ -11,7 +11,7 @@ jobs:
   checks:
     uses: ./.github/workflows/cli-check.yaml
   build-container:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs:
       - checks
     steps:
@@ -42,7 +42,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-2019, macOS-latest]
+        os: [ubuntu-22.04, windows-2019, macOS-latest]
 
     steps:
       - uses: actions/checkout@v3
