@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "cli/**"
-      - ".github/workflows/cli-build.yaml"
 
 jobs:
   checks:

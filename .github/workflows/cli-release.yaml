@@ -6,9 +6,6 @@ on:
       - main
     tags:
       - "cli-v*.*.*"
-    paths:
-      - "cli/**"
-      - ".github/workflows/cli-build.yaml"
 
 jobs:
   checks:
