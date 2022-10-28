@@ -103,7 +103,7 @@ jobs:
           echo $bindir
           ls $bindir
 
-          $bindir/pyoxidizer build --release --var flavor standalone_static --target-triple ${{ matrix.target }}
+          $bindir/pyoxidizer build --release --target-triple ${{ matrix.target }}
           cp build/**/release/install/reliably reliably-${{ matrix.target }}
       - name: Upload binary
         uses: actions/upload-artifact@v3
