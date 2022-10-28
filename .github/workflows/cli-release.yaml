@@ -5,7 +5,7 @@ on:
     branches:
       - main
     tags:
-      - "cli-v*.*.*"
+      - "v*.*.*"
 
 jobs:
   checks:
@@ -55,6 +55,7 @@ jobs:
         run: |
           pdm build --no-sdist
       - name: Publish wheels
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           pdm publish
         env:
