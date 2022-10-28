@@ -1,5 +1,4 @@
 from anyio.abc import CancelScope
-
 from reliably.agent.types import Plan
 from reliably.config import get_settings
 from reliably.log import logger
