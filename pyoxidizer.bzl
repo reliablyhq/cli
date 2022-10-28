@@ -16,7 +16,7 @@ def make_exe():
         config=python_config,
     )
 
-    exe.add_python_resources(exe.pip_install(["--no-binary", ":all:", "-r", "requirements.txt"]))
+    exe.add_python_resources(exe.pip_install(["-r", "requirements.txt"]))
     exe.add_python_resources(exe.pip_install(["."]))
 
     return exe
