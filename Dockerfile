@@ -5,7 +5,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN groupadd -g 1001 svc && useradd -r -u 1001 -g svc svc
 
 COPY pyproject.toml pdm.lock README.md /app/
-COPY reliably/ /app/reliably
+COPY reliably_cli/ /app/reliably_cli
 
 WORKDIR /app
 
