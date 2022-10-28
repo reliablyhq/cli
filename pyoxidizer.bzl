@@ -3,6 +3,9 @@ def make_exe():
 
     policy = dist.make_python_packaging_policy()
 
+    policy.resources_location = "in-memory"
+    policy.resources_location_fallback = "filesystem-relative:lib"
+
     python_config = dist.make_python_interpreter_config()
     python_config.module_search_paths = ["$ORIGIN/lib"]
 

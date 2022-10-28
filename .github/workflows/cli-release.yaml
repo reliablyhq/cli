@@ -70,7 +70,7 @@ jobs:
       matrix:
         include:
         - os: ubuntu-22.04
-          target: x86_64-unknown-linux-musl
+          target: x86_64-unknown-linux-gnu
     needs:
       - checks
     steps:
@@ -82,11 +82,10 @@ jobs:
         with:
           python-version: "3.10"
           cache: true
-      - if: matrix.target == 'x86_64-unknown-linux-musl'
+      - if: matrix.target == 'x86_64-unknown-linux-gnu'
         name: Install musl
         run: |
           sudo apt update
-          sudo apt install -y --no-install-recommends musl-tools
 
       - name: Build binary
         shell: bash
