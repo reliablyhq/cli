@@ -28,7 +28,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GH_PUBLIC_REPO_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push reliably
         uses: docker/build-push-action@v3
         with:
@@ -37,4 +37,4 @@ jobs:
           platforms: linux/amd64, linux/arm64
           file: ./Dockerfile
           tags: |
-            ghcr.io/reliablyhq/cli2:latest
+            ghcr.io/reliablyhq/cli:latest
