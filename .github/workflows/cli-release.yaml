@@ -63,8 +63,14 @@ jobs:
           PDM_PUBLISH_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
   build-binary:
-    name: Build binary
-    runs-on: ubuntu-22.04
+    name: Build standalone executable for ${{ matrix.target == 'aarch64-apple-darwin' && 'macOS M1' || startsWith(matrix.os, 'macos-') && 'macOS Intel' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: ubuntu-22.04
+          target: x86_64-unknown-linux-musl
     needs:
       - checks
     steps:
@@ -76,11 +82,15 @@ jobs:
         with:
           python-version: "3.10"
           cache: true
+      - if: matrix.target == 'x86_64-unknown-linux-musl'
+        name: Install musl
+        run: |
+          sudo apt update
+          sudo apt install -y --no-install-recommends musl-tools
+
       - name: Build binary
         shell: bash
         run: |
-          sudo apt-get update
-
           pdm export -o requirements.txt --without-hashes --prod
           pdm config python.use_venv true
 
@@ -94,10 +104,10 @@ jobs:
           echo $bindir
           ls $bindir
 
-          $bindir/pyoxidizer build --release
-          cp build/**/release/install/reliably reliably-linux-x86_64
+          $bindir/pyoxidizer build --release --target-triple ${{ matrix.target }}
+          cp build/**/release/install/reliably reliably-${{ matrix.target }}
       - name: Upload binary
         uses: actions/upload-artifact@v3
         with:
-          name: reliably-linux-x86_64
-          path: reliably-linux-x86_64
+          name: reliably-${{ matrix.target }}
+          path: reliably-${{ matrix.target }}
