@@ -60,9 +60,6 @@ addopts = "-v -rxs --cov reliably_cli --cov-report term-missing:skip-covered -p 
 [tool.pdm]
 version = { source = "file", path = "reliably_cli/__version__.py" }
 
-[tool.pdm.build]
-is-purelib = false
-
 [tool.pdm.scripts]
 lint = {composite = ["ruff reliably_cli/", "isort --check-only --profile black reliably_cli/", "black --check --diff reliably_cli/"]}
 format = {composite = ["ruff reliably_cli/ --fix", "isort --profile black reliably_cli/", "black reliably_cli/"]}
