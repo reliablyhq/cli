@@ -84,8 +84,8 @@ jobs:
           pdm export -o requirements.txt --without-hashes --prod
           pdm config python.use_venv false
 
-          pdm install
-          pdm install -G bin-builder
+          pdm install -vv
+          pdm install -vv -G bin-builder
 
           pdm info
           pythonpath=$(pdm info --python)
