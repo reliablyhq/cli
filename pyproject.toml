@@ -5,7 +5,7 @@ description = "Reliably CLI"
 authors = [
     {name = "Sylvain Hellegouarch", email = "sylvain@reliably.com"},
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 dependencies = [

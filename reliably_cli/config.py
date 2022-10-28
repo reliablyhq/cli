@@ -18,12 +18,12 @@ class PlanProviderGitHubSection(BaseModel):
 
 
 class PlanProvidersSection(BaseModel):
-    github: Optional[PlanProviderGitHubSection]
+    github: PlanProviderGitHubSection | None
 
 
 class PlanSection(BaseModel):
     fetch_frequency: float = 3
-    providers: Optional[PlanProvidersSection]
+    providers: PlanProvidersSection | None
 
 
 class OrgSection(BaseModel):
@@ -47,8 +47,8 @@ class LogSection(BaseModel):
 class OTELSection(BaseModel):
     enabled: bool = False
     service_name: str = "reliably"
-    endpoint: Optional[AnyUrl]
-    headers: Optional[str]
+    endpoint: AnyUrl | None
+    headers: str | None
 
 
 class Settings(BaseSettings):
@@ -56,8 +56,8 @@ class Settings(BaseSettings):
     agent: AgentSection
     organization: OrgSection
     plan: PlanSection
-    log: Optional[LogSection]
-    otel: Optional[OTELSection]
+    log: LogSection | None
+    otel: OTELSection | None
 
     class Config:
         env_prefix = "reliably_"

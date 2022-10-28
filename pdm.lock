@@ -48,7 +48,6 @@ dependencies = [
     "pathspec>=0.9.0",
     "platformdirs>=2",
     "tomli>=1.1.0; python_full_version < \"3.11.0a7\"",
-    "typing-extensions>=3.10.0.0; python_version < \"3.10\"",
 ]
 
 [[package]]
@@ -461,7 +460,7 @@ summary = "Read key-value pairs from a .env file and set them as environment var
 [[package]]
 name = "reliably-cli"
 version = "0.1.0"
-requires_python = ">=3.9"
+requires_python = ">=3.10"
 editable = true
 path = "."
 summary = "Reliably CLI"
@@ -606,7 +605,7 @@ summary = "Module for decorators, wrappers and monkey patching."
 
 [metadata]
 lock_version = "4.0"
-content_hash = "sha256:19017170e67dc1e10fad2a15af1db7c5f1b90d272cc1d649c99db20a6000b699"
+content_hash = "sha256:8290f7f0f89c3cdd556baf9222d503abd9b3dec4f65c7783e2c035777f3758f9"
 
 [metadata.files]
 "anyio 3.6.2" = [
