@@ -99,6 +99,5 @@ jobs:
       - name: Upload binary
         uses: actions/upload-artifact@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          name: reliably-linux-x86_64
+          path: reliably-linux-x86_64
