@@ -83,7 +83,7 @@ jobs:
           pdm config python.use_venv false
           pdm export -o requirements.txt --without-hashes --prod
           
-          pip install -U --prefer-binary pyoxidizer>=0.22
+          python3.10 -m pip install -U --prefer-binary pyoxidizer>=0.22
           pyoxidizer build --release
           cp build/**/release/install/reliably reliably-linux-x86_64
       - name: Upload binary
