@@ -2,7 +2,7 @@ def make_exe():
     dist = default_python_distribution(python_version="3.10")
 
     policy = dist.make_python_packaging_policy()
-
+    policy.set_resource_handling_mode("files")
     policy.resources_location = "in-memory"
     policy.resources_location_fallback = "filesystem-relative:lib"
 
@@ -19,6 +19,10 @@ def make_exe():
 
     exe.add_python_resources(exe.pip_install(["-r", "requirements.txt"], {"PIP_NO_BINARY": "pydantic[dotenv]"}))
     exe.add_python_resources(exe.pip_install(["."]))
+
+    for resource in exe.pip_download(["pydantic[dotenv]"]):
+        resource.add_location = "filesystem-relative:lib"
+        exe.add_python_resource(resource)
 
     return exe
 
