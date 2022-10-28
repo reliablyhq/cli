@@ -1,5 +1,5 @@
 [project]
-name = "reliably"
+name = "reliably-cli"
 version = "0.1.0"
 description = "Reliably CLI"
 authors = [
@@ -25,7 +25,7 @@ dependencies = [
 ]
 
 [project.scripts]
-reliably = "reliably.__main__:cli"
+reliably = "reliably_cli.__main__:cli"
 
 [project.optional-dependencies]
 bin-builder = ["pyoxidizer>=0.22.0"]
@@ -46,7 +46,7 @@ target-version = ['py310']
 
 [tool.isort]
 line_length = 80
-known_first_party = 'reliably'
+known_first_party = 'reliably_cli'
 multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
@@ -55,14 +55,14 @@ combine_as_imports = true
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = ["tests"]
-addopts = "-v -rxs --cov reliably --cov-report term-missing:skip-covered -p no:warnings"
+addopts = "-v -rxs --cov reliably_cli --cov-report term-missing:skip-covered -p no:warnings"
 
 [tool.pdm]
-version = { source = "file", path = "reliably/__version__.py" }
+version = { source = "file", path = "reliably_cli/__version__.py" }
 
 [tool.pdm.scripts]
-lint = {composite = ["ruff reliably/", "isort --check-only --profile black reliably/", "black --check --diff reliably/"]}
-format = {composite = ["ruff reliably/ --fix", "isort --profile black reliably/", "black reliably/"]}
+lint = {composite = ["ruff reliably_cli/", "isort --check-only --profile black reliably_cli/", "black --check --diff reliably_cli/"]}
+format = {composite = ["ruff reliably_cli/ --fix", "isort --profile black reliably_cli/", "black reliably_cli/"]}
 test = {cmd = "pytest"}
 build-bin = {cmd = "pyoxidizer build --release"}
 
@@ -71,7 +71,7 @@ test = [
     "pytest>=7.2.0",
 ]
 dev = [
-    "-e file:///${PROJECT_ROOT}#egg=reliably",
+    "-e file:///${PROJECT_ROOT}#egg=reliably_cli",
     "black>=22.10.0",
     "isort>=5.10.1",
     "ruff>=0.0.83",

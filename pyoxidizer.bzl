@@ -8,7 +8,7 @@ def make_exe():
 
     python_config = dist.make_python_interpreter_config()
 
-    python_config.run_command = "from reliably.__main__ import cli; cli()"
+    python_config.run_command = "from reliably_cli.__main__ import cli; cli()"
 
     exe = dist.to_python_executable(
         name="reliably",
