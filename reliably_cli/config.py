@@ -6,9 +6,9 @@ import typer
 from pydantic import UUID4, AnyUrl, BaseModel, BaseSettings, SecretStr
 
 try:
-    import tomlib
+    import tomllib  # noqa
 except ImportError:
-    import tomli as tomlib
+    import tomli as tomllib
 
 __all__ = ["get_settings", "Settings"]
 
@@ -89,4 +89,4 @@ def toml_config_settings(settings: BaseSettings) -> dict[str, Any]:
         return {}
 
     encoding = settings.__config__.env_file_encoding
-    return tomlib.loads(Path(toml_file).read_text(encoding=encoding))
+    return tomllib.loads(Path(toml_file).read_text(encoding=encoding))
