@@ -1,5 +1,5 @@
 def make_exe():
-    dist = default_python_distribution(python_version="3.10", flavor=VARS["flavor"])
+    dist = default_python_distribution(flavor=VARS["flavor"])
 
     policy = dist.make_python_packaging_policy()
 
