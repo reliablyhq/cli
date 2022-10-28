@@ -32,9 +32,9 @@ jobs:
       - name: Build and push reliably
         uses: docker/build-push-action@v3
         with:
-          context: ./cli
+          context: .
           push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64, linux/arm64
-          file: ./cli/Dockerfile
+          file: ./Dockerfile
           tags: |
             ghcr.io/reliablyhq/cli2:latest
