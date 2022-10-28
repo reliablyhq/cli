@@ -1,0 +1,36 @@
+name: Reliably CLI Lint/Test
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "cli/**"
+      - ".github/workflows/cli-build.yaml"
+
+jobs:
+  checks:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v2
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        working-directory: ./cli
+        run: |
+          pdm sync -d
+
+      - name: Run Lint
+        working-directory: ./cli
+        run: |
+          pdm run lint
+
+      - name: Run Tests
+        working-directory: ./cli
+        run: |
+          pdm run pytest

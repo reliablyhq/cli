@@ -1,0 +1,86 @@
+[project]
+name = "reliably"
+version = "0.1.0"
+description = "Reliably CLI"
+authors = [
+    {name = "Sylvain Hellegouarch", email = "sylvain@reliably.com"},
+]
+requires-python = ">=3.9"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+dependencies = [
+    "httpx[http2]>=0.23.0",
+    "pydantic[dotenv]>=1.10.2",
+    "typer>=0.6.1",
+    "logzero>=1.7.0",
+    "anyio[trio]>=3.6.2",
+    "opentelemetry-api>=1.13.0",
+    "opentelemetry-sdk>=1.13.0",
+    "opentelemetry-instrumentation-httpx>=0.34b0",
+    "opentelemetry-instrumentation-logging>=0.34b0",
+    "opentelemetry-exporter-otlp-proto-http>=1.13.0",
+    "opentelemetry-propagator-b3>=1.13.0",
+    "opentelemetry-semantic-conventions>=0.34b0",
+    "tomli>=1.1.0; python_version < \"3.11\"",
+]
+
+[project.scripts]
+reliably = "reliably.__main__:cli"
+
+[project.optional-dependencies]
+bin-builder = ["pyoxidizer>=0.22.0"]
+
+[build-system]
+requires = ["pdm-pep517>=1.0.0"]
+build-backend = "pdm.pep517.api"
+
+[tool]
+
+[tool.ruff]
+line-length = 80
+
+[tool.black]
+color = true
+line-length = 80
+target-version = ['py310']
+
+[tool.isort]
+line_length = 80
+known_first_party = 'reliably'
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+combine_as_imports = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests"]
+addopts = "-v -rxs --cov reliably --cov-report term-missing:skip-covered -p no:warnings"
+
+[tool.pdm]
+version = { source = "file", path = "reliably/__version__.py" }
+
+[tool.pdm.scripts]
+lint = {composite = ["ruff reliably/", "isort --check-only --profile black reliably/", "black --check --diff reliably/"]}
+format = {composite = ["ruff reliably/ --fix", "isort --profile black reliably/", "black reliably/"]}
+test = {cmd = "pytest"}
+build-bin = {cmd = "pyoxidizer build --release"}
+
+[tool.pdm.dev-dependencies]
+test = [
+    "pytest>=7.2.0",
+]
+dev = [
+    "-e file:///${PROJECT_ROOT}#egg=reliably",
+    "black>=22.10.0",
+    "isort>=5.10.1",
+    "ruff>=0.0.83",
+    "pytest>=7.2.0",
+    "coverage>=6.5.0",
+    "pytest-cov>=4.0.0",
+    "pytest-sugar>=0.9.5",
+    "rich>=12.6.0",
+    "respx>=0.20.0",
+    "pytest-asyncio>=0.20.1",
+    "py>=1.11.0",
+]
