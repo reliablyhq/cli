@@ -1,6 +1,6 @@
 import functools
 from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 import typer
 from pydantic import UUID4, AnyUrl, BaseModel, BaseSettings, SecretStr
