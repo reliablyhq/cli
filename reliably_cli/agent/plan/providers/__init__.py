@@ -1,9 +1,9 @@
 from typing import Any
 
-from reliably.agent.types import Plan
-from reliably.client import reliably_client
-from reliably.config import Settings
-from reliably.log import logger
+from reliably_cli.agent.types import Plan
+from reliably_cli.client import reliably_client
+from reliably_cli.config import Settings
+from reliably_cli.log import logger
 
 __all__ = ["fetch_deployment"]
 

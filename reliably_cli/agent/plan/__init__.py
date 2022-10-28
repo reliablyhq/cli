@@ -5,10 +5,11 @@ from anyio.streams.memory import (
     MemoryObjectReceiveStream,
     MemoryObjectSendStream,
 )
-from reliably.client import reliably_client
-from reliably.config import Settings, get_settings
-from reliably.log import logger
-from reliably.oltp import oltp_span
+
+from reliably_cli.client import reliably_client
+from reliably_cli.config import Settings, get_settings
+from reliably_cli.log import logger
+from reliably_cli.oltp import oltp_span
 
 from ..types import Plan
 from .providers.github import schedule_plan as gh_schedule_plan

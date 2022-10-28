@@ -1,6 +1,6 @@
 from typer.testing import CliRunner
 
-from reliably.__main__ import cli
+from reliably_cli.__main__ import cli
 
 runner = CliRunner()
 

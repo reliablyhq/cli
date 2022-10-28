@@ -1,8 +1,9 @@
 from anyio.abc import CancelScope
-from reliably.agent.types import Plan
-from reliably.config import get_settings
-from reliably.log import logger
-from reliably.oltp import oltp_span
+
+from reliably_cli.agent.types import Plan
+from reliably_cli.config import get_settings
+from reliably_cli.log import logger
+from reliably_cli.oltp import oltp_span
 
 from . import fetch_deployment
 
