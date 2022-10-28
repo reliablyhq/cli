@@ -80,12 +80,12 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          python -V
-          pdm export -o requirements.txt --without-hashes --prod
-          pdm config python.use_venv false
 
-          pdm install -vv
-          pdm install -vv -G bin-builder
+          pdm export -o requirements.txt --without-hashes --prod
+          pdm config python.use_venv true
+
+          pdm sync
+          pdm sync -G bin-builder
 
           pdm info
           pythonpath=$(pdm info --python)
