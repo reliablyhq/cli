@@ -48,7 +48,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up PDM
-        uses: pdm-project/setup-pdm@v2
+        uses: pdm-project/setup-pdm@v3
         with:
           python-version: "3.10"
       - name: Build wheel
@@ -72,19 +72,23 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up PDM
-        uses: pdm-project/setup-pdm@v2
+        uses: pdm-project/setup-pdm@v3
         with:
           python-version: "3.10"
+          cache: true
       - name: Build binary
         shell: bash
         run: |
           sudo apt-get update
           python -V
-          pdm config python.use_venv true
           pdm export -o requirements.txt --without-hashes --prod
+    
+          pdm config python.use_venv true
+          pdm venv create --name .venv
+          pdm use --first
+
           pdm install
           pdm install -G bin-builder
-          pdm use --first
           pyoxidizer build --release
           cp build/**/release/install/reliably reliably-linux-x86_64
       - name: Upload binary
