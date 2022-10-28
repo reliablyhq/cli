@@ -1,7 +1,6 @@
 FROM ubuntu:latest AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG CTK_VERSION
 
 RUN groupadd -g 1001 svc && useradd -r -u 1001 -g svc svc
 
