@@ -80,10 +80,11 @@ jobs:
         run: |
           sudo apt-get update
           python -V
-          pdm config python.use_venv false
+          pdm config python.use_venv true
           pdm export -o requirements.txt --without-hashes --prod
-          
-          python3.10 -m pip install -U --prefer-binary pyoxidizer>=0.22
+          pdm install
+          pdm install -G bin-builder
+          pdm use --first
           pyoxidizer build --release
           cp build/**/release/install/reliably reliably-linux-x86_64
       - name: Upload binary
