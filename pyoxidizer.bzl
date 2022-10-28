@@ -17,7 +17,7 @@ def make_exe():
         config=python_config,
     )
 
-    exe.add_python_resources(exe.pip_install(["-r", "requirements.txt"]), {"PIP_NO_BINARY": "pydantic"})
+    exe.add_python_resources(exe.pip_install(["-r", "requirements.txt"], {"PIP_NO_BINARY": "pydantic"}))
     exe.add_python_resources(exe.pip_install(["."]))
 
     return exe
