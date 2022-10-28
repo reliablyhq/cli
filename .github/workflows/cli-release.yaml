@@ -92,6 +92,7 @@ jobs:
           bindir=$(dirname $pythonpath)
 
           echo $bindir
+          ls $bindir
 
           $bindir/pyoxidizer build --release
           cp build/**/release/install/reliably reliably-linux-x86_64
