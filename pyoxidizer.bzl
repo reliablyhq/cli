@@ -2,7 +2,7 @@ def make_exe():
     dist = default_python_distribution(python_version="3.10")
 
     policy = dist.make_python_packaging_policy()
-    policy.set_resource_handling_mode("files")
+    #policy.set_resource_handling_mode("files")
     policy.resources_location = "in-memory"
     policy.resources_location_fallback = "filesystem-relative:lib"
 
@@ -17,18 +17,7 @@ def make_exe():
         config=python_config,
     )
 
-    exe.add_python_resources(
-        exe.pip_install(
-            ["-r", "requirements.txt"], {"PIP_NO_BINARY": "pydantic"}
-        )
-    )
-    for resource in exe.pip_install(["pydantic"], {"PIP_NO_BINARY": "pydantic"}):
-        resource.add_location = "filesystem-relative:lib"
-        exe.add_python_resource(resource)
-
-    for resource in exe.pip_install([CWD]):
-        resource.add_location = "filesystem-relative:lib"
-        exe.add_python_resource(resource)
+    exe.add_python_resources(exe.pip_install(["reliably-cli"], {"PIP_NO_BINARY": "pydantic"}))
 
     return exe
 
