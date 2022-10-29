@@ -71,6 +71,14 @@ jobs:
         include:
         - os: ubuntu-22.04
           target: x86_64-unknown-linux-gnu
+        - os: ubuntu-22.04
+          target: x86_64-unknown-linux-musl
+        - os: windows-2022
+          target: x86_64-pc-windows-msvc
+        - os: macos-10.15
+          target: x86_64-apple-darwin
+        - os: macos-11
+          target: aarch64-apple-darwin
     needs:
       - checks
     steps:
@@ -86,9 +94,18 @@ jobs:
         name: Install musl
         run: |
           sudo apt update
+      
+      - if: matrix.target == 'x86_64-unknown-linux-musl'
+        name: Install musl
+        run: |
+          sudo apt update
+          sudo apt install -y --no-install-recommends musl-tools
+
+      - if: runner.os != 'Windows'
+        name: Install Rust target
+        run: rustup target add ${{ matrix.target }}
 
       - name: Build binary
-        shell: bash
         run: |
           pdm export -o requirements.txt --without-hashes --prod
           pdm config python.use_venv true
@@ -100,13 +117,16 @@ jobs:
           pythonpath=$(pdm info --python)
           bindir=$(dirname $pythonpath)
 
-          echo $bindir
-          ls $bindir
-
           $bindir/pyoxidizer build --release --target-triple ${{ matrix.target }}
           cp build/**/release/install/reliably reliably-${{ matrix.target }}
+      
+      - if: runner.os != 'Windows'
+        name: Strip binary
+        run: strip reliably-${{ matrix.target }}
+
       - name: Upload binary
         uses: actions/upload-artifact@v3
         with:
           name: reliably-${{ matrix.target }}
           path: reliably-${{ matrix.target }}
+          if-no-files-found: error
