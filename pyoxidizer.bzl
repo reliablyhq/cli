@@ -19,14 +19,16 @@ def make_exe():
 
     exe.add_python_resources(
         exe.pip_install(
-            ["-r", "requirements.txt"], {"PIP_NO_BINARY": "pydantic[dotenv]"}
+            ["-r", "requirements.txt"], {"PIP_NO_BINARY": "pydantic"}
         )
     )
-    for resource in exe.pip_install(["pydantic[dotenv]"], {"PIP_NO_BINARY": "pydantic[dotenv]"}):
+    for resource in exe.pip_install(["pydantic"], {"PIP_NO_BINARY": "pydantic"}):
         resource.add_location = "filesystem-relative:lib"
         exe.add_python_resource(resource)
 
-    exe.add_python_resources(exe.pip_install(["."]))
+    for resource in exe.pip_install([CWD]):
+        resource.add_location = "filesystem-relative:lib"
+        exe.add_python_resource(resource)
 
     return exe
 
