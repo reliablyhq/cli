@@ -16,7 +16,11 @@ def make_exe():
         config=python_config,
     )
 
-    exe.add_python_resources(exe.pip_install(["reliably-cli"]))
+    exe.add_python_resources(
+        exe.pip_install(
+            ["reliably-cli"], {"PIP_NO_BINARY": "pydantic"}
+        )
+    )
 
     return exe
 

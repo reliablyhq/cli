@@ -105,7 +105,8 @@ jobs:
         name: Install Rust target
         run: rustup target add ${{ matrix.target }}
 
-      - name: Build binary
+      - name: Build binary (not Windows)
+        if: runner.os != 'Windows'
         run: |
           pdm export -o requirements.txt --without-hashes --prod
           pdm config python.use_venv true
@@ -113,11 +114,22 @@ jobs:
           pdm sync
           pdm sync -G bin-builder
 
-          pdm info
           pythonpath=$(pdm info --python)
           bindir=$(dirname $pythonpath)
 
           $bindir/pyoxidizer build --release --target-triple ${{ matrix.target }}
+          cp build/**/release/install/reliably reliably-${{ matrix.target }}
+      
+      - name: Build binary (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          pdm export -o requirements.txt --without-hashes --prod
+          pdm config python.use_venv true
+
+          pdm sync
+          pdm sync -G bin-builder
+
+          pyoxidizer build --release --target-triple ${{ matrix.target }}
           cp build/**/release/install/reliably reliably-${{ matrix.target }}
       
       - if: runner.os != 'Windows'
