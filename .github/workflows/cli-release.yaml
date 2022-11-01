@@ -77,7 +77,7 @@ jobs:
           target: x86_64-pc-windows-msvc
         - os: macos-10.15
           target: x86_64-apple-darwin
-        - os: macos-11
+        - os: macos-12
           target: aarch64-apple-darwin
     needs:
       - checks
@@ -138,6 +138,7 @@ jobs:
           pdm sync -G bin-builder
 
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
+          dir build\*\release\install
           xcopy build\*\release\install\reliably.exe reliably-${{ matrix.target }}
       
       - if: runner.os != 'Windows'
