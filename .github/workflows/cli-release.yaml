@@ -138,8 +138,8 @@ jobs:
           pdm sync
           pdm sync -G bin-builder
 
-          pyoxidizer build --release --target-triple ${{ matrix.target }}
-          cp build/**/release/install/reliably reliably-${{ matrix.target }}
+          .venv\bin\pyoxidizer build --release --target-triple ${{ matrix.target }}
+          xcopy build\*\release\install\reliably reliably-${{ matrix.target }}
       
       - if: runner.os != 'Windows'
         name: Strip binary
