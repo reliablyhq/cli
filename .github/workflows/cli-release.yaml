@@ -63,7 +63,7 @@ jobs:
           PDM_PUBLISH_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
   build-binary:
-    name: Build standalone executable for ${{ matrix.target == 'aarch64-apple-darwin' && 'macOS M1' || startsWith(matrix.os, 'macos-') && 'macOS Intel' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
+    name: Build standalone executable for '${{ matrix.target }}' on '${{ matrix.os }}'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -81,6 +81,8 @@ jobs:
           target: aarch64-apple-darwin
     needs:
       - checks
+    env:
+      LZMA_API_STATIC: '1'
     steps:
       - uses: actions/checkout@v3
         with:
@@ -108,6 +110,12 @@ jobs:
       - name: Build binary (not Windows)
         if: runner.os != 'Windows'
         run: |
+          if [ "${{ matrix.target.triple }}" = "aarch64-apple-darwin" ]; then
+            export MACOSX_DEPLOYMENT_TARGET=11.0
+          elif [ "${{ matrix.target.triple }}" = "x86_64-apple-darwin" ]; then
+            export MACOSX_DEPLOYMENT_TARGET=10.9
+          fi
+
           pdm export -o requirements.txt --without-hashes --prod
           pdm config python.use_venv true
 
