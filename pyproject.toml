@@ -71,7 +71,6 @@ test = [
     "pytest>=7.2.0",
 ]
 dev = [
-    "-e file:///${PROJECT_ROOT}#egg=reliably_cli",
     "black>=22.10.0",
     "isort>=5.10.1",
     "ruff>=0.0.83",
