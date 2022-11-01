@@ -138,7 +138,7 @@ jobs:
           pdm sync -G bin-builder
 
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
-          xcopy build\*\release\install\reliably reliably-${{ matrix.target }}
+          xcopy build\*\release\install\reliably.exe reliably-${{ matrix.target }}
       
       - if: runner.os != 'Windows'
         name: Strip binary
