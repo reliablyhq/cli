@@ -19,7 +19,7 @@ def make_exe():
     # pip download seems preferred over pip install in cross compilation
     # scenarios https://github.com/indygreg/PyOxidizer/issues/566#issuecomment-1146851507
     exe.add_python_resources(
-        exe.pip_download(["reliably-cli"]
+        exe.pip_download(["reliably-cli"])
     )
 
     return exe
