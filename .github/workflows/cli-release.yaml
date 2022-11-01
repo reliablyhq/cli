@@ -125,7 +125,7 @@ jobs:
           pythonpath=$(pdm info --python)
           bindir=$(dirname $pythonpath)
 
-          $bindir/pyoxidizer build -v --release --target-triple ${{ matrix.target }}
+          $bindir/pyoxidizer --verbose build --release --target-triple ${{ matrix.target }}
           cp build/**/release/install/reliably reliably-${{ matrix.target }}
       
       - name: Build binary (Windows)
