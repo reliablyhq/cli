@@ -137,7 +137,7 @@ jobs:
           pdm sync
           pdm sync -G bin-builder
 
-          .venv\bin\pyoxidizer build --release --target-triple ${{ matrix.target }}
+          pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
           xcopy build\*\release\install\reliably reliably-${{ matrix.target }}
       
       - if: runner.os != 'Windows'
