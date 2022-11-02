@@ -77,7 +77,7 @@ jobs:
           platforms: linux/amd64, linux/arm64
           file: ./Dockerfile
           tags: |
-            ghcr.io/reliablyhq/cli:latest
+            ghcr.io/reliablyhq/cli/cli:latest
 
   build-binary:
     name: Build executable for '${{ matrix.target }}' on '${{ matrix.os }}'
