@@ -7,6 +7,7 @@ import trio
 import typer
 from anyio.abc import CancelScope
 
+from .__version__ import __version__
 from .agent import agent_runner
 from .config import Settings, get_settings
 from .log import configure_logger, logger
@@ -28,6 +29,18 @@ def main(
 @cli.command()
 def agent() -> None:
     trio.run(_main, agent_runner)
+
+
+@cli.command()
+def version(
+    short: bool = typer.Option(
+        False, "--short", "-s", help="Only shows the version string"
+    )
+) -> None:
+    if short:
+        print(__version__)
+    else:
+        print(f"Reliably CLI: {__version__}")
 
 
 ##############################################################################
