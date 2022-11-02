@@ -23,7 +23,7 @@ class PlanProvidersSection(BaseModel):
 
 
 class PlanSection(BaseModel):
-    fetch_frequency: float = 3
+    fetch_frequency: float = 0
     providers: PlanProvidersSection | None
 
 
@@ -53,10 +53,10 @@ class OTELSection(BaseModel):
 
 
 class Settings(BaseSettings):
-    service: ServiceSection
-    agent: AgentSection
-    organization: OrgSection
-    plan: PlanSection
+    service: ServiceSection | None
+    agent: AgentSection | None
+    organization: OrgSection | None
+    plan: PlanSection | None
     log: LogSection | None
     otel: OTELSection | None
 

@@ -8,7 +8,7 @@ import typer
 from anyio.abc import CancelScope
 
 from .__version__ import __version__
-from .agent import agent_runner
+from .agent import agent_runner, validate_agent_configuration
 from .config import Settings, get_settings
 from .log import configure_logger, logger
 from .oltp import configure_instrumentation
@@ -29,6 +29,12 @@ def main(
 
 @cli.command()
 def agent() -> None:
+    try:
+        validate_agent_configuration()
+    except ValueError as ve:
+        print(ve)
+        raise typer.Exit(1)
+
     trio.run(_main, agent_runner)
 
 
