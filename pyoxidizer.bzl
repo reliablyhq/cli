@@ -47,10 +47,19 @@ def make_install(exe):
 
     return files
 
+def make_msi(exe):
+    return exe.to_wix_msi_builder(
+        "reliably",
+        "Reliably CLI",
+        "0.1.0",
+        "ChaosIQ Ltd"
+    )
+
 # Tell PyOxidizer about the build targets defined above.
 register_target("exe", make_exe)
 register_target("resources", make_embedded_resources, depends=["exe"], default_build_script=True)
 register_target("install", make_install, depends=["exe"], default=True)
+register_target("msi", make_msi, depends=["exe"])
 
 # Resolve whatever targets the invoker of this configuration file is requesting
 # be resolved.

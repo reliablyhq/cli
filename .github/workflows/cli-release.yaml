@@ -137,7 +137,7 @@ jobs:
           pdm sync
           pdm sync -G bin-builder
 
-          pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
+          pdm run pyoxidizer build msi --release --target-triple ${{ matrix.target }}
           dir build\${{ matrix.target }}\release\install\*
           echo F | xcopy build\${{ matrix.target }}\release\install\reliably.exe reliably-${{ matrix.target }}
       
