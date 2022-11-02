@@ -22,6 +22,10 @@ def make_exe():
         exe.pip_download(["reliably-cli"])
     )
 
+    exe.add_python_resources(
+        exe.pip_install(["pydantic"], {"PIP_NO_BINARY": "pydantic"})
+    )
+
     return exe
 
 def make_embedded_resources(exe):

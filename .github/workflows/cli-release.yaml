@@ -63,7 +63,7 @@ jobs:
           PDM_PUBLISH_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
   build-binary:
-    name: Build standalone executable for '${{ matrix.target }}' on '${{ matrix.os }}'
+    name: Build executable for '${{ matrix.target }}' on '${{ matrix.os }}'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -125,7 +125,7 @@ jobs:
           pythonpath=$(pdm info --python)
           bindir=$(dirname $pythonpath)
 
-          $bindir/pyoxidizer --verbose build --release --target-triple ${{ matrix.target }}
+          $bindir/pyoxidizer build --release --target-triple ${{ matrix.target }}
           cp build/**/release/install/reliably reliably-${{ matrix.target }}
       
       - name: Build binary (Windows)
@@ -138,8 +138,8 @@ jobs:
           pdm sync -G bin-builder
 
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
-          dir build\*\release\install\
-          xcopy build\*\release\install\reliably.exe reliably-${{ matrix.target }}
+          dir build\${{ matrix.target }}\release\install\*
+          xcopy build\${{ matrix.target }}\release\install\reliably.exe reliably-${{ matrix.target }}
       
       - if: runner.os != 'Windows'
         name: Strip binary
