@@ -17,8 +17,6 @@ jobs:
       - checks
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v3
         with:
