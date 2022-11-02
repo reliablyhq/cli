@@ -113,7 +113,7 @@ jobs:
             export MACOSX_DEPLOYMENT_TARGET=11.0
           elif [ "${{ matrix.target.triple }}" = "x86_64-apple-darwin" ]; then
             export MACOSX_DEPLOYMENT_TARGET=10.9
-          else; then
+          else
             PYDANTIC_VERSION=$(grep pydantic requirements.txt)
             sed -i 's/pydantic==.*$//g' requirements.txt
             EXTRA_VARS="--var pydantic_version ${PYDANTIC_VERSION}"
