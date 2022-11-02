@@ -1,3 +1,7 @@
+IS_WINDOWS = "windows" in BUILD_TARGET_TRIPLE
+IS_LINUX = "linux" in BUILD_TARGET_TRIPLE
+IS_APPLE = "apple" in BUILD_TARGET_TRIPLE
+
 def make_exe():
     dist = default_python_distribution(python_version="3.10")
 
@@ -22,9 +26,12 @@ def make_exe():
         exe.pip_download(["reliably-cli"])
     )
 
-    exe.add_python_resources(
-        exe.pip_install(["pydantic"], {"PIP_NO_BINARY": "pydantic"})
-    )
+    # not ideal but for some reason, pydantid wheel fails in the Linux
+    # distribution at runtime
+    if IS_LINUX:
+        exe.add_python_resources(
+            exe.pip_install(["pydantic"], {"PIP_NO_BINARY": "pydantic"})
+        )
 
     return exe
 
