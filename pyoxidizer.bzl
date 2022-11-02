@@ -2,12 +2,24 @@ IS_WINDOWS = "windows" in BUILD_TARGET_TRIPLE
 IS_LINUX = "linux" in BUILD_TARGET_TRIPLE
 IS_APPLE = "apple" in BUILD_TARGET_TRIPLE
 
+def resource_callback(policy, resource):
+    if type(resource) in ("PythonModuleSource", "PythonPackageResource", "PythonPackageDistributionResource"):
+        if "pydantic" in resource.name:
+            resource.add_location = "filesystem-relative:lib"
+
+
 def make_exe():
     dist = default_python_distribution(python_version="3.10")
 
     policy = dist.make_python_packaging_policy()
+    if IS_LINUX:
+        policy.register_resource_callback(resource_callback)
+    policy.include_test = False
     policy.resources_location = "in-memory"
     policy.resources_location_fallback = "filesystem-relative:lib"
+    policy.include_non_distribution_sources = True
+    policy.include_distribution_resources = True
+    policy.include_distribution_sources = True
 
     python_config = dist.make_python_interpreter_config()
     python_config.module_search_paths = ["$ORIGIN/lib"]
@@ -22,16 +34,7 @@ def make_exe():
 
     # pip download seems preferred over pip install in cross compilation
     # scenarios https://github.com/indygreg/PyOxidizer/issues/566#issuecomment-1146851507
-    exe.add_python_resources(
-        exe.pip_download(["reliably-cli"])
-    )
-
-    # not ideal but for some reason, pydantid wheel fails in the Linux
-    # distribution at runtime
-    if IS_LINUX:
-        exe.add_python_resources(
-            exe.pip_install([VARS.get("pydantic_version", "pydantic<2.0"),], {"PIP_NO_BINARY": "pydantic"})
-        )
+    exe.add_python_resource(exe.pip_download(["reliably-cli"]))
 
     return exe
 

@@ -125,10 +125,7 @@ jobs:
       - name: Build binary (not Windows)
         if: runner.os != 'Windows'
         run: |
-          pdm export -o requirements.txt --without-hashes --prod
           pdm config python.use_venv true
-
-          pdm sync
           pdm sync -G bin-builder
 
           EXTRA_VARS=""
@@ -151,15 +148,10 @@ jobs:
       - name: Build binary (Windows)
         if: runner.os == 'Windows'
         run: |
-          pdm export -o requirements.txt --without-hashes --prod
           pdm config python.use_venv true
-
-          pdm sync
           pdm sync -G bin-builder
-
           pdm run pyoxidizer build msi --release --target-triple ${{ matrix.target }}
-          dir build\${{ matrix.target }}\release\install\*
-          echo F | xcopy build\${{ matrix.target }}\release\install\reliably.exe reliably-${{ matrix.target }}
+          echo F | xcopy build\${{ matrix.target }}\release\msi\Reliably*.msi reliably-${{ matrix.target }}.msi
       
       - if: runner.os != 'Windows'
         name: Strip binary
