@@ -1,4 +1,5 @@
 import functools
+import os
 from pathlib import Path
 from typing import Any, Literal
 
@@ -86,7 +87,14 @@ def get_settings() -> Settings:
 def toml_config_settings(settings: BaseSettings) -> dict[str, Any]:
     toml_file = settings.__config__.toml_file
     if not Path(toml_file).exists():
-        return {}
+        toml_file = os.getenv("RELIABLY_CLI_CONFIG")
+
+        if toml_file:
+            return {}
+
+        toml_file = Path(toml_file)
+        if not Path(toml_file).exists():
+            return {}
 
     encoding = settings.__config__.env_file_encoding
     return tomllib.loads(Path(toml_file).read_text(encoding=encoding))

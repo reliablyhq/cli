@@ -19,7 +19,8 @@ cli = typer.Typer()
 @cli.callback()
 def main(
     config: Path = typer.Option(
-        Path(typer.get_app_dir("reliably")) / "config.toml"
+        Path(typer.get_app_dir("reliably")) / "config.toml",
+        envvar="RELIABLY_CLI_CONFIG"
     ),
 ):
     Settings.Config.toml_file = config
