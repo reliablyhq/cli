@@ -54,7 +54,7 @@ jobs:
     name: Build containers
     runs-on: ubuntu-22.04
     needs:
-      - build-wheels
+      - publish-wheels
     steps:
       - uses: actions/checkout@v3
         with:
@@ -95,7 +95,7 @@ jobs:
         - os: macos-12
           target: aarch64-apple-darwin
     needs:
-      - build-wheels
+      - publish-wheels
     env:
       LZMA_API_STATIC: '1'
     steps:
