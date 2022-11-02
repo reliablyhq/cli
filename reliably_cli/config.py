@@ -89,7 +89,7 @@ def toml_config_settings(settings: BaseSettings) -> dict[str, Any]:
     if not Path(toml_file).exists():
         toml_file = os.getenv("RELIABLY_CLI_CONFIG")
 
-        if toml_file:
+        if not toml_file:
             return {}
 
         toml_file = Path(toml_file)
