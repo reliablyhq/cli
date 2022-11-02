@@ -64,7 +64,7 @@ def make_msi(exe):
     return exe.to_wix_msi_builder(
         "reliably",
         "Reliably CLI",
-        "0.1.0",
+        "0.1.1",
         "ChaosIQ Ltd"
     )
 
