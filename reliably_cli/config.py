@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     agent: AgentSection | None
     organization: OrgSection | None
     plan: PlanSection | None
-    log: LogSection | None
+    log: LogSection = LogSection(level="info", as_json=False)
     otel: OTELSection | None
 
     class Config:
