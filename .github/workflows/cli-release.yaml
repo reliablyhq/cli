@@ -110,10 +110,15 @@ jobs:
       - name: Build binary (not Windows)
         if: runner.os != 'Windows'
         run: |
+          EXTRA_VARS=""
           if [ "${{ matrix.target.triple }}" = "aarch64-apple-darwin" ]; then
             export MACOSX_DEPLOYMENT_TARGET=11.0
           elif [ "${{ matrix.target.triple }}" = "x86_64-apple-darwin" ]; then
             export MACOSX_DEPLOYMENT_TARGET=10.9
+          else; then
+            PYDANTIC_VERSION=$(grep pydantic requirements.txt)
+            sed -i 's/pydantic==.*$//g' requirements.txt
+            EXTRA_VARS="--var pydantic_version ${PYDANTIC_VERSION}"
           fi
 
           pdm export -o requirements.txt --without-hashes --prod
@@ -125,7 +130,7 @@ jobs:
           pythonpath=$(pdm info --python)
           bindir=$(dirname $pythonpath)
 
-          $bindir/pyoxidizer build --release --target-triple ${{ matrix.target }}
+          $bindir/pyoxidizer build --release --target-triple ${{ matrix.target }} ${EXTRA_VARS}
           cp build/**/release/install/reliably reliably-${{ matrix.target }}
       
       - name: Build binary (Windows)

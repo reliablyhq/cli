@@ -30,7 +30,7 @@ def make_exe():
     # distribution at runtime
     if IS_LINUX:
         exe.add_python_resources(
-            exe.pip_install(["pydantic"], {"PIP_NO_BINARY": "pydantic"})
+            exe.pip_install([VARS.get("pydantic_version", "pydantic<2.0"),], {"PIP_NO_BINARY": "pydantic"})
         )
 
     return exe
