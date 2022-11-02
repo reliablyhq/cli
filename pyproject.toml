@@ -1,7 +1,7 @@
 [project]
 name = "reliably-cli"
-version = "0.1.1"
 description = "Reliably CLI"
+dynamic = ["version"]
 authors = [
     {name = "Sylvain Hellegouarch", email = "sylvain@reliably.com"},
 ]
@@ -58,7 +58,7 @@ testpaths = ["tests"]
 addopts = "-v -rxs --cov reliably_cli --cov-report term-missing:skip-covered -p no:warnings"
 
 [tool.pdm]
-version = { source = "file", path = "reliably_cli/__version__.py" }
+version = { source = "scm" }
 
 [tool.pdm.scripts]
 lint = {composite = ["ruff reliably_cli/", "isort --check-only --profile black reliably_cli/", "black --check --diff reliably_cli/"]}
