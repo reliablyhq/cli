@@ -4,7 +4,7 @@ IS_APPLE = "apple" in BUILD_TARGET_TRIPLE
 
 def resource_callback(policy, resource):
     if type(resource) in ("PythonModuleSource", "PythonPackageResource", "PythonPackageDistributionResource"):
-        print(resource.name)
+        print(resource.name, type(resource))
 
 
 def make_exe():
@@ -13,9 +13,15 @@ def make_exe():
     policy = dist.make_python_packaging_policy()
     if IS_LINUX:
         policy.register_resource_callback(resource_callback)
+
+    if not IS_WINDOWS:
+        policy.resources_location = "in-memory"
+        policy.resources_location_fallback = "filesystem-relative:lib"
+    else:
+        policy.resources_location = "filesystem-relative:lib"
+        policy.resources_location_fallback = None
+
     policy.include_test = False
-    policy.resources_location = "in-memory"
-    policy.resources_location_fallback = "filesystem-relative:lib"
     policy.include_non_distribution_sources = True
     policy.include_distribution_resources = True
     policy.include_distribution_sources = True
@@ -36,7 +42,9 @@ def make_exe():
         # scenarios https://github.com/indygreg/PyOxidizer/issues/566#issuecomment-1146851507
         exe.add_python_resources(exe.pip_download(["reliably-cli"]))
     else:
-        exe.add_python_resources(exe.pip_install(["reliably-cli"], {"PIP_NO_BINARY": "pydantic"}))
+        exe.add_python_resources(
+            exe.pip_install(["reliably-cli"], {"PIP_NO_BINARY": "pydantic"})
+        )
 
     return exe
 
