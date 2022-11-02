@@ -85,16 +85,12 @@ def get_settings() -> Settings:
 
 
 def toml_config_settings(settings: BaseSettings) -> dict[str, Any]:
-    toml_file = settings.__config__.toml_file
+    toml_file = os.getenv("RELIABLY_CLI_CONFIG")
+    if not toml_file:
+        toml_file = settings.__config__.toml_file
+
     if not Path(toml_file).exists():
-        toml_file = os.getenv("RELIABLY_CLI_CONFIG")
-
-        if not toml_file:
-            return {}
-
-        toml_file = Path(toml_file)
-        if not Path(toml_file).exists():
-            return {}
+        return {}
 
     encoding = settings.__config__.env_file_encoding
     return tomllib.loads(Path(toml_file).read_text(encoding=encoding))
