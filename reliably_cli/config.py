@@ -3,8 +3,8 @@ import os
 from pathlib import Path
 from typing import Any, Literal
 
-from logzero import logger
 import typer
+from logzero import logger
 from pydantic import UUID4, AnyUrl, BaseModel, BaseSettings, SecretStr
 
 try:

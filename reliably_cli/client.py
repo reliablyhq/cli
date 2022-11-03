@@ -18,6 +18,6 @@ async def reliably_client() -> httpx.AsyncClient:
         http2=True,
         base_url=f"{host}/api/v1/organization/{org_id}",
         headers={"Authorization": f"Bearer {token.get_secret_value()}"},
-        timeout=30.0
+        timeout=30.0,
     ) as c:
         yield c
