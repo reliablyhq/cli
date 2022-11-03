@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import Any, Literal
 
+from logzero import logger
 import typer
 from pydantic import UUID4, AnyUrl, BaseModel, BaseSettings, SecretStr
 
@@ -92,5 +93,6 @@ def toml_config_settings(settings: BaseSettings) -> dict[str, Any]:
     if not Path(toml_file).exists():
         return {}
 
+    logger.debug(f"Reading configuration from '{toml_file}'")
     encoding = settings.__config__.env_file_encoding
     return tomllib.loads(Path(toml_file).read_text(encoding=encoding))
