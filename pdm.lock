@@ -226,7 +226,7 @@ summary = "Experimental type system extensions for programs checked with the myp
 
 [[package]]
 name = "opentelemetry-api"
-version = "1.13.0"
+version = "1.14.0"
 requires_python = ">=3.7"
 summary = "OpenTelemetry Python API"
 dependencies = [
@@ -236,21 +236,21 @@ dependencies = [
 
 [[package]]
 name = "opentelemetry-exporter-otlp-proto-http"
-version = "1.13.0"
+version = "1.14.0"
 requires_python = ">=3.7"
 summary = "OpenTelemetry Collector Protobuf over HTTP Exporter"
 dependencies = [
     "backoff<3.0.0,>=1.10.0; python_version >= \"3.7\"",
     "googleapis-common-protos~=1.52",
     "opentelemetry-api~=1.12",
-    "opentelemetry-proto==1.13.0",
+    "opentelemetry-proto==1.14.0",
     "opentelemetry-sdk~=1.12",
     "requests~=2.7",
 ]
 
 [[package]]
 name = "opentelemetry-instrumentation"
-version = "0.34b0"
+version = "0.35b0"
 requires_python = ">=3.7"
 summary = "Instrumentation Tools & Auto Instrumentation for OpenTelemetry Python"
 dependencies = [
@@ -261,27 +261,27 @@ dependencies = [
 
 [[package]]
 name = "opentelemetry-instrumentation-httpx"
-version = "0.34b0"
+version = "0.35b0"
 requires_python = ">=3.7"
 summary = "OpenTelemetry HTTPX Instrumentation"
 dependencies = [
     "opentelemetry-api~=1.12",
-    "opentelemetry-instrumentation==0.34b0",
-    "opentelemetry-semantic-conventions==0.34b0",
+    "opentelemetry-instrumentation==0.35b0",
+    "opentelemetry-semantic-conventions==0.35b0",
 ]
 
 [[package]]
 name = "opentelemetry-instrumentation-logging"
-version = "0.34b0"
+version = "0.35b0"
 summary = "OpenTelemetry Logging instrumentation"
 dependencies = [
     "opentelemetry-api~=1.12",
-    "opentelemetry-instrumentation==0.34b0",
+    "opentelemetry-instrumentation==0.35b0",
 ]
 
 [[package]]
 name = "opentelemetry-propagator-b3"
-version = "1.13.0"
+version = "1.14.0"
 requires_python = ">=3.7"
 summary = "OpenTelemetry B3 Propagator"
 dependencies = [
@@ -291,7 +291,7 @@ dependencies = [
 
 [[package]]
 name = "opentelemetry-proto"
-version = "1.13.0"
+version = "1.14.0"
 requires_python = ">=3.7"
 summary = "OpenTelemetry Python Proto"
 dependencies = [
@@ -300,19 +300,19 @@ dependencies = [
 
 [[package]]
 name = "opentelemetry-sdk"
-version = "1.13.0"
+version = "1.14.0"
 requires_python = ">=3.7"
 summary = "OpenTelemetry Python SDK"
 dependencies = [
-    "opentelemetry-api==1.13.0",
-    "opentelemetry-semantic-conventions==0.34b0",
+    "opentelemetry-api==1.14.0",
+    "opentelemetry-semantic-conventions==0.35b0",
     "setuptools>=16.0",
     "typing-extensions>=3.7.4",
 ]
 
 [[package]]
 name = "opentelemetry-semantic-conventions"
-version = "0.34b0"
+version = "0.35b0"
 requires_python = ">=3.7"
 summary = "OpenTelemetry Semantic Conventions"
 
@@ -443,7 +443,7 @@ dependencies = [
 
 [[package]]
 name = "pytest-sugar"
-version = "0.9.5"
+version = "0.9.6"
 summary = "pytest-sugar is a plugin for pytest that changes the default look and feel of pytest (e.g. progressbar, show tests that fail instantly)."
 dependencies = [
     "packaging>=14.1",
@@ -505,7 +505,7 @@ dependencies = [
 
 [[package]]
 name = "ruff"
-version = "0.0.95"
+version = "0.0.103"
 requires_python = ">=3.7"
 summary = "An extremely fast Python linter, written in Rust."
 
@@ -555,7 +555,7 @@ dependencies = [
 
 [[package]]
 name = "typer"
-version = "0.6.1"
+version = "0.7.0"
 requires_python = ">=3.6"
 summary = "Typer, build great CLIs. Easy to code. Based on Python type hints."
 dependencies = [
@@ -818,41 +818,41 @@ content_hash = "sha256:0b33c0ab80c6dd706f82641d0323d7bf6765f15e490156480fbdc98f2
     {url = "https://files.pythonhosted.org/packages/5c/eb/975c7c080f3223a5cdaff09612f3a5221e4ba534f7039db34c35d95fa6a5/mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},
     {url = "https://files.pythonhosted.org/packages/63/60/0582ce2eaced55f65a4406fc97beba256de4b7a95a0034c6576458c6519f/mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
 ]
-"opentelemetry-api 1.13.0" = [
-    {url = "https://files.pythonhosted.org/packages/d4/c5/fb5c7988323d8c85ccc883c274251d08127695fa9fe83e5bae404b4babbf/opentelemetry_api-1.13.0.tar.gz", hash = "sha256:e683e869471b99e77238c8739d6ee2f368803329f3b808dfa86a02d0b519c682"},
-    {url = "https://files.pythonhosted.org/packages/e2/8d/e4ec67448273652daaac38f0b77c4778178ad16c01294e13f4065c1487e1/opentelemetry_api-1.13.0-py3-none-any.whl", hash = "sha256:2db1e8713f48a119bae457cd22304a7919d5e57190a380485c442c4f731a46dd"},
+"opentelemetry-api 1.14.0" = [
+    {url = "https://files.pythonhosted.org/packages/a4/08/6c38f40cd746b77121b21e6ab43f24feb2024a8e61f62c8db812a95b5406/opentelemetry_api-1.14.0.tar.gz", hash = "sha256:9629d87680a765a1e3e16f8bd156d59e7ed00f4282f9df00c217d53229356fba"},
+    {url = "https://files.pythonhosted.org/packages/f9/1e/fc04c5acd68f9c546ac12494baa1149d1408031c7d783b67a951ad58b696/opentelemetry_api-1.14.0-py3-none-any.whl", hash = "sha256:d98107f65a815b7d3bc90b79abd6460fefe7b9ccb9c6958e2e37129e360a811a"},
 ]
-"opentelemetry-exporter-otlp-proto-http 1.13.0" = [
-    {url = "https://files.pythonhosted.org/packages/59/0e/6cce26de40a050c880840779d1d983e89b00e62ba429ca652c806392fcbb/opentelemetry_exporter_otlp_proto_http-1.13.0.tar.gz", hash = "sha256:cc126ff096d4d1b7afd34a5ab453d3d9efa3c09ee9bf2795af93484fcabedb69"},
-    {url = "https://files.pythonhosted.org/packages/60/ff/bf499fe62ec1fc0fca43c292d44cf43ef06451ce790df773bc25ebce9aac/opentelemetry_exporter_otlp_proto_http-1.13.0-py3-none-any.whl", hash = "sha256:c7dea746eee7497903223094c2dfd7fe18d0f88c4ba1bb533fb93df64ff6834e"},
+"opentelemetry-exporter-otlp-proto-http 1.14.0" = [
+    {url = "https://files.pythonhosted.org/packages/ae/a4/148b4ccb0105c084960a8eec7a30de2b27a06fa0ebcd12b5d6c0822fc6ba/opentelemetry_exporter_otlp_proto_http-1.14.0-py3-none-any.whl", hash = "sha256:b65e0fcae9daef7b3e9233fecb70ef871ab645f6d80fba1dad1d02f911746347"},
+    {url = "https://files.pythonhosted.org/packages/f3/2e/48c024767e1c82c07383e661f64c5ca817bd56f46d7e592d6a72bb28574f/opentelemetry_exporter_otlp_proto_http-1.14.0.tar.gz", hash = "sha256:46d3c55586f7c2983b2b3f1b1809d229ea68569e5b78ca89de7cfee4854374fe"},
 ]
-"opentelemetry-instrumentation 0.34b0" = [
-    {url = "https://files.pythonhosted.org/packages/e1/07/77d2bbca9d3a605fde8ae211b7c99fa7843580579071c3ec592cd6d5510e/opentelemetry_instrumentation-0.34b0-py3-none-any.whl", hash = "sha256:5b765e7266611ea8f76e9042ea88872481477cb068d8c328a21fed38e7349d35"},
-    {url = "https://files.pythonhosted.org/packages/ea/27/807ba7538c5e9a0d2ae0f5a4782185b2cf569e6d083abae85882038356b8/opentelemetry_instrumentation-0.34b0.tar.gz", hash = "sha256:7397a7497c1425a899585c3a2a62915c4100c061ca4f901df54e7008d6150fb6"},
+"opentelemetry-instrumentation 0.35b0" = [
+    {url = "https://files.pythonhosted.org/packages/9d/17/a31ee015f0cdb1f1d85b0b58198998f3716d4792f311428e7acf08f29519/opentelemetry_instrumentation-0.35b0.tar.gz", hash = "sha256:a7cb996b37920911db7534dc739ab3fe18e4f769431481bec01d6538a11cadd9"},
+    {url = "https://files.pythonhosted.org/packages/fb/6a/98c8c21ddfa96a27fefe641d344309d91ebf7c0588731399e3211e1055dd/opentelemetry_instrumentation-0.35b0-py3-none-any.whl", hash = "sha256:0ca91ef51c6748e91892cd1322b1fceede77d1300dc718a5ec4c3deee5649beb"},
 ]
-"opentelemetry-instrumentation-httpx 0.34b0" = [
-    {url = "https://files.pythonhosted.org/packages/60/97/265b26e5f14d7bb0235c91720b4ff4da2cbe2e48eccdd8b3b2253bdad09b/opentelemetry_instrumentation_httpx-0.34b0.tar.gz", hash = "sha256:5961ff28a7cbc4bde49c406b75ae15f0f5c5c8ba1fdb33163a9cabbc2111d8a1"},
-    {url = "https://files.pythonhosted.org/packages/dd/a9/cc367937c5fa277cb9412a045c7227798f743e3e6aeeff4a31ba80517cbc/opentelemetry_instrumentation_httpx-0.34b0-py3-none-any.whl", hash = "sha256:fcc8a717775c997a287a058e07cb64556546e8b0fdb84d5063cba7027e80f38f"},
+"opentelemetry-instrumentation-httpx 0.35b0" = [
+    {url = "https://files.pythonhosted.org/packages/d6/34/fd362e62669a084005762f0880fce7da9329ba85f7f50bdc2bbf1d15d0ce/opentelemetry_instrumentation_httpx-0.35b0.tar.gz", hash = "sha256:16d47935bca7f2d872474ec09b5d8a208201eb5a4780ab484e2749962fd0f7fe"},
+    {url = "https://files.pythonhosted.org/packages/ef/2a/fbfa57ab50b92d31ba0c17bbba6165537be932f191ff3c84234738a8ca77/opentelemetry_instrumentation_httpx-0.35b0-py3-none-any.whl", hash = "sha256:9d8f21c8c6f9da6fe74a4186a02d794aad9753017a976f5add76135afda66765"},
 ]
-"opentelemetry-instrumentation-logging 0.34b0" = [
-    {url = "https://files.pythonhosted.org/packages/28/28/9bfe1f19208e129b396ba432d857454d7fcf76ce47f738bb1f73f5c559f2/opentelemetry_instrumentation_logging-0.34b0-py2.py3-none-any.whl", hash = "sha256:466798a4b6dcf840e6b7bffe6a66c21f5a7f79f5469238440845766b0e6a08dd"},
-    {url = "https://files.pythonhosted.org/packages/58/f2/c8e963f356c554ffb60fcc8362d88e7f13560aeb04649e5caf9dd2099f26/opentelemetry_instrumentation_logging-0.34b0.tar.gz", hash = "sha256:967573d417c977e62f3d676cd4d468ca96c4457633d473f235a02a203218dea6"},
+"opentelemetry-instrumentation-logging 0.35b0" = [
+    {url = "https://files.pythonhosted.org/packages/02/a9/2dd2cb85b278e0a6da2f0ec1b1a336920061e545ab9b7b8f5ae9d584ecd1/opentelemetry_instrumentation_logging-0.35b0.tar.gz", hash = "sha256:16cfeaf5665738bc0f136ed362755f3034bef6225a49838869ade2142c24e183"},
+    {url = "https://files.pythonhosted.org/packages/a1/8a/41104e4721cafe7461db25c28197542d27f72012c02d39a7efc86a9c73ae/opentelemetry_instrumentation_logging-0.35b0-py2.py3-none-any.whl", hash = "sha256:bcd1eed8d1c698eb46b3a26321929927288534031482b2a486ff45381b80e9a7"},
 ]
-"opentelemetry-propagator-b3 1.13.0" = [
-    {url = "https://files.pythonhosted.org/packages/9b/be/fe552415d926e57253c0fbcab53a0da703ed4f5cb3a4394c0a98f8b707d6/opentelemetry_propagator_b3-1.13.0.tar.gz", hash = "sha256:8b7d35254a9c2c3ea2784b1f4a3782c003b67a3e780c66b8efbbb67ecad5066b"},
-    {url = "https://files.pythonhosted.org/packages/fb/32/1269d8ec6c876949dca6eb2db22c9092f521ad0c0dd637faa096b0d2e6da/opentelemetry_propagator_b3-1.13.0-py3-none-any.whl", hash = "sha256:0cbf1cf8497b3b4bd672b2adfb7563c40080c237890a8bef6d44e4bdeaafc93c"},
+"opentelemetry-propagator-b3 1.14.0" = [
+    {url = "https://files.pythonhosted.org/packages/84/b7/d6dc156f1e6c49e4bcba2ae1d96a68fb2ec7ef2f534f6baa30c43a361303/opentelemetry_propagator_b3-1.14.0-py3-none-any.whl", hash = "sha256:2dbd4069bc3bd8756a683e5475a736b59b2bece0343f5e6b75ce0b1636a1d108"},
+    {url = "https://files.pythonhosted.org/packages/92/2d/8b1f1cd206a4b672cb6315c7dc835d830face64c640806a5c150de438e89/opentelemetry_propagator_b3-1.14.0.tar.gz", hash = "sha256:abf4969fdd1dd5945a9087e2a671fde1bc11dc8e4a8063aa198233b77e4176cf"},
 ]
-"opentelemetry-proto 1.13.0" = [
-    {url = "https://files.pythonhosted.org/packages/00/69/513b301f9d404d749ac9f593afd50e84fefc0d1d0af543fb342e55d1effe/opentelemetry_proto-1.13.0-py3-none-any.whl", hash = "sha256:6df48b64e108018e42c48eb33fe37d9a8489598226043a6917dd936796becdaa"},
-    {url = "https://files.pythonhosted.org/packages/84/24/48db501a824e87f014b0b15f61445c9ce55f25ff95d6107bcc4cdfeb90ea/opentelemetry_proto-1.13.0.tar.gz", hash = "sha256:8f5e9cd4e930270822f3fe30d6d3420b2f843fc1d3fe789db622b88869bc8be1"},
+"opentelemetry-proto 1.14.0" = [
+    {url = "https://files.pythonhosted.org/packages/4c/72/55c680d69aed907cb14ba424679d03ad7678cda515cfc7037602719d8361/opentelemetry_proto-1.14.0.tar.gz", hash = "sha256:1e3b379fef66e3ed46d5d67f0b61cca9db789e69d3a434fdf62d65fed4e091d5"},
+    {url = "https://files.pythonhosted.org/packages/fa/23/70ef9702791948bda1556345e1934556b2185a9255bdbe04292c0423a8ce/opentelemetry_proto-1.14.0-py3-none-any.whl", hash = "sha256:8f2c4f39ce625fd349af572bbf7a8f801b4ea0a55a8ba3a32b76d912489b9f27"},
 ]
-"opentelemetry-sdk 1.13.0" = [
-    {url = "https://files.pythonhosted.org/packages/73/8a/b4a61c354ac5c008c68c9095945a6bebb008f65ad1f4ca95161cf3d9d290/opentelemetry_sdk-1.13.0-py3-none-any.whl", hash = "sha256:c7b88e06ebedd22c226b374c207792d30b3f34074a6b8ad8c6dad04a8d16326b"},
-    {url = "https://files.pythonhosted.org/packages/a5/4f/f5767218b05b854c0f4bbea14865d862a77a901b75b574aecad8e76c7250/opentelemetry_sdk-1.13.0.tar.gz", hash = "sha256:0eddcacd5a484fe2918116b9a4e31867e3d10322ff8392b1c7b0dae1ac724d48"},
+"opentelemetry-sdk 1.14.0" = [
+    {url = "https://files.pythonhosted.org/packages/24/1a/8bb3e31c695649e1dfba0cea852a466f59f12f71a37172002a08e6b61de7/opentelemetry_sdk-1.14.0.tar.gz", hash = "sha256:1b58bd9bb96b917c66cdd00bcfd719aca15695a0720fd0332d7db2a6a74c02c8"},
+    {url = "https://files.pythonhosted.org/packages/f0/5d/85d7150db2bab3c3e3db398763225097726ff6b7a0fef714b4f59ea7110d/opentelemetry_sdk-1.14.0-py3-none-any.whl", hash = "sha256:81d76b23ed0eb0dc6b2b614ed7b27f7a84921df1395261b3732ef1deac95c414"},
 ]
-"opentelemetry-semantic-conventions 0.34b0" = [
-    {url = "https://files.pythonhosted.org/packages/70/df/7830fba936c799113727c8523cd05349b25423c5d4432a627e0feca08dfe/opentelemetry_semantic_conventions-0.34b0-py3-none-any.whl", hash = "sha256:b236bd027d2d470c5f7f7a466676182c7e02f486db8296caca25fae0649c3fa3"},
-    {url = "https://files.pythonhosted.org/packages/dd/9a/01787879e76b7a313c81e929288823574bf7ea258ebed4c814f049f67399/opentelemetry_semantic_conventions-0.34b0.tar.gz", hash = "sha256:0c88a5d1f45b820272e0c421fd52ff2188b74582b1bab7ba0f57891dc2f31edf"},
+"opentelemetry-semantic-conventions 0.35b0" = [
+    {url = "https://files.pythonhosted.org/packages/8f/33/53ee2bf33797acd075f29abec884c9022eb944d8b3f21a61958199744b9d/opentelemetry_semantic_conventions-0.35b0-py3-none-any.whl", hash = "sha256:eb5320719d919db2ff8ac60a7577dfa2316cf02bccc6a3b1f50d051885dd96b7"},
+    {url = "https://files.pythonhosted.org/packages/e6/b1/283aad65d4cb6f179dc416573c9680b2ac8ca8514330bf018744966dc32a/opentelemetry_semantic_conventions-0.35b0.tar.gz", hash = "sha256:3c24717f2838a6b4db45d68abf69078942e876c2347e0a83a09c1533017d85d2"},
 ]
 "outcome 1.2.0" = [
     {url = "https://files.pythonhosted.org/packages/dd/91/741e1626e89fdc3664169e16300c59eefa4b23540cc6d6c70450f885098f/outcome-1.2.0.tar.gz", hash = "sha256:6f82bd3de45da303cf1f771ecafa1633750a358436a8bb60e06a1ceb745d2672"},
@@ -972,9 +972,9 @@ content_hash = "sha256:0b33c0ab80c6dd706f82641d0323d7bf6765f15e490156480fbdc98f2
     {url = "https://files.pythonhosted.org/packages/ea/70/da97fd5f6270c7d2ce07559a19e5bf36a76f0af21500256f005a69d9beba/pytest-cov-4.0.0.tar.gz", hash = "sha256:996b79efde6433cdbd0088872dbc5fb3ed7fe1578b68cdbba634f14bb8dd0470"},
     {url = "https://files.pythonhosted.org/packages/fe/1f/9ec0ddd33bd2b37d6ec50bb39155bca4fe7085fa78b3b434c05459a860e3/pytest_cov-4.0.0-py3-none-any.whl", hash = "sha256:2feb1b751d66a8bd934e5edfa2e961d11309dc37b73b0eabe73b5945fee20f6b"},
 ]
-"pytest-sugar 0.9.5" = [
-    {url = "https://files.pythonhosted.org/packages/59/30/4a8c1dc18c9b33a24d66bed3b1f164bb67341055cefe1469a7d4363da28f/pytest_sugar-0.9.5-py2.py3-none-any.whl", hash = "sha256:3da42de32ce4e1e95b448d61c92804433f5d4058c0a765096991c2e93d5a289f"},
-    {url = "https://files.pythonhosted.org/packages/e2/d0/b770e5d47794323f06dab98c328c6d25758f4aca015017e709af3d1abee2/pytest-sugar-0.9.5.tar.gz", hash = "sha256:eea78b6f15b635277d3d90280cd386d8feea1cab0f9be75947a626e8b02b477d"},
+"pytest-sugar 0.9.6" = [
+    {url = "https://files.pythonhosted.org/packages/11/71/2bddd9f3f7fb267b31d7c6236dfb021d28b843f810b3fff57cf9194ef34b/pytest-sugar-0.9.6.tar.gz", hash = "sha256:c4793495f3c32e114f0f5416290946c316eb96ad5a3684dcdadda9267e59b2b8"},
+    {url = "https://files.pythonhosted.org/packages/3e/05/4375ccf896e5dccce262a37a432ae0eea0fdaa8d6812020271ce9087263b/pytest_sugar-0.9.6-py2.py3-none-any.whl", hash = "sha256:30e5225ed2b3cc988a8a672f8bda0fc37bcd92d62e9273937f061112b3f2186d"},
 ]
 "python-dotenv 0.21.0" = [
     {url = "https://files.pythonhosted.org/packages/2d/10/ff4f2f5b2a420fd09e1331d63cc87cf4367c5745c0a4ce99cea92b1cbacb/python_dotenv-0.21.0-py3-none-any.whl", hash = "sha256:1684eb44636dd462b66c3ee016599815514527ad99965de77f43e0944634a7e5"},
@@ -996,23 +996,23 @@ content_hash = "sha256:0b33c0ab80c6dd706f82641d0323d7bf6765f15e490156480fbdc98f2
     {url = "https://files.pythonhosted.org/packages/11/23/814edf09ec6470d52022b9e95c23c1bef77f0bc451761e1504ebd09606d3/rich-12.6.0.tar.gz", hash = "sha256:ba3a3775974105c221d31141f2c116f4fd65c5ceb0698657a11e9f295ec93fd0"},
     {url = "https://files.pythonhosted.org/packages/32/60/81ac2e7d1e3b861ab478a72e3b20fc91c4302acd2274822e493758941829/rich-12.6.0-py3-none-any.whl", hash = "sha256:a4eb26484f2c82589bd9a17c73d32a010b1e29d89f1604cd9bf3a2097b81bb5e"},
 ]
-"ruff 0.0.95" = [
-    {url = "https://files.pythonhosted.org/packages/04/b3/f9c0369f60c43fb4c462c7a890b204aeda9a1b350db831f9f2828819ba89/ruff-0.0.95-py3-none-musllinux_1_2_i686.whl", hash = "sha256:10cd10785d9cc41fcd9d3d693d15c75073d8884155ad09af06f842c7ac3563f0"},
-    {url = "https://files.pythonhosted.org/packages/17/4d/e287088ff073055f9b480876705d26a35783d71be819aa7239b75cf22fd1/ruff-0.0.95-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:f5739af779359fe072a88c11c4ee6cfdbdfb5e1ad8588641f20d7f003d508936"},
-    {url = "https://files.pythonhosted.org/packages/19/0e/bdc1c3475c30e724630bcc0602ff32eb2e0f88045332e6df08b6d20052ef/ruff-0.0.95-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:92793f5e885e07c7c89b7646cd16cc387a2ba471d4f072c0393446bd16965f4c"},
-    {url = "https://files.pythonhosted.org/packages/47/0f/17118c1c399203c9355002d16ccb1287c342c24c88ac9e3300eb43841d6e/ruff-0.0.95-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:c805229f16f7858f889cee0391b9e3cdcef43cd7f1d85726d96e6774e8552774"},
-    {url = "https://files.pythonhosted.org/packages/50/e9/bf410c8970962a25400b26e46c7a9bdf69d226259a4de896a6e2d87dca2a/ruff-0.0.95-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:96ea24c5b2762f75fbe567f1be4a29fbb3e0682d82678a36a78f7efb370f2252"},
-    {url = "https://files.pythonhosted.org/packages/6c/35/1eef3cc9c237d7b2970f166d3903df63874469eac08a18686e8bdc15e54e/ruff-0.0.95-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:0f9ae42e7774df7747f0824db8d481bad2a2ff360479c0a49d69a167be47cb2e"},
-    {url = "https://files.pythonhosted.org/packages/80/90/d6945984796263fe3b4084c620c1c492e99538efe0c37523ab080d0d6009/ruff-0.0.95-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:e0c2f500b49ab4b5b9258a5e912a1b2644257faaa9063505f78b71a861b41de7"},
-    {url = "https://files.pythonhosted.org/packages/93/af/82c70cab199fec0a2d1c212a4b68738abab247ec2173e40d6a9ea4965a19/ruff-0.0.95-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:ad4aeb505f2f8e299213d90870a993341e09b56a60fe07d3d5c7deddf69e603d"},
-    {url = "https://files.pythonhosted.org/packages/9c/a9/e23959be12a0b2917490d2a7ea927d1527cb3bd7f0b195dd3e01efe51e5f/ruff-0.0.95-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:c7ba86dc1e788720851846635142a82d2a945cb825e51177f7c117f525a87afe"},
-    {url = "https://files.pythonhosted.org/packages/c5/92/d264efe7a5289519c7aed4fd7ba554a56df47a35841f0a7ffe87d401f294/ruff-0.0.95-py3-none-win32.whl", hash = "sha256:2a1e800513b98bbad30e56c00850205d334aff39f14fad030a73006d89a65171"},
-    {url = "https://files.pythonhosted.org/packages/c7/f0/0553dded5f4fdd961759721e856babb28010f50c08c31009300b935f11b7/ruff-0.0.95-py3-none-macosx_10_7_x86_64.whl", hash = "sha256:b069a2f473a88832eb0ce971fb23f3c66ab57e7a4760ed8f626dcda873068f99"},
-    {url = "https://files.pythonhosted.org/packages/da/96/728b06b5d4fd9ebdcef835bc922551d5bb803b37989f4fd15a935cce918f/ruff-0.0.95-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3f325f212f31a11e8d16c81e0e036baddb978cc01512263aeca5488b0c9848b7"},
-    {url = "https://files.pythonhosted.org/packages/dc/3f/762aff4ce58e9b019a7a061f0c4ec68cd274e70d47bc76c1fcdf5bca4f8c/ruff-0.0.95-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:48a84316718517a00ac7c8119fb4581e4c29e26f7b7c673bfc6b3992fee9ba39"},
-    {url = "https://files.pythonhosted.org/packages/dc/55/443d8b768da0c1d26922d49c3ad234b14a777239099b690a53b38016973b/ruff-0.0.95.tar.gz", hash = "sha256:ca98ba7e47cdc2c5e70f04bbfc05e1e0d317a2a12f71d7b3a9ef6d5622e751b9"},
-    {url = "https://files.pythonhosted.org/packages/ea/26/6fd652d11d5ee1bd79721c11abf7317fbdbc8424308a2f34247a5b74e244/ruff-0.0.95-py3-none-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:bb78320600aa9fb07d28b89f3e5da8335b3b49eac25e5196c5329e7748ca422e"},
-    {url = "https://files.pythonhosted.org/packages/fd/45/3d8312290c51def2d90dd6fd85fe93f527ad9fbda1dd6bf9bc619bce0d3c/ruff-0.0.95-py3-none-win_amd64.whl", hash = "sha256:7f389b873d535c2685611e4e3bf979d4d0c3365916a213f1b0a88ceba8537849"},
+"ruff 0.0.103" = [
+    {url = "https://files.pythonhosted.org/packages/0e/3d/63498e9844ccaa5d37a407c9b25d19b1cb0d86053fe405004e6532550171/ruff-0.0.103-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:5a2f2f48099a442e3849a40cf3f159f536293598fca1da23e5f1b74f8badc067"},
+    {url = "https://files.pythonhosted.org/packages/1b/9e/dc3e2b3ba20b660bf834643385f03e37c36abe1cbf27c73bed73b6f31066/ruff-0.0.103-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:6bec3a2ef963342fc4e1075348d86127258871224c076ba17fb4c7a5bf02183b"},
+    {url = "https://files.pythonhosted.org/packages/24/3f/3b584854aa950c78bd97024dc160278e69022284af7d8bc459ec9b0e8db6/ruff-0.0.103-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:7ec98d9f2e8b8fb8e2750ef93aa282bcd73c84d9f76f44e7eaeec97f7d8a57ee"},
+    {url = "https://files.pythonhosted.org/packages/32/c3/8ac1182d8f1363e80271ec579ef355e49f375cd9f9086a59dedf4c631664/ruff-0.0.103-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b85674176918836cc7dd364c4372b411e96991f548d32de14b2a85e7ad9d69b5"},
+    {url = "https://files.pythonhosted.org/packages/33/eb/559b56038cc0f9e84cde6877fe18e3637f80ddec2847b0b5a36d9141a3b2/ruff-0.0.103-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:9bb293376f3868be2b07d01612fab5f2207c20a0f64255b43d522055cc79d67d"},
+    {url = "https://files.pythonhosted.org/packages/36/34/81049b85029dac88ff41c676481d5ea5164b1392b4098e4149cc2d834ca7/ruff-0.0.103-py3-none-musllinux_1_2_i686.whl", hash = "sha256:ffb42e2b0e73cfc7502550fedec5ea260e8d56ceb64d2e2a40c0eaf68ab962c9"},
+    {url = "https://files.pythonhosted.org/packages/55/c8/f0d690eae24edd8f77d0104cf4031763df4a80be3382fec7ed3e5709a009/ruff-0.0.103-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1b60b275ed74e4f7d33265bff15c0703a75beda03e6a084065067639d71badc8"},
+    {url = "https://files.pythonhosted.org/packages/56/4c/69809429966223e4f8136d5cd68f4a31e5b3e221f0ca20aacdee27e09900/ruff-0.0.103.tar.gz", hash = "sha256:05ba8f000de9c77534534b8392d32cf2b669b03d2a9bac22deaf7c1c753507ee"},
+    {url = "https://files.pythonhosted.org/packages/6f/a4/9bc9df687eff543114f186116bdaeefa0677feab17d07c7014134c358098/ruff-0.0.103-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:26a6133fb97062efddec10ba01f8fa144ba1504401b418335b40362459ee668e"},
+    {url = "https://files.pythonhosted.org/packages/74/c6/a8ee2f0f3c1f292376967e46ae5c99caaad8c164570dcac44fdc47e2c91d/ruff-0.0.103-py3-none-win32.whl", hash = "sha256:af18bf6327b291876e8236ee7a4416d407653ad51601ddfb7e504a4645131d07"},
+    {url = "https://files.pythonhosted.org/packages/79/38/2beb7ed84a7a305bff8de5b58bf2108d9a5298f4c29db340ebf1fc347917/ruff-0.0.103-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:15a257632ce0a307897c0098209762e920a7a28251d3923c0a8174434e19f0da"},
+    {url = "https://files.pythonhosted.org/packages/87/98/5c9607220cafb7e671769436e9f6217288b259c867f3955290f431d0485c/ruff-0.0.103-py3-none-macosx_10_7_x86_64.whl", hash = "sha256:1eaf8e2c40fe73383f524e8e7e033316d668250e867f3ae0755c577af521bcdc"},
+    {url = "https://files.pythonhosted.org/packages/b6/22/f78ab91c046803d33cc6d2d3dbb9e34dfb77e555c01d2478466f05003f0d/ruff-0.0.103-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:df8f6ab183b3e41a93b842a4415ad2a36a63bf6e7e79be7d20d2b7c3f47fd593"},
+    {url = "https://files.pythonhosted.org/packages/b9/71/e8d9810e9967e1a74c782d61aa7bf197007bbc729f295118ddbf62b48e22/ruff-0.0.103-py3-none-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:beb44309d6ab858e56f370cd378899cbd33df6dc185883811d2c15b6f06c08b5"},
+    {url = "https://files.pythonhosted.org/packages/c2/72/c45d06157507b92864689d1616a38a312dca0738994522514ca9e9c152ac/ruff-0.0.103-py3-none-win_amd64.whl", hash = "sha256:191ffc414912d4226d2b0017a8c00eb00d1698db9c7f984859b9db75caddecd0"},
+    {url = "https://files.pythonhosted.org/packages/fb/a4/68c6825f9fc7563bd50359cf7ae7e0fbc189d2c059bee5a1403a07d6606d/ruff-0.0.103-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:125f8f5d6762e07119a573b504fb567229e27869a1e621e10102efc37ae20411"},
 ]
 "setuptools 65.5.0" = [
     {url = "https://files.pythonhosted.org/packages/41/82/7f54bbfe5c247a8c9f78d8d1d7c051847bcb78843c397b866dba335c1e88/setuptools-65.5.0-py3-none-any.whl", hash = "sha256:f62ea9da9ed6289bfe868cd6845968a2c854d1427f8548d52cae02a42b4f0356"},
@@ -1038,9 +1038,9 @@ content_hash = "sha256:0b33c0ab80c6dd706f82641d0323d7bf6765f15e490156480fbdc98f2
     {url = "https://files.pythonhosted.org/packages/0b/81/47c8b8fc5303bed06d284a49a114e10032d2cbfa1ac51bef15949abf1b54/trio-0.21.0.tar.gz", hash = "sha256:523f39b7b69eef73501cebfe1aafd400a9aad5b03543a0eded52952488ff1c13"},
     {url = "https://files.pythonhosted.org/packages/a9/bc/aef5a15725e95df49d41838dd816b95aad7df07de9f87e4ff453a3326615/trio-0.21.0-py3-none-any.whl", hash = "sha256:4dc0bf9d5cc78767fc4516325b6d80cc0968705a31d0eec2ecd7cdda466265b0"},
 ]
-"typer 0.6.1" = [
-    {url = "https://files.pythonhosted.org/packages/cf/f9/27c5cd9ab067e3ece4cecb920c33f38cc986f839b12de19650fd49dc3c63/typer-0.6.1.tar.gz", hash = "sha256:2d5720a5e63f73eaf31edaa15f6ab87f35f0690f8ca233017d7d23d743a91d73"},
-    {url = "https://files.pythonhosted.org/packages/e8/9b/7470461c68588ed09c2e53cbb16b802815232796d95f7b4744cc8842f19d/typer-0.6.1-py3-none-any.whl", hash = "sha256:54b19e5df18654070a82f8c2aa1da456a4ac16a2a83e6dcd9f170e291c56338e"},
+"typer 0.7.0" = [
+    {url = "https://files.pythonhosted.org/packages/0d/44/56c3f48d2bb83d76f5c970aef8e2c3ebd6a832f09e3621c5395371fe6999/typer-0.7.0-py3-none-any.whl", hash = "sha256:b5e704f4e48ec263de1c0b3a2387cd405a13767d2f907f44c1a08cbad96f606d"},
+    {url = "https://files.pythonhosted.org/packages/e1/45/bcbc581f87c8d8f2a56b513eb994d07ea4546322818d95dc6a3caf2c928b/typer-0.7.0.tar.gz", hash = "sha256:ff797846578a9f2a201b53442aedeb543319466870fbe1c701eab66dd7681165"},
 ]
 "typing-extensions 4.4.0" = [
     {url = "https://files.pythonhosted.org/packages/0b/8e/f1a0a5a76cfef77e1eb6004cb49e5f8d72634da638420b9ea492ce8305e8/typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},

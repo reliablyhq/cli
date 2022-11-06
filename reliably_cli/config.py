@@ -5,7 +5,7 @@ from typing import Any, Literal
 
 import typer
 from logzero import logger
-from pydantic import UUID4, AnyUrl, BaseModel, BaseSettings, SecretStr
+from pydantic import UUID4, AnyUrl, BaseModel, BaseSettings, HttpUrl, SecretStr
 
 try:
     import tomllib  # noqa
@@ -17,6 +17,10 @@ __all__ = ["get_settings", "Settings"]
 
 class PlanProviderGitHubSection(BaseModel):
     enabled: bool = False
+    api_url: HttpUrl = "https://api.github.com"
+    repo: str | None
+    workflow_id: str = "plan.yaml"
+    ref: str = "main"
 
 
 class PlanProvidersSection(BaseModel):
