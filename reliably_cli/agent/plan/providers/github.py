@@ -41,9 +41,14 @@ async def schedule_plan(plan: Plan) -> None:
                 gh_workflow_id = settings.plan.providers.github.workflow_id
                 gh_ref = settings.plan.providers.github.ref
 
+                url = (
+                    f"{gh_api_url}/repos/{gh_repo}/actions"
+                    f"/workflows/{gh_workflow_id}/dispatches"
+                )
+
                 async with httpx.AsyncClient() as h:
                     r = await h.post(
-                        f"{gh_api_url}/repos/{gh_repo}/actions/workflows/{gh_workflow_id}/dispatches",
+                        url,
                         headers={
                             "Accept": "application/vnd.github+json",
                             "Authorization": f"Bearer {gh_token}",
