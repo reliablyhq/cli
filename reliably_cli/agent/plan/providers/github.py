@@ -35,6 +35,7 @@ async def schedule_plan(plan: Plan) -> None:
                     f"/organization/{settings.organization.id}"
                     f"/experiments/{exp_id}/raw"
                 )
+                logger.debug(f"Scheduling experiment {experiment_url}")
 
                 gh_api_url = settings.plan.providers.github.api_url
                 gh_repo = settings.plan.providers.github.repo
@@ -46,6 +47,7 @@ async def schedule_plan(plan: Plan) -> None:
                     f"/workflows/{gh_workflow_id}/dispatches"
                 )
 
+                logger.debug(f"Calling plan {url}")
                 async with httpx.AsyncClient() as h:
                     r = await h.post(
                         url,
@@ -60,5 +62,10 @@ async def schedule_plan(plan: Plan) -> None:
                     )
                     logger.info(r.status_code)
                     logger.info(r.json())
+        except Exception:
+            logger.error(
+                f"Failed to schedule plan {str(plan.id)}", exc_info=True
+            )
+            raise
         finally:
             scope.cancel()
