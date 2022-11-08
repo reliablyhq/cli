@@ -37,10 +37,16 @@ async def schedule_plan(plan: Plan) -> None:
                 )
                 logger.debug(f"Scheduling experiment {experiment_url}")
 
-                gh_api_url = settings.plan.providers.github.api_url
-                gh_repo = settings.plan.providers.github.repo
                 gh_workflow_id = settings.plan.providers.github.workflow_id
-                gh_ref = settings.plan.providers.github.ref
+                gh_api_url = os.getenv(
+                    "GITHUB_API_URL", settings.plan.providers.github.api_url
+                )
+                gh_repo = os.getenv(
+                    "GITHUB_REPOSITORY", settings.plan.providers.github.repo
+                )
+                gh_ref = os.getenv(
+                    "GITHUB_REF_NAME", settings.plan.providers.github.ref
+                )
 
                 url = (
                     f"{gh_api_url}/repos/{gh_repo}/actions"
