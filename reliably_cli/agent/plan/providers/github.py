@@ -29,6 +29,13 @@ async def schedule_plan(plan: Plan) -> None:
                 if not gh_token:
                     gh_token = os.getenv("GITHUB_TOKEN")
 
+                if not gh_token:
+                    raise RuntimeError(
+                        "you must specify a suitable GitHub token, either in "
+                        "the Reliably configuration file or via the"
+                        "GITHUB_TOKEN environment variable"
+                    )
+
                 exp_id = plan.definition.experiments[0]
                 experiment_url = (
                     f"{settings.service.host}/api/v1"
