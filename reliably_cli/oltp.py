@@ -62,5 +62,7 @@ def oltp_span(
     attrs["org_id"] = str(settings.organization.id)
 
     tracer = trace.get_tracer(__name__)
-    with tracer.start_as_current_span(name, attributes=attrs) as span:
+    with tracer.start_as_current_span(
+        name, attributes=attrs, record_exception=True, end_on_exit=True
+    ) as span:
         yield span
