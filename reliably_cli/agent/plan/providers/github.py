@@ -25,10 +25,7 @@ async def schedule_plan(plan: Plan) -> None:
                 logger.info(f"Schedule plan {plan.id} on GitHub")
 
                 deployment = await fetch_deployment(plan, settings)
-                gh_token = deployment["definition"]["token"]
-                if gh_token is None:
-                    logger.debug("Using the environment GITHUB_TOKEN")
-                    gh_token = os.getenv("GITHUB_TOKEN")
+                gh_token = os.getenv("GITHUB_TOKEN")
 
                 if not gh_token:
                     raise RuntimeError(
