@@ -8,8 +8,6 @@ from reliably_cli.config import get_settings
 from reliably_cli.log import logger
 from reliably_cli.oltp import oltp_span
 
-from . import fetch_deployment
-
 __all__ = ["schedule_plan"]
 
 
@@ -24,7 +22,6 @@ async def schedule_plan(plan: Plan) -> None:
             ):
                 logger.info(f"Schedule plan {plan.id} on GitHub")
 
-                deployment = await fetch_deployment(plan, settings)
                 gh_token = os.getenv("GITHUB_TOKEN")
 
                 if not gh_token:
