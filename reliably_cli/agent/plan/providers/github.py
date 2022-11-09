@@ -50,8 +50,6 @@ async def schedule_plan(plan: Plan) -> None:
                     "GITHUB_REF_NAME", settings.plan.providers.github.ref
                 )
 
-                reliably_token = settings.agent.token.get_secret_value()
-
                 url = (
                     f"{gh_api_url}/repos/{gh_repo}/actions"
                     f"/workflows/{gh_workflow_id}/dispatches"
