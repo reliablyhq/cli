@@ -27,7 +27,7 @@ async def schedule_plan(plan: Plan) -> None:
                 if not gh_token:
                     raise RuntimeError(
                         "you must specify a suitable GitHub token, either in "
-                        "the Reliably configuration file or via the"
+                        "the Reliably configuration file or via the "
                         "GITHUB_TOKEN environment variable"
                     )
 
@@ -69,7 +69,6 @@ async def schedule_plan(plan: Plan) -> None:
                             "ref": gh_ref,
                             "inputs": {
                                 "experiment-url": experiment_url,
-                                "reliably-agent-token": reliably_token,
                                 "environment-name": "myenv",
                             },
                         },
