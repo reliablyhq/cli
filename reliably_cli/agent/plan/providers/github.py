@@ -12,13 +12,15 @@ __all__ = ["schedule_plan"]
 
 
 async def schedule_plan(plan: Plan) -> None:
+    plan_id = str(plan.id)
+
     with CancelScope(shield=True) as scope:
         try:
             settings = get_settings()
             with oltp_span(
                 "schedule-plan",
                 settings=settings,
-                attrs={"plan_id": str(plan.id), "deployment_type": "github"},
+                attrs={"plan_id": plan_id, "deployment_type": "github"},
             ):
                 logger.info(f"Schedule plan {plan.id} on GitHub")
 
@@ -71,12 +73,15 @@ async def schedule_plan(plan: Plan) -> None:
                             },
                         },
                     )
-                    logger.info(r.status_code)
-                    logger.info(r.json())
+                    if r.status_code == 204:
+                        logger.info(f"Plan {plan_id} scheduled")
+                    else:
+                        logger.error(
+                            f"Failed to schedule plan {plan_id}: "
+                            f"{r.status_code} - {r.json()}"
+                        )
         except Exception:
-            logger.error(
-                f"Failed to schedule plan {str(plan.id)}", exc_info=True
-            )
+            logger.error(f"Failed to schedule plan {plan_id}", exc_info=True)
             raise
         finally:
             scope.cancel()
