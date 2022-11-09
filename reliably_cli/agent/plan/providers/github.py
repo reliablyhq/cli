@@ -29,9 +29,6 @@ async def schedule_plan(plan: Plan) -> None:
                 if gh_token is None:
                     logger.debug("Using the environment GITHUB_TOKEN")
                     gh_token = os.getenv("GITHUB_TOKEN")
-                else:
-                    logger.debug("Using the tokebn from the config")
-                    gh_token = gh_token.get_secret_value()
 
                 if not gh_token:
                     raise RuntimeError(
