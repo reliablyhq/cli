@@ -60,6 +60,7 @@ def oltp_span(
 
     attrs = attrs or {}
     attrs["org_id"] = str(settings.organization.id)
+    attrs["agent_id"] = str(settings.agent.id)
 
     tracer = trace.get_tracer(__name__)
     with tracer.start_as_current_span(
