@@ -15,16 +15,16 @@ async def schedule_plan(plan: Plan) -> None:
     plan_id = str(plan.id)
 
     gh_attrs = {
-        "plan_id": plan_id,
-        "deployment_type": "github",
-        "gh_actor": os.getenv("GITHUB_ACTOR"),
-        "gh_event_name": os.getenv("GITHUB_EVENT_NAME"),
-        "gh_job_id": os.getenv("GITHUB_JOB"),
-        "gh_ref": os.getenv("GITHUB_REF"),
-        "gh_ref_type": os.getenv("GITHUB_REF_TYPE"),
-        "gh_repo": os.getenv("GITHUB_REPOSITORY"),
-        "gh_run_id": os.getenv("GITHUB_RUN_ID"),
-        "gh_sha": os.getenv("GITHUB_SHA"),
+        "reliably.plan_id": plan_id,
+        "reliably.deployment_type": "github",
+        "reliably.gh_actor": os.getenv("GITHUB_ACTOR"),
+        "reliably.gh_event_name": os.getenv("GITHUB_EVENT_NAME"),
+        "reliably.gh_job_id": os.getenv("GITHUB_JOB"),
+        "reliably.gh_ref": os.getenv("GITHUB_REF"),
+        "reliably.gh_ref_type": os.getenv("GITHUB_REF_TYPE"),
+        "reliably.gh_repo": os.getenv("GITHUB_REPOSITORY"),
+        "reliably.gh_run_id": os.getenv("GITHUB_RUN_ID"),
+        "reliably.gh_sha": os.getenv("GITHUB_SHA"),
     }
 
     with CancelScope(shield=True) as scope:

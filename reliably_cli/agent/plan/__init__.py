@@ -75,7 +75,7 @@ async def fetch_next_schedulable_plan(
             with oltp_span(
                 "fetch-next-plan",
                 settings=settings,
-                attrs={"deployment_type": provider},
+                attrs={"reliably.deployment_type": provider},
             ):
                 async with reliably_client() as client:
                     logger.debug(
