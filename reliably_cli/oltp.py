@@ -12,10 +12,11 @@ try:
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry.trace.span import NonRecordingSpan, Span
 except pkg_resources.DistributionNotFound:
     pass
 
-from opentelemetry.trace.span import NonRecordingSpan, Span
+from httpx import Request
 
 from . import is_executable
 from .config import Settings
@@ -47,7 +48,14 @@ def configure_instrumentation(settings: Settings) -> None:  # pragma: no cover
     LoggingInstrumentor().instrument(
         tracer_provider=provider, set_logging_format=False
     )
-    HTTPXClientInstrumentor().instrument()
+
+    def request_oltp_hook(span: Span, request: Request) -> None:
+        if span and span.is_recording():
+            org_id = request.headers.get("X-Reliably-Org-Id")
+            if org_id:
+                span.set_attribute("reliably.org_id", org_id)
+
+    HTTPXClientInstrumentor().instrument(request_hook=request_oltp_hook)
 
 
 @contextmanager
