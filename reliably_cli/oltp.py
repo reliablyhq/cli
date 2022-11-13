@@ -7,7 +7,10 @@ try:
     from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
         OTLPSpanExporter,
     )
-    from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+    from opentelemetry.instrumentation.httpx import (
+        HTTPXClientInstrumentor,
+        RequestInfo,
+    )
     from opentelemetry.instrumentation.logging import LoggingInstrumentor
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
@@ -15,8 +18,6 @@ try:
     from opentelemetry.trace.span import NonRecordingSpan, Span
 except pkg_resources.DistributionNotFound:
     pass
-
-from httpx import Request
 
 from . import is_executable
 from .config import Settings
@@ -49,9 +50,10 @@ def configure_instrumentation(settings: Settings) -> None:  # pragma: no cover
         tracer_provider=provider, set_logging_format=False
     )
 
-    def request_oltp_hook(span: Span, request: Request) -> None:
+    def request_oltp_hook(span: Span, request: RequestInfo) -> None:
         if span and span.is_recording():
-            org_id = request.headers.get("X-Reliably-Org-Id")
+            _, _, headers, _, _ = request
+            org_id = headers.get("X-Reliably-Org-Id")
             if org_id:
                 span.set_attribute("reliably.org_id", org_id)
 
