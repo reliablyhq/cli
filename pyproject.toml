@@ -22,6 +22,11 @@ dependencies = [
     "opentelemetry-propagator-b3>=1.13.0",
     "opentelemetry-semantic-conventions>=0.34b0",
     "tomli>=1.1.0; python_version < \"3.11\"",
+    "opentelemetry-instrumentation-system-metrics>=0.35b0",
+    "opentelemetry-exporter-prometheus>=1.12.0rc1",
+    "prometheus-client>=0.15.0",
+    "hypercorn>=0.14.3",
+    "starlette>=0.21.0",
 ]
 
 [project.scripts]

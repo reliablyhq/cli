@@ -10,9 +10,15 @@ __all__ = ["agent_runner", "validate_agent_configuration"]
 
 async def agent_runner(scope: CancelScope) -> None:
     logger.debug("Agent now running...")
+    settings = get_settings()
 
-    if not get_settings().plan:
+    if not settings.plan:
         print("missing [plan] section in configuration. noop.")
+        scope.cancel()
+        return
+
+    if not settings.plan.providers:
+        print("no plan providers were declared in the config. noop")
         scope.cancel()
         return
 

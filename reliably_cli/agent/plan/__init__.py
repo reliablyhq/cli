@@ -7,7 +7,8 @@ from anyio.streams.memory import (
 )
 
 from reliably_cli.client import reliably_client
-from reliably_cli.config import Settings, get_settings
+from reliably_cli.config import get_settings
+from reliably_cli.config.types import Settings
 from reliably_cli.log import logger
 from reliably_cli.oltp import oltp_span
 
@@ -33,7 +34,7 @@ async def process_plans(
 
 
 async def fetch_plans(stream: MemoryObjectSendStream) -> None:
-    logger.debug("Fetching plans starting")
+    logger.debug("Fetching plans started")
     async with anyio.create_task_group() as tg:
         try:
             while True:
@@ -46,10 +47,10 @@ async def fetch_plans(stream: MemoryObjectSendStream) -> None:
                     break
                 await trio.sleep(settings.plan.fetch_frequency)
         finally:
+            logger.debug("Fetching plans terminated")
             # by closing the sending stream, this close the receiving stream
             # and terminate the processing of events automatically. neat.
             await stream.aclose()
-    logger.debug("Fetching plans terminated")
 
 
 ###############################################################################
@@ -78,16 +79,12 @@ async def fetch_next_schedulable_plan(
                 attrs={"reliably.deployment_type": provider},
             ):
                 async with reliably_client() as client:
-                    logger.debug(
-                        f"Looking for next plan to schedule on '{provider}'"
-                    )
                     r = await client.get(
                         "/plans/schedulables/next",
                         params={"deployment_type": provider},
                     )
                     plan = r.json()
                     if plan is None:
-                        logger.debug(f"No plans to schedule on '{provider}'")
                         return
 
                     plan = Plan.parse_obj(plan)

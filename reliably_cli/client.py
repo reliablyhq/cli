@@ -14,10 +14,7 @@ async def reliably_client() -> httpx.AsyncClient:
     org_id = settings.organization.id
     token = settings.agent.token
 
-    headers = {
-        "Authorization": f"Bearer {token.get_secret_value()}",
-        "X-Reliably-Org-Id": str(org_id),
-    }
+    headers = {"Authorization": f"Bearer {token.get_secret_value()}"}
 
     async with httpx.AsyncClient(
         http2=True,

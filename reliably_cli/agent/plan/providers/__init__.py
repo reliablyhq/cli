@@ -2,7 +2,7 @@ from typing import Any
 
 from reliably_cli.agent.types import Plan
 from reliably_cli.client import reliably_client
-from reliably_cli.config import Settings
+from reliably_cli.config.types import Settings
 from reliably_cli.log import logger
 
 __all__ = ["fetch_deployment", "fetch_experiment"]
@@ -38,3 +38,12 @@ async def fetch_experiment(
             return
 
         return r.json()
+
+
+async def set_plan_status(
+    plan_id: str, status: str, error: str | None = None
+) -> None:
+    async with reliably_client() as client:
+        await client.put(
+            f"/plans/{plan_id}/status", json={"status": status, "error": error}
+        )

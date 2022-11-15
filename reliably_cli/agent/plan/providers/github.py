@@ -6,45 +6,60 @@ from anyio.abc import CancelScope
 from reliably_cli.agent.types import Plan
 from reliably_cli.config import get_settings
 from reliably_cli.log import logger
-from reliably_cli.oltp import oltp_span
+from reliably_cli.oltp import inc_metric_value, oltp_span
+
+from . import set_plan_status
 
 __all__ = ["schedule_plan"]
 
 
 async def schedule_plan(plan: Plan) -> None:
+    settings = get_settings()
+    gh_provider = settings.plan.providers.github
     plan_id = str(plan.id)
+
+    gh_token = os.getenv(
+        "GITHUB_TOKEN",
+        gh_provider.token.get_secret_value() if gh_provider.token else None,
+    )
+
+    if not gh_token:
+        raise RuntimeError(
+            "you must specify a suitable GitHub token, either in "
+            "the Reliably configuration file or via the "
+            "GITHUB_TOKEN environment variable"
+        )
+
+    gh_workflow_id = gh_provider.workflow_id
+    gh_api_url = os.getenv("GITHUB_API_URL", gh_provider.api_url)
+    gh_repo = os.getenv("GITHUB_REPOSITORY", gh_provider.repo)
+    gh_ref = os.getenv("GITHUB_REF_NAME", gh_provider.ref)
 
     gh_attrs = {
         "reliably.plan_id": plan_id,
         "reliably.deployment_type": "github",
-        "reliably.gh_actor": os.getenv("GITHUB_ACTOR"),
-        "reliably.gh_event_name": os.getenv("GITHUB_EVENT_NAME"),
-        "reliably.gh_job_id": os.getenv("GITHUB_JOB"),
-        "reliably.gh_ref": os.getenv("GITHUB_REF"),
-        "reliably.gh_ref_type": os.getenv("GITHUB_REF_TYPE"),
-        "reliably.gh_repo": os.getenv("GITHUB_REPOSITORY"),
-        "reliably.gh_run_id": os.getenv("GITHUB_RUN_ID"),
-        "reliably.gh_sha": os.getenv("GITHUB_SHA"),
+        "reliably.gh_actor": os.getenv("GITHUB_ACTOR", ""),
+        "reliably.gh_event_name": os.getenv("GITHUB_EVENT_NAME", ""),
+        "reliably.gh_job_id": os.getenv("GITHUB_JOB", ""),
+        "reliably.gh_ref": gh_ref,
+        "reliably.gh_ref_type": os.getenv("GITHUB_REF_TYPE", ""),
+        "reliably.gh_repo": gh_repo,
+        "reliably.gh_run_id": os.getenv("GITHUB_RUN_ID", ""),
+        "reliably.gh_sha": os.getenv("GITHUB_SHA", ""),
     }
+    # avoid empty attributes
+    for k, v in list(gh_attrs.items()):
+        if v == "":
+            gh_attrs.pop(k)
 
     with CancelScope(shield=True) as scope:
-        try:
-            settings = get_settings()
-            with oltp_span(
-                "schedule-plan",
-                settings=settings,
-                attrs=gh_attrs,
-            ):
-                logger.info(f"Schedule plan {plan.id} on GitHub")
-
-                gh_token = os.getenv("GITHUB_TOKEN")
-
-                if not gh_token:
-                    raise RuntimeError(
-                        "you must specify a suitable GitHub token, either in "
-                        "the Reliably configuration file or via the "
-                        "GITHUB_TOKEN environment variable"
-                    )
+        with oltp_span(
+            "schedule-plan",
+            settings=settings,
+            attrs=gh_attrs,
+        ):
+            try:
+                logger.debug(f"Schedule plan {plan.id} on GitHub")
 
                 exp_id = plan.definition.experiments[0]
                 experiment_url = (
@@ -54,23 +69,12 @@ async def schedule_plan(plan: Plan) -> None:
                 )
                 logger.debug(f"Scheduling experiment {experiment_url}")
 
-                gh_workflow_id = settings.plan.providers.github.workflow_id
-                gh_api_url = os.getenv(
-                    "GITHUB_API_URL", settings.plan.providers.github.api_url
-                )
-                gh_repo = os.getenv(
-                    "GITHUB_REPOSITORY", settings.plan.providers.github.repo
-                )
-                gh_ref = os.getenv(
-                    "GITHUB_REF_NAME", settings.plan.providers.github.ref
-                )
-
                 url = (
                     f"{gh_api_url}/repos/{gh_repo}/actions"
                     f"/workflows/{gh_workflow_id}/dispatches"
                 )
 
-                logger.debug(f"Calling plan {url}")
+                logger.debug(f"Calling GitHub workflow at {url}")
                 async with httpx.AsyncClient() as h:
                     r = await h.post(
                         url,
@@ -93,8 +97,22 @@ async def schedule_plan(plan: Plan) -> None:
                             f"Failed to schedule plan {plan_id}: "
                             f"{r.status_code} - {r.json()}"
                         )
-        except Exception:
-            logger.error(f"Failed to schedule plan {plan_id}", exc_info=True)
-            raise
-        finally:
-            scope.cancel()
+            except Exception as x:
+                await set_plan_status(plan_id, "creation error", str(x))
+                logger.error(
+                    f"Failed to schedule plan {plan_id}", exc_info=True
+                )
+                raise
+            finally:
+                await set_plan_status(plan_id, "created")
+
+                inc_metric_value(
+                    "scheduled-plans",
+                    {
+                        "repo": gh_repo,
+                        "ref": gh_ref,
+                        "org_id": str(settings.organization.id),
+                    },
+                )
+
+                scope.cancel()

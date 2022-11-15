@@ -7,7 +7,7 @@ from opentelemetry.instrumentation.logging.constants import (
 )
 
 from . import is_executable
-from .config import Settings
+from .config.types import Settings
 
 __all__ = ["logger", "configure_logger"]
 COLORS = {

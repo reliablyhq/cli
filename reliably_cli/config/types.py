@@ -1,4 +1,3 @@
-import functools
 import os
 from pathlib import Path
 from typing import Any, Literal
@@ -12,11 +11,12 @@ try:
 except ImportError:
     import tomli as tomllib
 
-__all__ = ["get_settings", "Settings"]
+__all__ = ["Settings"]
 
 
 class PlanProviderGitHubSection(BaseModel):
     enabled: bool = False
+    token: SecretStr | None
     api_url: HttpUrl = "https://api.github.com"
     repo: str | None
     workflow_id: str = "plan.yaml"
@@ -50,11 +50,20 @@ class LogSection(BaseModel):
     as_json: bool = False
 
 
-class OTELSection(BaseModel):
+class OTELInfoSection(BaseModel):
     enabled: bool = False
     service_name: str = "reliably"
     endpoint: AnyUrl | None
     headers: str | None
+
+
+class OTELMetricsInfoSection(OTELInfoSection):
+    expose_as_prometheus: bool = False
+
+
+class OTELSection(BaseModel):
+    traces: OTELInfoSection = OTELInfoSection()
+    metrics: OTELMetricsInfoSection = OTELMetricsInfoSection()
 
 
 class Settings(BaseSettings):
@@ -63,7 +72,7 @@ class Settings(BaseSettings):
     organization: OrgSection | None
     plan: PlanSection | None
     log: LogSection = LogSection(level="info", as_json=False)
-    otel: OTELSection | None
+    otel: OTELSection = OTELSection()
 
     class Config:
         env_prefix = "reliably_"
@@ -82,11 +91,6 @@ class Settings(BaseSettings):
                 env_settings,
                 toml_config_settings,
             )
-
-
-@functools.lru_cache
-def get_settings() -> Settings:
-    return Settings()
 
 
 def toml_config_settings(settings: BaseSettings) -> dict[str, Any]:

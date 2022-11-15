@@ -1,19 +1,18 @@
-import signal
 from pathlib import Path
-from typing import Awaitable
 
-import anyio
-import trio
 import typer
-from anyio.abc import CancelScope
 
 from .__version__ import __version__
-from .agent import agent_runner, validate_agent_configuration
-from .config import Settings, get_settings
+from .agent.cli import cli as agent_cli
+from .config import get_settings
+from .config.cli import cli as config_cli
+from .config.types import Settings
 from .log import configure_logger, logger
-from .oltp import configure_instrumentation
+from .oltp import configure_metrics, configure_traces
 
 cli = typer.Typer()
+cli.add_typer(config_cli, name="config")
+cli.add_typer(agent_cli, name="agent")
 
 
 @cli.callback()
@@ -25,17 +24,6 @@ def main(
 ):
     Settings.Config.toml_file = config
     configure_app()
-
-
-@cli.command()
-def agent() -> None:
-    try:
-        validate_agent_configuration()
-    except ValueError as ve:
-        print(ve)
-        raise typer.Exit(1)
-
-    trio.run(_main, agent_runner)
 
 
 @cli.command()
@@ -53,35 +41,6 @@ def version(
 ##############################################################################
 # Private
 ##############################################################################
-async def signal_handler(scope: CancelScope):
-    with anyio.open_signal_receiver(
-        signal.SIGINT, signal.SIGTERM, signal.SIGHUP
-    ) as signals:
-        logger.debug("Listening for system signals...")
-        async for signum in signals:
-            logger.debug(
-                f"Signal '{signal.strsignal(signum) or signum}' received"
-            )
-            if signum == signal.SIGHUP:
-                logger.info("Reloading configuration")
-                get_settings.cache_clear()
-                get_settings()
-                logger.info("Configuration reloaded")
-            else:
-                scope.cancel()
-                return
-
-
-async def _main(runner: Awaitable) -> None:
-    logger.debug("Application ready to run")
-
-    async with anyio.create_task_group() as tg:
-        tg.start_soon(signal_handler, tg.cancel_scope)
-        tg.start_soon(runner, tg.cancel_scope)
-
-    logger.debug("Application terminated. Exiting...")
-
-
 def configure_app() -> None:
     settings = get_settings()
 
@@ -89,8 +48,9 @@ def configure_app() -> None:
 
     logger.debug("Configuring application...")
 
-    if settings.otel and settings.otel.enabled:
-        configure_instrumentation(settings)
+    if settings.otel:
+        configure_traces(settings)
+        configure_metrics(settings)
 
     logger.debug("Application configured")
 
