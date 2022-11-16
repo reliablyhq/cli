@@ -46,7 +46,7 @@ jobs:
           python-version: "3.10"
       - name: Publish wheels
         run: |
-          pdm publish
+          pdm publish --no-build
 
           # try to give Pypi time to update its index. Unfortunate.
           sleep 30s
