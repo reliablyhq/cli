@@ -47,6 +47,9 @@ jobs:
       - name: Publish wheels
         run: |
           pdm publish
+
+          # try to give Pypi time to update its index. Unfortunate.
+          sleep 30s
         env:
           PDM_PUBLISH_USERNAME: __token__
           PDM_PUBLISH_PASSWORD: ${{ secrets.PYPI_TOKEN }}
