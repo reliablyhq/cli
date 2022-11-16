@@ -23,7 +23,7 @@ try:
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
     from opentelemetry.trace.span import NonRecordingSpan, Span
 except pkg_resources.DistributionNotFound:
-    pass
+    NonRecordingSpan = Span = None
 
 from . import is_executable
 from .config.types import Settings
@@ -115,7 +115,7 @@ def configure_metrics(settings: Settings) -> None:
 @contextmanager
 def oltp_span(
     name: str, settings: Settings, attrs: dict[str, str] = None
-) -> Span:
+) -> Span | NonRecordingSpan:
     if is_executable() or not settings.otel.traces.enabled:
         yield NonRecordingSpan(None)
         return
