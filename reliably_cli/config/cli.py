@@ -1,9 +1,9 @@
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Literal
 
 import typer
+from rich import print as print_
 
 from . import get_settings
 
@@ -30,7 +30,7 @@ def view() -> None:
     if Path(toml_file).exists():
         data = Path(toml_file).read_text(encoding=encoding)
 
-    print(data, end="")
+    print_(data, end="")
 
 
 @cli.command()
@@ -48,4 +48,4 @@ def get(entry: EntryType) -> None:
         case "host":
             value = settings.service.host
 
-    print(value)
+    print_(value)

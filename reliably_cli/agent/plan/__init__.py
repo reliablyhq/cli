@@ -6,13 +6,12 @@ from anyio.streams.memory import (
     MemoryObjectSendStream,
 )
 
-from reliably_cli.client import reliably_client
+from reliably_cli.client import async_reliably_client
 from reliably_cli.config import get_settings
 from reliably_cli.config.types import Settings
-from reliably_cli.log import logger
-from reliably_cli.oltp import oltp_span
+from reliably_cli.log import console
+from reliably_cli.types import Plan
 
-from ..types import Plan
 from .providers.github import schedule_plan as gh_schedule_plan
 
 __all__ = ["fetch_plans", "process_plans"]
@@ -22,7 +21,7 @@ async def process_plans(
     stream: MemoryObjectReceiveStream,
     task_status: TaskStatus = anyio.TASK_STATUS_IGNORED,
 ) -> None:
-    logger.debug("Processing plans starting")
+    console.print("Processing plans starting")
     async with anyio.create_task_group() as tg:
         task_status.started()
         async with stream:
@@ -30,11 +29,11 @@ async def process_plans(
                 if plan.definition.environment.provider == "github":
                     tg.start_soon(gh_schedule_plan, plan)
 
-    logger.debug("Processing plans terminated")
+    console.print("Processing plans terminated")
 
 
 async def fetch_plans(stream: MemoryObjectSendStream) -> None:
-    logger.debug("Fetching plans started")
+    console.print("Fetching plans started")
     async with anyio.create_task_group() as tg:
         try:
             while True:
@@ -47,7 +46,7 @@ async def fetch_plans(stream: MemoryObjectSendStream) -> None:
                     break
                 await trio.sleep(settings.plan.fetch_frequency)
         finally:
-            logger.debug("Fetching plans terminated")
+            console.print("Fetching plans terminated")
             # by closing the sending stream, this close the receiving stream
             # and terminate the processing of events automatically. neat.
             await stream.aclose()
@@ -73,21 +72,16 @@ async def fetch_next_schedulable_plan(
         providers = get_enabled_providers(settings)
 
         for provider in providers:
-            with oltp_span(
-                "fetch-next-plan",
-                settings=settings,
-                attrs={"reliably.deployment_type": provider},
-            ):
-                async with reliably_client() as client:
-                    r = await client.get(
-                        "/plans/schedulables/next",
-                        params={"deployment_type": provider},
-                    )
-                    plan = r.json()
-                    if plan is None:
-                        return
+            async with async_reliably_client() as client:
+                r = await client.get(
+                    "/plans/schedulables/next",
+                    params={"deployment_type": provider},
+                )
+                plan = r.json()
+                if plan is None:
+                    return
 
-                    plan = Plan.parse_obj(plan)
-                    await stream.send(plan)
+                plan = Plan.parse_obj(plan)
+                await stream.send(plan)
     finally:
         event.set()

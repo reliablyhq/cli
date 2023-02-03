@@ -1,9 +1,9 @@
 from typing import Any
 
-from reliably_cli.agent.types import Plan
-from reliably_cli.client import reliably_client
+from reliably_cli.client import async_reliably_client
 from reliably_cli.config.types import Settings
-from reliably_cli.log import logger
+from reliably_cli.log import console
+from reliably_cli.types import Plan
 
 __all__ = ["fetch_deployment", "fetch_experiment"]
 
@@ -13,10 +13,10 @@ async def fetch_deployment(
 ) -> dict[str, Any] | None:
     dep_id = plan.definition.deployment.deployment_id
 
-    async with reliably_client() as client:
+    async with async_reliably_client() as client:
         r = await client.get(f"/deployments/{dep_id}")
         if r.status_code > 399:
-            logger.error(
+            console.print(
                 f"error fetching deployment {dep_id} for plan {plan.id}"
             )
             return
@@ -29,10 +29,10 @@ async def fetch_experiment(
 ) -> dict[str, Any] | None:
     exp_id = plan.definition.experiments[0]
 
-    async with reliably_client() as client:
+    async with async_reliably_client() as client:
         r = await client.get(f"/experiments/{exp_id}")
         if r.status_code > 399:
-            logger.error(
+            console.print(
                 f"error fetching experiment {exp_id} for plan {plan.id}"
             )
             return
@@ -43,7 +43,7 @@ async def fetch_experiment(
 async def set_plan_status(
     plan_id: str, status: str, error: str | None = None
 ) -> None:
-    async with reliably_client() as client:
+    async with async_reliably_client() as client:
         await client.put(
             f"/plans/{plan_id}/status", json={"status": status, "error": error}
         )

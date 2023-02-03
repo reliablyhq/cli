@@ -12,22 +12,10 @@ dependencies = [
     "httpx[http2]>=0.23.0",
     "pydantic[dotenv]>=1.10.2",
     "typer>=0.6.1",
-    "logzero>=1.7.0",
     "anyio[trio]>=3.6.2",
-    "opentelemetry-api>=1.13.0",
-    "opentelemetry-sdk>=1.13.0",
-    "opentelemetry-instrumentation-httpx>=0.34b0",
-    "opentelemetry-instrumentation-logging>=0.34b0",
-    "opentelemetry-exporter-otlp-proto-http>=1.13.0",
-    "opentelemetry-propagator-b3>=1.13.0",
-    "opentelemetry-semantic-conventions>=0.34b0",
     "tomli>=1.1.0; python_version < \"3.11\"",
-    "opentelemetry-instrumentation-system-metrics>=0.35b0",
-    "opentelemetry-exporter-prometheus>=1.12.0rc1",
-    "prometheus-client>=0.15.0",
-    "hypercorn>=0.14.3",
-    "starlette>=0.21.0",
     "ruamel.yaml>=0.17.21",
+    "rich>=13.3.1",
 ]
 
 [project.scripts]
@@ -35,6 +23,16 @@ reliably = "reliably_cli.__main__:cli"
 
 [project.optional-dependencies]
 bin-builder = ["pyoxidizer>=0.22.0"]
+chaostoolkit = [
+    "chaostoolkit>=1.15.0",
+    "chaostoolkit-lib>=1.33.1",
+    "chaostoolkit-reliably>=0.22.0",
+    "chaostoolkit-slack>=0.5.6",
+    "chaostoolkit-opentracing>=0.8.2",
+]
+opentelemetry = [
+    "opentelemetry-instrumentation-logging>=0.36b0",
+]
 
 [build-system]
 requires = ["pdm-pep517>=1.0.0"]
@@ -68,7 +66,7 @@ version = { source = "scm" }
 
 [tool.pdm.scripts]
 lint = {composite = ["ruff reliably_cli/", "isort --check-only --profile black reliably_cli/", "black --check --diff reliably_cli/"]}
-format = {composite = ["ruff reliably_cli/ --fix", "isort --profile black reliably_cli/", "black reliably_cli/"]}
+format = {composite = ["isort --profile black reliably_cli/", "black reliably_cli/", "ruff reliably_cli/ --fix"]}
 test = {cmd = "pytest"}
 build-bin = {cmd = "pyoxidizer build --release"}
 

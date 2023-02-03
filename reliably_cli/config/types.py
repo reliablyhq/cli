@@ -3,15 +3,14 @@ from pathlib import Path
 from typing import Any, Literal
 
 import typer
-from logzero import logger
-from pydantic import UUID4, AnyUrl, BaseModel, BaseSettings, HttpUrl, SecretStr
+from pydantic import UUID4, BaseModel, BaseSettings, HttpUrl, SecretStr
 
 try:
     import tomllib  # noqa
 except ImportError:
     import tomli as tomllib
 
-__all__ = ["Settings"]
+__all__ = ["Settings", "get_settings_directory_path"]
 
 
 class PlanProviderGitHubSection(BaseModel):
@@ -50,29 +49,12 @@ class LogSection(BaseModel):
     as_json: bool = False
 
 
-class OTELInfoSection(BaseModel):
-    enabled: bool = False
-    service_name: str = "reliably"
-    endpoint: AnyUrl | None
-    headers: str | None
-
-
-class OTELMetricsInfoSection(OTELInfoSection):
-    expose_as_prometheus: bool = False
-
-
-class OTELSection(BaseModel):
-    traces: OTELInfoSection = OTELInfoSection()
-    metrics: OTELMetricsInfoSection = OTELMetricsInfoSection()
-
-
 class Settings(BaseSettings):
     service: ServiceSection | None
     agent: AgentSection | None
     organization: OrgSection | None
     plan: PlanSection | None
     log: LogSection = LogSection(level="info", as_json=False)
-    otel: OTELSection = OTELSection()
 
     class Config:
         env_prefix = "reliably_"
@@ -101,6 +83,17 @@ def toml_config_settings(settings: BaseSettings) -> dict[str, Any]:
     if not Path(toml_file).exists():
         return {}
 
-    logger.debug(f"Reading configuration from '{toml_file}'")
     encoding = settings.__config__.env_file_encoding
     return tomllib.loads(Path(toml_file).read_text(encoding=encoding))
+
+
+def get_settings_directory_path() -> Path:
+    cfg_path = os.getenv("RELIABLY_CLI_CONFIG")
+    if not cfg_path:
+        cfg_path = Settings.__config__.toml_file
+
+    p = Path(cfg_path).parent
+    if not p.exists() and not p.is_dir():
+        p.mkdir()
+
+    return p.absolute()

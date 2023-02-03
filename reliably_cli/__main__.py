@@ -4,15 +4,15 @@ import typer
 
 from .__version__ import __version__
 from .agent.cli import cli as agent_cli
-from .config import get_settings
 from .config.cli import cli as config_cli
 from .config.types import Settings
-from .log import configure_logger, logger
-from .oltp import configure_metrics, configure_traces
+from .log import console
+from .services.cli import cli as services_cli
 
 cli = typer.Typer()
 cli.add_typer(config_cli, name="config")
 cli.add_typer(agent_cli, name="agent")
+cli.add_typer(services_cli, name="service")
 
 
 @cli.callback()
@@ -23,7 +23,6 @@ def main(
     ),
 ):
     Settings.Config.toml_file = config
-    configure_app()
 
 
 @cli.command()
@@ -33,26 +32,9 @@ def version(
     )
 ) -> None:
     if short:
-        print(__version__)
+        console.print(__version__)
     else:
-        print(f"Reliably CLI: {__version__}")
-
-
-##############################################################################
-# Private
-##############################################################################
-def configure_app() -> None:
-    settings = get_settings()
-
-    configure_logger(settings)
-
-    logger.debug("Configuring application...")
-
-    if settings.otel:
-        configure_traces(settings)
-        configure_metrics(settings)
-
-    logger.debug("Application configured")
+        console.print(f"Reliably CLI: {__version__}")
 
 
 if __name__ == "__main__":

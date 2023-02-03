@@ -3,10 +3,9 @@ import os
 import httpx
 from anyio.abc import CancelScope
 
-from reliably_cli.agent.types import Plan
 from reliably_cli.config import get_settings
-from reliably_cli.log import logger
-from reliably_cli.oltp import inc_metric_value, oltp_span
+from reliably_cli.log import console
+from reliably_cli.types import Plan
 
 from . import set_plan_status
 
@@ -53,66 +52,50 @@ async def schedule_plan(plan: Plan) -> None:
             gh_attrs.pop(k)
 
     with CancelScope(shield=True) as scope:
-        with oltp_span(
-            "schedule-plan",
-            settings=settings,
-            attrs=gh_attrs,
-        ):
-            try:
-                logger.debug(f"Schedule plan {plan.id} on GitHub")
+        try:
+            console.print(f"Schedule plan {plan.id} on GitHub")
 
-                exp_id = plan.definition.experiments[0]
-                experiment_url = (
-                    f"{settings.service.host}/api/v1"
-                    f"/organization/{settings.organization.id}"
-                    f"/experiments/{exp_id}/raw"
-                )
-                logger.debug(f"Scheduling experiment {experiment_url}")
+            exp_id = plan.definition.experiments[0]
+            experiment_url = (
+                f"{settings.service.host}/api/v1"
+                f"/organization/{settings.organization.id}"
+                f"/experiments/{exp_id}/raw"
+            )
+            console.print(f"Scheduling experiment {experiment_url}")
 
-                url = (
-                    f"{gh_api_url}/repos/{gh_repo}/actions"
-                    f"/workflows/{gh_workflow_id}/dispatches"
-                )
+            url = (
+                f"{gh_api_url}/repos/{gh_repo}/actions"
+                f"/workflows/{gh_workflow_id}/dispatches"
+            )
 
-                logger.debug(f"Calling GitHub workflow at {url}")
-                async with httpx.AsyncClient() as h:
-                    r = await h.post(
-                        url,
-                        headers={
-                            "Accept": "application/vnd.github+json",
-                            "Authorization": f"Bearer {gh_token}",
-                        },
-                        json={
-                            "ref": gh_ref,
-                            "inputs": {
-                                "experiment-url": experiment_url,
-                                "environment-name": "myenv",
-                            },
-                        },
-                    )
-                    if r.status_code == 204:
-                        logger.info(f"Plan {plan_id} scheduled")
-                    else:
-                        logger.error(
-                            f"Failed to schedule plan {plan_id}: "
-                            f"{r.status_code} - {r.json()}"
-                        )
-            except Exception as x:
-                await set_plan_status(plan_id, "creation error", str(x))
-                logger.error(
-                    f"Failed to schedule plan {plan_id}", exc_info=True
-                )
-                raise
-            finally:
-                await set_plan_status(plan_id, "created")
-
-                inc_metric_value(
-                    "scheduled-plans",
-                    {
-                        "repo": gh_repo,
+            console.print(f"Calling GitHub workflow at {url}")
+            async with httpx.AsyncClient() as h:
+                r = await h.post(
+                    url,
+                    headers={
+                        "Accept": "application/vnd.github+json",
+                        "Authorization": f"Bearer {gh_token}",
+                    },
+                    json={
                         "ref": gh_ref,
-                        "org_id": str(settings.organization.id),
+                        "inputs": {
+                            "experiment-url": experiment_url,
+                            "environment-name": "myenv",
+                        },
                     },
                 )
+                if r.status_code == 204:
+                    console.print(f"Plan {plan_id} scheduled")
+                else:
+                    console.print(
+                        f"Failed to schedule plan {plan_id}: "
+                        f"{r.status_code} - {r.json()}"
+                    )
+        except Exception as x:
+            await set_plan_status(plan_id, "creation error", str(x))
+            console.print(f"Failed to schedule plan {plan_id}", exc_info=True)
+            raise
+        finally:
+            await set_plan_status(plan_id, "created")
 
-                scope.cancel()
+            scope.cancel()
