@@ -27,6 +27,7 @@ dependencies = [
     "prometheus-client>=0.15.0",
     "hypercorn>=0.14.3",
     "starlette>=0.21.0",
+    "ruamel.yaml>=0.17.21",
 ]
 
 [project.scripts]
