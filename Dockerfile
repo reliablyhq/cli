@@ -15,7 +15,7 @@ RUN apt-get update && \
     pip install --no-cache-dir -q -U --disable-pip-version-check --prefer-binary pip && \
     pip install --no-cache-dir -q --prefer-binary setuptools wheel pdm && \
     pdm config python.use_venv false && \
-    pdm install --prod --no-lock --no-editable && \
+    pdm install --prod -G chaostoolkit --no-lock --no-editable && \
     apt-get remove -y build-essential gcc && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 

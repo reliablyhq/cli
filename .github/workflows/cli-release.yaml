@@ -105,7 +105,7 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           pdm config python.use_venv true
-          pdm sync -G bin-builder
+          pdm sync -G bin-builder -G chaostoolkit
 
           if [ "${{ matrix.target.triple }}" = "aarch64-apple-darwin" ]; then
             export MACOSX_DEPLOYMENT_TARGET=11.0
@@ -120,7 +120,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           pdm config python.use_venv true
-          pdm sync -G bin-builder
+          pdm sync -G bin-builder -G chaostoolkit
           pdm run pyoxidizer build msi --release --target-triple ${{ matrix.target }}
           echo F | xcopy build\${{ matrix.target }}\release\msi\Reliably*.msi reliably-${{ matrix.target }}.msi
       
