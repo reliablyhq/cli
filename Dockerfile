@@ -1,4 +1,4 @@
-FROM ubuntu:latest AS builder
+FROM ubuntu:rolling AS build-venv
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -10,7 +10,7 @@ COPY reliably_cli/ /app/reliably_cli
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip python3.10-venv && \
+    apt-get install -y python3.11 python3-pip python3.11-venv && \
     apt-get install -y --no-install-recommends build-essential gcc && \
     pip install --no-cache-dir -q -U --disable-pip-version-check --prefer-binary pip && \
     pip install --no-cache-dir -q --prefer-binary setuptools wheel pdm && \
@@ -22,7 +22,7 @@ RUN apt-get update && \
 FROM ubuntu:latest
 
 RUN apt-get update && \
-    apt-get install -y python3 && \
+    apt-get install -y python3.11 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -g 1001 svc && useradd -r -u 1001 -g svc svc
