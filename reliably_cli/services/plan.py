@@ -101,7 +101,7 @@ def execute(
 def load_plan(plan_id: UUID) -> Plan:
     with console.status("Fetching plan..."):
         with api_client() as client:
-            r = client.get(f"/plans/{plan_id}")
+            r = client.get(f"/plans/{str(plan_id)}")
             if r.status_code == 404:
                 console.print("plan not found")
                 raise typer.Exit(code=1)
