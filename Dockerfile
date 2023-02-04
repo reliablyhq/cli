@@ -31,7 +31,7 @@ USER 1001
 WORKDIR /app
 
 ENV PYTHONPATH=/app/pkgs/lib
-COPY --from=builder --chown=svc:svc /app/__pypackages__/3.10 /app/pkgs
+COPY --from=builder --chown=svc:svc /app/__pypackages__/3.11 /app/pkgs
 
 ENTRYPOINT ["/app/pkgs/bin/reliably"]
 CMD ["--help"]
