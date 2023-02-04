@@ -4,11 +4,11 @@ import httpx
 
 from .config import get_settings
 
-__all__ = ["async_reliably_client", "reliably_client"]
+__all__ = ["agent_client", "api_client"]
 
 
 @asynccontextmanager
-async def async_reliably_client() -> httpx.AsyncClient:
+async def agent_client() -> httpx.AsyncClient:
     settings = get_settings()
     host = settings.service.host
     org_id = settings.organization.id
@@ -26,11 +26,11 @@ async def async_reliably_client() -> httpx.AsyncClient:
 
 
 @contextmanager
-def reliably_client() -> httpx.Client:
+def api_client() -> httpx.Client:
     settings = get_settings()
     host = settings.service.host
+    token = settings.service.token
     org_id = settings.organization.id
-    token = settings.agent.token
 
     headers = {"Authorization": f"Bearer {token.get_secret_value()}"}
 

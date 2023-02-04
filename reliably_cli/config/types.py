@@ -36,12 +36,12 @@ class OrgSection(BaseModel):
 
 
 class AgentSection(BaseModel):
-    id: UUID4
-    token: SecretStr
+    token: SecretStr | None
 
 
 class ServiceSection(BaseModel):
     host: str = "https://app.reliably.com"
+    token: SecretStr
 
 
 class LogSection(BaseModel):
@@ -50,7 +50,7 @@ class LogSection(BaseModel):
 
 
 class Settings(BaseSettings):
-    service: ServiceSection | None
+    service: ServiceSection = ServiceSection()
     agent: AgentSection | None
     organization: OrgSection | None
     plan: PlanSection | None

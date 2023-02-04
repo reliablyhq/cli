@@ -38,8 +38,5 @@ def validate_agent_configuration() -> None:
     if not config.organization or not config.organization.id:
         raise ValueError("please set the organization identifier")
 
-    if not config.agent or not config.agent.id:
-        raise ValueError("please set the agent identifier")
-
     if not config.agent or not config.agent.token:
         raise ValueError("please set the agent token")

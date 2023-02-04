@@ -1,6 +1,6 @@
 from typing import Any
 
-from reliably_cli.client import async_reliably_client
+from reliably_cli.client import agent_client
 from reliably_cli.config.types import Settings
 from reliably_cli.log import console
 from reliably_cli.types import Plan
@@ -13,7 +13,7 @@ async def fetch_deployment(
 ) -> dict[str, Any] | None:
     dep_id = plan.definition.deployment.deployment_id
 
-    async with async_reliably_client() as client:
+    async with agent_client() as client:
         r = await client.get(f"/deployments/{dep_id}")
         if r.status_code > 399:
             console.print(
@@ -29,7 +29,7 @@ async def fetch_experiment(
 ) -> dict[str, Any] | None:
     exp_id = plan.definition.experiments[0]
 
-    async with async_reliably_client() as client:
+    async with agent_client() as client:
         r = await client.get(f"/experiments/{exp_id}")
         if r.status_code > 399:
             console.print(
@@ -43,7 +43,7 @@ async def fetch_experiment(
 async def set_plan_status(
     plan_id: str, status: str, error: str | None = None
 ) -> None:
-    async with async_reliably_client() as client:
+    async with agent_client() as client:
         await client.put(
             f"/plans/{plan_id}/status", json={"status": status, "error": error}
         )

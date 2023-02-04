@@ -6,7 +6,7 @@ from anyio.streams.memory import (
     MemoryObjectSendStream,
 )
 
-from reliably_cli.client import async_reliably_client
+from reliably_cli.client import agent_client
 from reliably_cli.config import get_settings
 from reliably_cli.config.types import Settings
 from reliably_cli.log import console
@@ -72,7 +72,7 @@ async def fetch_next_schedulable_plan(
         providers = get_enabled_providers(settings)
 
         for provider in providers:
-            async with async_reliably_client() as client:
+            async with agent_client() as client:
                 r = await client.get(
                     "/plans/schedulables/next",
                     params={"deployment_type": provider},

@@ -43,8 +43,6 @@ def get(entry: EntryType) -> None:
             value = settings.agent.token.get_secret_value()
         case "org":
             value = str(settings.organization.id)
-        case "agent":
-            value = str(settings.agent.id)
         case "host":
             value = settings.service.host
 

@@ -6,7 +6,7 @@ from uuid import UUID
 
 import typer
 
-from ..client import reliably_client
+from ..client import api_client
 from ..config import get_settings
 from ..config.types import get_settings_directory_path
 from ..format import format_as
@@ -100,7 +100,7 @@ def execute(
 ###############################################################################
 def load_plan(plan_id: UUID) -> Plan:
     with console.status("Fetching plan..."):
-        with reliably_client() as client:
+        with api_client() as client:
             r = client.get(f"/plans/{plan_id}")
             if r.status_code == 404:
                 console.print("plan not found")
@@ -123,7 +123,7 @@ def store_plan_context(plan: Plan) -> None:
     )
 
     with console.status("Storing context..."):
-        with reliably_client() as client:
+        with api_client() as client:
             for int_id in plan.definition.integrations:
                 r = client.get(f"/integrations/{int_id}/control")
                 control = r.json()
