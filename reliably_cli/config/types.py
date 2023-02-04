@@ -50,7 +50,7 @@ class LogSection(BaseModel):
 
 
 class Settings(BaseSettings):
-    service: ServiceSection = ServiceSection()
+    service: ServiceSection | None
     agent: AgentSection | None
     organization: OrgSection | None
     plan: PlanSection | None
