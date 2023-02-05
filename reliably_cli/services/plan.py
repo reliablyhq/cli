@@ -51,7 +51,7 @@ def execute(
     p = load_plan(plan_id)
 
     if not skip_context:
-        store_context(p)
+        store_plan_context(p)
 
     plan_dir = settings_dir / "plans" / str(p.id)
     ctk_settings_file = str(plan_dir / "ctk.yaml")
@@ -106,7 +106,7 @@ def load_plan(plan_id: UUID) -> Plan:
                 console.print("plan not found")
                 raise typer.Exit(code=1)
             elif r.status_code > 399:
-                console.print("unexpected error: ", r.json())
+                console.print("unexpected YYYYY error: ", r.json())
                 raise typer.Exit(code=1)
 
             return Plan.parse_obj(r.json())
