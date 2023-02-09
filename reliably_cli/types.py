@@ -19,7 +19,6 @@ class BaseSchema(BaseModel):
         json_dumps = json.dumps
 
 
-
 class PlanReliablyEnvironment(BaseSchema):
     provider: Literal["reliably_cloud"] = "reliably_cloud"
     id: UUID4
@@ -48,7 +47,7 @@ class PlanScheduleCron(BaseSchema):
 
 
 class PlanBase(BaseSchema):  # pragma: no cover
-    environment: PlanGitHubEnvironment | PlanReliablyEnvironment | PlanGCPEnvironment
+    environment: PlanGitHubEnvironment | PlanReliablyEnvironment | PlanGCPEnvironment  # noqa: E501
     deployment: PlanDeployment
     schedule: PlanScheduleNow | PlanScheduleCron
     experiments: List[UUID4]

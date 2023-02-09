@@ -16,9 +16,6 @@ dependencies = [
     "tomli>=1.1.0; python_version < \"3.11\"",
     "ruamel.yaml>=0.17.21",
     "rich>=13.3.1",
-    "botocore>=1.29.67",
-    "chaostoolkit-opentracing @ file:///${PROJECT_ROOT}/../../oss/chaostoolkit-opentracing",
-    "chaostoolkit-google-cloud-platform>=0.8.2",
 ]
 
 [project.scripts]
@@ -30,10 +27,6 @@ chaostoolkit = [
     "chaostoolkit>=1.15.0",
     "chaostoolkit-lib>=1.33.1",
     "chaostoolkit-reliably>=0.22.0",
-    "chaostoolkit-slack>=0.5.6",
-]
-opentelemetry = [
-    "opentelemetry-instrumentation-logging>=0.36b0",
 ]
 
 [build-system]
