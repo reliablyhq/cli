@@ -120,7 +120,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           pdm config python.use_venv true
-          pdm sync -G bin-builder -G chaostoolkit
+          pdm sync -G bin-builder
           pdm run pyoxidizer build msi --release --target-triple ${{ matrix.target }}
           echo F | xcopy build\${{ matrix.target }}\release\msi\Reliably*.msi reliably-${{ matrix.target }}.msi
       
