@@ -1,4 +1,4 @@
-FROM ubuntu:rolling AS build-venv
+FROM ubuntu:rolling AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -19,7 +19,7 @@ RUN apt-get update && \
     apt-get remove -y build-essential gcc && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-FROM ubuntu:latest
+FROM ubuntu:rolling
 
 RUN apt-get update && \
     apt-get install -y python3.11 && \
