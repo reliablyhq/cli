@@ -11,7 +11,7 @@ __all__ = ["format_as"]
 def format_as(
     entity: BaseSchema, fmt: FormatOption = FormatOption.json
 ) -> str | None:
-    match fmt.value:  # noqa
+    match fmt.value:
         case "json":
             return entity.json(indent=2)
         case "yaml":
