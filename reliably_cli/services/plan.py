@@ -133,9 +133,12 @@ def store_plan_context(plan: Plan) -> None:
 
                     ctrl_name = control.pop("name")
                     provider = control.get("provider", {})
-                    if provider.get("secrets") is None:
+                    if "secrets" in provider and provider["secrets"] is None:
                         del provider["secrets"]
-                    if provider.get("arguments") is None:
+                    if (
+                        "arguments" in provider
+                        and provider["arguments"] is None
+                    ):
                         del provider["arguments"]
                     ctrl = {ctrl_name: control}
                     (ctrl_dir / f"{str(int_id)}.json").write_text(
