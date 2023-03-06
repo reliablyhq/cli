@@ -113,10 +113,6 @@ jobs:
       - build-binary
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to GitHub Container Registry
@@ -126,11 +122,11 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push Container
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          platforms: linux/amd64, linux/arm64
+          platforms: linux/amd64
           file: ./Dockerfile
           tags: |
             ghcr.io/reliablyhq/cli/cli:latest
