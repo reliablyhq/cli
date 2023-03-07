@@ -13,23 +13,16 @@ def make_exe():
 
     policy = dist.make_python_packaging_policy()
     policy.register_resource_callback(resource_callback)
-    policy.set_resource_handling_mode("files")
-    policy.resources_location = "filesystem-relative:lib"
-    policy.resources_location_fallback = "filesystem-relative:lib"
 
-    policy.include_test = False
-    policy.include_non_distribution_sources = True
-    policy.include_distribution_resources = True
-    policy.include_distribution_sources = True
-    policy.allow_files = True
-    policy.include_file_resources = True
-    policy.file_scanner_emit_files = True
+    policy.include_distribution_sources = False
+    policy.include_non_distribution_sources = False
+    policy.bytecode_optimize_level_zero = False
+    policy.bytecode_optimize_level_one = False
+    policy.bytecode_optimize_level_two = True
 
     python_config = dist.make_python_interpreter_config()
     python_config.module_search_paths = ["$ORIGIN/lib"]
-    python_config.filesystem_importer = True
-    python_config.oxidized_importer = False
-    python_config.sys_frozen = True
+    python_config.optimization_level = 2
 
     python_config.run_command = "from reliably_cli.__main__ import cli; cli()"
 
