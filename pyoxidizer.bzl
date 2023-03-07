@@ -3,10 +3,16 @@ IS_LINUX = "linux" in BUILD_TARGET_TRIPLE
 IS_APPLE = "apple" in BUILD_TARGET_TRIPLE
 
 
+def resource_callback(policy, resource):
+    if type(resource) == "PythonModuleSource":
+        resource.add_include = True
+
+
 def make_exe():
     dist = default_python_distribution(python_version="3.10")
 
     policy = dist.make_python_packaging_policy()
+    policy.register_resource_callback(resource_callback)
     policy.set_resource_handling_mode("files")
     policy.resources_location = "filesystem-relative:lib"
     policy.resources_location_fallback = "filesystem-relative:lib"
