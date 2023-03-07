@@ -4,6 +4,7 @@ IS_APPLE = "apple" in BUILD_TARGET_TRIPLE
 
 
 def resource_callback(policy, resource):
+    print(resource.path)
     if "pydantic" in resource.path:
         resource.add_location = "filesystem-relative:prefix"
         resource.add_include = True
