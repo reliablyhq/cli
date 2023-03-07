@@ -5,7 +5,7 @@ IS_APPLE = "apple" in BUILD_TARGET_TRIPLE
 
 def resource_callback(policy, resource):
     if "pydantic" in resource.path:
-        resource.add_location = "filesystem-relative:lib"
+        resource.add_location = "filesystem-relative:prefix"
         resource.add_include = True
 
     elif type(resource) == "PythonModuleSource":
