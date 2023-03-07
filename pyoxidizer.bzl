@@ -4,7 +4,11 @@ IS_APPLE = "apple" in BUILD_TARGET_TRIPLE
 
 
 def resource_callback(policy, resource):
-    if type(resource) == "PythonModuleSource":
+    if "pydantic" in resource.path:
+        resource.add_location = "filesystem-relative:lib"
+        resource.add_include = True
+
+    elif type(resource) == "PythonModuleSource":
         resource.add_include = True
 
 
@@ -33,7 +37,6 @@ def make_exe():
     exe.windows_runtime_dlls_mode = "always"
     exe.windows_subsystem = "console"
 
-    exe.add_python_resources(exe.pip_install(["--no-binary", "pydantic", "PyYAML", "kubernetes"]))
     exe.add_python_resources(exe.pip_download(["reliably-cli"]))
 
     return exe
