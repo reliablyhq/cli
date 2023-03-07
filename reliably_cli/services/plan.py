@@ -105,8 +105,11 @@ def load_plan(plan_id: UUID) -> Plan:
             if r.status_code == 404:
                 console.print("plan not found")
                 raise typer.Exit(code=1)
+            elif r.status_code == 401:
+                console.print("not authorized. please verify your token or org")
+                raise typer.Exit(code=1)
             elif r.status_code > 399:
-                console.print("unexpected YYYYY error: ", r.json())
+                console.print(f"unexpected error: {r.status_code}: {r.json()}")
                 raise typer.Exit(code=1)
 
             return Plan.parse_obj(r.json())
