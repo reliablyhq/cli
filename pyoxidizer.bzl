@@ -2,32 +2,28 @@ IS_WINDOWS = "windows" in BUILD_TARGET_TRIPLE
 IS_LINUX = "linux" in BUILD_TARGET_TRIPLE
 IS_APPLE = "apple" in BUILD_TARGET_TRIPLE
 
-def resource_callback(policy, resource):
-    if type(resource) in ("PythonModuleSource", "PythonPackageResource", "PythonPackageDistributionResource"):
-        print(resource.name, type(resource))
-
 
 def make_exe():
     dist = default_python_distribution(python_version="3.10")
 
     policy = dist.make_python_packaging_policy()
-    if IS_LINUX:
-        policy.register_resource_callback(resource_callback)
-
-    if not IS_WINDOWS:
-        policy.resources_location = "filesystem-relative:lib"
-        policy.resources_location_fallback = None
-    else:
-        policy.resources_location = "filesystem-relative:lib"
-        policy.resources_location_fallback = None
+    policy.set_resource_handling_mode("files")
+    policy.resources_location = "filesystem-relative:lib"
+    policy.resources_location_fallback = "filesystem-relative:lib"
 
     policy.include_test = False
     policy.include_non_distribution_sources = True
     policy.include_distribution_resources = True
     policy.include_distribution_sources = True
+    policy.allow_files = True
+    policy.include_file_resources = True
+    policy.file_scanner_emit_files = True
 
     python_config = dist.make_python_interpreter_config()
     python_config.module_search_paths = ["$ORIGIN/lib"]
+    python_config.filesystem_importer = True
+    python_config.oxidized_importer = False
+    python_config.sys_frozen = True
 
     python_config.run_command = "from reliably_cli.__main__ import cli; cli()"
 
@@ -36,6 +32,9 @@ def make_exe():
         packaging_policy=policy,
         config=python_config,
     )
+    
+    exe.windows_runtime_dlls_mode = "always"
+    exe.windows_subsystem = "console"
 
     if not IS_LINUX:
         # pip download seems preferred over pip install in cross compilation

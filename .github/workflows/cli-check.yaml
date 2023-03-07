@@ -39,3 +39,39 @@ jobs:
       - name: Run Tests
         run: |
           pdm run pytest
+ 
+  build-binary:
+    name: Build executable for '${{ matrix.target }}' on '${{ matrix.os }}'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: ubuntu-22.04
+          target: x86_64-unknown-linux-gnu
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: "3.10"
+          cache: true
+      - name: Build binary
+        run: |
+          sudo apt update
+          pdm config python.use_venv true
+          pdm sync -G bin-builder -G chaostoolkit
+          pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
+          cp build/**/release/install/reliably reliably-${{ matrix.target }}
+      
+      - if: runner.os != 'Windows'
+        name: Strip binary
+        run: strip reliably-${{ matrix.target }}
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v3
+        with:
+          path: reliably-*
+          if-no-files-found: error
