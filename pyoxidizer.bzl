@@ -26,6 +26,7 @@ def make_exe():
     policy.resources_location_fallback = "filesystem-relative:prefix"
 
     python_config = dist.make_python_interpreter_config()
+    python_config.module_search_paths = ["$ORIGIN", "$ORIGIN/lib"]
 
     python_config.run_command = "from reliably_cli.__main__ import cli; cli()"
 
