@@ -14,6 +14,7 @@ def make_exe():
     policy = dist.make_python_packaging_policy()
     policy.register_resource_callback(resource_callback)
 
+    policy.resources_location_fallback = "filesystem-relative:lib"
     policy.include_distribution_sources = False
     policy.include_non_distribution_sources = False
     policy.bytecode_optimize_level_zero = False
