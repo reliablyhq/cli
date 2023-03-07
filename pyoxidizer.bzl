@@ -15,8 +15,8 @@ def make_exe():
         policy.register_resource_callback(resource_callback)
 
     if not IS_WINDOWS:
-        policy.resources_location = "in-memory"
-        policy.resources_location_fallback = "filesystem-relative:lib"
+        policy.resources_location = "filesystem-relative:lib"
+        policy.resources_location_fallback = None
     else:
         policy.resources_location = "filesystem-relative:lib"
         policy.resources_location_fallback = None
