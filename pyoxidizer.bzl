@@ -12,18 +12,15 @@ def make_exe():
     dist = default_python_distribution(python_version="3.10")
 
     policy = dist.make_python_packaging_policy()
-    policy.register_resource_callback(resource_callback)
 
-    policy.resources_location_fallback = "filesystem-relative:lib"
-    policy.include_distribution_sources = False
+    policy.allow_in_memory_shared_library_loading = True
+    policy.bytecode_optimize_level_one = True
     policy.include_non_distribution_sources = False
-    policy.bytecode_optimize_level_zero = False
-    policy.bytecode_optimize_level_one = False
-    policy.bytecode_optimize_level_two = True
+    policy.include_test = False
+    policy.resources_location = "in-memory"
+    policy.resources_location_fallback = "filesystem-relative:prefix"
 
     python_config = dist.make_python_interpreter_config()
-    python_config.module_search_paths = ["$ORIGIN/lib"]
-    python_config.optimization_level = 2
 
     python_config.run_command = "from reliably_cli.__main__ import cli; cli()"
 
@@ -36,6 +33,7 @@ def make_exe():
     exe.windows_runtime_dlls_mode = "always"
     exe.windows_subsystem = "console"
 
+    exe.add_python_resources(exe.pip_install(["--no-binary", "pydantic", "PyYAML", "kubernetes"]))
     exe.add_python_resources(exe.pip_download(["reliably-cli"]))
 
     return exe
