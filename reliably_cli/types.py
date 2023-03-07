@@ -47,7 +47,7 @@ class PlanScheduleCron(BaseSchema):
 
 
 class PlanBase(BaseSchema):  # pragma: no cover
-    environment: PlanGitHubEnvironment | PlanReliablyEnvironment | PlanGCPEnvironment  # noqa: E501
+    environment: PlanGitHubEnvironment | PlanReliablyEnvironment | PlanGCPEnvironment | None  # noqa: E501
     deployment: PlanDeployment
     schedule: PlanScheduleNow | PlanScheduleCron
     experiments: List[UUID4]
