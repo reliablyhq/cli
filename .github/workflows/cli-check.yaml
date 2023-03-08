@@ -105,7 +105,7 @@ jobs:
           pdm sync -G bin-builder -G chaostoolkit
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
           md dist\bin\reliably-cli
-          echo F | xcopy build\${{ matrix.target }}\release\* dist\bin\reliably-cli
+          echo F | xcopy build\${{ matrix.target }}\release\install\* dist\bin\reliably-cli
           dir dist\bin\reliably-cli
           7z a -tzip reliably_${{ matrix.target }}.zip dist\bin\reliably-cli
 
