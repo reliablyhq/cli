@@ -62,7 +62,7 @@ jobs:
           cache: true
 
       - name: Build Linux binaries
-        if: runner.os != 'Linux'
+        if: runner.os == 'Linux'
         run: |
           sudo apt update
           rustup target add ${{ matrix.target }}
