@@ -1,18 +1,3 @@
-IS_WINDOWS = "windows" in BUILD_TARGET_TRIPLE
-IS_LINUX = "linux" in BUILD_TARGET_TRIPLE
-IS_APPLE = "apple" in BUILD_TARGET_TRIPLE
-
-
-def resource_callback(policy, resource):
-    print(resource.path)
-    if "pydantic" in resource.path:
-        resource.add_location = "filesystem-relative:prefix"
-        resource.add_include = True
-
-    elif type(resource) == "PythonModuleSource":
-        resource.add_include = True
-
-
 def make_exe():
     dist = default_python_distribution(python_version="3.10")
 

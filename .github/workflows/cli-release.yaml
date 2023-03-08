@@ -46,31 +46,43 @@ jobs:
           target: aarch64-apple-darwin
     needs:
       - publish-wheels
-    env:
-      LZMA_API_STATIC: '1'
+
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v3
         with:
           python-version: "3.10"
           cache: true
-      - if: matrix.target == 'x86_64-unknown-linux-gnu'
-        name: Update system
+
+      - name: Build Linux binaries
+        if: runner.os != 'Linux'
         run: |
           sudo apt update
-      
-      - if: runner.os != 'Windows'
-        name: Install Rust target
-        run: rustup target add ${{ matrix.target }}
+          rustup target add ${{ matrix.target }}
 
-      - name: Build binary (not Windows)
+          pdm config python.use_venv true
+          pdm sync -G bin-builder -G chaostoolkit
+          pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
+          mkdir reliably_${{ matrix.target }}
+          cp -r build/**/release/install/* reliably_${{ matrix.target }}
+
+      - name: Build Windows installer binaries
         if: runner.os != 'Windows'
         run: |
           pdm config python.use_venv true
           pdm sync -G bin-builder -G chaostoolkit
+          pdm run pyoxidizer build msi --release --target-triple ${{ matrix.target }}
+          echo F | xcopy build\${{ matrix.target }}\release\msi\Reliably*.msi reliably_${{ matrix.target }}.msi
+          strip reliably_${{ matrix.target }}
+
+      - name: Build MacOSX binaries
+        if: runner.os == 'macOS'
+        run: |
+          rustup target add ${{ matrix.target }}
 
           if [ "${{ matrix.target.triple }}" = "aarch64-apple-darwin" ]; then
             export MACOSX_DEPLOYMENT_TARGET=11.0
@@ -78,25 +90,24 @@ jobs:
             export MACOSX_DEPLOYMENT_TARGET=10.9
           fi
 
-          pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
-          cp build/**/release/install/reliably reliably-${{ matrix.target }}
-      
-      - name: Build binary (Windows)
-        if: runner.os == 'Windows'
-        run: |
           pdm config python.use_venv true
           pdm sync -G bin-builder
-          pdm run pyoxidizer build msi --release --target-triple ${{ matrix.target }}
-          echo F | xcopy build\${{ matrix.target }}\release\msi\Reliably*.msi reliably-${{ matrix.target }}.msi
-      
-      - if: runner.os != 'Windows'
-        name: Strip binary
-        run: strip reliably-${{ matrix.target }}
+          pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
+          mkdir reliably_${{ matrix.target }}
+          cp -r build/**/release/install reliably_${{ matrix.target }}
+
+      - name: Archive Release
+        if: runner.os != 'Windows'
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: 'tar'
+          path: reliably_${{ matrix.target }}
+          filename: 'reliably_${{ matrix.target }}.tar.gz'
 
       - name: Upload binary
         uses: actions/upload-artifact@v3
         with:
-          path: reliably-*
+          path: reliably_*
           if-no-files-found: error
 
   build-container:
