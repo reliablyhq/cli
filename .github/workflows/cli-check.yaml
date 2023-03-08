@@ -72,6 +72,7 @@ jobs:
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
           mkdir -p dist/bin/reliably_${{ matrix.target }}
           cp -r build/**/release/install/* dist/bin/reliably_${{ matrix.target }}
+          ls -lha dist/bin/
           tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz . --transform='s,^\./,,'
 
       - name: Upload binary
