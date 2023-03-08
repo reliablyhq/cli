@@ -76,8 +76,8 @@ jobs:
           pdm config python.use_venv true
           pdm sync -G bin-builder -G chaostoolkit
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
-          mkdir -p dist/bin/reliably_${{ matrix.target }}
-          cp -r build/**/release/install/* dist/bin/reliably_${{ matrix.target }}
+          mkdir -p dist/bin/reliably-cli
+          cp -r build/**/release/install/* dist/bin/reliably-cli
           tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz . --transform='s,^\./,,'
 
       - name: Build MacOSX binaries
@@ -94,9 +94,9 @@ jobs:
           pdm config python.use_venv true
           pdm sync -G bin-builder
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
-          mkdir -p dist/bin/reliably_${{ matrix.target }}
-          cp -r build/**/release/install/* dist/bin/reliably_${{ matrix.target }}
-          tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz . --transform='s,^\./,,'
+          mkdir -p dist/bin/reliably-cli
+          cp -r build/**/release/install/* dist/bin/reliably-cli
+          tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz .
 
       - name: Build Windows installer binaries
         if: runner.os == 'Windows'
