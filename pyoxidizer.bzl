@@ -1,5 +1,12 @@
+import platform
+
+
 def make_exe():
-    dist = default_python_distribution(python_version="3.10")
+
+    if platform.system() == "Windows":
+        dist = default_python_distribution(python_version="3.10", flavor="standalone_static")
+    else:
+        dist = default_python_distribution(python_version="3.10")
 
     policy = dist.make_python_packaging_policy()
 
