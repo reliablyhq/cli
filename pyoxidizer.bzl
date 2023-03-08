@@ -1,12 +1,6 @@
-IS_WINDOWS = "windows" in BUILD_TARGET_TRIPLE
-
 
 def make_exe():
-
-    if IS_WINDOWS:
-        dist = default_python_distribution(python_version="3.10", flavor="standalone_static")
-    else:
-        dist = default_python_distribution(python_version="3.10")
+    dist = default_python_distribution(python_version="3.10")
 
     policy = dist.make_python_packaging_policy()
 
