@@ -8,7 +8,7 @@ def make_exe():
     policy.include_non_distribution_sources = False
     policy.include_test = False
     policy.resources_location = "in-memory"
-    policy.resources_location_fallback = "filesystem-relative:prefix"
+    policy.resources_location_fallback = "filesystem-relative:lib"
 
     python_config = dist.make_python_interpreter_config()
     python_config.module_search_paths = ["$ORIGIN", "$ORIGIN/lib"]

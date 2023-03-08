@@ -78,8 +78,9 @@ jobs:
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'tar'
-          path: reliably_${{ matrix.target }}
+          path: ./reliably_${{ matrix.target }}
           filename: 'reliably_${{ matrix.target }}.tar.gz'
+          recursive_exclusions: reliably_cli/
 
       - name: Upload binary
         uses: actions/upload-artifact@v3
