@@ -72,14 +72,7 @@ jobs:
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
           mkdir -p dist/reliably_${{ matrix.target }}
           cp -r build/**/release/install/* dist/reliably_${{ matrix.target }}
-
-      - name: Archive Release
-        if: runner.os != 'Windows'
-        uses: thedoctor0/zip-release@0.7.1
-        with:
-          type: 'tar'
-          path: ./dist
-          filename: 'reliably_${{ matrix.target }}.tar.gz'
+          tar -C ./dist -czvf reliably_${{ matrix.target }}.tar.gz . --transform='s,^\./,,'
 
       - name: Upload binary
         uses: actions/upload-artifact@v3
