@@ -49,29 +49,40 @@ jobs:
         include:
         - os: ubuntu-22.04
           target: x86_64-unknown-linux-gnu
+
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v3
         with:
           python-version: "3.10"
           cache: true
-      - name: Build binary
+
+      - name: Build Linux binaries
+        if: runner.os != 'Linux'
         run: |
           sudo apt update
+          rustup target add ${{ matrix.target }}
+
           pdm config python.use_venv true
           pdm sync -G bin-builder -G chaostoolkit
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
-          cp build/**/release/install/reliably reliably-${{ matrix.target }}
-      
-      - if: runner.os != 'Windows'
-        name: Strip binary
-        run: strip reliably-${{ matrix.target }}
+          mkdir reliably_${{ matrix.target }}
+          cp -r build/**/release/install/* reliably_${{ matrix.target }}
+
+      - name: Archive Release
+        if: runner.os != 'Windows'
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: 'tar'
+          path: reliably_${{ matrix.target }}
+          filename: 'reliably_${{ matrix.target }}.tar.gz'
 
       - name: Upload binary
         uses: actions/upload-artifact@v3
         with:
-          path: reliably-*
+          path: reliably_*
           if-no-files-found: error
