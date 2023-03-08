@@ -70,9 +70,9 @@ jobs:
           pdm config python.use_venv true
           pdm sync -G bin-builder -G chaostoolkit
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
-          mkdir -p dist/reliably_${{ matrix.target }}
-          cp -r build/**/release/install/* dist/reliably_${{ matrix.target }}
-          tar -C ./dist -czvf reliably_${{ matrix.target }}.tar.gz . --transform='s,^\./,,'
+          mkdir -p dist/bin/reliably_${{ matrix.target }}
+          cp -r build/**/release/install/* dist/bin/reliably_${{ matrix.target }}
+          tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz . --transform='s,^\./,,'
 
       - name: Upload binary
         uses: actions/upload-artifact@v3
