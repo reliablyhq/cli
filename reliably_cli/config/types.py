@@ -10,6 +10,7 @@ try:
 except ImportError:
     import tomli as tomllib
 
+
 __all__ = ["Settings", "get_settings_directory_path"]
 
 

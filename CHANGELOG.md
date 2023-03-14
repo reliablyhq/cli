@@ -2,7 +2,17 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.3.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.4.0...HEAD
+
+## [0.4.0][]
+
+[0.4.0]: https://github.com/reliablyhq/cli/compare/0.3.0...0.4.0
+
+### Changed
+
+- Various fixes to handling chaostoolkit execution properly
+- Better messages when some config keys aren't set
+- Added help messages to commands
 
 ## [0.3.0][]
 

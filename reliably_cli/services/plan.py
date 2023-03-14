@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -7,13 +8,13 @@ from uuid import UUID
 import typer
 
 from ..client import api_client
-from ..config import get_settings
+from ..config import ensure_config_is_set, get_settings
 from ..config.types import get_settings_directory_path
 from ..format import format_as
 from ..log import console
 from ..types import FormatOption, Plan
 
-cli = typer.Typer()
+cli = typer.Typer(help="Manage and execute Reliably plans from your terminal")
 
 
 @cli.command()
@@ -24,6 +25,7 @@ def get(
     """
     Get a plan and display it
     """
+    ensure_config_is_set()
     p = load_plan(plan_id)
     console.print(format_as(p, format))
 
@@ -33,6 +35,7 @@ def store_context(plan_id: UUID) -> None:
     """
     Store a plan context so the execution has what it needs to operate
     """
+    ensure_config_is_set()
     p = load_plan(plan_id)
     store_plan_context(p)
 
@@ -47,6 +50,8 @@ def execute(
     """
     Execute a plan
     """
+    ensure_config_is_set()
+
     settings_dir = get_settings_directory_path()
     p = load_plan(plan_id)
 
@@ -81,6 +86,21 @@ def execute(
 
     settings = get_settings()
 
+    if os.getenv("RELIABLY_HOST") is None:
+        os.environ["RELIABLY_HOST"] = settings.service.host.replace(
+            "https://", ""
+        )
+
+    token = settings.service.token.get_secret_value()
+    if os.getenv("CHAOSTOOLKIT_LOADER_AUTH_BEARER_TOKEN") is None:
+        os.environ["CHAOSTOOLKIT_LOADER_AUTH_BEARER_TOKEN"] = token
+
+    if os.getenv("RELIABLY_TOKEN") is None:
+        os.environ["RELIABLY_TOKEN"] = token
+
+    if os.getenv("RELIABLY_PLAN_ID") is None:
+        os.environ["RELIABLY_PLAN_ID"] = str(p.id)
+
     experiment_id = p.definition.experiments[0]
     base_url = f"{settings.service.host}/api/v1/organization"
     base_url = f"{base_url}/{settings.organization.id}"
@@ -88,11 +108,30 @@ def execute(
     args.append(f"{base_url}/experiments/{experiment_id}/raw")
 
     with console.status("Executing..."):
-        try:
-            subprocess.run(args, capture_output=True, check=True)
-        except subprocess.CalledProcessError as x:
+        return_code = 0
+        with subprocess.Popen(
+            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        ) as proc:
+            try:
+                while True:
+                    try:
+                        proc.communicate(timeout=3)
+                    except subprocess.TimeoutExpired:
+                        pass
+
+                    retcode = proc.poll()
+                    if retcode is not None:
+                        return_code = retcode
+                        break
+            except KeyboardInterrupt:
+                # propagate the interruption to the chaostoolkit process
+                # for a clean exit
+                proc.terminate()
+                raise
+
+        if return_code:
             console.print(f"failed to execute plan. see {log_file.absolute()}")
-            raise typer.Exit(code=x.returncode)
+            raise typer.Exit(code=return_code)
 
 
 ###############################################################################
