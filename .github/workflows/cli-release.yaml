@@ -130,3 +130,17 @@ jobs:
           file: ./Dockerfile
           tags: |
             ghcr.io/reliablyhq/cli/cli:latest
+
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    needs:
+      - build-binary
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "reliably_*"
+        makeLatest: true
+        omitBody: true
