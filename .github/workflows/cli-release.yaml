@@ -59,7 +59,7 @@ jobs:
           cache: true
 
       - name: Build Linux binaries
-        if: runner.os != 'Linux'
+        if: runner.os == 'Linux'
         run: |
           sudo apt update
           rustup target add ${{ matrix.target }}
@@ -67,17 +67,9 @@ jobs:
           pdm config python.use_venv true
           pdm sync -G bin-builder -G chaostoolkit
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
-          mkdir reliably_${{ matrix.target }}
-          cp -r build/**/release/install/* reliably_${{ matrix.target }}
-
-      - name: Build Windows installer binaries
-        if: runner.os != 'Windows'
-        run: |
-          pdm config python.use_venv true
-          pdm sync -G bin-builder -G chaostoolkit
-          pdm run pyoxidizer build msi --release --target-triple ${{ matrix.target }}
-          echo F | xcopy build\${{ matrix.target }}\release\msi\Reliably*.msi reliably_${{ matrix.target }}.msi
-          strip reliably_${{ matrix.target }}
+          mkdir -p dist/bin/reliably-cli
+          cp -r build/**/release/install/* dist/bin/reliably-cli
+          tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz . --transform='s,^\./,,'
 
       - name: Build MacOSX binaries
         if: runner.os == 'macOS'
@@ -93,16 +85,20 @@ jobs:
           pdm config python.use_venv true
           pdm sync -G bin-builder
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
-          mkdir reliably_${{ matrix.target }}
-          cp -r build/**/release/install reliably_${{ matrix.target }}
+          mkdir -p dist/bin/reliably-cli
+          cp -r build/**/release/install/* dist/bin/reliably-cli
+          tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz .
 
-      - name: Archive Release
-        if: runner.os != 'Windows'
-        uses: thedoctor0/zip-release@0.7.1
-        with:
-          type: 'tar'
-          path: reliably_${{ matrix.target }}
-          filename: 'reliably_${{ matrix.target }}.tar.gz'
+      - name: Build Windows installer binaries
+        if: runner.os == 'Windows'
+        run: |
+          pdm config python.use_venv true
+          pdm sync -G bin-builder -G chaostoolkit
+          pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
+          md dist\bin\reliably-cli
+          echo F | xcopy build\${{ matrix.target }}\release\install\* dist\bin\reliably-cli
+          dir dist\bin\reliably-cli
+          7z a -tzip reliably_${{ matrix.target }}.zip dist\bin\reliably-cli
 
       - name: Upload binary
         uses: actions/upload-artifact@v3
@@ -115,7 +111,6 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - publish-wheels
-      - build-binary
     steps:
       - uses: actions/checkout@v3
       - name: Set up Docker Buildx
