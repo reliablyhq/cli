@@ -1,10 +1,15 @@
 import os
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 
+import click
 import typer
-from rich import print as print_
+from pydantic import SecretStr
 
+from ..__version__ import __version__
+from ..log import console
+from ..services.org import load_orgs
 from . import get_settings
 
 cli = typer.Typer(help="View and read Reliably configuration entries")
@@ -13,7 +18,6 @@ cli = typer.Typer(help="View and read Reliably configuration entries")
 class EntryType(str, Enum):
     token = "token"
     org = "org"
-    agent = "agent"
     host = "host"
 
 
@@ -30,7 +34,7 @@ def view() -> None:
     if Path(toml_file).exists():
         data = Path(toml_file).read_text(encoding=encoding)
 
-    print_(data, end="")
+    console.print(data, end="")
 
 
 @cli.command(help="Read one entry of the configuration")
@@ -40,23 +44,76 @@ def get(entry: EntryType) -> None:
     value = ""
     match entry.value:  # noqa
         case "token":
-            value = settings.agent.token.get_secret_value()
+            value = settings.service.token.get_secret_value()
         case "org":
             value = str(settings.organization.id)
         case "host":
             value = settings.service.host
 
-    print_(value)
+    console.print(value)
 
 
-@cli.command(help="Create an empty configuration file")
-def create() -> None:
+@cli.command(help="Initialize a basic configuration file")
+def init(
+    override: bool = typer.Option(
+        False, help="Override existing configuration."
+    )
+) -> None:
     toml_file = os.getenv("RELIABLY_CLI_CONFIG")
     if not toml_file:
         settings = get_settings()
         toml_file = settings.__config__.toml_file
 
-    Path(toml_file).touch(exist_ok=True)
+    if Path(toml_file).exists() and not override:
+        print("configuration file already exists")
+        raise typer.Exit(code=1)
+
+    token: SecretStr = typer.prompt(
+        typer.style("Please provide a valid token?", dim=True),
+        hide_input=True,
+        type=SecretStr,
+    )
+
+    orgs = load_orgs(token=token)
+    org_choices = [str(org.name) for org in orgs.items]
+
+    org_name = typer.prompt(
+        typer.style("Please select an organization", dim=True),
+        type=click.Choice(org_choices),
+        default=org_choices[0],
+    )
+
+    org_id = ""
+    for org in orgs.items:
+        if org.name == org_name:
+            org_id = str(org.id)
+            break
+
+    Path(toml_file).write_text(
+        f"""
+# Welcome to Reliably, you fellow engineer!
+# Generated on {datetime.utcnow()} by Reliably CLI v{__version__}
+
+[service]
+# this is equivalent to setting the env var: RELIABLY_SERVICE_TOKEN
+token = "{token.get_secret_value()}"
+
+[organization]
+# this is equivalent to setting the env var: RELIABLY_ORGANIZATION_ID
+id = "{org_id}"
+
+    """.lstrip().rstrip(
+            "    "
+        )
+    )
+
+    console.print()
+    console.print(
+        "Congratulations you are all set now to use the Reliably CLI!"
+    )
+    console.print(
+        "Keep in mind that your configuration is in clear text. Keep it safe."
+    )
 
 
 @cli.command(help="Checks the configuration's presence")
@@ -66,7 +123,7 @@ def exists() -> None:
         settings = get_settings()
         toml_file = settings.__config__.toml_file
 
-    print("yes" if Path(toml_file).exists() else "no")
+    console.print("yes" if Path(toml_file).exists() else "no")
 
 
 @cli.command(help="Get the path of the configuration")
@@ -76,4 +133,4 @@ def path() -> str:
         settings = get_settings()
         toml_file = settings.__config__.toml_file
 
-    print(Path(toml_file).absolute())
+    console.print(Path(toml_file).absolute())

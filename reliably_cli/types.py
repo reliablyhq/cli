@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Literal
 
 from pydantic import UUID4, BaseModel
 
-__all__ = ["Plan", "FormatOption"]
+__all__ = ["Plan", "FormatOption", "Organization"]
 
 
 class FormatOption(Enum):
@@ -73,3 +73,14 @@ class IntegrationControlPythonProvider(BaseSchema):
 class IntegrationControl(BaseSchema):
     name: str
     provider: IntegrationControlPythonProvider
+
+
+class Organization(BaseSchema):
+    id: UUID4
+    name: str
+    created_date: datetime
+
+
+class Organizations(BaseSchema):
+    count: int
+    items: list[Organization]

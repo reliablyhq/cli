@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager, contextmanager
 
 import httpx
+from pydantic import SecretStr
 
 from .config import get_settings
 
@@ -26,17 +27,25 @@ async def agent_client() -> httpx.AsyncClient:
 
 
 @contextmanager
-def api_client() -> httpx.Client:
+def api_client(
+    bare: bool = False, token: SecretStr | None = None
+) -> httpx.Client:
     settings = get_settings()
     host = settings.service.host
-    token = settings.service.token
-    org_id = settings.organization.id
+
+    if not token:
+        token = settings.service.token
+
+    url = f"{host}/api/v1"
+    if not bare:
+        org_id = settings.organization.id
+        url = f"{url}/organization/{org_id}"
 
     headers = {"Authorization": f"Bearer {token.get_secret_value()}"}
 
     with httpx.Client(
         http2=True,
-        base_url=f"{host}/api/v1/organization/{org_id}",
+        base_url=url,
         headers=headers,
         timeout=30.0,
     ) as c:
