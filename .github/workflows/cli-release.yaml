@@ -29,7 +29,7 @@ jobs:
           PDM_PUBLISH_USERNAME: __token__
           PDM_PUBLISH_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
-  build-binary:
+  build-linux-binary:
     name: Build executable for '${{ matrix.target }}' on '${{ matrix.os }}'
     runs-on: ${{ matrix.os }}
     needs:
@@ -40,26 +40,17 @@ jobs:
         include:
         - os: ubuntu-22.04
           target: x86_64-unknown-linux-gnu
-        - os: windows-2022
-          target: x86_64-pc-windows-msvc
-        - os: macos-10.15
-          target: x86_64-apple-darwin
-        - os: macos-12
-          target: aarch64-apple-darwin
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v3
         with:
           python-version: "3.10"
-          cache: true
+          cache: false
 
       - name: Build Linux binaries
-        if: runner.os == 'Linux'
         run: |
           sudo apt update
           rustup target add ${{ matrix.target }}
@@ -71,16 +62,39 @@ jobs:
           cp -r build/**/release/install/* dist/bin/reliably-cli
           tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz . --transform='s,^\./,,'
 
+      - name: Upload binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux binary (${{ matrix.target }})
+          path: reliably_*
+          if-no-files-found: error
+
+  build-macosx-x86_64-binary:
+    name: Build executable for '${{ matrix.target }}' on '${{ matrix.os }}'
+    runs-on: ${{ matrix.os }}
+    needs:
+      - publish-wheels
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: macos-10.15
+          target: x86_64-apple-darwin
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: "3.10"
+          cache: false
+
       - name: Build MacOSX binaries
-        if: runner.os == 'macOS'
         run: |
           rustup target add ${{ matrix.target }}
 
-          if [ "${{ matrix.target.triple }}" = "aarch64-apple-darwin" ]; then
-            export MACOSX_DEPLOYMENT_TARGET=11.0
-          elif [ "${{ matrix.target.triple }}" = "x86_64-apple-darwin" ]; then
-            export MACOSX_DEPLOYMENT_TARGET=10.9
-          fi
+          export MACOSX_DEPLOYMENT_TARGET=10.9
 
           pdm config python.use_venv true
           pdm sync -G bin-builder
@@ -89,8 +103,76 @@ jobs:
           cp -r build/**/release/install/* dist/bin/reliably-cli
           tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz .
 
+      - name: Upload binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: macosx binary (${{ matrix.target }})
+          path: reliably_*
+          if-no-files-found: error
+  
+  build-macosx-aarch64-binary:
+    name: Build executable for '${{ matrix.target }}' on '${{ matrix.os }}'
+    runs-on: ${{ matrix.os }}
+    needs:
+      - publish-wheels
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: macos-12
+          target: aarch64-apple-darwin
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: "3.10"
+          cache: false
+
+      - name: Build MacOSX binaries
+        run: |
+          rustup target add ${{ matrix.target }}
+
+          export MACOSX_DEPLOYMENT_TARGET=11.0
+
+          pdm config python.use_venv true
+          pdm sync -G bin-builder
+          pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
+          mkdir -p dist/bin/reliably-cli
+          cp -r build/**/release/install/* dist/bin/reliably-cli
+          tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz .
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: macosx binary (${{ matrix.target }})
+          path: reliably_*
+          if-no-files-found: error
+
+  build-windows-binary:
+    name: Build executable for '${{ matrix.target }}' on '${{ matrix.os }}'
+    runs-on: ${{ matrix.os }}
+    needs:
+      - publish-wheels
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: windows-2022
+          target: x86_64-pc-windows-msvc
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: "3.10"
+          cache: false
+
       - name: Build Windows installer binaries
-        if: runner.os == 'Windows'
         run: |
           pdm config python.use_venv true
           pdm sync -G bin-builder -G chaostoolkit
@@ -103,9 +185,10 @@ jobs:
       - name: Upload binary
         uses: actions/upload-artifact@v3
         with:
+          name: windows binary (${{ matrix.target }})
           path: reliably_*
           if-no-files-found: error
-
+  
   build-container:
     name: Build containers
     runs-on: ubuntu-22.04
@@ -131,12 +214,15 @@ jobs:
           tags: |
             ghcr.io/reliablyhq/cli/cli:latest
 
-  build:
+  release:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
     needs:
-      - build-binary
+      - build-linux-binary
+      - build-windows-binary
+      - build-macosx-aarch64-binary
+      - build-macosx-x86_64-binary
     steps:
     - uses: actions/checkout@v3
     - uses: ncipollo/release-action@v1
