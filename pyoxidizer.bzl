@@ -50,7 +50,7 @@ def make_exe():
     exe.windows_runtime_dlls_mode = "always"
     exe.windows_subsystem = "console"
     
-    exe.add_python_resources(exe.pip_download(["-r", "requirements-generated.txt"]))
+    exe.add_python_resources(exe.pip_install(["--prefer-binary", "-r", "requirements-generated.txt"]))
 
     return exe
 
