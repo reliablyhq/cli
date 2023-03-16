@@ -152,7 +152,7 @@ jobs:
 
   build-windows-binary:
     name: Build executable for '${{ matrix.target }}' on '${{ matrix.os }}'
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest-8-cores
     needs:
       - publish-wheels
     strategy:
