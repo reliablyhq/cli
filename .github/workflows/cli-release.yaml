@@ -57,6 +57,7 @@ jobs:
 
           pdm config python.use_venv true
           pdm sync -G bin-builder -G chaostoolkit
+          pdm export -f requirements --prod -G chaostoolkit -o requirements-generated.txt
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
           mkdir -p dist/bin/reliably-cli
           cp -r build/**/release/install/* dist/bin/reliably-cli
@@ -98,6 +99,7 @@ jobs:
 
           pdm config python.use_venv true
           pdm sync -G bin-builder
+          pdm export -f requirements --prod -G chaostoolkit -o requirements-generated.txt
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
           mkdir -p dist/bin/reliably-cli
           cp -r build/**/release/install/* dist/bin/reliably-cli
@@ -139,6 +141,7 @@ jobs:
 
           pdm config python.use_venv true
           pdm sync -G bin-builder
+          pdm export -f requirements --prod -G chaostoolkit -o requirements-generated.txt
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
           mkdir -p dist/bin/reliably-cli
           cp -r build/**/release/install/* dist/bin/reliably-cli
@@ -176,6 +179,7 @@ jobs:
         run: |
           pdm config python.use_venv true
           pdm sync -G bin-builder -G chaostoolkit
+          pdm export -f requirements --prod -G chaostoolkit -o requirements-generated.txt
           pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
           md dist\bin\reliably-cli
           echo F | xcopy build\${{ matrix.target }}\release\install\* dist\bin\reliably-cli
