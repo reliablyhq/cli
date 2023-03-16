@@ -43,8 +43,6 @@ jobs:
   build-linux-binary:
     name: Build executable for '${{ matrix.target }}' on '${{ matrix.os }}'
     runs-on: ${{ matrix.os }}
-    needs:
-      - publish-wheels
     strategy:
       fail-fast: false
       matrix:
