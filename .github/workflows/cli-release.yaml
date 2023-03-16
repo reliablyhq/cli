@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "*.*.*"
+  release:
+    types: [published]
 
 jobs:
   checks:
@@ -58,7 +60,7 @@ jobs:
           pdm config python.use_venv true
           pdm sync -G bin-builder -G chaostoolkit
           pdm export -f requirements --prod -G chaostoolkit -o requirements-generated.txt
-          pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
+          pdm run pyoxidizer build --var RELIABLY_VERSION=$(pdm show reliably-cli --version) --release --target-triple ${{ matrix.target }}
           mkdir -p dist/bin/reliably-cli
           cp -r build/**/release/install/* dist/bin/reliably-cli
           tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz . --transform='s,^\./,,'
@@ -69,7 +71,14 @@ jobs:
           name: linux binary (${{ matrix.target }})
           path: reliably_${{ matrix.target }}.tar.gz
           if-no-files-found: error
+          retention-days: 5
 
+      - name: Add to release
+        uses: softprops/action-gh-release@v1
+        if: ${{ github.event.release && github.event.action == 'published' }}
+        with:
+          files: reliably_${{ matrix.target }}.tar.gz
+  
   build-macosx-x86_64-binary:
     name: Build executable for '${{ matrix.target }}' on '${{ matrix.os }}'
     runs-on: ${{ matrix.os }}
@@ -98,7 +107,7 @@ jobs:
           pdm config python.use_venv true
           pdm sync -G bin-builder
           pdm export -f requirements --prod -G chaostoolkit -o requirements-generated.txt
-          pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
+          pdm run pyoxidizer build macos --var RELIABLY_VERSION=$(pdm show reliably-cli --version) --release --target-triple ${{ matrix.target }}
           mkdir -p dist/bin/reliably-cli
           cp -r build/**/release/install/* dist/bin/reliably-cli
           tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz .
@@ -109,6 +118,13 @@ jobs:
           name: macosx binary (${{ matrix.target }})
           path: reliably_${{ matrix.target }}.tar.gz
           if-no-files-found: error
+          retention-days: 5
+  
+      - name: Add to release
+        uses: softprops/action-gh-release@v1
+        if: ${{ github.event.release && github.event.action == 'published' }}
+        with:
+          files: reliably_${{ matrix.target }}.tar.gz
   
   # build-macosx-aarch64-binary:
   #   name: Build executable for '${{ matrix.target }}' on '${{ matrix.os }}'
@@ -176,18 +192,28 @@ jobs:
           pdm config python.use_venv true
           pdm sync -G bin-builder -G chaostoolkit
           pdm export -f requirements --prod -G chaostoolkit -o requirements-generated.txt
-          pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
-          md dist\bin\reliably-cli
-          echo F | xcopy build\${{ matrix.target }}\release\install\* dist\bin\reliably-cli
-          dir dist\bin\reliably-cli
-          7z a -tzip reliably_${{ matrix.target }}.zip dist\bin\reliably-cli
+          pdm run pyoxidizer build msi --var RELIABLY_VERSION=$(pdm show reliably-cli --version) --release --target-triple ${{ matrix.target }}
+          md .\dist\bin\reliably-cli
+          xcopy .\build\${{ matrix.target }}\release\install\msi\* .\dist /s /e /k /i /y
+          dir .\dist
 
       - name: Upload binary
         uses: actions/upload-artifact@v3
         with:
           name: windows binary (${{ matrix.target }})
-          path: reliably_${{ matrix.target }}.zip
+          path: dist/
           if-no-files-found: error
+          retention-days: 5
+
+      - name: Create zip
+        if: ${{ github.event.release && github.event.action == 'published' }}
+        run: 7z a -r reliably-${{ matrix.target }}.zip "dist/"
+
+      - name: Add to release
+        uses: softprops/action-gh-release@v1
+        if: ${{ github.event.release && github.event.action == 'published' }}
+        with:
+          files: reliably-${{ matrix.target }}.zip
   
   build-container:
     name: Build containers

@@ -1,4 +1,5 @@
 IS_WINDOWS = "windows" in BUILD_TARGET_TRIPLE
+RELIABLY_VERSION = VARS.get("RELIABLY_VERSION")
 
 
 def resource_callback(policy, resource):
@@ -59,10 +60,7 @@ def make_embedded_resources(exe):
     return exe.to_embedded_resources()
 
 def make_install(exe):
-    # Create an object that represents our installed application file layout.
     files = FileManifest()
-
-    # Add the generated executable to our install layout in the root directory.
     files.add_python_resource(".", exe)
 
     return files
@@ -70,16 +68,43 @@ def make_install(exe):
 def make_msi(exe):
     return exe.to_wix_msi_builder(
         "reliably",
-        "Reliably CLI",
-        "0.1.1",
+        "Reliably",
+        RELIABLY_VERSION,
         "ChaosIQ Ltd"
     )
+
+def make_macos_app_bundle(exe):
+    ARCHES = ["x86_64-apple-darwin"]
+
+    bundle = MacOsApplicationBundleBuilder("Reliably")
+    bundle.set_info_plist_required_keys(
+        display_name="Reliably",
+        identifier="com.reliably.rbly",
+        version=RELIABLY_VERSION,
+        signature="rbly",
+        executable="reliably",
+    )
+
+    universal = AppleUniversalBinary("reliably")
+
+    for arch in ARCHES:
+        path = "dist/" + arch + "/reliably"
+
+        universal.add_path(path)
+
+    m = FileManifest()
+    m.add_file(universal.to_file_content())
+    bundle.add_macos_manifest(m)
+
+    return bundle
+
 
 # Tell PyOxidizer about the build targets defined above.
 register_target("exe", make_exe)
 register_target("resources", make_embedded_resources, depends=["exe"], default_build_script=True)
 register_target("install", make_install, depends=["exe"], default=True)
 register_target("msi", make_msi, depends=["exe"])
+register_target("macos", make_macos_app_bundle, depends=["exe"])
 
 # Resolve whatever targets the invoker of this configuration file is requesting
 # be resolved.
