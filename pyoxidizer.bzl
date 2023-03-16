@@ -51,7 +51,7 @@ def make_exe():
     exe.windows_subsystem = "console"
     
     exe.add_python_resources(exe.pip_install(["--prefer-binary", "-r", "requirements-generated.txt"]))
-    exe.add_python_resources(exe.pip_install(["--prefer-binary", "reliably-cli"]))
+    exe.add_python_resources(exe.pip_install(["--prefer-binary", "--no-deps", "reliably-cli"]))
 
     return exe
 
