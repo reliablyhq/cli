@@ -79,7 +79,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - os: macos-10.15
+        - os: macos-12
           target: x86_64-apple-darwin
 
     steps:
@@ -110,45 +110,45 @@ jobs:
           path: reliably_${{ matrix.target }}.tar.gz
           if-no-files-found: error
   
-  build-macosx-aarch64-binary:
-    name: Build executable for '${{ matrix.target }}' on '${{ matrix.os }}'
-    runs-on: ${{ matrix.os }}
-    needs:
-      - publish-wheels
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-        - os: macos-12
-          target: aarch64-apple-darwin
+  # build-macosx-aarch64-binary:
+  #   name: Build executable for '${{ matrix.target }}' on '${{ matrix.os }}'
+  #   runs-on: ${{ matrix.os }}
+  #   needs:
+  #     - publish-wheels
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #       - os: macos-12
+  #         target: aarch64-apple-darwin
 
-    steps:
-      - uses: actions/checkout@v3
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Set up PDM
-        uses: pdm-project/setup-pdm@v3
-        with:
-          python-version: "3.10"
-          cache: false
+  #     - name: Set up PDM
+  #       uses: pdm-project/setup-pdm@v3
+  #       with:
+  #         python-version: "3.10"
+  #         cache: false
 
-      - name: Build MacOSX binaries
-        run: |
-          rustup target add ${{ matrix.target }}
+  #     - name: Build MacOSX binaries
+  #       run: |
+  #         rustup target add ${{ matrix.target }}
 
-          pdm config python.use_venv true
-          pdm sync -G bin-builder
-          pdm export -f requirements --prod -G chaostoolkit -o requirements-generated.txt
-          pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
-          mkdir -p dist/bin/reliably-cli
-          cp -r build/**/release/install/* dist/bin/reliably-cli
-          tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz .
+  #         pdm config python.use_venv true
+  #         pdm sync -G bin-builder
+  #         pdm export -f requirements --prod -G chaostoolkit -o requirements-generated.txt
+  #         pdm run pyoxidizer build --release --target-triple ${{ matrix.target }}
+  #         mkdir -p dist/bin/reliably-cli
+  #         cp -r build/**/release/install/* dist/bin/reliably-cli
+  #         tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz .
 
-      - name: Upload binary
-        uses: actions/upload-artifact@v3
-        with:
-          name: macosx binary (${{ matrix.target }})
-          path: reliably_${{ matrix.target }}.tar.gz
-          if-no-files-found: error
+  #     - name: Upload binary
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: macosx binary (${{ matrix.target }})
+  #         path: reliably_${{ matrix.target }}.tar.gz
+  #         if-no-files-found: error
 
   build-windows-binary:
     name: Build executable for '${{ matrix.target }}' on '${{ matrix.os }}'
@@ -221,7 +221,6 @@ jobs:
     needs:
       - build-linux-binary
       - build-windows-binary
-      - build-macosx-aarch64-binary
       - build-macosx-x86_64-binary
     steps:
     - uses: actions/checkout@v3
@@ -229,6 +228,5 @@ jobs:
       with:
         files: |
           reliably_x86_64-pc-windows-msvc.zip
-          reliably_aarch64-apple-darwin.tar.gz
           reliably_x86_64-apple-darwin.tar.gz
           reliably_x86_64-unknown-linux-gnu.tar.gz
