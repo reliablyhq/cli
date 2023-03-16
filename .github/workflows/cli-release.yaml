@@ -93,9 +93,8 @@ jobs:
 
       - name: Build MacOSX binaries
         run: |
+          softwareupdate --install-rosetta --agree-to-license
           rustup target add ${{ matrix.target }}
-
-          export MACOSX_DEPLOYMENT_TARGET=10.9
 
           pdm config python.use_venv true
           pdm sync -G bin-builder
@@ -135,9 +134,8 @@ jobs:
 
       - name: Build MacOSX binaries
         run: |
+          softwareupdate --install-rosetta --agree-to-license
           rustup target add ${{ matrix.target }}
-
-          export MACOSX_DEPLOYMENT_TARGET=11.0
 
           pdm config python.use_venv true
           pdm sync -G bin-builder
