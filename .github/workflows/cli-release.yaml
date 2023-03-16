@@ -93,7 +93,6 @@ jobs:
 
       - name: Build MacOSX binaries
         run: |
-          softwareupdate --install-rosetta --agree-to-license
           rustup target add ${{ matrix.target }}
 
           pdm config python.use_venv true
