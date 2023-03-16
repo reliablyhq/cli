@@ -50,7 +50,7 @@ def make_exe():
     exe.windows_runtime_dlls_mode = "always"
     exe.windows_subsystem = "console"
     
-    exe.add_python_resources(exe.pip_download(["reliably-cli>=0.5"]))
+    exe.add_python_resources(exe.pip_download(["-r", "requirements.txt"]))
 
     return exe
 
