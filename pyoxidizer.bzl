@@ -104,8 +104,7 @@ def make_install(exe):
 
 def make_msi(exe):
     ctk_exe = make_ctk_exe()
-    files = FileManifest()
-    files.add_python_resource(".", ctk_exe)
+    files = ctk_exe.to_file_manifest(".")
 
     exe.add_manifest(files)
 
