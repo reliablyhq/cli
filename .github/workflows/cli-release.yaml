@@ -196,7 +196,7 @@ jobs:
           pdm export -f requirements --prod -G chaostoolkit -o requirements-generated.txt
           pdm run pyoxidizer build msi --var RELIABLY_VERSION "${{  github.ref_name }}" --release --target-triple ${{ matrix.target }}
           md .\dist\bin\reliably-cli
-          xcopy .\build\${{ matrix.target }}\release\msi\* .\dist /s /e /k /i /y
+          xcopy .\build\${{ matrix.target }}\release\msi\*.msi .\dist /s /e /k /i /y
           dir .\dist
 
       - name: Upload binary
