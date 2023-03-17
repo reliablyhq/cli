@@ -13,7 +13,7 @@ RUN apt-get update && \
     apt-get install -y python3.11 python3-pip python3.11-venv && \
     apt-get install -y --no-install-recommends build-essential gcc && \
     pip install --no-cache-dir -q -U --disable-pip-version-check --prefer-binary pip && \
-    pip install --no-cache-dir -q --prefer-binary setuptools wheel pdm && \
+    pip install --no-cache-dir -q --disable-pip-version-check --prefer-binary setuptools wheel pdm && \
     pdm config python.use_venv false && \
     pdm install --prod -G chaostoolkit --no-lock --no-editable && \
     apt-get remove -y build-essential gcc && \
