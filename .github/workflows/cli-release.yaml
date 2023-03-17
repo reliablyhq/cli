@@ -194,7 +194,7 @@ jobs:
           pdm config python.use_venv true
           pdm sync -G bin-builder -G chaostoolkit
           pdm export -f requirements --prod -G chaostoolkit -o requirements-generated.txt
-          pdm run pyoxidizer build msi --var RELIABLY_VERSION "${GITHUB_REF_NAME}" --release --target-triple ${{ matrix.target }}
+          pdm run pyoxidizer build msi --var RELIABLY_VERSION "${{  github.ref_name }}" --release --target-triple ${{ matrix.target }}
           md .\dist\bin\reliably-cli
           xcopy .\build\${{ matrix.target }}\release\install\msi\* .\dist /s /e /k /i /y
           dir .\dist
