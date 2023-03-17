@@ -20,7 +20,7 @@ jobs:
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v3
         with:
-          python-version: "3.11"
+          python-version: "3.10"
       - name: Publish wheels
         run: |
           pdm publish
@@ -49,7 +49,7 @@ jobs:
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v3
         with:
-          python-version: "3.11"
+          python-version: "3.10"
           cache: false
 
       - name: Build Linux binaries
@@ -98,7 +98,7 @@ jobs:
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v3
         with:
-          python-version: "3.11"
+          python-version: "3.10"
           cache: false
 
       - name: Build MacOSX binaries
@@ -146,7 +146,7 @@ jobs:
   #     - name: Set up PDM
   #       uses: pdm-project/setup-pdm@v3
   #       with:
-  #         python-version: "3.11"
+  #         python-version: "3.10"
   #         cache: false
 
   #     - name: Build MacOSX binaries
@@ -186,7 +186,7 @@ jobs:
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v3
         with:
-          python-version: "3.11"
+          python-version: "3.10"
           cache: false
 
       - name: Build Windows installer binaries
