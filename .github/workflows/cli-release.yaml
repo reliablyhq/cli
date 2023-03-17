@@ -109,7 +109,7 @@ jobs:
           pdm sync -G bin-builder
           pdm export -f requirements --prod -G chaostoolkit -o requirements-generated.txt
           RELIABLY_VERSION=$(pdm show reliably-cli --version)
-          pdm run pyoxidizer build macos --var RELIABLY_VERSION "${RELIABLY_VERSION}" --release --target-triple ${{ matrix.target }}
+          pdm run pyoxidizer build --var RELIABLY_VERSION "${RELIABLY_VERSION}" --release --target-triple ${{ matrix.target }}
           mkdir -p dist/bin/reliably-cli
           cp -r build/**/release/install/* dist/bin/reliably-cli
           tar -C ./dist/bin -czvf reliably_${{ matrix.target }}.tar.gz .
@@ -194,9 +194,7 @@ jobs:
           pdm config python.use_venv true
           pdm sync -G bin-builder -G chaostoolkit
           pdm export -f requirements --prod -G chaostoolkit -o requirements-generated.txt
-          set RELIABLY_VERSION=
-          for /f "delims=" %%a in ('pdm show reliably-cli --version') do @set RELIABLY_VERSION=%%a
-          pdm run pyoxidizer build msi --var RELIABLY_VERSION "${RELIABLY_VERSION}" --release --target-triple ${{ matrix.target }}
+          pdm run pyoxidizer build msi --var RELIABLY_VERSION "${GITHUB_REF_NAME}" --release --target-triple ${{ matrix.target }}
           md .\dist\bin\reliably-cli
           xcopy .\build\${{ matrix.target }}\release\install\msi\* .\dist /s /e /k /i /y
           dir .\dist

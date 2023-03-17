@@ -74,8 +74,6 @@ def make_msi(exe):
     )
 
 def make_macos_app_bundle(exe):
-    ARCHES = ["x86_64-apple-darwin"]
-
     bundle = MacOsApplicationBundleBuilder("Reliably")
     bundle.set_info_plist_required_keys(
         display_name="Reliably",
@@ -86,11 +84,7 @@ def make_macos_app_bundle(exe):
     )
 
     universal = AppleUniversalBinary("reliably")
-
-    for arch in ARCHES:
-        path = "dist/" + arch + "/reliably"
-
-        universal.add_path(path)
+    universal.add_path("dist/x86_64-apple-darwin/reliably")
 
     m = FileManifest()
     m.add_file(universal.to_file_content())
