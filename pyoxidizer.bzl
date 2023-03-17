@@ -90,7 +90,10 @@ def make_ctk_exe():
 
     exe.add_python_resources(exe.pip_install(["--prefer-binary", "--no-deps", "chaostoolkit"]))
 
-    return exe
+    files = FileManifest()
+    files.add_python_resource(".", exe)
+
+    return files
 
 
 def make_embedded_resources(exe):
@@ -102,18 +105,44 @@ def make_install(exe):
 
     return files
 
-def make_msi(exe):
-    ctk_exe = make_ctk_exe()
-    files = ctk_exe.to_file_manifest(".")
+def make_msi(exe, ctk_exe):
+    bundle = WiXBundleBuilder(
+        id_prefix="reliably",
+        name="Reliably",
+        version=RELIABLY_VERSION,
+        manufacturer="ChaosIQ Ltd",
+    )
 
-    exe.add_manifest(files)
+    bundle.add_vc_redistributable("x64")
 
-    return exe.to_wix_msi_builder(
+    ctk_msi_builder = ctk_exe.to_wix_msi_builder(
+        "chaostoolkit",
+        "Chaos Toolkit",
+        "0.1.0",
+        "ChaosIQ Ltd"
+    )
+
+    reliably_msi_builder = exe.to_wix_msi_builder(
         "reliably",
         "Reliably",
         RELIABLY_VERSION,
         "ChaosIQ Ltd"
     )
+
+    bundle.add_wix_msi_builder(
+        builder=ctk_msi_builder,
+        display_internal_ui=False,
+        install_condition="VersionNT64",
+    )
+
+    bundle.add_wix_msi_builder(
+        builder=reliably_msi_builder,
+        display_internal_ui=True,
+        install_condition="VersionNT64",
+    )
+
+    return bundle
+
 
 def make_macos_app_bundle(exe):
     bundle = MacOsApplicationBundleBuilder("Reliably")
@@ -139,8 +168,9 @@ def make_macos_app_bundle(exe):
 register_target("exe", make_exe)
 register_target("resources", make_embedded_resources, depends=["exe"], default_build_script=True)
 register_target("install", make_install, depends=["exe"], default=True)
+register_target("ctk_win", make_ctk_exe)
 register_target("msi", make_msi, depends=["exe"])
-register_target("macos", make_macos_app_bundle, depends=["exe"])
+register_target("macos", make_macos_app_bundle, depends=["exe", "ctk_win"])
 
 # Resolve whatever targets the invoker of this configuration file is requesting
 # be resolved.
