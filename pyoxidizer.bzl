@@ -168,9 +168,9 @@ def make_macos_app_bundle(exe):
 register_target("exe", make_exe)
 register_target("resources", make_embedded_resources, depends=["exe"], default_build_script=True)
 register_target("install", make_install, depends=["exe"], default=True)
-register_target("ctk_win", make_ctk_exe)
+register_target("ctk_exe", make_ctk_exe)
 register_target("msi", make_msi, depends=["exe"])
-register_target("macos", make_macos_app_bundle, depends=["exe", "ctk_win"])
+register_target("macos", make_macos_app_bundle, depends=["exe", "ctk_exe"])
 
 # Resolve whatever targets the invoker of this configuration file is requesting
 # be resolved.
