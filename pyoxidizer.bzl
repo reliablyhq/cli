@@ -15,6 +15,9 @@ def resource_callback(policy, resource):
         if resource.name in ["pywin32_bootstrap", "pythoncom", "pypiwin32", "pywin32", "pythonwin", "win32", "win32com", "win32comext"]:
             resource.add_location = "filesystem-relative:lib"
             resource.add_include = True
+    elif IS_WINDOWS and "chaostoolkit" in resource.path:
+        resource.add_location = "filesystem-relative:lib"
+        resource.add_include = True
 
 
 def make_exe():
