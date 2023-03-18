@@ -56,42 +56,6 @@ def make_exe():
 
     return exe
 
-def make_ctk_exe():
-    dist = default_python_distribution(python_version="3.10")
-
-    policy = dist.make_python_packaging_policy()
-
-    policy.allow_in_memory_shared_library_loading = True
-    policy.bytecode_optimize_level_one = True
-    policy.include_non_distribution_sources = False
-    policy.include_test = False
-    policy.resources_location = "in-memory"
-    policy.resources_location_fallback = "filesystem-relative:lib"
-    policy.bytecode_optimize_level_one = True
-    policy.extension_module_filter = "all"
-    policy.include_file_resources = True
-    policy.allow_files = True
-    policy.file_scanner_emit_files = True
-    policy.register_resource_callback(resource_callback)
-
-    python_config = dist.make_python_interpreter_config()
-    python_config.module_search_paths = ["$ORIGIN", "$ORIGIN/lib"]
-
-    python_config.run_command = "from chaostoolkit.__main__ import cli; cli()"
-
-    exe = dist.to_python_executable(
-        name="chaostoolkit",
-        packaging_policy=policy,
-        config=python_config,
-    )
-    
-    exe.windows_runtime_dlls_mode = "always"
-    exe.windows_subsystem = "console"
-
-    exe.add_python_resources(exe.pip_install(["--prefer-binary", "chaostoolkit"]))
-
-    return exe
-
 
 def make_embedded_resources(exe):
     return exe.to_embedded_resources()
@@ -103,43 +67,12 @@ def make_install(exe):
     return files
 
 def make_msi(exe):
-    bundle = WiXBundleBuilder(
-        id_prefix="reliably",
-        name="Reliably",
-        version=RELIABLY_VERSION,
-        manufacturer="ChaosIQ Ltd",
-    )
-
-    bundle.add_vc_redistributable("x64")
-
-    ctk_exe = make_ctk_exe()
-    ctk_msi_builder = ctk_exe.to_wix_msi_builder(
-        "chaostoolkit",
-        "Chaos Toolkit",
-        "0.1.0",
-        "ChaosIQ Ltd"
-    )
-
-    reliably_msi_builder = exe.to_wix_msi_builder(
+    return exe.to_wix_msi_builder(
         "reliably",
         "Reliably",
         RELIABLY_VERSION,
         "ChaosIQ Ltd"
     )
-
-    bundle.add_wix_msi_builder(
-        builder=ctk_msi_builder,
-        display_internal_ui=False,
-        install_condition="VersionNT64",
-    )
-
-    bundle.add_wix_msi_builder(
-        builder=reliably_msi_builder,
-        display_internal_ui=True,
-        install_condition="VersionNT64",
-    )
-
-    return bundle
 
 
 def make_macos_app_bundle(exe):
