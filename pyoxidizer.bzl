@@ -3,7 +3,10 @@ RELIABLY_VERSION = VARS.get("RELIABLY_VERSION")
 
 
 def resource_callback(policy, resource):
-    if type(resource) in ("File"):
+    if "chaostoolkit" in resource.path:
+        resource.add_location = "filesystem-relative:lib"
+        resource.add_include = True
+    elif type(resource) in ("File"):
         if "pywin" in resource.path or "pypiwin" in resource.path:
             resource.add_location = "filesystem-relative:lib"
             resource.add_include = True
@@ -15,10 +18,6 @@ def resource_callback(policy, resource):
         if resource.name in ["pywin32_bootstrap", "pythoncom", "pypiwin32", "pywin32", "pythonwin", "win32", "win32com", "win32comext"]:
             resource.add_location = "filesystem-relative:lib"
             resource.add_include = True
-    elif IS_WINDOWS and "chaostoolkit" in resource.path:
-        resource.add_location = "filesystem-relative:lib"
-        resource.add_include = True
-
 
 def make_exe():
     dist = default_python_distribution(python_version="3.10")
@@ -51,10 +50,11 @@ def make_exe():
         config=python_config,
     )
     
-    exe.windows_runtime_dlls_mode = "always"
-    exe.windows_subsystem = "console"
+    if IS_WINDOWS:
+        exe.windows_runtime_dlls_mode = "always"
+        exe.windows_subsystem = "console"
     
-    exe.add_python_resources(exe.pip_install(["--prefer-binary", "-r", "requirements-generated.txt"]))
+    exe.add_python_resources(exe.pip_install(["--prefer-binary", "--no-binary", "chaostoolkit-reliably", "-r", "requirements-generated.txt"]))
     exe.add_python_resources(exe.pip_install(["--prefer-binary", "--no-deps", "reliably-cli"]))
 
     return exe
