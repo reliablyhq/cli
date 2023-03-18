@@ -88,12 +88,9 @@ def make_ctk_exe():
     exe.windows_runtime_dlls_mode = "always"
     exe.windows_subsystem = "console"
 
-    exe.add_python_resources(exe.pip_install(["--prefer-binary", "--no-deps", "chaostoolkit"]))
+    exe.add_python_resources(exe.pip_install(["--prefer-binary", "chaostoolkit"]))
 
-    files = FileManifest()
-    files.add_python_resource(".", exe)
-
-    return files
+    return exe
 
 
 def make_embedded_resources(exe):
