@@ -20,6 +20,7 @@ def make_exe():
         policy.include_file_resources = True
         policy.allow_files = True
         policy.file_scanner_emit_files = True
+        policy.resources_location = "filesystem-relative:lib"
 
     python_config = dist.make_python_interpreter_config()
     python_config.module_search_paths = ["$ORIGIN", "$ORIGIN/lib"]
