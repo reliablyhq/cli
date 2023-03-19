@@ -3,21 +3,9 @@ RELIABLY_VERSION = VARS.get("RELIABLY_VERSION")
 
 
 def resource_callback(policy, resource):
-    if "chaostoolkit" in resource.path:
-        resource.add_location = "filesystem-relative:lib"
+    if type(resource) == "PythonModuleSource":
         resource.add_include = True
-    elif type(resource) in ("File"):
-        if "pywin" in resource.path or "pypiwin" in resource.path:
-            resource.add_location = "filesystem-relative:lib"
-            resource.add_include = True
-    if type(resource) in ("PythonExtensionModule"):
-        if resource.name in ["_ctypes", "_ssl", "win32.win32file", "win32.win32pipe"]:
-            resource.add_location = "filesystem-relative:lib"
-            resource.add_include = True
-    elif type(resource) in ("PythonModuleSource", "PythonPackageResource", "PythonPackageDistributionResource"):
-        if resource.name in ["pywin32_bootstrap", "pythoncom", "pypiwin32", "pywin32", "pythonwin", "win32", "win32com", "win32comext"]:
-            resource.add_location = "filesystem-relative:lib"
-            resource.add_include = True
+        resource.add_location = "filesystem-relative:lib"
 
 def make_exe():
     dist = default_python_distribution(python_version="3.10")
@@ -41,8 +29,10 @@ def make_exe():
 
     python_config = dist.make_python_interpreter_config()
     python_config.module_search_paths = ["$ORIGIN", "$ORIGIN/lib"]
-
     python_config.run_command = "from reliably_cli.__main__ import cli; cli()"
+
+    if IS_WINDOWS:
+        python_config.filesystem_importer = True
 
     exe = dist.to_python_executable(
         name="reliably",
