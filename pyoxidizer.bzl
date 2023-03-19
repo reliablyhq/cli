@@ -2,11 +2,6 @@ IS_WINDOWS = "windows" in BUILD_TARGET_TRIPLE
 RELIABLY_VERSION = VARS.get("RELIABLY_VERSION")
 
 
-def resource_callback(policy, resource):
-    if type(resource) == "PythonModuleSource":
-        resource.add_include = True
-        resource.add_location = "filesystem-relative:lib"
-
 def make_exe():
     dist = default_python_distribution(python_version="3.10")
 
@@ -25,7 +20,6 @@ def make_exe():
         policy.include_file_resources = True
         policy.allow_files = True
         policy.file_scanner_emit_files = True
-        policy.register_resource_callback(resource_callback)
 
     python_config = dist.make_python_interpreter_config()
     python_config.module_search_paths = ["$ORIGIN", "$ORIGIN/lib"]
