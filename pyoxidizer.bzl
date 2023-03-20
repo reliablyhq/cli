@@ -26,9 +26,6 @@ def make_exe():
     python_config.module_search_paths = ["$ORIGIN", "$ORIGIN/lib"]
     python_config.run_command = "from reliably_cli.__main__ import cli; cli()"
 
-    if IS_WINDOWS:
-        python_config.filesystem_importer = True
-
     exe = dist.to_python_executable(
         name="reliably",
         packaging_policy=policy,
