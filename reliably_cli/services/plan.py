@@ -8,11 +8,14 @@ from pathlib import Path
 from typing import Any, Generator
 from uuid import UUID
 
+import httpx
 import typer
+from chaoslib import convert_vars, merge_vars
 from chaoslib.control import load_global_controls
 from chaoslib.experiment import ensure_experiment_is_valid, run_experiment
-from chaoslib.loader import load_experiment
+from chaoslib.settings import CHAOSTOOLKIT_CONFIG_PATH, load_settings
 from chaoslib.types import Journal, Schedule, Strategy
+from ruamel.yaml import YAML
 
 from ..client import api_client
 from ..config import ensure_config_is_set, get_settings
@@ -46,12 +49,21 @@ def store_context(plan_id: UUID) -> None:
     store_plan_context(p)
 
 
+def validate_vars(ctx: typer.Context, value: list[str]) -> dict[str, Any]:
+    try:
+        return convert_vars(value)
+    except ValueError as x:
+        raise typer.BadParameter(str(x))
+
+
 @cli.command()
 def execute(
     plan_id: UUID,
     result_file: Path = typer.Option("./result.json", writable=True),
+    log_stdout: Path = typer.Option(False, is_flag=True),
     log_file: Path = typer.Option("./run.log", writable=True),
     skip_context: bool = typer.Option(False, is_flag=True),
+    var_file: dict[str, Any] = typer.Option(..., callback=validate_vars),
 ) -> None:
     """
     Execute a plan
@@ -72,9 +84,6 @@ def execute(
         )
 
     token = settings.service.token.get_secret_value()
-    if os.getenv("CHAOSTOOLKIT_LOADER_AUTH_BEARER_TOKEN") is None:
-        os.environ["CHAOSTOOLKIT_LOADER_AUTH_BEARER_TOKEN"] = token
-
     if os.getenv("RELIABLY_TOKEN") is None:
         os.environ["RELIABLY_TOKEN"] = token
 
@@ -87,8 +96,13 @@ def execute(
     experiment_url = f"{base_url}/experiments/{experiment_id}/raw"
 
     with console.status("Executing..."):
-        with reconfigure_chaostoolkit_logger(log_file):
-            journal = run_chaostoolkit(experiment_url, context)
+        with reconfigure_chaostoolkit_logger(log_file, log_stdout):
+            try:
+                journal = run_chaostoolkit(experiment_url, context, var_file)
+            except Exception as x:
+                console.print(f"running experiment failed: {x}")
+                raise typer.Exit(code=1)
+
             result_file.absolute().write_text(json.dumps(journal, indent=2))
             show_result_url(journal)
 
@@ -137,7 +151,9 @@ def store_plan_context(plan: Plan) -> dict[str, Any]:
     return global_controls
 
 
-def run_chaostoolkit(experiment_url: str, context: dict[str, Any]) -> Journal:
+def run_chaostoolkit(
+    experiment_url: str, context: dict[str, Any], var_file: dict[str, Any]
+) -> Journal:
     logger = logging.getLogger("logzero_default")
 
     logger.info("#" * 80)
@@ -148,11 +164,20 @@ def run_chaostoolkit(experiment_url: str, context: dict[str, Any]) -> Journal:
             "hypothesis": {"strategy": "default"},
             "rollbacks": {"strategy": "always"},
         },
-        "controls": context,
+        "controls": {},
     }
+    settings_path = os.getenv(
+        "CHAOSTOOLKIT_CONFIG_PATH", CHAOSTOOLKIT_CONFIG_PATH
+    )
+    if os.path.isfile(settings_path):
+        settings = load_settings(settings_path)
+
+    settings["controls"].update(context)
+
+    experiment_vars = merge_vars({}, var_file)
 
     load_global_controls(settings)
-    experiment = load_experiment(experiment_url, settings, verify_tls=True)
+    experiment = load_experiment(experiment_url)
     ensure_experiment_is_valid(experiment)
 
     x_runtime = experiment.get("runtime")
@@ -165,7 +190,6 @@ def run_chaostoolkit(experiment_url: str, context: dict[str, Any]) -> Journal:
         ).get("strategy", "default")
 
     schedule = Schedule(continuous_hypothesis_frequency=1.0, fail_fast=True)
-    experiment_vars = ({}, {})
     ssh_strategy = Strategy.DEFAULT
 
     journal = run_experiment(
@@ -182,6 +206,7 @@ def run_chaostoolkit(experiment_url: str, context: dict[str, Any]) -> Journal:
 @contextlib.contextmanager
 def reconfigure_chaostoolkit_logger(
     log_file: Path,
+    log_stdout: bool,
 ) -> Generator[logging.Logger, None, None]:
     ctk_logger = logging.getLogger("logzero_default")
 
@@ -196,6 +221,12 @@ def reconfigure_chaostoolkit_logger(
     handler.setLevel(logging.DEBUG)
     handler.setFormatter(fmt)
     ctk_logger.addHandler(handler)
+
+    if log_stdout:
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.DEBUG)
+        handler.setFormatter(fmt)
+        ctk_logger.addHandler(handler)
 
     yield ctk_logger
 
@@ -215,3 +246,28 @@ def show_result_url(journal: Journal) -> None:
             url = x.get("execution_url")
             if url:
                 console.print(f"Check results at {url}")
+
+
+def load_experiment(url: str) -> dict[str, Any]:
+    token = os.getenv("RELIABLY_TOKEN")
+    with httpx.Client(http2=True, verify=True) as c:
+        r = c.get(
+            url,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/json, application/x-yaml",
+            },
+        )
+
+        if r.status_code != 200:
+            console.print(f"failed to fetch experiment at {url}")
+            raise typer.Exit(code=1)
+
+        if r["content-type"] == "application/json":
+            return r.json()
+        elif r["content-type"] in ("text/yaml", "application/x-yaml"):
+            yaml = YAML(typ="safe")
+            return yaml.load(r.content.decode("utf-8"))
+
+        console.print("unrecognized experiment format")
+        raise typer.Exit(code=1)
