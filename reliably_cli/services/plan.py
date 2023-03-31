@@ -65,7 +65,9 @@ def execute(
     log_file: Path = typer.Option("./run.log", writable=True),
     set_status: bool = typer.Option(False, is_flag=True),
     skip_context: bool = typer.Option(False, is_flag=True),
-    var_file: list[Path] = typer.Option(..., readable=True),
+    var_file: list[Path] = typer.Option(
+        lambda: [], dir_okay=False, readable=True
+    ),
 ) -> None:
     """
     Execute a plan
@@ -108,7 +110,7 @@ def execute(
                 if set_status:
                     send_status(p.id, "error", "Errored")
 
-                tb = "".join(traceback.format_exception_only(x))
+                tb = "".join(traceback.format_exception(x))
                 console.print(f"running experiment failed: {tb}")
 
                 raise typer.Exit(code=1)
@@ -290,9 +292,9 @@ def load_experiment(url: str) -> dict[str, Any]:
             console.print(f"failed to fetch experiment at {url}")
             raise typer.Exit(code=1)
 
-        if r["content-type"] == "application/json":
+        if r.headers["content-type"] == "application/json":
             return r.json()
-        elif r["content-type"] in ("text/yaml", "application/x-yaml"):
+        elif r.headers["content-type"] in ("text/yaml", "application/x-yaml"):
             yaml = YAML(typ="safe")
             return yaml.load(r.content.decode("utf-8"))
 
