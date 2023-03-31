@@ -64,7 +64,7 @@ def execute(
     log_file: Path = typer.Option("./run.log", writable=True),
     set_status: bool = typer.Option(False, is_flag=True),
     skip_context: bool = typer.Option(False, is_flag=True),
-    var_file: dict[str, Any] = typer.Option(..., callback=validate_vars),
+    var_file: list[Path] = typer.Option(..., readable=True),
 ) -> None:
     """
     Execute a plan
@@ -174,7 +174,7 @@ def send_status(plan_id: UUID, status: str, error: str | None = None) -> None:
 
 
 def run_chaostoolkit(
-    experiment_url: str, context: dict[str, Any], var_file: dict[str, Any]
+    experiment_url: str, context: dict[str, Any], var_file: list[Path]
 ) -> Journal:
     logger = logging.getLogger("logzero_default")
 
@@ -196,7 +196,7 @@ def run_chaostoolkit(
 
     settings["controls"].update(context)
 
-    experiment_vars = merge_vars({}, var_file)
+    experiment_vars = merge_vars({}, [str(f.absolute()) for f in var_file])
 
     load_global_controls(settings)
     experiment = load_experiment(experiment_url)
