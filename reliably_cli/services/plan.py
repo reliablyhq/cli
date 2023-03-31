@@ -3,6 +3,7 @@ import json
 import logging
 import logging.handlers
 import os
+import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Generator
@@ -107,7 +108,9 @@ def execute(
                 if set_status:
                     send_status(p.id, "error", "Errored")
 
-                console.print(f"running experiment failed: {x}")
+                tb = "".join(traceback.format_exception_only(x))
+                console.print(f"running experiment failed: {tb}")
+
                 raise typer.Exit(code=1)
 
             result_file.absolute().write_text(json.dumps(journal, indent=2))
@@ -194,6 +197,8 @@ def run_chaostoolkit(
     if os.path.isfile(settings_path):
         settings = load_settings(settings_path)
 
+    if "controls" not in settings:
+        settings["controls"] = {}
     settings["controls"].update(context)
 
     experiment_vars = merge_vars({}, [str(f.absolute()) for f in var_file])
