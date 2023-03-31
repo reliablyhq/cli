@@ -60,8 +60,9 @@ def validate_vars(ctx: typer.Context, value: list[str]) -> dict[str, Any]:
 def execute(
     plan_id: UUID,
     result_file: Path = typer.Option("./result.json", writable=True),
-    log_stdout: Path = typer.Option(False, is_flag=True),
+    log_stdout: bool = typer.Option(False, is_flag=True),
     log_file: Path = typer.Option("./run.log", writable=True),
+    set_status: bool = typer.Option(False, is_flag=True),
     skip_context: bool = typer.Option(False, is_flag=True),
     var_file: dict[str, Any] = typer.Option(..., callback=validate_vars),
 ) -> None:
@@ -96,10 +97,16 @@ def execute(
     experiment_url = f"{base_url}/experiments/{experiment_id}/raw"
 
     with console.status("Executing..."):
+        if set_status:
+            send_status(p.id, "running")
+
         with reconfigure_chaostoolkit_logger(log_file, log_stdout):
             try:
                 journal = run_chaostoolkit(experiment_url, context, var_file)
             except Exception as x:
+                if set_status:
+                    send_status(p.id, "error", "Errored")
+
                 console.print(f"running experiment failed: {x}")
                 raise typer.Exit(code=1)
 
@@ -149,6 +156,21 @@ def store_plan_context(plan: Plan) -> dict[str, Any]:
                     global_controls.update(ctrl)
 
     return global_controls
+
+
+def send_status(plan_id: UUID, status: str, error: str | None = None) -> None:
+    with api_client() as client:
+        payload = {"status": status, "error": error}
+        r = client.put(f"/plans/{str(plan_id)}/status", json=payload)
+        if r.status_code == 404:
+            console.print("plan not found")
+            raise typer.Exit(code=1)
+        elif r.status_code == 401:
+            console.print("not authorized. please verify your token or org")
+            raise typer.Exit(code=1)
+        elif r.status_code > 399:
+            console.print(f"unexpected error: {r.status_code}: {r.json()}")
+            raise typer.Exit(code=1)
 
 
 def run_chaostoolkit(
