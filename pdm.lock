@@ -1253,7 +1253,7 @@ summary = "Pygments is a syntax highlighting package written in Python."
 
 [[package]]
 name = "pyoxidizer"
-version = "0.22.0"
+version = "0.24.0"
 summary = "Package self-contained Python applications"
 
 [[package]]
@@ -3141,13 +3141,13 @@ content_hash = "sha256:02a9c24e37d87e4229268245b0e3a21b577444eeb6b64ad4e9c92423b
     {url = "https://files.pythonhosted.org/packages/0b/42/d9d95cc461f098f204cd20c85642ae40fbff81f74c300341b8d0e0df14e0/Pygments-2.14.0-py3-none-any.whl", hash = "sha256:fa7bd7bd2771287c0de303af8bfdfc731f51bd2c6a47ab69d117138893b82717"},
     {url = "https://files.pythonhosted.org/packages/da/6a/c427c06913204e24de28de5300d3f0e809933f376e0b7df95194b2bb3f71/Pygments-2.14.0.tar.gz", hash = "sha256:b3ed06a9e8ac9a9aae5a6f5dbe78a8a58655d17b43b93c078f094ddc476ae297"},
 ]
-"pyoxidizer 0.22.0" = [
-    {url = "https://files.pythonhosted.org/packages/11/08/5247c4c363806d47776156e71753d00c25ecb46122f7d02a5cbd4d072da7/pyoxidizer-0.22.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:785f87f8084ab94cd47477cc8258cf126aaef0ca7e0e52bb1f4b666cffc388f8"},
-    {url = "https://files.pythonhosted.org/packages/1c/dc/46dcca771d17ccd9e427bcbdb48fe2ae32763c5bc8cce9af2443acaddfc4/pyoxidizer-0.22.0-py3-none-win_amd64.whl", hash = "sha256:774813b480e7ca2c620bb44f29dab6bbec33215278cdcd64421462be6a4443df"},
-    {url = "https://files.pythonhosted.org/packages/35/46/ea390c022af7de38533daa380198adc0839e022fef3b78201374137f0894/pyoxidizer-0.22.0-py3-none-win32.whl", hash = "sha256:de3b607ffc1eac72d0b7bbefb67bc5afd08cbfe04c2ad2e4b7fe58de695eea74"},
-    {url = "https://files.pythonhosted.org/packages/53/71/35a1f657903be374166ba9c9b53a53649d771d2a34f81dd31f57786d8029/pyoxidizer-0.22.0-py3-none-manylinux2014_aarch64.whl", hash = "sha256:8681e0d638be6b14d5f47810364b63df585deb1483ed65f09597a6d3cb35f1dc"},
-    {url = "https://files.pythonhosted.org/packages/70/4b/bfef31a0357412b1a43a6128fdd97644823704aa04477ee0cb369fc72620/pyoxidizer-0.22.0-py3-none-manylinux2010_x86_64.whl", hash = "sha256:6e1c5ad4ee1990d58ef9d09c3f950c11f921df8b30325a8c130cf1f3d2fa7a28"},
-    {url = "https://files.pythonhosted.org/packages/b9/5f/92c3581be5b5906301b72de226705f63f6069b4cdb8d0f3e85e1dfa9e99a/pyoxidizer-0.22.0-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:a07166628b1c838855d2208daad1268ed430f13751a903966ed96db1713be3fd"},
+"pyoxidizer 0.24.0" = [
+    {url = "https://files.pythonhosted.org/packages/54/b8/0a8b6c744af3d553f0a7ac8affec7d40a9544a08d6c8b84164003c87c133/pyoxidizer-0.24.0-py3-none-win_amd64.whl", hash = "sha256:9b18f8d5f6b309ec856109b2f4d8228bae513da0b0213991e3305cf73583c385"},
+    {url = "https://files.pythonhosted.org/packages/62/e5/2f5a9cc8fb06aff4fe84299bf7fa9815b1eaee81842137e0e98a45ab1b3e/pyoxidizer-0.24.0-py3-none-manylinux2010_x86_64.whl", hash = "sha256:ec56f2b99495aa0178e927389a3e151e9669beae4e2bce3f6897fb9891b5502e"},
+    {url = "https://files.pythonhosted.org/packages/72/ff/02653151eb66ce7c945ee19aadcbdd5cd6a8e13e201254bb6a787df851dd/pyoxidizer-0.24.0-py3-none-manylinux2014_aarch64.whl", hash = "sha256:825d37c8d44971f3e7ca6beed77b560b508c69497f48019428f1aae3fd80c049"},
+    {url = "https://files.pythonhosted.org/packages/7a/93/aae15e73855e6e9a327528b506b4ae2e6e0f94d301fed8f27015bbe047e4/pyoxidizer-0.24.0-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:eed0f08a38798f14cf0464272552aef97e534b9a418d2a671b8d85ec7af1a237"},
+    {url = "https://files.pythonhosted.org/packages/ab/bc/ac789f384f84583a5057b6198553e407e1116375cf1840427bad56d1f97f/pyoxidizer-0.24.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:1a9940d2bdb6c9e6c6c45eb4de3d4d6e5c9b3a3724dbc7d774d85d4956058447"},
+    {url = "https://files.pythonhosted.org/packages/fa/a5/dea667d142e7fe1df7e0f3436df8e9fbebce0a8538fa06534f28492291fd/pyoxidizer-0.24.0-py3-none-win32.whl", hash = "sha256:4ccc59d157952bccb6ab6897f061966ac31403b2cee18fe9dfbd871f429bd34c"},
 ]
 "pyparsing 3.0.9" = [
     {url = "https://files.pythonhosted.org/packages/6c/10/a7d0fa5baea8fe7b50f448ab742f26f52b80bfca85ac2be9d35cdd9a3246/pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
