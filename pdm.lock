@@ -26,6 +26,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "antlr4-python3-runtime"
+version = "4.10"
+summary = "ANTLR 4.10 runtime for Python 2.7.12"
+
+[[package]]
 name = "anyio"
 version = "3.6.2"
 requires_python = ">=3.6.2"
@@ -858,6 +863,14 @@ name = "jmespath"
 version = "1.0.1"
 requires_python = ">=3.7"
 summary = "JSON Matching Expressions"
+
+[[package]]
+name = "jsonpath2"
+version = "0.4.5"
+summary = "JSONPath implementation for Python"
+dependencies = [
+    "antlr4-python3-runtime==4.10",
+]
 
 [[package]]
 name = "kubernetes"
@@ -1700,7 +1713,7 @@ dependencies = [
 [metadata]
 lock_version = "4.2"
 groups = ["default", "bin-builder", "chaostoolkit", "dev", "test"]
-content_hash = "sha256:02a9c24e37d87e4229268245b0e3a21b577444eeb6b64ad4e9c92423b1e47e04"
+content_hash = "sha256:23a56a07e8bc361159d33049d21863834a80d436b08a6e13bb3e0b7a98e0f247"
 
 [metadata.files]
 "aiohttp 3.8.4" = [
@@ -1795,6 +1808,9 @@ content_hash = "sha256:02a9c24e37d87e4229268245b0e3a21b577444eeb6b64ad4e9c92423b
 "aiosignal 1.3.1" = [
     {url = "https://files.pythonhosted.org/packages/76/ac/a7305707cb852b7e16ff80eaf5692309bde30e2b1100a1fcacdc8f731d97/aiosignal-1.3.1-py3-none-any.whl", hash = "sha256:f8376fb07dd1e86a584e4fcdec80b36b7f81aac666ebc724e2c090300dd83b17"},
     {url = "https://files.pythonhosted.org/packages/ae/67/0952ed97a9793b4958e5736f6d2b346b414a2cd63e82d05940032f45b32f/aiosignal-1.3.1.tar.gz", hash = "sha256:54cd96e15e1649b75d6c87526a6ff0b6c1b0dd3459f43d9ca11d48c339b68cfc"},
+]
+"antlr4-python3-runtime 4.10" = [
+    {url = "https://files.pythonhosted.org/packages/4e/cc/f268dcff9983d26d68eeadd43a05174901e19d75f9387939197a95deacfc/antlr4-python3-runtime-4.10.tar.gz", hash = "sha256:061a49bc72ae05a35d9b61c0ba0ac36c0397708819f02fbfb20a80e47d287a1b"},
 ]
 "anyio 3.6.2" = [
     {url = "https://files.pythonhosted.org/packages/77/2b/b4c0b7a3f3d61adb1a1e0b78f90a94e2b6162a043880704b7437ef297cad/anyio-3.6.2-py3-none-any.whl", hash = "sha256:fbbe32bd270d2a2ef3ed1c5d45041250284e31fc0a4df4a5a6071842051a51e3"},
@@ -2718,6 +2734,10 @@ content_hash = "sha256:02a9c24e37d87e4229268245b0e3a21b577444eeb6b64ad4e9c92423b
 "jmespath 1.0.1" = [
     {url = "https://files.pythonhosted.org/packages/00/2a/e867e8531cf3e36b41201936b7fa7ba7b5702dbef42922193f05c8976cd6/jmespath-1.0.1.tar.gz", hash = "sha256:90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe"},
     {url = "https://files.pythonhosted.org/packages/31/b4/b9b800c45527aadd64d5b442f9b932b00648617eb5d63d2c7a6587b7cafc/jmespath-1.0.1-py3-none-any.whl", hash = "sha256:02e2e4cc71b5bcab88332eebf907519190dd9e6e82107fa7f83b1003a6252980"},
+]
+"jsonpath2 0.4.5" = [
+    {url = "https://files.pythonhosted.org/packages/2d/5d/0202fe5f4ce814fe7d026dc0c462358fb1bd4d14f5ab84f32a2657ce43c7/jsonpath2-0.4.5.tar.gz", hash = "sha256:4d6224c0fe2e46b7b0885cb0af5b7f025e0d25752d8037416970fc7874075a7a"},
+    {url = "https://files.pythonhosted.org/packages/b9/c5/a50bf146b73a6f5a1fe3e954f9e47876372d24cd48faaf1e04c6d598d82a/jsonpath2-0.4.5-py3-none-any.whl", hash = "sha256:57f2feb55edbc17579642b1f801a99268b19b01678a2e08b55dda74d62b83096"},
 ]
 "kubernetes 26.1.0" = [
     {url = "https://files.pythonhosted.org/packages/34/19/2f351c0eaf05234dc33a6e0ffc7894e9dedab0ff341311c5b4ba44f2d8ac/kubernetes-26.1.0.tar.gz", hash = "sha256:5854b0c508e8d217ca205591384ab58389abdae608576f9c9afc35a3c76a366c"},
