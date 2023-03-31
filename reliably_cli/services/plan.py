@@ -65,6 +65,9 @@ def execute(
     log_file: Path = typer.Option("./run.log", writable=True),
     set_status: bool = typer.Option(False, is_flag=True),
     skip_context: bool = typer.Option(False, is_flag=True),
+    control_file: list[Path] = typer.Option(
+        lambda: [], dir_okay=False, readable=True
+    ),
     var_file: list[Path] = typer.Option(
         lambda: [], dir_okay=False, readable=True
     ),
@@ -105,7 +108,9 @@ def execute(
 
         with reconfigure_chaostoolkit_logger(log_file, log_stdout):
             try:
-                journal = run_chaostoolkit(experiment_url, context, var_file)
+                journal = run_chaostoolkit(
+                    experiment_url, context, var_file, control_file
+                )
             except Exception as x:
                 if set_status:
                     send_status(p.id, "error", "Errored")
@@ -179,7 +184,10 @@ def send_status(plan_id: UUID, status: str, error: str | None = None) -> None:
 
 
 def run_chaostoolkit(
-    experiment_url: str, context: dict[str, Any], var_file: list[Path]
+    experiment_url: str,
+    context: dict[str, Any],
+    var_files: list[Path],
+    control_files: list[Path],
 ) -> Journal:
     logger = logging.getLogger("logzero_default")
 
@@ -203,9 +211,9 @@ def run_chaostoolkit(
         settings["controls"] = {}
     settings["controls"].update(context)
 
-    experiment_vars = merge_vars({}, [str(f.absolute()) for f in var_file])
+    experiment_vars = merge_vars({}, [str(f.absolute()) for f in var_files])
 
-    load_global_controls(settings)
+    load_global_controls(settings, [str(f.absolute()) for f in control_files])
     experiment = load_experiment(experiment_url)
     ensure_experiment_is_valid(experiment)
 
