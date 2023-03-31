@@ -219,10 +219,11 @@ def run_chaostoolkit(
 
     x_runtime = experiment.get("runtime")
     if x_runtime:
-        settings["runtime"]["rollbacks"]["strategy"] = x_runtime.get(
+        rt = settings["runtime"]
+        rt.setdefault("rollbacks", {})["strategy"] = x_runtime.get(
             "rollbacks", {}
         ).get("strategy", "always")
-        settings["runtime"]["hypothesis"]["strategy"] = x_runtime.get(
+        rt.setdefault("hypothesis", {})["strategy"] = x_runtime.get(
             "hypothesis", {}
         ).get("strategy", "default")
 
