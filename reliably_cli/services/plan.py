@@ -113,7 +113,7 @@ def execute(
                 )
             except Exception as x:
                 if set_status:
-                    send_status(p.id, "error", "Errored")
+                    send_status(p.id, "error", f"Error: {x}")
 
                 tb = "".join(traceback.format_exception(x))
                 console.print(f"running experiment failed: {tb}")
