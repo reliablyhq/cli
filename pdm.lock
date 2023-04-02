@@ -175,7 +175,7 @@ dependencies = [
 
 [[package]]
 name = "chaostoolkit-addons"
-version = "0.8.3"
+version = "0.8.4"
 requires_python = ">=3.7"
 summary = "Addons for your Chaos Toolkit experiments"
 
@@ -305,7 +305,7 @@ dependencies = [
 
 [[package]]
 name = "chaostoolkit-reliably"
-version = "0.36.0"
+version = "0.37.0"
 requires_python = ">=3.7"
 summary = "Reliably CLI"
 dependencies = [
@@ -2041,9 +2041,9 @@ content_hash = "sha256:23a56a07e8bc361159d33049d21863834a80d436b08a6e13bb3e0b7a9
     {url = "https://files.pythonhosted.org/packages/2b/f4/d33a899e896c4aa8e35240c3d7407cfd19a2c9b83748ace868273363257f/chaostoolkit-1.15.0.tar.gz", hash = "sha256:0fa176a03a80c64ac3cf122dea18acfaaf691e8385f536481c54bcbb0d50cdc1"},
     {url = "https://files.pythonhosted.org/packages/8b/c8/d0c6d8c5caaea718119d9d84499869727c6510dd71cb2fbfd7720824ed4d/chaostoolkit-1.15.0-py2.py3-none-any.whl", hash = "sha256:3c1c3a28052f75c04efc7b53c4a11af31292ef90788458a420dacabafcb25fa9"},
 ]
-"chaostoolkit-addons 0.8.3" = [
-    {url = "https://files.pythonhosted.org/packages/73/b1/d4c92c2a5495ee7c73d479a7e00475935d99f3368b80970ec7af68281333/chaostoolkit-addons-0.8.3.tar.gz", hash = "sha256:4d26d57c0fdbc9f5cd82e4cf3d21b16cfa09a465c32424f0a03482824d5dd4ef"},
-    {url = "https://files.pythonhosted.org/packages/b8/90/413f5080b7e0b11b862bde0ebc332b8df1bfcb063dc63452d47a2769d390/chaostoolkit_addons-0.8.3-py2.py3-none-any.whl", hash = "sha256:ff7a9c3d22b4ecb5fcc4a27e6ecaeb1cb1884deb151662eb2bf74883dffdd326"},
+"chaostoolkit-addons 0.8.4" = [
+    {url = "https://files.pythonhosted.org/packages/68/42/4cd411985a5d8993f69a54479bdc375912c2ad795698ba827215a6a51396/chaostoolkit-addons-0.8.4.tar.gz", hash = "sha256:579520e103cb1f2517de71030c7a6b884655cdd58f39cc2d06745ee6fa4f4ba8"},
+    {url = "https://files.pythonhosted.org/packages/b3/1b/a8c83bf0fe647fa00949d14c464c358fd03808c31ed87d85fbe25eaf1a28/chaostoolkit_addons-0.8.4-py2.py3-none-any.whl", hash = "sha256:02efaa3db69a7014fc68c6165a20719dc3eb3e1d765efdf140ceeb1eee5b8482"},
 ]
 "chaostoolkit-aws 0.21.3" = [
     {url = "https://files.pythonhosted.org/packages/78/08/0a8c1fe622140c68a8267fdb4c7b1b0018e6081ad89e0d4847759047a2bc/chaostoolkit-aws-0.21.3.tar.gz", hash = "sha256:8cc3c4bb95c8b9341b9c26f2250bc56739980455813b41321f425f0a495bcf97"},
@@ -2081,9 +2081,9 @@ content_hash = "sha256:23a56a07e8bc361159d33049d21863834a80d436b08a6e13bb3e0b7a9
     {url = "https://files.pythonhosted.org/packages/ba/c6/0d8840e1fa438d248418d472a22c1da776fe8694bfdf8bdf97f3aaf0c154/chaostoolkit_prometheus-0.5.0-py2.py3-none-any.whl", hash = "sha256:1131fc56ca119e9df27007cfac1136d8289a1542900cee49216ed83d99731f62"},
     {url = "https://files.pythonhosted.org/packages/e0/98/1e78efdc5347672b566690ce2aec7e7dc2e3597fc4d2e85bde478d655290/chaostoolkit-prometheus-0.5.0.tar.gz", hash = "sha256:8dfacaa43c789122fbe677d7017d5755d2d67fbb2b6b2f86875a5bca8fb09166"},
 ]
-"chaostoolkit-reliably 0.36.0" = [
-    {url = "https://files.pythonhosted.org/packages/63/77/9283c3229fc8c7f037deb3fff4d87a85e1be028363222341fa4b74103a34/chaostoolkit_reliably-0.36.0-py3-none-any.whl", hash = "sha256:0ed28df9db57fa9ee6381a0793983663ec9d2abf38c12d74bb800c2632f7ac6d"},
-    {url = "https://files.pythonhosted.org/packages/fa/27/005bc6db830d86f599667f67ca631aae6c1385cf4c5cdeb07f94e82a71d5/chaostoolkit-reliably-0.36.0.tar.gz", hash = "sha256:092ef427198e4e94442ec19da9355737156260b12a31472a8fe57d0df0c831e6"},
+"chaostoolkit-reliably 0.37.0" = [
+    {url = "https://files.pythonhosted.org/packages/79/78/32dc71349f8f397e6011ea62cfb9bb44bb0d326de8562057bf993f5a157e/chaostoolkit-reliably-0.37.0.tar.gz", hash = "sha256:7897ca0744db423527c8b5aac26e65b6b8bfb19bd351008cbfae68a81d9887ba"},
+    {url = "https://files.pythonhosted.org/packages/7f/6a/0b634166f5f069e8547206b996c40dec459c0e91b4724c7a8d657c32271c/chaostoolkit_reliably-0.37.0-py3-none-any.whl", hash = "sha256:dadfa9fafc7094ee4c4bfc6b1109ab8bab8755991c614a2df59a0faaa45e5616"},
 ]
 "chaostoolkit-slack 0.5.7" = [
     {url = "https://files.pythonhosted.org/packages/9f/fb/4b3fb59936cce83d82d14002a07ae47bc1ec06a953a475ff7db453cfb738/chaostoolkit_slack-0.5.7-py2.py3-none-any.whl", hash = "sha256:8c2ea9a69383a0f86dcf18eddcee853333bf59d7dfae0c8fac8b47807f388c3a"},
