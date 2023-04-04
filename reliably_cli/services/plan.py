@@ -220,15 +220,15 @@ def run_chaostoolkit(
     x_runtime = experiment.get("runtime")
     if x_runtime:
         rt = settings["runtime"]
-        rt.setdefault("rollbacks", {})["strategy"] = x_runtime.get(
-            "rollbacks", {}
-        ).get("strategy", "always")
-        rt.setdefault("hypothesis", {})["strategy"] = x_runtime.get(
-            "hypothesis", {}
-        ).get("strategy", "default")
+        rt.setdefault("rollbacks", {})["strategy"] = (
+            x_runtime.get("rollbacks", {}).get("strategy") or "always"
+        )
+        rt.setdefault("hypothesis", {})["strategy"] = (
+            x_runtime.get("hypothesis", {}).get("strategy") or "default"
+        )
 
     schedule = Schedule(continuous_hypothesis_frequency=1.0, fail_fast=True)
-    ssh_strategy = Strategy.DEFAULT
+    ssh_strategy = Strategy.from_string(rt["hypothesis"]["strategy"])
 
     journal = run_experiment(
         experiment,
