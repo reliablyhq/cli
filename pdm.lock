@@ -305,7 +305,7 @@ dependencies = [
 
 [[package]]
 name = "chaostoolkit-reliably"
-version = "0.43.0"
+version = "0.43.1"
 requires_python = ">=3.7"
 summary = "Reliably CLI"
 dependencies = [
@@ -2081,9 +2081,9 @@ content_hash = "sha256:23a56a07e8bc361159d33049d21863834a80d436b08a6e13bb3e0b7a9
     {url = "https://files.pythonhosted.org/packages/ba/c6/0d8840e1fa438d248418d472a22c1da776fe8694bfdf8bdf97f3aaf0c154/chaostoolkit_prometheus-0.5.0-py2.py3-none-any.whl", hash = "sha256:1131fc56ca119e9df27007cfac1136d8289a1542900cee49216ed83d99731f62"},
     {url = "https://files.pythonhosted.org/packages/e0/98/1e78efdc5347672b566690ce2aec7e7dc2e3597fc4d2e85bde478d655290/chaostoolkit-prometheus-0.5.0.tar.gz", hash = "sha256:8dfacaa43c789122fbe677d7017d5755d2d67fbb2b6b2f86875a5bca8fb09166"},
 ]
-"chaostoolkit-reliably 0.43.0" = [
-    {url = "https://files.pythonhosted.org/packages/5d/8f/2dacdcf743bfdc7b65e209a4ba550ae56d6cfab94511c47bcab5d8ffcde5/chaostoolkit_reliably-0.43.0-py3-none-any.whl", hash = "sha256:b3c4f16910ece9b9e941ef570668a1de60436c443f2ccff2e1d9c2a2b869f11b"},
-    {url = "https://files.pythonhosted.org/packages/65/81/c4880c6013c09fb41c17c495fa67b5984b60e01c406ea3cf96fa19d4d657/chaostoolkit-reliably-0.43.0.tar.gz", hash = "sha256:7aafc44c246b6fc3072293ce64c69756e7784bf5e84e0a5d4a27498ee2bca13c"},
+"chaostoolkit-reliably 0.43.1" = [
+    {url = "https://files.pythonhosted.org/packages/1a/76/d856967c58565dd554d0bf6e4854a1aafd844a7186631e15cf80d1414442/chaostoolkit_reliably-0.43.1-py3-none-any.whl", hash = "sha256:626f360eaeb1567693535825f0f580b818a2544bae3a6447434d34a219e23e0e"},
+    {url = "https://files.pythonhosted.org/packages/ae/da/2242f9e7587e87bd9f2e040eb060c23a57b779c8e22178f565f1470cc9ad/chaostoolkit-reliably-0.43.1.tar.gz", hash = "sha256:efbc64ac579c49682ca9e5f5a3990d04e886ad2f32cc3c424cc1ab4657884183"},
 ]
 "chaostoolkit-slack 0.5.7" = [
     {url = "https://files.pythonhosted.org/packages/9f/fb/4b3fb59936cce83d82d14002a07ae47bc1ec06a953a475ff7db453cfb738/chaostoolkit_slack-0.5.7-py2.py3-none-any.whl", hash = "sha256:8c2ea9a69383a0f86dcf18eddcee853333bf59d7dfae0c8fac8b47807f388c3a"},
