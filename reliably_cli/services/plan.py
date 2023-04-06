@@ -205,7 +205,12 @@ def run_chaostoolkit(
         "CHAOSTOOLKIT_CONFIG_PATH", CHAOSTOOLKIT_CONFIG_PATH
     )
     if os.path.isfile(settings_path):
-        settings = load_settings(settings_path)
+        s = load_settings(settings_path)
+        if s:
+            settings = s
+            rt = s.setdefault("runtime", {})
+            rt.setdefault("hypothesis", {"strategy": "default"})
+            rt.setdefault("rollbacks", {"strategy": "always"})
 
     if "controls" not in settings:
         settings["controls"] = {}
@@ -220,10 +225,10 @@ def run_chaostoolkit(
     rt = settings["runtime"]
     x_runtime = experiment.get("runtime")
     if x_runtime:
-        rt.setdefault("rollbacks", {})["strategy"] = (
+        rt["rollbacks"]["strategy"] = (
             x_runtime.get("rollbacks", {}).get("strategy") or "always"
         )
-        rt.setdefault("hypothesis", {})["strategy"] = (
+        rt["hypothesis"]["strategy"] = (
             x_runtime.get("hypothesis", {}).get("strategy") or "default"
         )
 
