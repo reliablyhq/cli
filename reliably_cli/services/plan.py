@@ -217,9 +217,9 @@ def run_chaostoolkit(
     experiment = load_experiment(experiment_url)
     ensure_experiment_is_valid(experiment)
 
+    rt = settings["runtime"]
     x_runtime = experiment.get("runtime")
     if x_runtime:
-        rt = settings["runtime"]
         rt.setdefault("rollbacks", {})["strategy"] = (
             x_runtime.get("rollbacks", {}).get("strategy") or "always"
         )

@@ -175,7 +175,7 @@ dependencies = [
 
 [[package]]
 name = "chaostoolkit-addons"
-version = "0.8.5"
+version = "0.8.6"
 requires_python = ">=3.7"
 summary = "Addons for your Chaos Toolkit experiments"
 
@@ -2041,9 +2041,9 @@ content_hash = "sha256:23a56a07e8bc361159d33049d21863834a80d436b08a6e13bb3e0b7a9
     {url = "https://files.pythonhosted.org/packages/78/5b/bb8819d94cb51c55ba50e2b96f739a4f94451b31da3c1b337efe1e1af024/chaostoolkit-1.15.1.tar.gz", hash = "sha256:f416505f1eafd7c66a64c2b6331600104aaabefba4c9c550af397a68feadf63c"},
     {url = "https://files.pythonhosted.org/packages/93/70/6e4cdd1367aed34d6c78e52d5223fff67629a775a19c204106d5aafb445b/chaostoolkit-1.15.1-py2.py3-none-any.whl", hash = "sha256:51ce2562899d389af45141b2166b84784dee8516ac04c8eff9848d96c4f20b44"},
 ]
-"chaostoolkit-addons 0.8.5" = [
-    {url = "https://files.pythonhosted.org/packages/ab/c1/51c2e1000a24eeb3b6f4860ffe4a3f4a7fb03f2ce55946699fc4a41241d0/chaostoolkit-addons-0.8.5.tar.gz", hash = "sha256:1652155b9d68bfddff391e8deb4e09bbb1a2e7c8f7f7db68caad39a28057f87a"},
-    {url = "https://files.pythonhosted.org/packages/ad/4e/03691940da622dd51644c9019707fed59d77e05bf1aad0a256cc763fb44f/chaostoolkit_addons-0.8.5-py2.py3-none-any.whl", hash = "sha256:2cae6b2e3ebdca8f759b64c449d3e00e48f752250fb94cfa8ef097b5f157b45e"},
+"chaostoolkit-addons 0.8.6" = [
+    {url = "https://files.pythonhosted.org/packages/ee/41/5836bdeb4a881afa0d2d166707f39b6e83a3d2f838c369f8822b6b7b9112/chaostoolkit_addons-0.8.6-py2.py3-none-any.whl", hash = "sha256:6f3411119ca4a249ebd180ef449c7ca273e271dff5875d37bb5e717e2e976fca"},
+    {url = "https://files.pythonhosted.org/packages/fb/97/1065c494604377068cf849ac186007e9f40dfadd91fca993ca23b3adfe78/chaostoolkit-addons-0.8.6.tar.gz", hash = "sha256:09e9f2d726d7249302bdcb1b11cfd1de9c29170ba52bce33b9d89492685168da"},
 ]
 "chaostoolkit-aws 0.21.3" = [
     {url = "https://files.pythonhosted.org/packages/78/08/0a8c1fe622140c68a8267fdb4c7b1b0018e6081ad89e0d4847759047a2bc/chaostoolkit-aws-0.21.3.tar.gz", hash = "sha256:8cc3c4bb95c8b9341b9c26f2250bc56739980455813b41321f425f0a495bcf97"},
