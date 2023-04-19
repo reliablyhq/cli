@@ -181,7 +181,7 @@ summary = "Addons for your Chaos Toolkit experiments"
 
 [[package]]
 name = "chaostoolkit-aws"
-version = "0.21.3"
+version = "0.22.1"
 requires_python = ">=3.7"
 summary = "Chaos Toolkit Extension for AWS"
 dependencies = [
@@ -307,7 +307,7 @@ dependencies = [
 
 [[package]]
 name = "chaostoolkit-reliably"
-version = "0.44.1"
+version = "0.45.0"
 requires_python = ">=3.7"
 summary = "Reliably CLI"
 dependencies = [
@@ -1297,7 +1297,7 @@ summary = "pyparsing module - Classes and methods to define and execute parsing 
 
 [[package]]
 name = "pytest"
-version = "7.3.0"
+version = "7.3.1"
 requires_python = ">=3.7"
 summary = "pytest: simple powerful testing with Python"
 dependencies = [
@@ -1461,7 +1461,7 @@ summary = "Format dates according to the RFC 3339."
 
 [[package]]
 name = "rich"
-version = "13.3.3"
+version = "13.3.4"
 requires_python = ">=3.7.0"
 summary = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 dependencies = [
@@ -2049,9 +2049,9 @@ content_hash = "sha256:23a56a07e8bc361159d33049d21863834a80d436b08a6e13bb3e0b7a9
     {url = "https://files.pythonhosted.org/packages/ee/41/5836bdeb4a881afa0d2d166707f39b6e83a3d2f838c369f8822b6b7b9112/chaostoolkit_addons-0.8.6-py2.py3-none-any.whl", hash = "sha256:6f3411119ca4a249ebd180ef449c7ca273e271dff5875d37bb5e717e2e976fca"},
     {url = "https://files.pythonhosted.org/packages/fb/97/1065c494604377068cf849ac186007e9f40dfadd91fca993ca23b3adfe78/chaostoolkit-addons-0.8.6.tar.gz", hash = "sha256:09e9f2d726d7249302bdcb1b11cfd1de9c29170ba52bce33b9d89492685168da"},
 ]
-"chaostoolkit-aws 0.21.3" = [
-    {url = "https://files.pythonhosted.org/packages/78/08/0a8c1fe622140c68a8267fdb4c7b1b0018e6081ad89e0d4847759047a2bc/chaostoolkit-aws-0.21.3.tar.gz", hash = "sha256:8cc3c4bb95c8b9341b9c26f2250bc56739980455813b41321f425f0a495bcf97"},
-    {url = "https://files.pythonhosted.org/packages/bc/b3/fbe080e0638805e83703a4f117f27cbd30a7f9ae7293e8c194111a767b15/chaostoolkit_aws-0.21.3-py3-none-any.whl", hash = "sha256:d83d9c5fa4803ca645b23fb6b64d5689fa89cf3d6294c552b89595967ddeb26e"},
+"chaostoolkit-aws 0.22.1" = [
+    {url = "https://files.pythonhosted.org/packages/f2/e6/1d28ed64d57b8541f6743a36fb4f8ca06e8126ac6cc091354f7d519d64f4/chaostoolkit-aws-0.22.1.tar.gz", hash = "sha256:4704c94d178edc10f77d1c223606cbf72299ddbb0d353d9e09895ce4316e142e"},
+    {url = "https://files.pythonhosted.org/packages/fd/aa/a1afb819ed5536730d747074bcca229ed0952bdeb49a978e586f2f601417/chaostoolkit_aws-0.22.1-py3-none-any.whl", hash = "sha256:7e24a4cb329dd8c3d2b8bb49fef6ffe81f12cf940e98c8eb7f90b621af8f0d89"},
 ]
 "chaostoolkit-datadog 0.1.1" = [
     {url = "https://files.pythonhosted.org/packages/61/85/809ad8adeccac7fe1e49f9b30b19675e5079a1cac3c861e87c76bd527e03/chaostoolkit_datadog-0.1.1-py2.py3-none-any.whl", hash = "sha256:6feb25829f57efe236ac7bcb0fc81003635dc6856ac34c753c35c5576c72256e"},
@@ -2085,9 +2085,9 @@ content_hash = "sha256:23a56a07e8bc361159d33049d21863834a80d436b08a6e13bb3e0b7a9
     {url = "https://files.pythonhosted.org/packages/ba/c6/0d8840e1fa438d248418d472a22c1da776fe8694bfdf8bdf97f3aaf0c154/chaostoolkit_prometheus-0.5.0-py2.py3-none-any.whl", hash = "sha256:1131fc56ca119e9df27007cfac1136d8289a1542900cee49216ed83d99731f62"},
     {url = "https://files.pythonhosted.org/packages/e0/98/1e78efdc5347672b566690ce2aec7e7dc2e3597fc4d2e85bde478d655290/chaostoolkit-prometheus-0.5.0.tar.gz", hash = "sha256:8dfacaa43c789122fbe677d7017d5755d2d67fbb2b6b2f86875a5bca8fb09166"},
 ]
-"chaostoolkit-reliably 0.44.1" = [
-    {url = "https://files.pythonhosted.org/packages/b3/49/c6b2dc209e77a96500dd948c7b04bf8261aac25e423e327e45bb03ec7228/chaostoolkit_reliably-0.44.1-py3-none-any.whl", hash = "sha256:593f28487e8539f73de48519ce5f0d0c41979f6785e5979204c6b80f8defed16"},
-    {url = "https://files.pythonhosted.org/packages/f2/c9/6f04307beab7fcc8d4eefd3463b2cd02a58214d7651b8ac6d07554f96d8c/chaostoolkit-reliably-0.44.1.tar.gz", hash = "sha256:93297e2551eb8a6de36fc77cebdac076557a7bdfab232451e2b73a15bd76297d"},
+"chaostoolkit-reliably 0.45.0" = [
+    {url = "https://files.pythonhosted.org/packages/0b/5e/ffd6a70f957e38ee5a7b14270c2d428273b31b7bbd4ae6447086f54770e6/chaostoolkit_reliably-0.45.0-py3-none-any.whl", hash = "sha256:0cb984cc3f462206bf36fc9a64f3ccd034ca3a1a178d28602c1218fbf50e8cd0"},
+    {url = "https://files.pythonhosted.org/packages/ad/08/95452636fa74d3c687d7ef192ccbec3bea90e18af9e4ca20ae4a7e61a5d4/chaostoolkit-reliably-0.45.0.tar.gz", hash = "sha256:2b628ef53b874cb0c53df016575917a8eaf751a2464040a08fe836c4c6eea0da"},
 ]
 "chaostoolkit-slack 0.5.7" = [
     {url = "https://files.pythonhosted.org/packages/9f/fb/4b3fb59936cce83d82d14002a07ae47bc1ec06a953a475ff7db453cfb738/chaostoolkit_slack-0.5.7-py2.py3-none-any.whl", hash = "sha256:8c2ea9a69383a0f86dcf18eddcee853333bf59d7dfae0c8fac8b47807f388c3a"},
@@ -3185,9 +3185,9 @@ content_hash = "sha256:23a56a07e8bc361159d33049d21863834a80d436b08a6e13bb3e0b7a9
     {url = "https://files.pythonhosted.org/packages/6c/10/a7d0fa5baea8fe7b50f448ab742f26f52b80bfca85ac2be9d35cdd9a3246/pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
     {url = "https://files.pythonhosted.org/packages/71/22/207523d16464c40a0310d2d4d8926daffa00ac1f5b1576170a32db749636/pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
-"pytest 7.3.0" = [
-    {url = "https://files.pythonhosted.org/packages/2b/a6/22c1138c2a7b60c9eb9ddeac017d82a58dfd9661651c721e7466af648764/pytest-7.3.0.tar.gz", hash = "sha256:58ecc27ebf0ea643ebfdf7fb1249335da761a00c9f955bcd922349bcb68ee57d"},
-    {url = "https://files.pythonhosted.org/packages/83/b8/345f25e35406da60b5cb0cb9de9f92a96f44eae618dc2cc4a00a2bf416f9/pytest-7.3.0-py3-none-any.whl", hash = "sha256:933051fa1bfbd38a21e73c3960cebdad4cf59483ddba7696c48509727e17f201"},
+"pytest 7.3.1" = [
+    {url = "https://files.pythonhosted.org/packages/1b/d1/72df649a705af1e3a09ffe14b0c7d3be1fd730da6b98beb4a2ed26b8a023/pytest-7.3.1-py3-none-any.whl", hash = "sha256:3799fa815351fea3a5e96ac7e503a96fa51cc9942c3753cda7651b93c1cfa362"},
+    {url = "https://files.pythonhosted.org/packages/ec/d9/36b65598f3d19d0a14d13dc87ad5fa42869ae53bb7471f619a30eaabc4bf/pytest-7.3.1.tar.gz", hash = "sha256:434afafd78b1d78ed0addf160ad2b77a30d35d4bdf8af234fe621919d9ed15e3"},
 ]
 "pytest-asyncio 0.21.0" = [
     {url = "https://files.pythonhosted.org/packages/66/73/817ddb37c627338ecbb96486c03fe69a19bef72de1b6bd641aa06fed13f4/pytest_asyncio-0.21.0-py3-none-any.whl", hash = "sha256:f2b3366b7cd501a4056858bd39349d5af19742aed2d81660b7998b6341c7eb9c"},
@@ -3475,9 +3475,9 @@ content_hash = "sha256:23a56a07e8bc361159d33049d21863834a80d436b08a6e13bb3e0b7a9
     {url = "https://files.pythonhosted.org/packages/0f/2e/48d6cf57dec789c90a7b1cb59a21c3cad509f0ec1284632152f33bb1d88d/rfc3339-6.2-py3-none-any.whl", hash = "sha256:f44316b21b21db90a625cde04ebb0d46268f153e6093021fa5893e92a96f58a3"},
     {url = "https://files.pythonhosted.org/packages/91/fb/2835a62f2de226796fce76411daec6b9831eaf6d2fd04994ac1de055dc13/rfc3339-6.2.tar.gz", hash = "sha256:d53c3b5eefaef892b7240ba2a91fef012e86faa4d0a0ca782359c490e00ad4d0"},
 ]
-"rich 13.3.3" = [
-    {url = "https://files.pythonhosted.org/packages/42/5c/f44fc88bad850c4a20711a3349ec0e8bc50fece8d8b32c962d2aab70ea2b/rich-13.3.3-py3-none-any.whl", hash = "sha256:540c7d6d26a1178e8e8b37e9ba44573a3cd1464ff6348b99ee7061b95d1c6333"},
-    {url = "https://files.pythonhosted.org/packages/9a/50/672a8d347f92bc752b04c338bbf932fbd0104fbc416c82cc91aa5f7b4b0b/rich-13.3.3.tar.gz", hash = "sha256:dc84400a9d842b3a9c5ff74addd8eb798d155f36c1c91303888e0a66850d2a15"},
+"rich 13.3.4" = [
+    {url = "https://files.pythonhosted.org/packages/31/3b/2360352760b436f822258396e66ffb6d42585518a9cde2f93f142e64c5eb/rich-13.3.4.tar.gz", hash = "sha256:b5d573e13605423ec80bdd0cd5f8541f7844a0e71a13f74cf454ccb2f490708b"},
+    {url = "https://files.pythonhosted.org/packages/9d/1a/28117ae737aec7c004ed5067034a8949adab43730420b50312821f466c3f/rich-13.3.4-py3-none-any.whl", hash = "sha256:22b74cae0278fd5086ff44144d3813be1cedc9115bdfabbfefd86400cb88b20a"},
 ]
 "roundrobin 0.0.4" = [
     {url = "https://files.pythonhosted.org/packages/38/97/6508c09e3af7eaee96e7b66a7dc7bbdbe8e6b85b8d2bbbb89612cf621bad/roundrobin-0.0.4.tar.gz", hash = "sha256:7e9d19a5bd6123d99993fb935fa86d25c88bb2096e493885f61737ed0f5e9abd"},
