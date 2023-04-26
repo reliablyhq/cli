@@ -187,7 +187,7 @@ summary = "Addons for your Chaos Toolkit experiments"
 
 [[package]]
 name = "chaostoolkit-aws"
-version = "0.23.1"
+version = "0.23.2"
 requires_python = ">=3.7"
 summary = "Chaos Toolkit Extension for AWS"
 dependencies = [
@@ -2065,9 +2065,9 @@ content_hash = "sha256:23a56a07e8bc361159d33049d21863834a80d436b08a6e13bb3e0b7a9
     {url = "https://files.pythonhosted.org/packages/ee/41/5836bdeb4a881afa0d2d166707f39b6e83a3d2f838c369f8822b6b7b9112/chaostoolkit_addons-0.8.6-py2.py3-none-any.whl", hash = "sha256:6f3411119ca4a249ebd180ef449c7ca273e271dff5875d37bb5e717e2e976fca"},
     {url = "https://files.pythonhosted.org/packages/fb/97/1065c494604377068cf849ac186007e9f40dfadd91fca993ca23b3adfe78/chaostoolkit-addons-0.8.6.tar.gz", hash = "sha256:09e9f2d726d7249302bdcb1b11cfd1de9c29170ba52bce33b9d89492685168da"},
 ]
-"chaostoolkit-aws 0.23.1" = [
-    {url = "https://files.pythonhosted.org/packages/80/a4/35acc2c3de1eb345dc00c5c2888923e83e157eebe3c9a21306b9d3cc4769/chaostoolkit-aws-0.23.1.tar.gz", hash = "sha256:54cb7828a76277933e72737e4788f7c3efbd8245fb4c003d9651c746945a0d9d"},
-    {url = "https://files.pythonhosted.org/packages/b2/ec/141ffe7c56c55bfe102d88cf81ef2a74804c58add5b57a8343072bfa248b/chaostoolkit_aws-0.23.1-py3-none-any.whl", hash = "sha256:09a1a8850749e6a14aa51e1eeae4fb17eb3380df151eb82c9b732b03072ac318"},
+"chaostoolkit-aws 0.23.2" = [
+    {url = "https://files.pythonhosted.org/packages/2e/68/723262eb7d1878aebe2f123c125b6ee9b61ea5ece16f558d346005281b64/chaostoolkit-aws-0.23.2.tar.gz", hash = "sha256:8f2e2de5a072f0f7ff04310db131fcafc02c8b3862d2c79597c53cb1b51e87b8"},
+    {url = "https://files.pythonhosted.org/packages/45/1f/8b138ece7b95844d723d8358ea73e7ccd21f74969a74933d9b6b5b392e19/chaostoolkit_aws-0.23.2-py3-none-any.whl", hash = "sha256:715c92e680b5b78ca45d9a8256814548cdad45f768176c75219587fbfe78685c"},
 ]
 "chaostoolkit-datadog 0.1.1" = [
     {url = "https://files.pythonhosted.org/packages/61/85/809ad8adeccac7fe1e49f9b30b19675e5079a1cac3c861e87c76bd527e03/chaostoolkit_datadog-0.1.1-py2.py3-none-any.whl", hash = "sha256:6feb25829f57efe236ac7bcb0fc81003635dc6856ac34c753c35c5576c72256e"},
