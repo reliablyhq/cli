@@ -119,18 +119,18 @@ summary = "When they're not builtins, they're boltons."
 
 [[package]]
 name = "boto3"
-version = "1.26.119"
+version = "1.26.120"
 requires_python = ">= 3.7"
 summary = "The AWS SDK for Python"
 dependencies = [
-    "botocore<1.30.0,>=1.29.119",
+    "botocore<1.30.0,>=1.29.120",
     "jmespath<2.0.0,>=0.7.1",
     "s3transfer<0.7.0,>=0.6.0",
 ]
 
 [[package]]
 name = "botocore"
-version = "1.29.119"
+version = "1.29.120"
 requires_python = ">= 3.7"
 summary = "Low-level, data-driven core of boto 3."
 dependencies = [
@@ -187,7 +187,7 @@ summary = "Addons for your Chaos Toolkit experiments"
 
 [[package]]
 name = "chaostoolkit-aws"
-version = "0.23.0"
+version = "0.23.1"
 requires_python = ">=3.7"
 summary = "Chaos Toolkit Extension for AWS"
 dependencies = [
@@ -449,7 +449,7 @@ summary = "Backport of PEP 654 (exception groups)"
 
 [[package]]
 name = "flask"
-version = "2.3.0"
+version = "2.3.1"
 requires_python = ">=3.8"
 summary = "A simple framework for building complex web applications."
 dependencies = [
@@ -1891,13 +1891,13 @@ content_hash = "sha256:23a56a07e8bc361159d33049d21863834a80d436b08a6e13bb3e0b7a9
     {url = "https://files.pythonhosted.org/packages/22/f0/d81d7f6688d25cfb8b8fce60504c3cbf5d5890b9a1d71911047aa89707c2/boltons-23.0.0-py2.py3-none-any.whl", hash = "sha256:f716a1b57698a5b19062f3146cb5ce3549904028a2f267c2c0cf584eea3ad75b"},
     {url = "https://files.pythonhosted.org/packages/e1/13/1a38fd4ee194985cfc674358fcf2ca10a80c5b14fafa62abbb1e6088fcab/boltons-23.0.0.tar.gz", hash = "sha256:8c50a71829525835ca3c849c7ed2511610c972b4dddfcd41a4a5447222beb4b0"},
 ]
-"boto3 1.26.119" = [
-    {url = "https://files.pythonhosted.org/packages/0e/10/2c30f3ad343ccf14fdff24daf1859066a0f9f2f1df30e1d63791cf55a493/boto3-1.26.119.tar.gz", hash = "sha256:13a041885068d0bfc2104255f2bcb06a1e0c036bcd009ef018f9953b31c20dde"},
-    {url = "https://files.pythonhosted.org/packages/7e/b8/69413fb3371f5333a9a086a24ddcffa9ac93a08a029073719fa5d08fcbc5/boto3-1.26.119-py3-none-any.whl", hash = "sha256:c7104f4f805df011dd5528aff63d712ff5261294e547724d03a3b5639bd164ac"},
+"boto3 1.26.120" = [
+    {url = "https://files.pythonhosted.org/packages/1f/b3/0424b7c8d357e7724019a9b9ad2cd1dd37b1513634102fc975ce2e17a2f7/boto3-1.26.120.tar.gz", hash = "sha256:17b93fdff147577ef506adbcada0ac81dd4be3b8d8b3c7831f9ee9f7ac9615e5"},
+    {url = "https://files.pythonhosted.org/packages/c0/d6/2b64714f43fd5fb29e8231b47f6d1994773ddec170384c61dc04c72ba4a2/boto3-1.26.120-py3-none-any.whl", hash = "sha256:0f8eeeb259befd6e8c464a05c69b66ba7b1e0c978300b446fc0823020acaf380"},
 ]
-"botocore 1.29.119" = [
-    {url = "https://files.pythonhosted.org/packages/cf/80/978403732c2066a3fdc65a3019ee29c2b27c940f5886d0ee5cecae326f05/botocore-1.29.119-py3-none-any.whl", hash = "sha256:c45709682e8c9a945a7cdfa0846599aa4c90403ffbcef8cbc412a6ea92a21d45"},
-    {url = "https://files.pythonhosted.org/packages/e3/84/614b96cf57bf097b50e77f2bb06dbccd82b878f2d3aba9fdfbf630508eb6/botocore-1.29.119.tar.gz", hash = "sha256:cd79c7ecf1888dc982ed7e005515324c0e2d7f8aa9ab03a8ee8ece8a2dd3297c"},
+"botocore 1.29.120" = [
+    {url = "https://files.pythonhosted.org/packages/69/28/a9abd92153dbbaec1c4560df0a58aac0079c2c54872cc504016c9df21bf5/botocore-1.29.120-py3-none-any.whl", hash = "sha256:0010b2a654973ab7f8697a9bb69cc0bd92450a7d77dd65c858a717edfe2e40f6"},
+    {url = "https://files.pythonhosted.org/packages/ba/d0/680c56d416eb3f6801a729f0ff26fb7776b2ad34cb34f3433c3cf9c612d5/botocore-1.29.120.tar.gz", hash = "sha256:82de714c06fcefbcf2f3854b81c51bf0c529ec902c6e927156ff47988aaeeb7a"},
 ]
 "brotli 1.0.9" = [
     {url = "https://files.pythonhosted.org/packages/00/7f/6d3405fbbd6883bca364e1d2b8ddbd0617bf063f35bed2c912f8fc723cc2/Brotli-1.0.9-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b1375b5d17d6145c798661b67e4ae9d5496920d9265e2f00f1c2c0b5ae91fbde"},
@@ -2065,9 +2065,9 @@ content_hash = "sha256:23a56a07e8bc361159d33049d21863834a80d436b08a6e13bb3e0b7a9
     {url = "https://files.pythonhosted.org/packages/ee/41/5836bdeb4a881afa0d2d166707f39b6e83a3d2f838c369f8822b6b7b9112/chaostoolkit_addons-0.8.6-py2.py3-none-any.whl", hash = "sha256:6f3411119ca4a249ebd180ef449c7ca273e271dff5875d37bb5e717e2e976fca"},
     {url = "https://files.pythonhosted.org/packages/fb/97/1065c494604377068cf849ac186007e9f40dfadd91fca993ca23b3adfe78/chaostoolkit-addons-0.8.6.tar.gz", hash = "sha256:09e9f2d726d7249302bdcb1b11cfd1de9c29170ba52bce33b9d89492685168da"},
 ]
-"chaostoolkit-aws 0.23.0" = [
-    {url = "https://files.pythonhosted.org/packages/56/66/add587d23898214257134821827ef0be7a9d8ed03d7688b983c9f4cec458/chaostoolkit_aws-0.23.0-py3-none-any.whl", hash = "sha256:82b5654d935d98eb8d554a37ead2661d817e6f8e9d6b05354dc592b4868cac2f"},
-    {url = "https://files.pythonhosted.org/packages/e6/cd/ffaee07e1c9a417a00d16fa7ee21f0a6b97df3182229925f7a3ce31cc145/chaostoolkit-aws-0.23.0.tar.gz", hash = "sha256:d05b4ed6f811ad2a0a148ec78ec9d4d6ba17e11424cc3aad4117bdc5496652e5"},
+"chaostoolkit-aws 0.23.1" = [
+    {url = "https://files.pythonhosted.org/packages/80/a4/35acc2c3de1eb345dc00c5c2888923e83e157eebe3c9a21306b9d3cc4769/chaostoolkit-aws-0.23.1.tar.gz", hash = "sha256:54cb7828a76277933e72737e4788f7c3efbd8245fb4c003d9651c746945a0d9d"},
+    {url = "https://files.pythonhosted.org/packages/b2/ec/141ffe7c56c55bfe102d88cf81ef2a74804c58add5b57a8343072bfa248b/chaostoolkit_aws-0.23.1-py3-none-any.whl", hash = "sha256:09a1a8850749e6a14aa51e1eeae4fb17eb3380df151eb82c9b732b03072ac318"},
 ]
 "chaostoolkit-datadog 0.1.1" = [
     {url = "https://files.pythonhosted.org/packages/61/85/809ad8adeccac7fe1e49f9b30b19675e5079a1cac3c861e87c76bd527e03/chaostoolkit_datadog-0.1.1-py2.py3-none-any.whl", hash = "sha256:6feb25829f57efe236ac7bcb0fc81003635dc6856ac34c753c35c5576c72256e"},
@@ -2296,9 +2296,9 @@ content_hash = "sha256:23a56a07e8bc361159d33049d21863834a80d436b08a6e13bb3e0b7a9
     {url = "https://files.pythonhosted.org/packages/61/97/17ed81b7a8d24d8f69b62c0db37abbd8c0042d4b3fc429c73dab986e7483/exceptiongroup-1.1.1-py3-none-any.whl", hash = "sha256:232c37c63e4f682982c8b6459f33a8981039e5fb8756b2074364e5055c498c9e"},
     {url = "https://files.pythonhosted.org/packages/cc/38/57f14ddc8e8baeddd8993a36fe57ce7b4ba174c35048b9a6d270bb01e833/exceptiongroup-1.1.1.tar.gz", hash = "sha256:d484c3090ba2889ae2928419117447a14daf3c1231d5e30d0aae34f354f01785"},
 ]
-"flask 2.3.0" = [
-    {url = "https://files.pythonhosted.org/packages/04/f4/22384e109d9b7e295b20580bc6af5f45b78730d03f41f826639a5c006d1a/Flask-2.3.0.tar.gz", hash = "sha256:4088b4986f13cae23e02081e67df7e4e434ec6f85a5238bce5e6db6d1de61e06"},
-    {url = "https://files.pythonhosted.org/packages/24/dd/45df0b0b93f449cb217486136071294595b2d6f8840eaf38704773093a37/Flask-2.3.0-py3-none-any.whl", hash = "sha256:99a4889167c86fe57c4036825ebc77dc5dc3241bf0d80ea80ca941587d0d6a52"},
+"flask 2.3.1" = [
+    {url = "https://files.pythonhosted.org/packages/46/e7/3dc143f22a6aa997753aac1eb68b1b4ac8696819f10ff89d4ebb3de4c42d/Flask-2.3.1.tar.gz", hash = "sha256:a6059db4297106e5a64b3215fa16ae641822c1cb97ecb498573549b2478602cb"},
+    {url = "https://files.pythonhosted.org/packages/9f/27/fc83394961f97e74c860d05f9bc848af00259b8c84ca021ab31250b9915e/Flask-2.3.1-py3-none-any.whl", hash = "sha256:8ba2a854608fdd603b67dccd4514a46450132227fb9df40127a8d0c1de8769ec"},
 ]
 "flask-basicauth 0.2.0" = [
     {url = "https://files.pythonhosted.org/packages/16/18/9726cac3c7cb9e5a1ac4523b3e508128136b37aadb3462c857a19318900e/Flask-BasicAuth-0.2.0.tar.gz", hash = "sha256:df5ebd489dc0914c224419da059d991eb72988a01cdd4b956d52932ce7d501ff"},
