@@ -187,7 +187,7 @@ summary = "Addons for your Chaos Toolkit experiments"
 
 [[package]]
 name = "chaostoolkit-aws"
-version = "0.23.3"
+version = "0.23.4"
 requires_python = ">=3.7"
 summary = "Chaos Toolkit Extension for AWS"
 dependencies = [
@@ -1480,7 +1480,7 @@ summary = "Format dates according to the RFC 3339."
 
 [[package]]
 name = "rich"
-version = "13.3.4"
+version = "13.3.5"
 requires_python = ">=3.7.0"
 summary = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 dependencies = [
@@ -2072,9 +2072,9 @@ content_hash = "sha256:ccd6a66c7fa0d711285dfbba1be0254243a2fdc9bd79f72a0448ad304
     {url = "https://files.pythonhosted.org/packages/ee/41/5836bdeb4a881afa0d2d166707f39b6e83a3d2f838c369f8822b6b7b9112/chaostoolkit_addons-0.8.6-py2.py3-none-any.whl", hash = "sha256:6f3411119ca4a249ebd180ef449c7ca273e271dff5875d37bb5e717e2e976fca"},
     {url = "https://files.pythonhosted.org/packages/fb/97/1065c494604377068cf849ac186007e9f40dfadd91fca993ca23b3adfe78/chaostoolkit-addons-0.8.6.tar.gz", hash = "sha256:09e9f2d726d7249302bdcb1b11cfd1de9c29170ba52bce33b9d89492685168da"},
 ]
-"chaostoolkit-aws 0.23.3" = [
-    {url = "https://files.pythonhosted.org/packages/7c/e6/686ea2d425506e11386898d9a81023178ae36dba45a2f8c13487d54feb22/chaostoolkit-aws-0.23.3.tar.gz", hash = "sha256:5fbaaa5302723bc867366f12abcadab8c8baf29704b0c0c1681cc23db0542f2b"},
-    {url = "https://files.pythonhosted.org/packages/ed/3f/b412ce75650988c2ef3cf6d2f9cabdcd0ffd64fa9965e40c6114bf407cbf/chaostoolkit_aws-0.23.3-py3-none-any.whl", hash = "sha256:87ad7305345f268e3948dd50cf3ab5f3cd041096fd468c2efc715a6cb5f62300"},
+"chaostoolkit-aws 0.23.4" = [
+    {url = "https://files.pythonhosted.org/packages/bb/04/7b50b21046ab01a61fbceef9ce486d65587173cde4d18c5872a628085181/chaostoolkit_aws-0.23.4-py3-none-any.whl", hash = "sha256:535247a3e5f6b2a6dfe2cba7bd6c1b751a68d0d3494f9f5ccb37f4082b8de663"},
+    {url = "https://files.pythonhosted.org/packages/e7/61/1be5879fe38df8c961cb8829c90deb355bf6d7b7cf002e211a1c9b0fbaa2/chaostoolkit-aws-0.23.4.tar.gz", hash = "sha256:bf3fa17ee7c375c71db397d7d8799987ef6f473269dbe454af2da13cdc30c008"},
 ]
 "chaostoolkit-datadog 0.1.1" = [
     {url = "https://files.pythonhosted.org/packages/61/85/809ad8adeccac7fe1e49f9b30b19675e5079a1cac3c861e87c76bd527e03/chaostoolkit_datadog-0.1.1-py2.py3-none-any.whl", hash = "sha256:6feb25829f57efe236ac7bcb0fc81003635dc6856ac34c753c35c5576c72256e"},
@@ -3619,9 +3619,9 @@ content_hash = "sha256:ccd6a66c7fa0d711285dfbba1be0254243a2fdc9bd79f72a0448ad304
     {url = "https://files.pythonhosted.org/packages/0f/2e/48d6cf57dec789c90a7b1cb59a21c3cad509f0ec1284632152f33bb1d88d/rfc3339-6.2-py3-none-any.whl", hash = "sha256:f44316b21b21db90a625cde04ebb0d46268f153e6093021fa5893e92a96f58a3"},
     {url = "https://files.pythonhosted.org/packages/91/fb/2835a62f2de226796fce76411daec6b9831eaf6d2fd04994ac1de055dc13/rfc3339-6.2.tar.gz", hash = "sha256:d53c3b5eefaef892b7240ba2a91fef012e86faa4d0a0ca782359c490e00ad4d0"},
 ]
-"rich 13.3.4" = [
-    {url = "https://files.pythonhosted.org/packages/31/3b/2360352760b436f822258396e66ffb6d42585518a9cde2f93f142e64c5eb/rich-13.3.4.tar.gz", hash = "sha256:b5d573e13605423ec80bdd0cd5f8541f7844a0e71a13f74cf454ccb2f490708b"},
-    {url = "https://files.pythonhosted.org/packages/9d/1a/28117ae737aec7c004ed5067034a8949adab43730420b50312821f466c3f/rich-13.3.4-py3-none-any.whl", hash = "sha256:22b74cae0278fd5086ff44144d3813be1cedc9115bdfabbfefd86400cb88b20a"},
+"rich 13.3.5" = [
+    {url = "https://files.pythonhosted.org/packages/39/03/6de23bdd88f5ee7f8b03f94f6e88108f5d7ffe6d207e95cdb06d9aa4cd57/rich-13.3.5-py3-none-any.whl", hash = "sha256:69cdf53799e63f38b95b9bf9c875f8c90e78dd62b2f00c13a911c7a3b9fa4704"},
+    {url = "https://files.pythonhosted.org/packages/3d/0b/8dd34d20929c4b5e474db2e64426175469c2b7fea5ba71c6d4b3397a9729/rich-13.3.5.tar.gz", hash = "sha256:2d11b9b8dd03868f09b4fffadc84a6a8cda574e40dc90821bd845720ebb8e89c"},
 ]
 "roundrobin 0.0.4" = [
     {url = "https://files.pythonhosted.org/packages/38/97/6508c09e3af7eaee96e7b66a7dc7bbdbe8e6b85b8d2bbbb89612cf621bad/roundrobin-0.0.4.tar.gz", hash = "sha256:7e9d19a5bd6123d99993fb935fa86d25c88bb2096e493885f61737ed0f5e9abd"},
