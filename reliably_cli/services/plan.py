@@ -1,5 +1,4 @@
 import contextlib
-import json
 import logging
 import logging.handlers
 import os
@@ -10,6 +9,7 @@ from typing import Any, Generator
 from uuid import UUID
 
 import httpx
+import orjson
 import typer
 from chaoslib import convert_vars, merge_vars
 from chaoslib.control import load_global_controls
@@ -120,7 +120,9 @@ def execute(
 
                 raise typer.Exit(code=1)
 
-            result_file.absolute().write_text(json.dumps(journal, indent=2))
+            result_file.absolute().write_bytes(
+                orjson.dumps(journal, option=orjson.OPT_INDENT_2)
+            )
             show_result_url(journal)
 
 

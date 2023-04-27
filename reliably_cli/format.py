@@ -1,6 +1,6 @@
 import io
-import json
 
+import orjson
 from ruamel.yaml import YAML
 
 from .types import BaseSchema, FormatOption
@@ -18,7 +18,7 @@ def format_as(
             with io.StringIO() as s:
                 yaml = YAML()
                 yaml.default_flow_style = False
-                yaml.dump(json.loads(entity.json()), s)
+                yaml.dump(orjson.loads(entity.json().encode("utf-8")), s)
                 return s.getvalue()
 
     return None

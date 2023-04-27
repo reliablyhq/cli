@@ -1,11 +1,19 @@
-import json
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Literal
 
+import orjson
 from pydantic import UUID4, BaseModel
 
 __all__ = ["Plan", "FormatOption", "Organization"]
+
+
+def _json_dumps(*args, **kwargs) -> str:  # type: ignore[no-untyped-def]
+    return orjson.dumps(*args, **kwargs).decode("utf-8")
+
+
+def _json_loads(obj: str, *args, **kwargs) -> Any:  # type: ignore[no-untyped-def]
+    return orjson.loads(obj.encode("utf-8"), *args, **kwargs)
 
 
 class FormatOption(Enum):
@@ -15,8 +23,8 @@ class FormatOption(Enum):
 
 class BaseSchema(BaseModel):
     class Config:
-        json_loads = json.loads
-        json_dumps = json.dumps
+        json_loads = _json_loads
+        json_dumps = _json_dumps
 
 
 class PlanReliablyEnvironment(BaseSchema):
