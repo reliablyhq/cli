@@ -12,7 +12,7 @@ def _json_dumps(*args, **kwargs) -> str:  # type: ignore[no-untyped-def]
     return orjson.dumps(*args, **kwargs).decode("utf-8")
 
 
-def _json_loads(obj: str, *args, **kwargs) -> Any:  # type: ignore[no-untyped-def]
+def _json_loads(obj: str, *args, **kwargs) -> Any:  # type: ignore[no-untyped-def]  # noqa
     return orjson.loads(obj.encode("utf-8"), *args, **kwargs)
 
 
