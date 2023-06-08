@@ -20,7 +20,7 @@ jobs:
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v3
         with:
-          python-version: "3.10"
+          python-version: "3.11"
       - name: Publish wheels
         run: |
           pdm publish
@@ -46,6 +46,19 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: meta for the container image
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          flavor: |
+            prefix=
+          images: |
+            ghcr.io/reliablyhq/cli/cli
+          tags: |
+            type=sha,prefix=,format=long
+            type=raw,value=latest
       - name: Build and push Container
         uses: docker/build-push-action@v4
         with:
@@ -53,5 +66,5 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64
           file: ./Dockerfile
-          tags: |
-            ghcr.io/reliablyhq/cli/cli:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

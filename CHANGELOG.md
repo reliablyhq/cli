@@ -2,7 +2,16 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.5.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.6.1...HEAD
+
+## [0.6.1][]
+
+[0.6.1]: https://github.com/reliablyhq/cli/compare/0.6.0...0.6.1
+
+### Fixed
+
+* Dockerfile so it builds from the tag just released
+* Fixed GitHub action ity uses buildx and sets the right tags
 
 ## [0.5.0][]
 
