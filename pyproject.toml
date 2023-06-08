@@ -8,6 +8,16 @@ authors = [
 requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "Apache-2.0"}
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Development Status :: 4 - Beta",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: System :: Monitoring",
+    "Topic :: Utilities"
+]
 dependencies = [
     "httpx[http2]>=0.23.0",
     "pydantic[dotenv]>=1.10.2",
@@ -22,6 +32,12 @@ dependencies = [
     "chaostoolkit-reliably>=0.22.0",
     "orjson>=3.8.10",
 ]
+
+[project.urls]
+Homepage = "https://reliably.com/"
+Repository = "https://github.com/reliablyhq/cli"
+Documentation = "https://reliably.com/docs/cli/"
+Changelog = "https://github.com/reliablyhq/cli/blob/main/CHANGELOG.md"
 
 [project.scripts]
 reliably = "reliably_cli.__main__:cli"

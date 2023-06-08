@@ -9,7 +9,7 @@
    <a href="https://github.com/reliablyhq/cli/releases">
    <img alt="Release" src="https://img.shields.io/pypi/v/reliably-cli.svg">
    <a href="https://pypi.org/project/reliably-cli/">
-   <img alt="Supported Python" src="https://img.shields.io/pypi/pyversions/chaostoolkit-reliably.svg">
+   <img alt="Supported Python" src="https://img.shields.io/pypi/pyversions/reliably-cli.svg">
    <a href="https://goreportcard.com/report/github.com/reliablyhq/cli">
    <a href="#">
    <img alt="Build" src="https://github.com/reliablyhq/cli/actions/workflows/cli-check.yaml/badge.svg">
