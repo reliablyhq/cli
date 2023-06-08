@@ -63,8 +63,7 @@ contact@reliably.com. All complaints will be reviewed and
 investigated and will result in a response that is appropriate to the
 circumstances.
 
-
 ## Attribution
 
-This Code of Conduct is adapted from the [Debian Code Of Conduct][homepage], version 1.0
-[homepage]: https://www.debian.org/code_of_conduct
+This Code of Conduct is adapted from the
+[Debian Code Of Conduct](https://www.debian.org/code_of_conduct), version 1.0.
