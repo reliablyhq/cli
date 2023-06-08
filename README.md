@@ -34,4 +34,4 @@ The Reliably CLI is your interface to the Reliably services.
 
 Please follow the [guidelines][] to walk you through Reliably's main features.
 
-[guidelines]: https://reliably.dev/docs/guides/
+[guidelines]: https://reliably.com/docs/guides/first-plan/
