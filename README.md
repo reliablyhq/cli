@@ -21,7 +21,7 @@
 
 <p align="center">
   <a href="#installation">Installation</a> •
-  <a href="https://reliably.com/docs/">Documentation</a> •
+  <a href="https://reliably.com/docs/cli/">Documentation</a> •
   <a href="https://github.com/reliablyhq/cli/blob/main/CHANGELOG.md">Changes</a>
 </p>
 
