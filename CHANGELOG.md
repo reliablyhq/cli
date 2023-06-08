@@ -2,7 +2,15 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.6.1...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.6.2...HEAD
+
+## [0.6.2][]
+
+[0.6.2]: https://github.com/reliablyhq/cli/compare/0.6.1...0.6.2
+
+### Fixed
+
+* Give more time for Pypi to propagate the new release
 
 ## [0.6.1][]
 
