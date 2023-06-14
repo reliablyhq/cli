@@ -1,9 +1,6 @@
 name: Reliably CLI Release
 
 on:
-  push:
-    tags:
-      - "*.*.*"
   release:
     types: [published]
 
