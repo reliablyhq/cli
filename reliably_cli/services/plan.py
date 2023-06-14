@@ -2,6 +2,7 @@ import contextlib
 import logging
 import logging.handlers
 import os
+import tempfile
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,7 +23,13 @@ from ..client import api_client
 from ..config import ensure_config_is_set, get_settings
 from ..format import format_as
 from ..log import console
-from ..types import FormatOption, Plan
+from ..types import (
+    Environment,
+    EnvironmentSecret,
+    EnvironmentSecretAsFile,
+    FormatOption,
+    Plan,
+)
 
 cli = typer.Typer(help="Manage and execute Reliably plans from your terminal")
 
@@ -65,6 +72,7 @@ def execute(
     log_file: Path = typer.Option("./run.log", writable=True),
     set_status: bool = typer.Option(False, is_flag=True),
     skip_context: bool = typer.Option(False, is_flag=True),
+    load_environment: bool = typer.Option(False, is_flag=True),
     control_file: list[Path] = typer.Option(
         lambda: [], dir_okay=False, readable=True
     ),
@@ -101,6 +109,10 @@ def execute(
     base_url = f"{settings.service.host}/api/v1/organization"
     base_url = f"{base_url}/{settings.organization.id}"
     experiment_url = f"{base_url}/experiments/{experiment_id}/raw"
+
+    if load_environment:
+        tempdir = tempfile.TemporaryDirectory()
+        load_environment_into_memory(p, tempdir.name)
 
     with console.status("Executing..."):
         if set_status:
@@ -168,6 +180,41 @@ def store_plan_context(plan: Plan) -> dict[str, Any]:
                     global_controls.update(ctrl)
 
     return global_controls
+
+
+def load_environment_into_memory(plan: Plan, target_dir: str) -> None:
+    with console.status("Loading environment..."):
+        if not plan.definition.environment:
+            return None
+
+        with api_client() as client:
+            env_id = str(plan.definition.environment.id)
+            r = client.get(f"/environments/{env_id}/clear")
+            env = Environment.parse_obj(r.json())
+            if env:
+                path_mapping = {}
+                for s in env.secrets.__root__:
+                    if isinstance(s, EnvironmentSecretAsFile):
+                        new_path = Path(target_dir, s.path.lstrip("/"))
+                        new_path.parent.mkdir(mode=0o710, parents=True)
+                        new_path.write_text(s.value.get_secret_value())
+                        new_path.chmod(0o770)
+
+                        path_mapping[s.path] = str(new_path)
+
+                for e in env.envvars.__root__:
+                    if e.value in path_mapping:
+                        os.environ[e.var_name] = path_mapping[e.value]
+                    else:
+                        os.environ[e.var_name] = e.value
+
+                for s in env.secrets.__root__:
+                    if isinstance(s, EnvironmentSecret):
+                        v = s.value.get_secret_value()
+                        if v in path_mapping:
+                            os.environ[s.var_name] = path_mapping[v]
+                        else:
+                            os.environ[s.var_name] = v
 
 
 def send_status(plan_id: UUID, status: str, error: str | None = None) -> None:

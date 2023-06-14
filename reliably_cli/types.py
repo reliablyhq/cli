@@ -3,9 +3,9 @@ from enum import Enum
 from typing import Any, Dict, List, Literal
 
 import orjson
-from pydantic import UUID4, BaseModel
+from pydantic import UUID4, BaseModel, SecretStr
 
-__all__ = ["Plan", "FormatOption", "Organization"]
+__all__ = ["Plan", "FormatOption", "Organization", "Environment"]
 
 
 def _json_dumps(*args, **kwargs) -> str:  # type: ignore[no-untyped-def]
@@ -92,3 +92,37 @@ class Organization(BaseSchema):
 class Organizations(BaseSchema):
     count: int
     items: list[Organization]
+
+
+class EnvironmentVar(BaseSchema):
+    var_name: str
+    value: str
+
+
+class EnvironmentVars(BaseSchema):
+    __root__: List[EnvironmentVar]
+
+
+class EnvironmentSecret(BaseSchema):
+    key: str
+    var_name: str
+    value: SecretStr
+
+
+class EnvironmentSecretAsFile(BaseSchema):
+    key: str
+    value: SecretStr
+    path: str
+
+
+class EnvironmentSecrets(BaseSchema):
+    __root__: List[EnvironmentSecretAsFile | EnvironmentSecret]
+
+
+class Environment(BaseSchema):
+    id: UUID4
+    org_id: UUID4
+    created_date: datetime
+    name: str
+    envvars: EnvironmentVars
+    secrets: EnvironmentSecrets

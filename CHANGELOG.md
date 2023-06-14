@@ -4,6 +4,13 @@
 
 [Unreleased]: https://github.com/reliablyhq/cli/compare/0.6.2...HEAD
 
+### Added
+
+* The `--load-environment` flag to the `plan execute` command so that the CLI
+  automatically fetches the environment, if any provided, for the given plan.
+  This will fetch environment variables and secrets and load them into memory
+  for Chaos Toolkit to use
+
 ## [0.6.2][]
 
 [0.6.2]: https://github.com/reliablyhq/cli/compare/0.6.1...0.6.2
