@@ -2,7 +2,17 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.7.1...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.8.0...HEAD
+
+## [0.8.0][]
+
+[0.8.0]: https://github.com/reliablyhq/cli/compare/0.7.1...0.8.0
+
+### Changed
+
+* Bump dependencies
+* Load integration environment variables and secrets into memory when requested
+- Reworked the Dockerfile to use pdm.lock
 
 ## [0.7.1][]
 
