@@ -86,10 +86,11 @@ def execute(
     ensure_config_is_set()
 
     p = load_plan(plan_id)
+    tempdir = tempfile.TemporaryDirectory()
 
     context = {}
     if not skip_context:
-        context = store_plan_context(p)
+        context = store_plan_context(p, tempdir.name)
 
     settings = get_settings()
 
@@ -111,7 +112,6 @@ def execute(
     experiment_url = f"{base_url}/experiments/{experiment_id}/raw"
 
     if load_environment:
-        tempdir = tempfile.TemporaryDirectory()
         load_environment_into_memory(p, tempdir.name)
 
     with console.status("Executing..."):
@@ -158,12 +158,25 @@ def load_plan(plan_id: UUID) -> Plan:
             return Plan.parse_obj(r.json())
 
 
-def store_plan_context(plan: Plan) -> dict[str, Any]:
+def store_plan_context(plan: Plan, target_dir: str) -> dict[str, Any]:
     global_controls = {}
 
     with console.status("Storing context..."):
         with api_client() as client:
             for int_id in plan.definition.integrations:
+                r = client.get(f"/integrations/{int_id}")
+                if r.status_code > 399:
+                    console.print(
+                        f"Plan references integration {int_id} which does "
+                        "not exist"
+                    )
+                    continue
+
+                control = r.json()
+                env_id = control.get("environment_id")
+                if env_id:
+                    load_environment(env_id, target_dir)
+
                 r = client.get(f"/integrations/{int_id}/control")
                 control = r.json()
                 if control:
@@ -187,34 +200,38 @@ def load_environment_into_memory(plan: Plan, target_dir: str) -> None:
         if not plan.definition.environment:
             return None
 
-        with api_client() as client:
-            env_id = str(plan.definition.environment.id)
-            r = client.get(f"/environments/{env_id}/clear")
-            env = Environment.parse_obj(r.json())
-            if env:
-                path_mapping = {}
-                for s in env.secrets.__root__:
-                    if isinstance(s, EnvironmentSecretAsFile):
-                        new_path = Path(target_dir, s.path.lstrip("/"))
-                        new_path.parent.mkdir(mode=0o710, parents=True)
-                        new_path.write_text(s.value.get_secret_value())
-                        new_path.chmod(0o770)
+        env_id = str(plan.definition.environment.id)
+        load_environment(env_id, target_dir)
 
-                        path_mapping[s.path] = str(new_path)
 
-                for e in env.envvars.__root__:
-                    if e.value in path_mapping:
-                        os.environ[e.var_name] = path_mapping[e.value]
+def load_environment(environment_id: str, target_dir: str) -> None:
+    with api_client() as client:
+        r = client.get(f"/environments/{environment_id}/clear")
+        env = Environment.parse_obj(r.json())
+        if env:
+            path_mapping = {}
+            for s in env.secrets.__root__:
+                if isinstance(s, EnvironmentSecretAsFile):
+                    new_path = Path(target_dir, s.path.lstrip("/"))
+                    new_path.parent.mkdir(mode=0o710, parents=True)
+                    new_path.write_text(s.value.get_secret_value())
+                    new_path.chmod(0o770)
+
+                    path_mapping[s.path] = str(new_path)
+
+            for e in env.envvars.__root__:
+                if e.value in path_mapping:
+                    os.environ[e.var_name] = path_mapping[e.value]
+                else:
+                    os.environ[e.var_name] = e.value
+
+            for s in env.secrets.__root__:
+                if isinstance(s, EnvironmentSecret):
+                    v = s.value.get_secret_value()
+                    if v in path_mapping:
+                        os.environ[s.var_name] = path_mapping[v]
                     else:
-                        os.environ[e.var_name] = e.value
-
-                for s in env.secrets.__root__:
-                    if isinstance(s, EnvironmentSecret):
-                        v = s.value.get_secret_value()
-                        if v in path_mapping:
-                            os.environ[s.var_name] = path_mapping[v]
-                        else:
-                            os.environ[s.var_name] = v
+                        os.environ[s.var_name] = v
 
 
 def send_status(plan_id: UUID, status: str, error: str | None = None) -> None:
