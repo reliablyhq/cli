@@ -9,6 +9,9 @@ jobs:
     uses: ./.github/workflows/cli-check.yaml
   publish-wheels:
     name: Publish wheels
+    environment: release
+    permissions:
+      id-token: write
     runs-on: ubuntu-22.04
     needs:
       - checks
@@ -18,15 +21,10 @@ jobs:
         uses: pdm-project/setup-pdm@v3
         with:
           python-version: "3.11"
+      - name: Build wheels
+        run: pdm build --no-sdist
       - name: Publish wheels
-        run: |
-          pdm publish
-
-          # try to give Pypi time to update its index. Unfortunate.
-          sleep 60s
-        env:
-          PDM_PUBLISH_USERNAME: __token__
-          PDM_PUBLISH_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        uses: pypa/gh-action-pypi-publish@release/v1
 
   build-container:
     name: Build containers
