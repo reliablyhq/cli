@@ -2,7 +2,17 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.8.1...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.8.2...HEAD
+
+## [0.8.2][]
+
+[0.8.2]: https://github.com/reliablyhq/cli/compare/0.8.1...0.8.2
+
+### Changed
+
+* Bump dependencies
+* Enable PyPI trusted publisher
+* Automate release with changelog
 
 ## [0.8.1][]
 
