@@ -21,7 +21,7 @@ def main(
         envvar="RELIABLY_CLI_CONFIG",
     ),
 ):
-    Settings.Config.toml_file = config
+    Settings.model_config["toml_file"] = config
 
 
 @cli.command()

@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Any, Dict, List, Literal
 
 import orjson
-from pydantic import UUID4, BaseModel, SecretStr
+from pydantic import UUID4, BaseModel, RootModel, SecretStr
 
 __all__ = ["Plan", "FormatOption", "Organization", "Environment"]
 
@@ -22,9 +22,7 @@ class FormatOption(Enum):
 
 
 class BaseSchema(BaseModel):
-    class Config:
-        json_loads = _json_loads
-        json_dumps = _json_dumps
+    pass
 
 
 class PlanReliablyEnvironment(BaseSchema):
@@ -99,8 +97,7 @@ class EnvironmentVar(BaseSchema):
     value: str
 
 
-class EnvironmentVars(BaseSchema):
-    __root__: List[EnvironmentVar]
+EnvironmentVars = RootModel[List[EnvironmentVar]]
 
 
 class EnvironmentSecret(BaseSchema):
@@ -115,8 +112,9 @@ class EnvironmentSecretAsFile(BaseSchema):
     path: str
 
 
-class EnvironmentSecrets(BaseSchema):
-    __root__: List[EnvironmentSecretAsFile | EnvironmentSecret]
+EnvironmentSecrets = RootModel[
+    List[EnvironmentSecretAsFile | EnvironmentSecret]
+]
 
 
 class Environment(BaseSchema):

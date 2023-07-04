@@ -27,14 +27,14 @@ def view() -> None:
     toml_file = os.getenv("RELIABLY_CLI_CONFIG")
     if not toml_file:
         settings = get_settings()
-        toml_file = settings.__config__.toml_file
-        encoding = settings.__config__.env_file_encoding
+        toml_file = settings.model_config.get("toml_file")
+        encoding = settings.model_config.get("env_file_encoding")
 
     data = ""
     if Path(toml_file).exists():
         data = Path(toml_file).read_text(encoding=encoding)
 
-    console.print(data, end="")
+    console.print(data, end="", markup=False)
 
 
 @cli.command(help="Read one entry of the configuration")
@@ -62,10 +62,10 @@ def init(
     toml_file = os.getenv("RELIABLY_CLI_CONFIG")
     if not toml_file:
         settings = get_settings()
-        toml_file = settings.__config__.toml_file
+        toml_file = settings.model_config.get("toml_file")
 
     if Path(toml_file).exists() and not override:
-        print("configuration file already exists")
+        console.print("configuration file already exists")
         raise typer.Exit(code=1)
 
     token: SecretStr = typer.prompt(
@@ -121,7 +121,7 @@ def exists() -> None:
     toml_file = os.getenv("RELIABLY_CLI_CONFIG")
     if not toml_file:
         settings = get_settings()
-        toml_file = settings.__config__.toml_file
+        toml_file = settings.model_config.get("toml_file")
 
     console.print("yes" if Path(toml_file).exists() else "no")
 
@@ -131,6 +131,6 @@ def path() -> str:
     toml_file = os.getenv("RELIABLY_CLI_CONFIG")
     if not toml_file:
         settings = get_settings()
-        toml_file = settings.__config__.toml_file
+        toml_file = settings.model_config.get("toml_file")
 
     console.print(Path(toml_file).absolute())
