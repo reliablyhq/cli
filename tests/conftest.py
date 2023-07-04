@@ -10,7 +10,7 @@ from reliably_cli.config.types import Settings
 
 @pytest.fixture
 def settings() -> Settings:
-    return Settings.parse_obj({
+    return Settings.model_validate({
         "service": {
             "token": secrets.token_hex(4)
         },
@@ -26,6 +26,6 @@ def settings() -> Settings:
 @pytest.fixture
 def settings_as_file(settings: Settings) -> Iterator[str]:
     with NamedTemporaryFile() as f:
-        f.write(settings.json().encode("utf-8"))
+        f.write(settings.model_dump_json().encode("utf-8"))
         f.seek(0)
         yield f.name

@@ -155,7 +155,7 @@ def load_plan(plan_id: UUID) -> Plan:
                 console.print(f"unexpected error: {r.status_code}: {r.json()}")
                 raise typer.Exit(code=1)
 
-            return Plan.parse_obj(r.json())
+            return Plan.model_validate(r.json())
 
 
 def store_plan_context(plan: Plan, target_dir: str) -> dict[str, Any]:

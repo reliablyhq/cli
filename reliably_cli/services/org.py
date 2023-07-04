@@ -54,7 +54,7 @@ def load_org(org_id: UUID) -> Organization:
                 console.print(f"unexpected error: {r.status_code}: {r.json()}")
                 raise typer.Exit(code=1)
 
-            return Organization.parse_obj(r.json())
+            return Organization.model_validate(r.json())
 
 
 def load_orgs(token: SecretStr | None = None) -> list[Organization]:
@@ -68,4 +68,4 @@ def load_orgs(token: SecretStr | None = None) -> list[Organization]:
                 console.print(f"unexpected error: {r.status_code}: {r.json()}")
                 raise typer.Exit(code=1)
 
-            return Organizations.parse_obj(r.json())
+            return Organizations.model_validate(r.json())

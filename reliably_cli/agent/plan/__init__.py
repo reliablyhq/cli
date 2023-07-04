@@ -81,7 +81,7 @@ async def fetch_next_schedulable_plan(
                 if plan is None:
                     return
 
-                plan = Plan.parse_obj(plan)
+                plan = Plan.model_validate(plan)
                 await stream.send(plan)
     finally:
         event.set()
