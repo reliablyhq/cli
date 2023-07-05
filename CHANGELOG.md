@@ -2,15 +2,16 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.8.3...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.8.4...HEAD
 
-## [0.8.3][]
+## [0.8.4][]
 
-[0.8.3]: https://github.com/reliablyhq/cli/compare/0.8.2...0.8.3
+[0.8.4]: https://github.com/reliablyhq/cli/compare/0.8.3...0.8.4
 
 ### Changed
 
 * Pydantic requires default value when optional is set
+* Bump dependencies
 
 ## [0.8.2][]
 
