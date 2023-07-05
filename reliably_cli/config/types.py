@@ -26,20 +26,20 @@ __all__ = ["Settings", "get_settings_directory_path"]
 
 class PlanProviderGitHubSection(BaseModel):
     enabled: bool = False
-    token: SecretStr | None
+    token: SecretStr | None = None
     api_url: HttpUrl = "https://api.github.com"
-    repo: str | None
+    repo: str | None = None
     workflow_id: str = "plan.yaml"
     ref: str = "main"
 
 
 class PlanProvidersSection(BaseModel):
-    github: PlanProviderGitHubSection | None
+    github: PlanProviderGitHubSection | None = None
 
 
 class PlanSection(BaseModel):
     fetch_frequency: float = 0
-    providers: PlanProvidersSection | None
+    providers: PlanProvidersSection | None = None
 
 
 class OrgSection(BaseModel):
@@ -47,12 +47,12 @@ class OrgSection(BaseModel):
 
 
 class AgentSection(BaseModel):
-    token: SecretStr | None
+    token: SecretStr | None = None
 
 
 class ServiceSection(BaseModel):
     host: str = "https://app.reliably.com"
-    token: SecretStr | None
+    token: SecretStr | None = None
 
 
 class LogSection(BaseModel):

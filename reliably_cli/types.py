@@ -53,7 +53,9 @@ class PlanScheduleCron(BaseSchema):
 
 
 class PlanBase(BaseSchema):  # pragma: no cover
-    environment: PlanGitHubEnvironment | PlanReliablyEnvironment | PlanGCPEnvironment | None  # noqa: E501
+    environment: PlanGitHubEnvironment | PlanReliablyEnvironment | PlanGCPEnvironment | None = (  # noqa: E501
+        None
+    )
     deployment: PlanDeployment
     schedule: PlanScheduleNow | PlanScheduleCron
     experiments: List[UUID4]
@@ -66,14 +68,14 @@ class Plan(BaseSchema):
     definition: PlanBase
     ref: str
     status: str
-    error: str | None
+    error: str | None = None
 
 
 class IntegrationControlPythonProvider(BaseSchema):
     type: Literal["python"] = "python"
     module: str
-    secrets: List[str] | None
-    arguments: Dict[str, Any] | None
+    secrets: List[str] | None = None
+    arguments: Dict[str, Any] | None = None
 
 
 class IntegrationControl(BaseSchema):
