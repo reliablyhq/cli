@@ -67,7 +67,6 @@ class TOMLConfigSettingsSource(PydanticBaseSettingsSource):
     ) -> None:
         super().__init__(settings_cls)
         self.env_vars = self._load_toml()
-        print(self.env_vars)
 
     def get_field_value(
         self, field: FieldInfo, field_name: str
