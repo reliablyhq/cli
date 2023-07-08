@@ -12,6 +12,10 @@
 
 * using new root model approach from Pydantic v2
 
+### Changed
+
+* Bump dependencies
+
 ## [0.8.6][]
 
 [0.8.6]: https://github.com/reliablyhq/cli/compare/0.8.5...0.8.6
