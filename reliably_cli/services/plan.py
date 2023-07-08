@@ -210,7 +210,7 @@ def load_environment(environment_id: str, target_dir: str) -> None:
         env = Environment.parse_obj(r.json())
         if env:
             path_mapping = {}
-            for s in env.secrets.__root__:
+            for s in env.secrets:
                 if isinstance(s, EnvironmentSecretAsFile):
                     new_path = Path(target_dir, s.path.lstrip("/"))
                     new_path.parent.mkdir(mode=0o710, parents=True)
@@ -219,13 +219,13 @@ def load_environment(environment_id: str, target_dir: str) -> None:
 
                     path_mapping[s.path] = str(new_path)
 
-            for e in env.envvars.__root__:
+            for e in env.envvars:
                 if e.value in path_mapping:
                     os.environ[e.var_name] = path_mapping[e.value]
                 else:
                     os.environ[e.var_name] = e.value
 
-            for s in env.secrets.__root__:
+            for s in env.secrets:
                 if isinstance(s, EnvironmentSecret):
                     v = s.value.get_secret_value()
                     if v in path_mapping:

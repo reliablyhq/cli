@@ -1,19 +1,10 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, Iterator, List, Literal
 
-import orjson
 from pydantic import UUID4, BaseModel, RootModel, SecretStr
 
 __all__ = ["Plan", "FormatOption", "Organization", "Environment"]
-
-
-def _json_dumps(*args, **kwargs) -> str:  # type: ignore[no-untyped-def]
-    return orjson.dumps(*args, **kwargs).decode("utf-8")
-
-
-def _json_loads(obj: str, *args, **kwargs) -> Any:  # type: ignore[no-untyped-def]  # noqa
-    return orjson.loads(obj.encode("utf-8"), *args, **kwargs)
 
 
 class FormatOption(Enum):
@@ -99,7 +90,14 @@ class EnvironmentVar(BaseSchema):
     value: str
 
 
-EnvironmentVars = RootModel[List[EnvironmentVar]]
+class EnvironmentVars(RootModel):
+    root: List[EnvironmentVar]
+
+    def __iter__(self) -> Iterator[EnvironmentVar]:
+        return iter(self.root)
+
+    def __getitem__(self, item) -> EnvironmentVar:
+        return self.root[item]
 
 
 class EnvironmentSecret(BaseSchema):
@@ -114,9 +112,14 @@ class EnvironmentSecretAsFile(BaseSchema):
     path: str
 
 
-EnvironmentSecrets = RootModel[
-    List[EnvironmentSecretAsFile | EnvironmentSecret]
-]
+class EnvironmentSecrets(RootModel):
+    root: List[EnvironmentSecretAsFile | EnvironmentSecret]
+
+    def __iter__(self) -> Iterator[EnvironmentSecretAsFile | EnvironmentSecret]:
+        return iter(self.root)
+
+    def __getitem__(self, item) -> EnvironmentSecretAsFile | EnvironmentSecret:
+        return self.root[item]
 
 
 class Environment(BaseSchema):

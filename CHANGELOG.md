@@ -2,7 +2,15 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.8.6...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.8.7...HEAD
+
+## [0.8.7][]
+
+[0.8.7]: https://github.com/reliablyhq/cli/compare/0.8.6...0.8.7
+
+### Fixed
+
+* using new root model approach from Pydantic v2
 
 ## [0.8.6][]
 

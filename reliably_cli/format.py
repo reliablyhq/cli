@@ -18,7 +18,9 @@ def format_as(
             with io.StringIO() as s:
                 yaml = YAML()
                 yaml.default_flow_style = False
-                yaml.dump(orjson.loads(entity.json().encode("utf-8")), s)
+                yaml.dump(
+                    orjson.loads(entity.model_dump_json().encode("utf-8")), s
+                )
                 return s.getvalue()
 
     return None
