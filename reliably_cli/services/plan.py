@@ -207,7 +207,7 @@ def load_environment_into_memory(plan: Plan, target_dir: str) -> None:
 def load_environment(environment_id: str, target_dir: str) -> None:
     with api_client() as client:
         r = client.get(f"/environments/{environment_id}/clear")
-        env = Environment.parse_obj(r.json())
+        env = Environment.model_validate(r.json())
         if env:
             path_mapping = {}
             for s in env.secrets:
