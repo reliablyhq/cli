@@ -2,11 +2,19 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.8.7...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.8.8...HEAD
+
+## [0.8.8][]
+
+[0.8.8]: https://github.com/reliablyhq/cli/compare/0.8.7...0.8.8
 
 ### Fixed
 
 * swapped `parse_obj` to `model_validate` for Environment as per Pydantic v2
+
+### Changed
+
+* Bump dependencies
 
 ## [0.8.7][]
 
