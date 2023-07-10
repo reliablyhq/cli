@@ -273,7 +273,7 @@ dependencies = [
 
 [[package]]
 name = "chaostoolkit-lib"
-version = "1.36.0"
+version = "1.36.1"
 requires_python = ">=3.7"
 summary = "Chaos Toolkit core library"
 dependencies = [
@@ -2172,9 +2172,9 @@ content_hash = "sha256:04904298a4d688894aa1e5436b80b835a97d261e201ded472398c36cb
     {url = "https://files.pythonhosted.org/packages/73/38/061241b7b2d6ea004474ea65772d9f1057f59bc8e805735ed71068960833/chaostoolkit-kubernetes-0.28.0.tar.gz", hash = "sha256:e9fab6ba59c73456575370294789bb444a315b61789aaf4e11b7adc23ca73764"},
     {url = "https://files.pythonhosted.org/packages/e3/e8/6a371b0c9c0f8fab0d3393ca809ac7b4a305d379502ef06e317579354861/chaostoolkit_kubernetes-0.28.0-py3-none-any.whl", hash = "sha256:1dd5067188ae3d3b380aee6759f6a5f308209ad27d3d5e06ddae1b07634eef9e"},
 ]
-"chaostoolkit-lib 1.36.0" = [
-    {url = "https://files.pythonhosted.org/packages/d2/c3/6214e49cca66d69b529d55e0852fe8ffdd31a778d5b53bb68255273155f8/chaostoolkit_lib-1.36.0-py2.py3-none-any.whl", hash = "sha256:b04a65f36c8ad820ad526aa125ba10f1574152ff142ecd71cc4710bb57178e21"},
-    {url = "https://files.pythonhosted.org/packages/d5/fc/a04dbefb6000c07177db39b5ad842e17d50ce58ebd5746e9e9997dfed7ed/chaostoolkit-lib-1.36.0.tar.gz", hash = "sha256:057d20dbac20824b977833f2bf2d0d34bf1c823c7c93f1ad2e8b2f8c5f2d8a02"},
+"chaostoolkit-lib 1.36.1" = [
+    {url = "https://files.pythonhosted.org/packages/23/f4/94c7fefe40bc3810cb351d312ff122fde7fe13ea8911de42d57e81bca87d/chaostoolkit_lib-1.36.1-py2.py3-none-any.whl", hash = "sha256:a488deed8c56f883ad6007e82475528bcfea309f5bede8e412da0b329fa1e16d"},
+    {url = "https://files.pythonhosted.org/packages/83/3d/5206b0108511e832932c4cb7a5c450b1b7dfd9575df83482b123c9a49c83/chaostoolkit-lib-1.36.1.tar.gz", hash = "sha256:02e1a8afc6320bcb52791cc82ffba50c4db9c8c6e740af57afc0a5bb3a641070"},
 ]
 "chaostoolkit-opentracing 0.10.0" = [
     {url = "https://files.pythonhosted.org/packages/0b/65/c57393fb2e7d1ab9b25cdba5acfd7b2dac8ae1c622eb244b541ea4c7b19a/chaostoolkit_opentracing-0.10.0-py3-none-any.whl", hash = "sha256:479148450d59673b7135d35deade71d887af881e828c6722972363bc1c284b6a"},
