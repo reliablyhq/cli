@@ -2,7 +2,15 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.10.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.10.1...HEAD
+
+## [0.10.1][]
+
+[0.10.1]: https://github.com/reliablyhq/cli/compare/0.10.0...0.10.1
+
+### Changed
+
+* GitHub deployment can also take a Reliably environment id now
 
 ## [0.10.0][]
 

@@ -200,6 +200,9 @@ def load_environment_into_memory(plan: Plan, target_dir: str) -> None:
         if not plan.definition.environment:
             return None
 
+        if not plan.definition.environment.id:
+            return None
+
         env_id = str(plan.definition.environment.id)
         load_environment(env_id, target_dir)
 

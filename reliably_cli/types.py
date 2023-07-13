@@ -24,6 +24,7 @@ class PlanReliablyEnvironment(BaseSchema):
 class PlanGitHubEnvironment(BaseSchema):
     provider: Literal["github"] = "github"
     name: str
+    id: UUID4 | None = None
 
 
 class PlanGCPEnvironment(BaseSchema):
