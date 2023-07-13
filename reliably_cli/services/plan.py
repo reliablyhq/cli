@@ -16,7 +16,7 @@ from chaoslib import convert_vars, merge_vars
 from chaoslib.control import load_global_controls
 from chaoslib.experiment import ensure_experiment_is_valid, run_experiment
 from chaoslib.settings import CHAOSTOOLKIT_CONFIG_PATH, load_settings
-from chaoslib.types import Journal, Schedule, Strategy
+from chaoslib.types import Dry, Journal, Schedule, Strategy
 from ruamel.yaml import YAML
 
 from ..client import api_client
@@ -298,7 +298,31 @@ def run_chaostoolkit(
             x_runtime.get("hypothesis", {}).get("strategy") or "default"
         )
 
-    schedule = Schedule(continuous_hypothesis_frequency=1.0, fail_fast=True)
+    rollback_strategy = os.getenv("RELIABLY_CLI_ROLLBACK_STRATEGY")
+    hypothesis_strategy = os.getenv("RELIABLY_CLI_HYPOTHESIS_STRATEGY")
+    hypothesis_freq = os.getenv("RELIABLY_CLI_HYPOTHESIS_STRATEGY_FREQ", 1)
+    hypothesis_fail_fast = os.getenv(
+        "RELIABLY_CLI_HYPOTHESIS_STRATEGY_FAIL_FAST", False
+    )
+    dry_strategy = os.getenv("RELIABLY_CLI_DRY_STRATEGY")
+
+    if rollback_strategy is not None:
+        rt["rollbacks"]["strategy"] = rollback_strategy
+
+    if hypothesis_strategy is not None:
+        rt["hypothesis"]["strategy"] = hypothesis_strategy
+
+    if dry_strategy is not None:
+        experiment["dry"] = Dry.from_string(dry_strategy)
+
+    fail_fast = hypothesis_fail_fast
+    if hypothesis_fail_fast in ("t", "1", "true", "TRUE", "True"):
+        fail_fast = True
+
+    schedule = Schedule(
+        continuous_hypothesis_frequency=float(hypothesis_freq),
+        fail_fast=fail_fast,
+    )
     ssh_strategy = Strategy.from_string(rt["hypothesis"]["strategy"])
 
     journal = run_experiment(

@@ -2,7 +2,22 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.9.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.10.0...HEAD
+
+## [0.10.0][]
+
+[0.10.0]: https://github.com/reliablyhq/cli/compare/0.9.0...0.10.0
+
+### Added
+
+* The `reliably service plan execute` now reads the following env variable:
+  * `RELIABLY_CLI_DRY_STRATEGY` one of: `"probes", "actions", "activities", "pause"`
+  * `RELIABLY_CLI_ROLLBACK_STRATEGY` one of : `"default", "always", "never" or "deviated"`
+  * `RELIABLY_CLI_HYPOTHESIS_STRATEGY` one of : `"default", "before-method-only", "after-method-only", "during-method-only", "continuously"`
+  * `RELIABLY_CLI_HYPOTHESIS_STRATEGY_FREQ` which is only required when
+    `RELIABLY_CLI_HYPOTHESIS_STRATEGY` is `continuously`
+  * `RELIABLY_CLI_HYPOTHESIS_STRATEGY_FAIL_FAST` which is only required when
+    `RELIABLY_CLI_HYPOTHESIS_STRATEGY` is `continuously`
 
 ## [0.9.0][]
 
