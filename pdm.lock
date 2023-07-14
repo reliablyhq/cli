@@ -273,7 +273,7 @@ dependencies = [
 
 [[package]]
 name = "chaostoolkit-lib"
-version = "1.36.3"
+version = "1.37.0"
 requires_python = ">=3.7"
 summary = "Chaos Toolkit core library"
 dependencies = [
@@ -1781,7 +1781,7 @@ dependencies = [
 
 [[package]]
 name = "zipp"
-version = "3.16.1"
+version = "3.16.2"
 requires_python = ">=3.8"
 summary = "Backport of pathlib-compatible object wrapper for zip files"
 
@@ -2168,9 +2168,9 @@ content_hash = "sha256:04904298a4d688894aa1e5436b80b835a97d261e201ded472398c36cb
     {url = "https://files.pythonhosted.org/packages/73/38/061241b7b2d6ea004474ea65772d9f1057f59bc8e805735ed71068960833/chaostoolkit-kubernetes-0.28.0.tar.gz", hash = "sha256:e9fab6ba59c73456575370294789bb444a315b61789aaf4e11b7adc23ca73764"},
     {url = "https://files.pythonhosted.org/packages/e3/e8/6a371b0c9c0f8fab0d3393ca809ac7b4a305d379502ef06e317579354861/chaostoolkit_kubernetes-0.28.0-py3-none-any.whl", hash = "sha256:1dd5067188ae3d3b380aee6759f6a5f308209ad27d3d5e06ddae1b07634eef9e"},
 ]
-"chaostoolkit-lib 1.36.3" = [
-    {url = "https://files.pythonhosted.org/packages/49/81/88b97738c3ff869fc0c2e45fd2c45045e4e9ad6d361e4f0d35689c8079db/chaostoolkit_lib-1.36.3-py2.py3-none-any.whl", hash = "sha256:a50466b2ab6abb45a12454a492ff78970282ecd565ef73e8bdb700adcf39aefe"},
-    {url = "https://files.pythonhosted.org/packages/cf/ce/e1a075046f06043acebdfe0fa5456da7c3b0e8721f6296f4f58e73343c31/chaostoolkit-lib-1.36.3.tar.gz", hash = "sha256:c04c0d1e86b96b6b43756191add42e4c693f1afc59bb02ca18023df66548da3a"},
+"chaostoolkit-lib 1.37.0" = [
+    {url = "https://files.pythonhosted.org/packages/51/d7/53da901500a8f91fb28258e5acf8c086537c51f5dffa737a139ac979d9c6/chaostoolkit-lib-1.37.0.tar.gz", hash = "sha256:2dbbdfee75371259069c0b3eccfcedfaf3cb0d1540ba02d5d1cbe03c0e0f1937"},
+    {url = "https://files.pythonhosted.org/packages/f9/89/1d020ea90597be28961e700780bd22baa317b0b51198b1035da2198c288c/chaostoolkit_lib-1.37.0-py2.py3-none-any.whl", hash = "sha256:bf6bdf28162ee391d16e27f2ea157be47772eddf42ba6e94379dae197b3dc7d9"},
 ]
 "chaostoolkit-opentracing 0.10.0" = [
     {url = "https://files.pythonhosted.org/packages/0b/65/c57393fb2e7d1ab9b25cdba5acfd7b2dac8ae1c622eb244b541ea4c7b19a/chaostoolkit_opentracing-0.10.0-py3-none-any.whl", hash = "sha256:479148450d59673b7135d35deade71d887af881e828c6722972363bc1c284b6a"},
@@ -4081,9 +4081,9 @@ content_hash = "sha256:04904298a4d688894aa1e5436b80b835a97d261e201ded472398c36cb
     {url = "https://files.pythonhosted.org/packages/fb/2d/060ab740f64ea6ea2088e375c3046839faaf4bbba2b65a5364668bd765e7/yarl-1.9.2-cp38-cp38-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:84e0b1599334b1e1478db01b756e55937d4614f8654311eb26012091be109d59"},
     {url = "https://files.pythonhosted.org/packages/fe/7d/9d85f658b6f7c041ca3ba371d133040c4dc41eb922aef0a6ba917291d187/yarl-1.9.2-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:aff634b15beff8902d1f918012fc2a42e0dbae6f469fce134c8a0dc51ca423bb"},
 ]
-"zipp 3.16.1" = [
-    {url = "https://files.pythonhosted.org/packages/a1/3b/385e3b43200af0b9a13d03c234efbd9d40c6d73ab63fde1c097a2daacdea/zipp-3.16.1-py3-none-any.whl", hash = "sha256:0b37c326d826d5ca35f2b9685cd750292740774ef16190008b00a0227c256fe0"},
-    {url = "https://files.pythonhosted.org/packages/ef/76/5a9e1553f00ee55a6de6b3c176aa4c859c7f64b9bbdc48804df174dee890/zipp-3.16.1.tar.gz", hash = "sha256:857b158da2cbf427b376da1c24fd11faecbac5a4ac7523c3607f8a01f94c2ec0"},
+"zipp 3.16.2" = [
+    {url = "https://files.pythonhosted.org/packages/8c/08/d3006317aefe25ea79d3b76c9650afabaf6d63d1c8443b236e7405447503/zipp-3.16.2-py3-none-any.whl", hash = "sha256:679e51dd4403591b2d6838a48de3d283f3d188412a9782faadf845f298736ba0"},
+    {url = "https://files.pythonhosted.org/packages/e2/45/f3b987ad5bf9e08095c1ebe6352238be36f25dd106fde424a160061dce6d/zipp-3.16.2.tar.gz", hash = "sha256:ebc15946aa78bd63458992fc81ec3b6f7b1e92d51c35e6de1c3804e73b799147"},
 ]
 "zope-event 5.0" = [
     {url = "https://files.pythonhosted.org/packages/46/c2/427f1867bb96555d1d34342f1dd97f8c420966ab564d58d18469a1db8736/zope.event-5.0.tar.gz", hash = "sha256:bac440d8d9891b4068e2b5a2c5e2c9765a9df762944bda6955f96bb9b91e67cd"},
