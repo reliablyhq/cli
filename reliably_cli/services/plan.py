@@ -278,7 +278,10 @@ def run_chaostoolkit(
         if s:
             settings = s
             rt = s.setdefault("runtime", {})
-            rt.setdefault("hypothesis", {"strategy": "default", "fail_fast": False, "freq": 1.0})
+            rt.setdefault(
+                "hypothesis",
+                {"strategy": "default", "fail_fast": False, "freq": 1.0},
+            )
             rt.setdefault("rollbacks", {"strategy": "always"})
 
     if "controls" not in settings:
@@ -291,6 +294,9 @@ def run_chaostoolkit(
     experiment = load_experiment(experiment_url)
     ensure_experiment_is_valid(experiment)
 
+    rt = settings["runtime"]
+    x_runtime = experiment.get("runtime")
+
     is_dry = Dry.from_string(x_runtime.get("dry", ""))
     if is_dry:
         experiment["dry"] = is_dry
@@ -299,17 +305,19 @@ def run_chaostoolkit(
     if dry_strategy is not None:
         experiment["dry"] = Dry.from_string(dry_strategy)
 
-    rt = settings["runtime"]
-    x_runtime = experiment.get("runtime")
     if x_runtime:
         rt["rollbacks"]["strategy"] = (
             x_runtime.get("rollbacks", {}).get("strategy") or "always"
         )
         x_runtime_hypo = x_runtime.get("hypothesis", {})
-        rt["hypothesis"]["strategy"] = x_runtime_hypo.get("strategy") or "default"
+        rt["hypothesis"]["strategy"] = (
+            x_runtime_hypo.get("strategy") or "default"
+        )
         if rt["hypothesis"]["strategy"] == "continuously":
             rt["hypothesis"]["freq"] = float(x_runtime_hypo.get("freq") or 1.0)
-            rt["hypothesis"]["fail_fast"] = x_runtime_hypo.get("fail_fast") or False
+            rt["hypothesis"]["fail_fast"] = (
+                x_runtime_hypo.get("fail_fast") or False
+            )
 
     rollback_strategy = os.getenv("RELIABLY_CLI_ROLLBACK_STRATEGY")
     hypothesis_strategy = os.getenv("RELIABLY_CLI_HYPOTHESIS_STRATEGY")
