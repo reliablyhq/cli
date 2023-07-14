@@ -278,7 +278,7 @@ def run_chaostoolkit(
         if s:
             settings = s
             rt = s.setdefault("runtime", {})
-            rt.setdefault("hypothesis", {"strategy": "default"})
+            rt.setdefault("hypothesis", {"strategy": "default", "fail_fast": False, "freq": 1.0})
             rt.setdefault("rollbacks", {"strategy": "always"})
 
     if "controls" not in settings:
@@ -291,23 +291,28 @@ def run_chaostoolkit(
     experiment = load_experiment(experiment_url)
     ensure_experiment_is_valid(experiment)
 
+    is_dry = Dry.from_string(x_runtime.get("dry", ""))
+    if is_dry:
+        experiment["dry"] = is_dry
+
+    dry_strategy = os.getenv("RELIABLY_CLI_DRY_STRATEGY")
+    if dry_strategy is not None:
+        experiment["dry"] = Dry.from_string(dry_strategy)
+
     rt = settings["runtime"]
     x_runtime = experiment.get("runtime")
     if x_runtime:
         rt["rollbacks"]["strategy"] = (
             x_runtime.get("rollbacks", {}).get("strategy") or "always"
         )
-        rt["hypothesis"]["strategy"] = (
-            x_runtime.get("hypothesis", {}).get("strategy") or "default"
-        )
+        x_runtime_hypo = x_runtime.get("hypothesis", {})
+        rt["hypothesis"]["strategy"] = x_runtime_hypo.get("strategy") or "default"
+        if rt["hypothesis"]["strategy"] == "continuously":
+            rt["hypothesis"]["freq"] = float(x_runtime_hypo.get("freq") or 1.0)
+            rt["hypothesis"]["fail_fast"] = x_runtime_hypo.get("fail_fast") or False
 
     rollback_strategy = os.getenv("RELIABLY_CLI_ROLLBACK_STRATEGY")
     hypothesis_strategy = os.getenv("RELIABLY_CLI_HYPOTHESIS_STRATEGY")
-    hypothesis_freq = os.getenv("RELIABLY_CLI_HYPOTHESIS_STRATEGY_FREQ", 1)
-    hypothesis_fail_fast = os.getenv(
-        "RELIABLY_CLI_HYPOTHESIS_STRATEGY_FAIL_FAST", False
-    )
-    dry_strategy = os.getenv("RELIABLY_CLI_DRY_STRATEGY")
 
     if rollback_strategy is not None:
         rt["rollbacks"]["strategy"] = rollback_strategy
@@ -315,16 +320,23 @@ def run_chaostoolkit(
     if hypothesis_strategy is not None:
         rt["hypothesis"]["strategy"] = hypothesis_strategy
 
-    if dry_strategy is not None:
-        experiment["dry"] = Dry.from_string(dry_strategy)
+    if rt["hypothesis"]["strategy"] == "continuously":
+        hypothesis_freq = os.getenv("RELIABLY_CLI_HYPOTHESIS_STRATEGY_FREQ")
+        if hypothesis_freq is not None:
+            rt["hypothesis"]["freq"] = float(hypothesis_freq)
 
-    fail_fast = hypothesis_fail_fast
-    if hypothesis_fail_fast in ("t", "1", "true", "TRUE", "True"):
-        fail_fast = True
+        hypothesis_fail_fast = os.getenv(
+            "RELIABLY_CLI_HYPOTHESIS_STRATEGY_FAIL_FAST"
+        )
+        if hypothesis_fail_fast is not None:
+            if hypothesis_fail_fast in ("t", "1", "true", "TRUE", "True"):
+                rt["hypothesis"]["fail_fast"] = True
+            else:
+                rt["hypothesis"]["fail_fast"] = False
 
     schedule = Schedule(
-        continuous_hypothesis_frequency=float(hypothesis_freq),
-        fail_fast=fail_fast,
+        continuous_hypothesis_frequency=rt["hypothesis"].get("freq", 1),
+        fail_fast=rt["hypothesis"].get("fail_fast", False),
     )
     ssh_strategy = Strategy.from_string(rt["hypothesis"]["strategy"])
 

@@ -2,11 +2,29 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.10.1...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.14.0...HEAD
 
-## [0.10.1][]
+## [0.14.0][]
 
-[0.10.1]: https://github.com/reliablyhq/cli/compare/0.10.0...0.10.1
+[0.14.0]: https://github.com/reliablyhq/cli/compare/0.13.1...0.14.0
+
+### Changed
+
+* Extended support for `dry` in the `runtime` block:
+  
+  ```json
+  {
+    "runtime": {
+        "dry": "probes"
+    }
+  }
+  ```
+* Extended support for `fail_fast` and `freq` in the `runtime` block
+
+
+## [0.13.1][]
+
+[0.13.1]: https://github.com/reliablyhq/cli/compare/0.10.0...0.13.1
 
 ### Changed
 
