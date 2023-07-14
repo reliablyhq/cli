@@ -297,15 +297,11 @@ def run_chaostoolkit(
     rt = settings["runtime"]
     x_runtime = experiment.get("runtime")
 
-    is_dry = Dry.from_string(x_runtime.get("dry", ""))
-    if is_dry:
-        experiment["dry"] = is_dry
-
-    dry_strategy = os.getenv("RELIABLY_CLI_DRY_STRATEGY")
-    if dry_strategy is not None:
-        experiment["dry"] = Dry.from_string(dry_strategy)
-
     if x_runtime:
+        is_dry = Dry.from_string(x_runtime.get("dry", ""))
+        if is_dry:
+            experiment["dry"] = is_dry
+
         rt["rollbacks"]["strategy"] = (
             x_runtime.get("rollbacks", {}).get("strategy") or "always"
         )
@@ -318,6 +314,10 @@ def run_chaostoolkit(
             rt["hypothesis"]["fail_fast"] = (
                 x_runtime_hypo.get("fail_fast") or False
             )
+
+    dry_strategy = os.getenv("RELIABLY_CLI_DRY_STRATEGY")
+    if dry_strategy is not None:
+        experiment["dry"] = Dry.from_string(dry_strategy)
 
     rollback_strategy = os.getenv("RELIABLY_CLI_ROLLBACK_STRATEGY")
     hypothesis_strategy = os.getenv("RELIABLY_CLI_HYPOTHESIS_STRATEGY")
