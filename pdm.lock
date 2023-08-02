@@ -547,7 +547,7 @@ files = [
 
 [[package]]
 name = "chaostoolkit-reliably"
-version = "0.58.1"
+version = "0.59.0"
 requires_python = ">=3.7"
 summary = "Reliably CLI"
 dependencies = [
@@ -562,8 +562,8 @@ dependencies = [
     "slo-generator[cloud_monitoring,datadog,dynatrace,prometheus]>=2.3.4",
 ]
 files = [
-    {file = "chaostoolkit_reliably-0.58.1-py3-none-any.whl", hash = "sha256:cfdf07a6b61907a1347beda0b4eab339a4c72543cc55eed767ce96781ec484eb"},
-    {file = "chaostoolkit_reliably-0.58.1.tar.gz", hash = "sha256:ef2ae74389f1442e43cea46b1d2f64c319c6929e6463ace5e1fd4b31107f5d0e"},
+    {file = "chaostoolkit_reliably-0.59.0-py3-none-any.whl", hash = "sha256:f0f6cb028d526604841bb7420f9ff9481b0fc88226e31b09f651f6c17b69d388"},
+    {file = "chaostoolkit_reliably-0.59.0.tar.gz", hash = "sha256:fff28b83a56f7884e6a3ca2eef76264643503b0b6c1830d6c6e40107c937c381"},
 ]
 
 [[package]]
