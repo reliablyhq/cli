@@ -548,7 +548,7 @@ files = [
 
 [[package]]
 name = "chaostoolkit-reliably"
-version = "0.62.0"
+version = "0.62.1"
 requires_python = ">=3.7"
 summary = "Reliably CLI"
 dependencies = [
@@ -563,8 +563,8 @@ dependencies = [
     "slo-generator[cloud_monitoring,datadog,dynatrace,prometheus]>=2.3.4",
 ]
 files = [
-    {file = "chaostoolkit_reliably-0.62.0-py3-none-any.whl", hash = "sha256:7fda1a1a670064f1d8925d372055418f37a0c4301402eeec0e18a023082fce06"},
-    {file = "chaostoolkit_reliably-0.62.0.tar.gz", hash = "sha256:5c13a94760b0147871bb03df7f2858168b2e688e2260d19851ac82fe3656bbf5"},
+    {file = "chaostoolkit_reliably-0.62.1-py3-none-any.whl", hash = "sha256:ef98262c90694fafda5bf9016d8c1ff45c07f1f53f8f5ceab31f983a78b291f1"},
+    {file = "chaostoolkit_reliably-0.62.1.tar.gz", hash = "sha256:37e94d9f6c8ae10e406be0fed6e8142c7d400138a27270116fc9f2488018aba3"},
 ]
 
 [[package]]
@@ -857,12 +857,12 @@ files = [
 
 [[package]]
 name = "exceptiongroup"
-version = "1.1.2"
+version = "1.1.3"
 requires_python = ">=3.7"
 summary = "Backport of PEP 654 (exception groups)"
 files = [
-    {file = "exceptiongroup-1.1.2-py3-none-any.whl", hash = "sha256:e346e69d186172ca7cf029c8c1d16235aa0e04035e5750b4b95039e65204328f"},
-    {file = "exceptiongroup-1.1.2.tar.gz", hash = "sha256:12c3e887d6485d16943a309616de20ae5582633e0a2eda17f4e10fd61c1e8af5"},
+    {file = "exceptiongroup-1.1.3-py3-none-any.whl", hash = "sha256:343280667a4585d195ca1cf9cef84a4e178c4b6cf2274caef9859782b567d5e3"},
+    {file = "exceptiongroup-1.1.3.tar.gz", hash = "sha256:097acd85d473d75af5bb98e41b61ff7fe35efe6675e4f9370ec6ec5126d160e9"},
 ]
 
 [[package]]
