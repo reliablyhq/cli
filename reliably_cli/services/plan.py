@@ -364,6 +364,8 @@ def reconfigure_chaostoolkit_logger(
     log_file: Path,
     log_stdout: bool,
 ) -> Generator[logging.Logger, None, None]:
+    from chaosreliably import attach_log_stream_handler
+
     ctk_logger = logging.getLogger("logzero_default")
 
     for handler in list(ctk_logger.handlers):
@@ -384,7 +386,8 @@ def reconfigure_chaostoolkit_logger(
         handler.setFormatter(fmt)
         ctk_logger.addHandler(handler)
 
-    yield ctk_logger
+    with attach_log_stream_handler(ctk_logger, fmt):
+        yield ctk_logger
 
 
 class UTCFormatter(logging.Formatter):
