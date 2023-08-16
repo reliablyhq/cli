@@ -2,7 +2,15 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.16.1...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.17.0...HEAD
+
+## [0.17.0][]
+
+[0.17.0]: https://github.com/reliablyhq/cli/compare/0.16.1...0.17.0
+
+### Changed
+
+* Bump dependencies
 
 ## [0.16.1][]
 
