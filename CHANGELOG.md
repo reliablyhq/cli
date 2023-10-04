@@ -4,6 +4,10 @@
 
 [Unreleased]: https://github.com/reliablyhq/cli/compare/0.20.0...HEAD
 
+### Fixed
+
+* Method call from pydantic v2 changed to `model_dump_json`
+
 ### Changed
 
 * Bump dependencies

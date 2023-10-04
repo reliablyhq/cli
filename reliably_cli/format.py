@@ -13,7 +13,7 @@ def format_as(
 ) -> str | None:
     match fmt.value:
         case "json":
-            return entity.json(indent=2)
+            return entity.model_dump_json(indent=2)
         case "yaml":
             with io.StringIO() as s:
                 yaml = YAML()
