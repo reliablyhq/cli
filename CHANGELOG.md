@@ -4,6 +4,10 @@
 
 [Unreleased]: https://github.com/reliablyhq/cli/compare/0.20.0...HEAD
 
+## [0.20.0][]
+
+[0.20.0]: https://github.com/reliablyhq/cli/compare/0.19.0...0.20.0
+
 ### Fixed
 
 * Method call from pydantic v2 changed to `model_dump_json`
@@ -14,14 +18,6 @@
 * Set exit code of `reliably service plan execute` to match the status
   of the experiment: `0` when it completed, `1` when it deviated and `2`
   otherwise
-
-## [0.20.0][]
-
-[0.20.0]: https://github.com/reliablyhq/cli/compare/0.19.0...0.v.0
-
-### Changed
-
-* Bump dependencies
 
 ## [0.19.0][]
 
