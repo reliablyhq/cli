@@ -79,6 +79,14 @@ def execute(
     var_file: list[Path] = typer.Option(
         lambda: [], dir_okay=False, readable=True
     ),
+    set_exit_code: bool = typer.Option(
+        True,
+        is_flag=True,
+        help=(
+            "Exit code reflects the plan status: 0 is completed, 1 is "
+            "deviated and 2 is any other status"
+        ),
+    ),
 ) -> None:
     """
     Execute a plan
@@ -130,12 +138,18 @@ def execute(
                 tb = "".join(traceback.format_exception(x))
                 console.print(f"running experiment failed: {tb}")
 
-                raise typer.Exit(code=1)
+                raise typer.Exit(code=2)
 
             result_file.absolute().write_bytes(
                 orjson.dumps(journal, option=orjson.OPT_INDENT_2)
             )
             show_result_url(journal)
+
+            if set_exit_code:
+                if journal.get("deviated"):
+                    raise typer.Exit(code=1)
+                elif journal.get("status") != "completed":
+                    raise typer.Exit(code=2)
 
 
 ###############################################################################

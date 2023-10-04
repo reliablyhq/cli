@@ -7,6 +7,9 @@
 ### Changed
 
 * Bump dependencies
+* Set exit code of `reliably service plan execute` to match the status
+  of the experiment: `0` when it completed, `1` when it deviated and `2`
+  otherwise
 
 ## [0.20.0][]
 
