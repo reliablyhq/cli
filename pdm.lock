@@ -478,7 +478,7 @@ files = [
 
 [[package]]
 name = "chaostoolkit-kubernetes"
-version = "0.31.0"
+version = "0.31.1"
 requires_python = ">=3.7"
 summary = "Chaos Toolkit Extension for Kubernetes"
 dependencies = [
@@ -489,8 +489,8 @@ dependencies = [
     "pyyaml",
 ]
 files = [
-    {file = "chaostoolkit-kubernetes-0.31.0.tar.gz", hash = "sha256:5674047c9fe781ce863db1f79e24d4311c2ba1aeffc41fc1963fca58c0dafb37"},
-    {file = "chaostoolkit_kubernetes-0.31.0-py3-none-any.whl", hash = "sha256:df10ad2255477d7f07552bcd5c01b9f1d9cdba8562229c732c6d807c609bb0eb"},
+    {file = "chaostoolkit-kubernetes-0.31.1.tar.gz", hash = "sha256:c8ae706856700c6aa285e8011f8234f5c3596d56776c25cc3d5f16bdf1e2f3ec"},
+    {file = "chaostoolkit_kubernetes-0.31.1-py3-none-any.whl", hash = "sha256:9a2d587a71dcf522eec0b9dff56938219379e505532d68aba04a96b5d17b683c"},
 ]
 
 [[package]]
