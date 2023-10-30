@@ -6,13 +6,14 @@ import tempfile
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
+from types import FrameType
 from typing import Any, Generator
 from uuid import UUID
 
 import httpx
 import orjson
 import typer
-from chaoslib import convert_vars, merge_vars
+from chaoslib import convert_vars, exit as chaos_exit, merge_vars
 from chaoslib.control import load_global_controls
 from chaoslib.experiment import ensure_experiment_is_valid, run_experiment
 from chaoslib.settings import CHAOSTOOLKIT_CONFIG_PATH, load_settings
@@ -275,6 +276,9 @@ def run_chaostoolkit(
     logger = logging.getLogger("logzero_default")
 
     logger.info("#" * 80)
+
+    rewire_exit_signal_from_ctk()
+
     logger.info(f"Starting Reliably experiment: {experiment_url}")
 
     settings = {
@@ -444,3 +448,18 @@ def load_experiment(url: str) -> dict[str, Any]:
 
         console.print("unrecognized experiment format")
         raise typer.Exit(code=1)
+
+
+def _new_terminate_now(signum: int, frame: FrameType = None) -> None:
+    logger = logging.getLogger("logzero_default")
+    logger.critical("Caught SIGTERM, signaling to the experiment it must end")
+
+    raise SystemExit(30)
+
+
+def rewire_exit_signal_from_ctk() -> None:
+    if os.getenv("RELIABLY_CATCH_SIGTERM_BEFORE_CHAOSTOOLKIT") == "1":
+        logger = logging.getLogger("logzero_default")
+        logger.info("Re-wiring SIGTERM handler to Reliably")
+
+        chaos_exit._terminate_now = _new_terminate_now

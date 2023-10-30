@@ -7,6 +7,12 @@
 ### Changed
 
 * Bump dependencies
+* Use `RELIABLY_CATCH_SIGTERM_BEFORE_CHAOSTOOLKIT` to catch `SIGTERM` first
+  before the Chaos Toolkit has a chance. This is useful because by default the
+  CTK waits for pending activities before fully terminating when receiving
+  that signal. However, in some cases, such as a non-tty environment, there
+  is no second signal to force the termination and therefore the process
+  hangs and the plan isn't terminated properly.
 
 ## [0.22.0][]
 
