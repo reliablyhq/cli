@@ -11,6 +11,10 @@
 
 [11]: https://github.com/reliablyhq/cli/issues/11
 
+### Changed
+
+* Bump dependencies
+
 ## [0.23.0][]
 
 [0.23.0]: https://github.com/reliablyhq/cli/compare/0.22.0...0.23.0
