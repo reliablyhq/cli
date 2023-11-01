@@ -327,7 +327,10 @@ def run_chaostoolkit(
         rt["hypothesis"]["strategy"] = (
             x_runtime_hypo.get("strategy") or "default"
         )
-        if rt["hypothesis"]["strategy"] == "continuously":
+        if rt["hypothesis"]["strategy"] in (
+            "continuously",
+            "during-method-only",
+        ):
             rt["hypothesis"]["freq"] = float(x_runtime_hypo.get("freq") or 1.0)
             rt["hypothesis"]["fail_fast"] = (
                 x_runtime_hypo.get("fail_fast") or False
@@ -346,7 +349,7 @@ def run_chaostoolkit(
     if hypothesis_strategy is not None:
         rt["hypothesis"]["strategy"] = hypothesis_strategy
 
-    if rt["hypothesis"]["strategy"] == "continuously":
+    if rt["hypothesis"]["strategy"] in ("continuously", "during-method-only"):
         hypothesis_freq = os.getenv("RELIABLY_CLI_HYPOTHESIS_STRATEGY_FREQ")
         if hypothesis_freq is not None:
             rt["hypothesis"]["freq"] = float(hypothesis_freq)

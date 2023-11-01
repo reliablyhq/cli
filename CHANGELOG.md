@@ -4,6 +4,13 @@
 
 [Unreleased]: https://github.com/reliablyhq/cli/compare/0.23.0...HEAD
 
+### Fixed
+
+* Respect the runtime strategy for the hypothesis when it is
+  `"during-method-only"` [#11][11]
+
+[11]: https://github.com/reliablyhq/cli/issues/11
+
 ## [0.23.0][]
 
 [0.23.0]: https://github.com/reliablyhq/cli/compare/0.22.0...0.23.0
