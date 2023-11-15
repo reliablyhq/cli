@@ -4,6 +4,11 @@
 
 [Unreleased]: https://github.com/reliablyhq/cli/compare/0.24.0...HEAD
 
+### Added
+
+* Import into starter library your own extensions for easily building new
+  experiments
+
 ## [0.24.0][]
 
 [0.24.0]: https://github.com/reliablyhq/cli/compare/0.23.0...0.24.0
