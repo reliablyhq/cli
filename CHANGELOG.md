@@ -4,6 +4,10 @@
 
 [Unreleased]: https://github.com/reliablyhq/cli/compare/0.25.2...HEAD
 
+### Fixed
+
+* Command `config init` as it failed if config didn't already exist
+
 ## [0.25.2][]
 
 [0.25.2]: https://github.com/reliablyhq/cli/compare/0.25.1...0.25.2

@@ -89,6 +89,8 @@ def init(
             org_id = str(org.id)
             break
 
+    Path(toml_file).parent.mkdir(exist_ok=True)
+
     Path(toml_file).write_text(
         f"""
 # Welcome to Reliably, you fellow engineer!

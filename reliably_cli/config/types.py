@@ -43,7 +43,7 @@ class PlanSection(BaseModel):
 
 
 class OrgSection(BaseModel):
-    id: UUID4
+    id: UUID4 | None = None
 
 
 class AgentSection(BaseModel):
@@ -111,8 +111,8 @@ class TOMLConfigSettingsSource(PydanticBaseSettingsSource):
 
 
 class Settings(BaseSettings):
-    service: ServiceSection
-    organization: OrgSection
+    service: ServiceSection | None = ServiceSection()
+    organization: OrgSection | None = None
     agent: AgentSection | None = None
     plan: PlanSection | None = None
     log: LogSection = LogSection(level="info", as_json=False)
