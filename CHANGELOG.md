@@ -2,7 +2,15 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.25.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.25.1...HEAD
+
+## [0.25.1][]
+
+[0.25.1]: https://github.com/reliablyhq/cli/compare/0.25.0...0.25.1
+
+### Fixed
+
+* Dockerfile for full image
 
 ## [0.25.0][]
 

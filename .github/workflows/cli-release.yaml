@@ -95,7 +95,7 @@ jobs:
           context: ./container
           push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64
-          file: ./Dockerfile
+          file: ./container/Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
