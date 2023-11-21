@@ -2,7 +2,15 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.25.1...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.25.2...HEAD
+
+## [0.25.2][]
+
+[0.25.2]: https://github.com/reliablyhq/cli/compare/0.25.1...0.25.2
+
+### Fixed
+
+* Add missing settings.yaml file
 
 ## [0.25.1][]
 
