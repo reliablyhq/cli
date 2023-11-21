@@ -8,6 +8,12 @@
 
 * Import into starter library your own extensions for easily building new
   experiments
+* Also build a container image with most major Chaos Toolkit extensions, ready
+  to be used by Reliably plans
+
+### Changed
+
+* Bump dependencies
 
 ## [0.24.0][]
 
