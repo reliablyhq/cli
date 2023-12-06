@@ -4,9 +4,18 @@
 
 [Unreleased]: https://github.com/reliablyhq/cli/compare/0.25.2...HEAD
 
+### Added
+
+* The `reliably snapshot scout` commands to discover and return snapshots of
+  system resources back to Reliably to populate the builder
+
 ### Fixed
 
 * Command `config init` as it failed if config didn't already exist
+
+### Changed
+
+* Bump dependencies
 
 ## [0.25.2][]
 
