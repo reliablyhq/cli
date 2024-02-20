@@ -2,7 +2,11 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.25.2...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.26.0...HEAD
+
+## [0.26.0][]
+
+[0.26.0]: https://github.com/reliablyhq/cli/compare/0.25.2...0.26.0
 
 ### Added
 
