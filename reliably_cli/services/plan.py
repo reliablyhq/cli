@@ -16,6 +16,7 @@ import typer
 from chaoslib import convert_vars, exit as chaos_exit, merge_vars
 from chaoslib.control import load_global_controls
 from chaoslib.experiment import ensure_experiment_is_valid, run_experiment
+from chaoslib.log import configure_logger
 from chaoslib.settings import CHAOSTOOLKIT_CONFIG_PATH, load_settings
 from chaoslib.types import Dry, Journal, Schedule, Strategy
 from ruamel.yaml import YAML
@@ -273,7 +274,7 @@ def run_chaostoolkit(
     var_files: list[Path],
     control_files: list[Path],
 ) -> Journal:
-    logger = logging.getLogger("logzero_default")
+    logger = logging.getLogger("chaostoolkit")
 
     logger.info("#" * 80)
 
@@ -387,7 +388,8 @@ def reconfigure_chaostoolkit_logger(
 ) -> Generator[logging.Logger, None, None]:
     from chaosreliably import attach_log_stream_handler
 
-    ctk_logger = logging.getLogger("logzero_default")
+    configure_logger(verbose=True)
+    ctk_logger = logging.getLogger("chaostoolkit")
 
     for handler in list(ctk_logger.handlers):
         ctk_logger.removeHandler(handler)
@@ -454,7 +456,7 @@ def load_experiment(url: str) -> dict[str, Any]:
 
 
 def _new_terminate_now(signum: int, frame: FrameType = None) -> None:
-    logger = logging.getLogger("logzero_default")
+    logger = logging.getLogger("chaostoolkit")
     logger.critical("Caught SIGTERM, signaling to the experiment it must end")
 
     raise SystemExit(30)
@@ -462,7 +464,7 @@ def _new_terminate_now(signum: int, frame: FrameType = None) -> None:
 
 def rewire_exit_signal_from_ctk() -> None:
     if os.getenv("RELIABLY_CATCH_SIGTERM_BEFORE_CHAOSTOOLKIT") == "1":
-        logger = logging.getLogger("logzero_default")
+        logger = logging.getLogger("chaostoolkit")
         logger.info("Re-wiring SIGTERM handler to Reliably")
 
         chaos_exit._terminate_now = _new_terminate_now

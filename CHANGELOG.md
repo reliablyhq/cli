@@ -16,6 +16,7 @@
 ### Changed
 
 * Bump dependencies
+* Adjusted for chaostoolkit-lib 1.42.0 changes around logging
 
 ## [0.25.2][]
 

@@ -5,7 +5,7 @@
 groups = ["default", "bin-builder", "chaostoolkit", "dev", "test", "snapshot"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:04904298a4d688894aa1e5436b80b835a97d261e201ded472398c36cb7eb7dff"
+content_hash = "sha256:ff31c4272938b4a6f965c128b23955f806a7f21eda986a6e0e5b6d697ad7bd55"
 
 [[package]]
 name = "aiohttp"
