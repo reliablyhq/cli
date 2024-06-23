@@ -2,7 +2,15 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/reliablyhq/cli/compare/0.28.0...HEAD
+[Unreleased]: https://github.com/reliablyhq/cli/compare/0.28.1...HEAD
+
+## [0.28.1][]
+
+[0.28.1]: https://github.com/reliablyhq/cli/compare/0.28.0...0.28.1
+
+### Changed
+
+* Use Python 3.12 in Dockerfile
 
 ## [0.28.0][]
 
